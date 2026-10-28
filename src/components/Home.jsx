@@ -1,5 +1,6 @@
 import React, { useEffect } from 'react';
 import { ArrowDown, FileText, Sparkles } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import AdSlot from './AdSlot';
 import ToolCard from './ToolCard';
 import { TOOL_CATEGORIES, TOOL_REGISTRY } from './toolRegistry';
@@ -42,12 +43,12 @@ const Home = () => {
             <ArrowDown className="h-4 w-4" aria-hidden="true" />
           </a>
         </div>
-        <div className="home-hero-art" aria-hidden="true">
-          <div className="home-hero-orbit home-hero-orbit-outer" />
-          <div className="home-hero-orbit home-hero-orbit-inner" />
-          <div className="home-hero-paper home-hero-paper-back" />
-          <div className="home-hero-paper home-hero-paper-middle" />
-          <div className="home-hero-document">
+        <nav className="home-hero-art" aria-label="Browse tool categories">
+          <div className="home-hero-orbit home-hero-orbit-outer" aria-hidden="true" />
+          <div className="home-hero-orbit home-hero-orbit-inner" aria-hidden="true" />
+          <div className="home-hero-paper home-hero-paper-back" aria-hidden="true" />
+          <div className="home-hero-paper home-hero-paper-middle" aria-hidden="true" />
+          <div className="home-hero-document" aria-hidden="true">
             <div className="home-hero-document-heading">
               <span className="home-hero-document-icon"><FileText className="h-7 w-7" /></span>
               <span className="home-hero-document-label">PDF</span>
@@ -57,12 +58,25 @@ const Home = () => {
             <span className="home-hero-document-line home-hero-document-line-short" />
             <span className="home-hero-document-block" />
           </div>
-          {TOOL_CATEGORIES.map((category) => (
-            <span key={category.id} className={`home-hero-tool home-hero-tool-${category.id}`}>
-              {category.name}
-            </span>
-          ))}
-        </div>
+          <div className="home-hero-category-orbit">
+            {TOOL_CATEGORIES.map((category, index) => (
+              <a
+                key={category.id}
+                className="home-hero-category-badge"
+                href={`#category-${category.id}`}
+                style={{ '--badge-angle': `${index * 72}deg` }}
+              >
+                <span className="home-hero-category-counter">
+                  <span className="home-hero-category-label">
+                    <span className="home-hero-category-chip">
+                      <span className="home-hero-category-text">{category.name}</span>
+                    </span>
+                  </span>
+                </span>
+              </a>
+            ))}
+          </div>
+        </nav>
       </section>
 
       <section id="toolbox" className="scroll-mt-6">
@@ -78,8 +92,10 @@ const Home = () => {
             const tools = TOOL_REGISTRY.filter((tool) => tool.category === category.id);
             if (!tools.length) return null;
             return (
-              <section key={category.id} aria-labelledby={`category-${category.id}`} className="border-t border-slate-200 pt-7 first:border-t-0 first:pt-0">
-                <h3 id={`category-${category.id}`} className="mb-4 text-lg font-bold text-slate-800">{category.name}</h3>
+              <section id={`category-${category.id}`} key={category.id} aria-labelledby={`category-heading-${category.id}`} className="border-t border-slate-200 pt-7 first:border-t-0 first:pt-0">
+                <h3 id={`category-heading-${category.id}`} className="mb-4 text-lg font-bold text-slate-800">
+                  <Link className="category-section-link" to={category.path}>{category.name}</Link>
+                </h3>
                 <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
                   {tools.map((tool) => <ToolCard key={tool.id} tool={tool} />)}
                 </div>

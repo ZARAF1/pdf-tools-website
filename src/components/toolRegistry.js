@@ -16,11 +16,36 @@ import {
 } from 'lucide-react';
 
 export const TOOL_CATEGORIES = [
-  { id: 'organize', name: 'Organize' },
-  { id: 'convert', name: 'Convert' },
-  { id: 'edit-sign', name: 'Edit & Sign' },
-  { id: 'protect-repair', name: 'Protect & Repair' },
-  { id: 'extract-analyze', name: 'Extract' }
+  {
+    id: 'organize',
+    name: 'Organize',
+    path: '/categories/organize',
+    description: 'Bring PDFs into a clearer order. Combine documents, rearrange pages, correct orientation, or remove pages you no longer need.'
+  },
+  {
+    id: 'convert',
+    name: 'Convert',
+    path: '/categories/convert',
+    description: 'Convert supported PDFs and images into useful formats for reading, sharing, and editing. Each tool explains its supported files and current limitations.'
+  },
+  {
+    id: 'edit-sign',
+    name: 'Edit & Sign',
+    path: '/categories/edit-sign',
+    description: 'Add visible marks and signatures, or permanently remove sensitive page content. Review each tool’s capabilities and output trade-offs before you begin.'
+  },
+  {
+    id: 'protect-repair',
+    name: 'Protect & Repair',
+    path: '/categories/protect-repair',
+    description: 'Use the available protection and optimization tools for PDF files. Check each tool’s settings and results to understand what changed in the output.'
+  },
+  {
+    id: 'extract-analyze',
+    name: 'Extract',
+    path: '/categories/extract',
+    description: 'Pull selected pages from a PDF or split a document into separate files, so it is easier to share or work with only the pages you need.'
+  }
 ];
 
 export const TOOL_REGISTRY = [

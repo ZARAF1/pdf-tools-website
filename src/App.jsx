@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, Link, useParams } from 'react-router-dom';
 import { ChevronDown, Moon, Sun } from 'lucide-react';
 import Home from './components/Home';
+import CategoryPage from './components/CategoryPage';
 import PdfMerger from './components/PdfMerger';
 import PdfSplitter from './components/PdfSplitter';
 import PdfRotator from './components/PdfRotator';
@@ -126,6 +127,15 @@ function App() {
                     </button>
                     {isOpen && (
                       <ul id={menuId} aria-label={`${category.name} tools`} className="category-menu-panel absolute left-0 top-full z-50 mt-1 w-max min-w-56 rounded-xl border p-2 shadow-xl">
+                        <li>
+                          <Link
+                            to={category.path}
+                            onClick={() => setOpenCategory(null)}
+                            className="category-menu-link category-menu-overview-link block rounded-lg px-3 py-2 transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-600"
+                          >
+                            All {category.name} tools
+                          </Link>
+                        </li>
                         {categoryTools.length
                           ? categoryTools.map((tool) => (
                             <li key={tool.id}>
@@ -147,6 +157,13 @@ function App() {
         <main className="flex-grow container mx-auto px-4 py-12">
           <Routes>
             <Route path="/" element={<Home />} />
+            {TOOL_CATEGORIES.map((category) => (
+              <Route
+                key={category.id}
+                path={category.path}
+                element={<CategoryPage category={category} />}
+              />
+            ))}
             <Route path="/merge" element={<ToolPage tool="merge"><PdfMerger /></ToolPage>} />
             <Route path="/split" element={<ToolPage tool="split"><PdfSplitter /></ToolPage>} />
             <Route path="/rotate" element={<ToolPage tool="rotate"><PdfRotator /></ToolPage>} />
