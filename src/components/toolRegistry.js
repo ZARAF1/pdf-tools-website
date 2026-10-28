@@ -20,7 +20,7 @@ export const TOOL_CATEGORIES = [
   { id: 'convert', name: 'Convert' },
   { id: 'edit-sign', name: 'Edit & Sign' },
   { id: 'protect-repair', name: 'Protect & Repair' },
-  { id: 'extract-analyze', name: 'Extract & Analyze' }
+  { id: 'extract-analyze', name: 'Extract' }
 ];
 
 export const TOOL_REGISTRY = [

@@ -57,7 +57,7 @@ The following is based on earlier user-reported inspection, not a substitute for
 - Existing project directory: `C:\Projects\pdf`.
 - The project is a React website. `react-router-dom` was installed; `pdf-lib`, `react-dropzone`, and `framer-motion` were reported as used by the current PDF merger.
 - `src/components/PdfMerger.jsx` supports up to five PDF files, validates the selected PDFs before adding them, and supports reordering before merging. The merge and download flow remains browser-side.
-- Use the central registry as the source for active category membership and ordering: Organize, Convert, Edit & Sign, Protect & Repair, and Extract & Analyze. Assign Image to PDF and PDF to Images to Convert. Add Image Tools only when at least one genuine image-manipulation tool is implemented; do not show empty categories, placeholders, or duplicates.
+- Use the central registry as the source for active category membership and ordering: Organize, Convert, Edit & Sign, Protect & Repair, and Extract. Assign Image to PDF and PDF to Images to Convert. Add Image Tools only when at least one genuine image-manipulation tool is implemented; do not show empty categories, placeholders, or duplicates.
 - `src/App.jsx` was reported to route `/` to Home and `/merge` to `PdfMerger`, with placeholder routes for `/split`, `/rotate`, `/protect`, and `/image-to-pdf`. Verify current route states before relying on this list.
 - `src/components/Home.jsx` was reported to contain a malformed closing tag `</div}` inside `ToolCard`; verify whether it remains before changing it.
 - The user wants a polished, professional, responsive PDF tools website, with fully working tools and clearly marked nonfunctional “Coming Soon” cards.

@@ -210,7 +210,7 @@ body {
 .home-hero-art {
   position: relative;
   display: grid;
-  min-height: 20rem;
+  min-height: 22rem;
   place-items: center;
   isolation: isolate;
 }
@@ -331,34 +331,29 @@ body {
   font-weight: 700;
 }
 
-.home-hero-tool-merge {
+.home-hero-tool-organize {
   top: 13%;
-  left: 5%;
+  left: 0;
 }
 
-.home-hero-tool-sign {
+.home-hero-tool-edit-sign {
   top: 47%;
   left: 0;
 }
 
-.home-hero-tool-protect {
+.home-hero-tool-extract-analyze {
   bottom: 8%;
-  left: 8%;
+  left: 0;
 }
 
-.home-hero-tool-extract {
-  top: 4%;
-  right: 0;
-}
-
-.home-hero-tool-organize {
-  top: 27%;
+.home-hero-tool-protect-repair {
+  top: 0;
   right: 0;
 }
 
 .home-hero-tool-convert {
-  right: 6%;
-  bottom: 12%;
+  right: 0;
+  bottom: 8%;
 }
 
 :root[data-theme='dark'] .tool-detail-hero {
@@ -499,19 +494,24 @@ body {
   }
 
   .home-hero-art {
-    min-height: 16.5rem;
+    min-height: 20rem;
     margin-top: 0.5rem;
   }
 
   .home-hero-paper,
   .home-hero-document {
-    width: 10.5rem;
-    height: 13rem;
+    width: 9rem;
+    height: 11.25rem;
     border-radius: 1rem;
   }
 
   .home-hero-document {
     padding: 1.1rem;
+  }
+
+  .home-hero-tool {
+    padding: 0.45rem 0.55rem;
+    font-size: 0.68rem;
   }
 
   .home-hero-document-block {

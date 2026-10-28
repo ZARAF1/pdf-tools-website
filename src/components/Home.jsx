@@ -57,12 +57,11 @@ const Home = () => {
             <span className="home-hero-document-line home-hero-document-line-short" />
             <span className="home-hero-document-block" />
           </div>
-          <span className="home-hero-tool home-hero-tool-merge">Merge</span>
-          <span className="home-hero-tool home-hero-tool-sign">Sign</span>
-          <span className="home-hero-tool home-hero-tool-protect">Protect</span>
-          <span className="home-hero-tool home-hero-tool-organize">Organize</span>
-          <span className="home-hero-tool home-hero-tool-convert">Convert</span>
-          <span className="home-hero-tool home-hero-tool-extract">Extract</span>
+          {TOOL_CATEGORIES.map((category) => (
+            <span key={category.id} className={`home-hero-tool home-hero-tool-${category.id}`}>
+              {category.name}
+            </span>
+          ))}
         </div>
       </section>
 

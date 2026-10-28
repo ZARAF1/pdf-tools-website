@@ -20,7 +20,7 @@ const RelatedToolsCarousel = ({ currentToolId }) => {
           convert: 'Other Conversion tools',
           'edit-sign': 'Other Edit & Sign tools',
           'protect-repair': 'Other Protect & Repair tools',
-          'extract-analyze': 'Other Extract & Analyze tools'
+          'extract-analyze': 'Other Extract tools'
         }[category.id]}
       </h2>
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
