@@ -1,4 +1,5 @@
 import React, { useEffect } from 'react';
+import { ArrowDown, FileText, Sparkles } from 'lucide-react';
 import AdSlot from './AdSlot';
 import ToolCard from './ToolCard';
 import { TOOL_CATEGORIES, TOOL_REGISTRY } from './toolRegistry';
@@ -23,17 +24,49 @@ const Home = () => {
 
   return (
     <div className="space-y-16">
-      <section className="text-center py-12">
-        <h1 className="text-4xl md:text-5xl font-extrabold text-slate-900 mb-4 tracking-tight">
-          Powerful <span className="text-blue-600">PDF Tools</span> <br />
-          <span className="text-slate-400 text-3xl md:text-4xl font-semibold">All in one place.</span>
-        </h1>
-        <p className="text-lg text-slate-500 mt-4 max-w-2xl mx-auto">
-          Browser-based tools for everyday PDF tasks. Processing details and limitations are explained on each tool page.
-        </p>
+      <section className="home-hero">
+        <div className="home-hero-copy">
+          <p className="home-hero-eyebrow">
+            <Sparkles className="h-4 w-4" aria-hidden="true" />
+            PDF tools, made simple
+          </p>
+          <h1 className="home-hero-title">
+            Powerful <span>PDF Tools</span>
+          </h1>
+          <p className="home-hero-tagline">All in one place.</p>
+          <p className="home-hero-description">
+            Browser-based tools for everyday PDF tasks. Processing details and limitations are explained on each tool page.
+          </p>
+          <a className="home-hero-link" href="#toolbox">
+            Explore PDF tools
+            <ArrowDown className="h-4 w-4" aria-hidden="true" />
+          </a>
+        </div>
+        <div className="home-hero-art" aria-hidden="true">
+          <div className="home-hero-orbit home-hero-orbit-outer" />
+          <div className="home-hero-orbit home-hero-orbit-inner" />
+          <div className="home-hero-paper home-hero-paper-back" />
+          <div className="home-hero-paper home-hero-paper-middle" />
+          <div className="home-hero-document">
+            <div className="home-hero-document-heading">
+              <span className="home-hero-document-icon"><FileText className="h-7 w-7" /></span>
+              <span className="home-hero-document-label">PDF</span>
+            </div>
+            <span className="home-hero-document-line home-hero-document-line-long" />
+            <span className="home-hero-document-line" />
+            <span className="home-hero-document-line home-hero-document-line-short" />
+            <span className="home-hero-document-block" />
+          </div>
+          <span className="home-hero-tool home-hero-tool-merge">Merge</span>
+          <span className="home-hero-tool home-hero-tool-sign">Sign</span>
+          <span className="home-hero-tool home-hero-tool-protect">Protect</span>
+          <span className="home-hero-tool home-hero-tool-organize">Organize</span>
+          <span className="home-hero-tool home-hero-tool-convert">Convert</span>
+          <span className="home-hero-tool home-hero-tool-extract">Extract</span>
+        </div>
       </section>
 
-      <section>
+      <section id="toolbox" className="scroll-mt-6">
         <div className="flex justify-between items-end mb-8">
           <div>
             <h2 className="text-2xl font-bold text-slate-800">Our Toolbox</h2>
