@@ -30,6 +30,142 @@ body {
   --tool-icon-foreground: #bfdbfe;
 }
 
+.tool-detail-hero {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(15rem, 0.8fr) minmax(0, 1.2fr);
+  align-items: center;
+  gap: clamp(1.5rem, 4vw, 3.5rem);
+  overflow: hidden;
+  padding: clamp(1.5rem, 4vw, 3.25rem);
+  border: 1px solid #bfdbfe;
+  border-radius: 1.75rem;
+  background:
+    radial-gradient(ellipse at 0% 0%, rgb(219 234 254 / 0.78), transparent 54%),
+    linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+  box-shadow: 0 18px 48px rgb(15 23 42 / 0.07);
+}
+
+.tool-detail-heading {
+  min-width: 0;
+}
+
+.tool-detail-icon {
+  display: inline-flex;
+  width: 3.5rem;
+  height: 3.5rem;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 1.25rem;
+  border: 1px solid #bfdbfe;
+  border-radius: 1rem;
+  background: #eff6ff;
+  color: #1d4ed8;
+  box-shadow: 0 8px 20px rgb(37 99 235 / 0.12);
+}
+
+.tool-detail-category {
+  margin: 0 0 0.5rem;
+  color: #1d4ed8;
+  font-size: 0.75rem;
+  font-weight: 750;
+  letter-spacing: 0.12em;
+  line-height: 1.4;
+  text-transform: uppercase;
+}
+
+.tool-detail-title {
+  margin: 0;
+  color: #0f172a;
+  font-size: clamp(2.25rem, 4vw, 3.5rem);
+  font-weight: 800;
+  letter-spacing: -0.045em;
+  line-height: 1.05;
+  text-wrap: balance;
+}
+
+.tool-detail-description {
+  max-width: 28rem;
+  margin: 1rem 0 0;
+  color: #475569;
+  font-size: clamp(1rem, 1.4vw, 1.125rem);
+  font-weight: 500;
+  line-height: 1.65;
+}
+
+.tool-detail-intro {
+  min-width: 0;
+  padding-left: clamp(1.25rem, 3vw, 2.5rem);
+  border-left: 1px solid #cbd5e1;
+}
+
+.tool-detail-intro p {
+  max-width: 68ch;
+  margin: 0;
+  color: #334155;
+  font-size: clamp(1rem, 1.25vw, 1.125rem);
+  line-height: 1.85;
+  text-wrap: pretty;
+}
+
+:root[data-theme='dark'] .tool-detail-hero {
+  border-color: #334155;
+  background:
+    radial-gradient(ellipse at 0% 0%, rgb(37 99 235 / 0.2), transparent 56%),
+    linear-gradient(135deg, #111c2e 0%, #0f172a 100%);
+  box-shadow: 0 18px 48px rgb(0 0 0 / 0.22);
+}
+
+:root[data-theme='dark'] .tool-detail-icon {
+  border-color: #1e3a5f;
+  background: #172b45;
+  color: #bfdbfe;
+  box-shadow: none;
+}
+
+:root[data-theme='dark'] .tool-detail-category {
+  color: #93c5fd;
+}
+
+:root[data-theme='dark'] .tool-detail-title {
+  color: #f8fafc;
+}
+
+:root[data-theme='dark'] .tool-detail-description,
+:root[data-theme='dark'] .tool-detail-intro p {
+  color: #cbd5e1;
+}
+
+:root[data-theme='dark'] .tool-detail-intro {
+  border-color: #334155;
+}
+
+@media (max-width: 760px) {
+  .tool-detail-hero {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 1.5rem;
+    padding: clamp(1.25rem, 6vw, 2rem);
+    border-radius: 1.35rem;
+  }
+
+  .tool-detail-icon {
+    width: 3rem;
+    height: 3rem;
+    margin-bottom: 1rem;
+  }
+
+  .tool-detail-intro {
+    padding-top: 1.25rem;
+    padding-left: 0;
+    border-top: 1px solid #cbd5e1;
+    border-left: 0;
+  }
+
+  :root[data-theme='dark'] .tool-detail-intro {
+    border-top-color: #334155;
+  }
+}
+
 :root[data-theme='dark'] body {
   background-color: var(--page-background);
   color: var(--text-primary);

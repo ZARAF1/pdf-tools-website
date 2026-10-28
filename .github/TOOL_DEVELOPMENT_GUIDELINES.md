@@ -14,6 +14,7 @@ Every tool must have:
 
 - A stable, directly accessible route, internal navigation, unique document title/meta description, and one clear page heading.
 - A responsive interface using the existing palette, typography, spacing, cards, buttons, upload areas, and icons.
+- Present each tool title, category, short description, and customer-facing introduction in the shared responsive detail hero. Keep the title prominent, the introduction left-aligned and comfortably readable, and the layout consistent in light and dark themes; avoid placing a long introduction as an unstructured centered paragraph.
 - Keyboard-operable controls, visible focus, semantic headings, associated form labels, accessible status/errors, and useful disabled/loading states.
 - A unique 100–200-word customer-facing introduction beneath the main heading, a tool-specific How to Use guide, accurate FAQs, an implementation-verified technical/privacy explanation, and links to a few genuinely related implemented tools. Unavailable conversion pages must use this space to explain the limitation without implying an upload or workflow exists.
 - Validated inputs, clear limitations, file replacement/removal/reset where appropriate, useful failure recovery, and a real output/download flow.

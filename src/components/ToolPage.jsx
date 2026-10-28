@@ -1,9 +1,9 @@
 import React, { useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowRight, Download, Upload } from 'lucide-react';
+import { ArrowRight, Download, FileText, Upload } from 'lucide-react';
 import AdSlot from './AdSlot';
 import RelatedToolsCarousel from './RelatedToolsCarousel';
-import { TOOL_REGISTRY } from './toolRegistry';
+import { TOOL_CATEGORIES, TOOL_REGISTRY } from './toolRegistry';
 import { closeDisclosureOnEscape } from '../lib/detailsEscape';
 
 const TOOL_CONTENT = {
@@ -211,6 +211,9 @@ const ToolPage = ({ tool, children }) => {
   const content = TOOL_CONTENT[tool];
   const registeredTool = TOOL_REGISTRY.find((item) => item.id === tool);
   const ProcessingIcon = registeredTool?.icon;
+  const ToolIcon = ProcessingIcon || FileText;
+  const categoryName = TOOL_CATEGORIES.find((category) => category.id === registeredTool?.category)?.name
+    || 'Conversion status';
 
   useEffect(() => {
     const previousTitle = document.title;
@@ -229,9 +232,18 @@ const ToolPage = ({ tool, children }) => {
 
   return (
     <article className="space-y-8">
-      <header className="text-center">
-        <h1 className="text-3xl font-bold text-slate-900 mb-2">{content.title}</h1>
-        <p className="text-slate-600 max-w-3xl mx-auto">{content.intro}</p>
+      <header className="tool-detail-hero">
+        <div className="tool-detail-heading">
+          <span className="tool-detail-icon" aria-hidden="true">
+            <ToolIcon className="h-7 w-7" />
+          </span>
+          <p className="tool-detail-category">{categoryName}</p>
+          <h1 className="tool-detail-title">{content.title}</h1>
+          <p className="tool-detail-description">{content.description}</p>
+        </div>
+        <div className="tool-detail-intro">
+          <p>{content.intro}</p>
+        </div>
       </header>
 
       <section aria-label={`${content.title} workspace`}>
