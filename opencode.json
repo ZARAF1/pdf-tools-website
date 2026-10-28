@@ -1,0 +1,8 @@
+{
+  "instructions": [
+    ".github/project-instructions.md",
+    ".github/project-status.md",
+    ".github/TOOL_DEVELOPMENT_GUIDELINES.md",
+    ".github/adsense-readiness-checklist.md"
+  ]
+}

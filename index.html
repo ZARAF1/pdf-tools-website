@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script>
+      (() => {
+        let theme;
+        try {
+          theme = localStorage.getItem('pdf-tools-theme');
+        } catch {
+          theme = null;
+        }
+        document.documentElement.dataset.theme = theme || (
+          window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
+        );
+      })();
+    </script>
+    <title>PDF Merge Pro</title>
+    <meta name="description" content="Use browser-based PDF tools to merge, split, rotate, compress, watermark, protect, and convert documents." />
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.jsx"></script>
+  </body>
+</html>

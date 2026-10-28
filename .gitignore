@@ -1,0 +1,12 @@
+node_modules/
+dist/
+coverage/
+.env*
+!.env.example
+*.log
+*.pdf
+/tmp_*
+/impcheck.mjs
+/unique_tester_99.txt
+/buildout.txt
+/devout.txt

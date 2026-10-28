@@ -1,0 +1,190 @@
+# PDF Tool, Site Quality, and AdSense Readiness Checklist
+
+This is the persistent evidence log. Update the observed result and evidence when a check is run. A build or visible control alone does not verify a user flow. AdSense readiness is not approval.
+
+## Status key
+
+- **PASS — VERIFIED**: executed; expected result observed.
+- **PASS — ALREADY PRESENT**: existing behavior inspected and verified.
+- **IMPLEMENTED — NOT YET VERIFIED**: code exists, but behavior is not fully tested.
+- **NEEDS USER ACTION**: owner, publisher ID, live domain, account, consent decision, or legal review needed.
+- **BLOCKED**: a concrete environment/tooling constraint prevents the check.
+- **FAIL**: executed check did not meet its expected result.
+
+## Site-wide structure and navigation
+
+| Requirement / flow | Route and files | Test steps / expected result | Actual result / evidence | Status | Remaining action |
+|---|---|---|---|---|---|
+| Homepage tool discovery and card layout | `/`, `src/components/Home.jsx`, `src/components/ToolCard.jsx`, `toolRegistry.js` | Active cards link to tools, use a consistent compact responsive layout, and remain keyboard reachable. | Browser verified all 14 cards remain available under five active categories. At 360/768/1280 px the homepage used 1/2/3 columns with no horizontal overflow. Keyboard Tab reached the first card with visible focus; Enter opened `/merge`. Not every individual tool card was activated. | PASS — VERIFIED | Verify the remaining individual card destinations. |
+| Direct routes and refresh | All routes, `src/App.jsx` | Open each route directly; also verify production-host refresh/SPA fallback. | Browser opened `/organize`, `/redact`, and `/sign` directly and exercised their workflows. Deployed-host refresh/SPA fallback and Office limitation routes were not tested in this pass. | IMPLEMENTED — NOT YET VERIFIED | Check Office notice routes and deployed refresh/fallback. |
+| Header/footer navigation | `src/App.jsx`, `Footer.jsx` | Follow all links; no `href="#"` dead links. | Navigation now uses real Home, FAQ, Guides, Privacy, Contact, About and Terms routes; dead Pricing/Feedback links were removed. Route sweep confirmed the linked pages render. | PASS — VERIFIED | None for local routes; recheck after deployment. |
+| Browser history | All routes | Navigate tool-to-tool, Back, Forward; URL and view agree. | Not tested. | IMPLEMENTED — NOT YET VERIFIED | Browser test. |
+| 404 handling | `src/App.jsx`, `src/components/SitePages.jsx` | Open unknown route; show useful not-found page and recovery link. | Unknown `/missing-page` and `/resources/no-such-guide` both rendered a not-found heading and Home recovery link. Invalid article slugs now fall back safely instead of dereferencing missing content. | PASS — VERIFIED | None for local route handling; verify production hosting fallback. |
+| Mobile, tablet, desktop | Homepage and all tool/content pages | Check representative widths, overflow, wrapping, controls and cards. | Homepage verified at 360/768/1280 px: 14 cards laid out in 1/2/3 columns with no horizontal overflow. The category menu has five active categories; at 390 px it switches to a two-column in-flow layout, and menu opening/category switching did not cause horizontal overflow. Other tool/content routes are not exhaustively checked at each breakpoint. | IMPLEMENTED — NOT YET VERIFIED | Check remaining tool pages and representative deployed browsers. |
+| Keyboard, focus and reduced motion | Shared app and tool pages | Tab through controls/links; visible focus; status/errors announced; reduced motion respected. | Menu Tab/Shift+Tab reached submenu links and returned to the trigger; Escape closed and restored trigger focus. Search `compress` stayed visible through Tab to Clear Search and the suggestion; Shift+Tab returned through Clear Search to the input; Enter opened `/compress`. ArrowDown highlighted the second `pdf` match and Enter opened `/split`; Escape closed results; clear emptied the query; a no-results query gave a status message. Keyboard Tab reached the first homepage card with a visible outline and Enter opened `/merge`. On `/faq` and the Merge PDF FAQ, opened a question, pressed Escape with focus on its summary, and confirmed the disclosure closed with focus retained. Reduced-motion behavior and other tool-page control sequences remain unverified. | IMPLEMENTED — NOT YET VERIFIED | Manually verify remaining keyboard/focus order and reduced motion. |
+| Password-protected PDF input | All PDF-input tools | Attempt to select an encrypted PDF; reject it before it appears as an attached input. | A locally generated AES-256 password-protected PDF was rejected on `/merge`, `/split`, `/rotate`, `/protect`, `/compress`, `/pdf-to-word`, `/watermark`, `/remove-pages`, `/extract-pages`, `/organize`, `/redact`, and `/sign` with a clear password-protected message. `/image-to-pdf` rejected the PDF as an unsupported image type. The shared validator is used before selected-file state is set. | PASS — VERIFIED | Recheck when adding any future PDF-upload route. |
+| Theme preference | Header toggle, `src/App.jsx`, `index.html` | Toggle theme, reload, and confirm preference persists. | Browser switched dark → light, observed `data-theme="light"` and `localStorage["pdf-tools-theme"]="light"`, then reloaded and confirmed light mode persisted. | PASS — VERIFIED | Check system-preference fallback and contrast on remaining routes. |
+| Category navigation, search, related tools | `toolRegistry.js`, `App.jsx`, `Home.jsx`, `ToolSearch.jsx`, `RelatedToolsCarousel.jsx`, `ToolPage.jsx` | One category source drives home, navigation, search, and related tools; menu dismissal/focus and search keyboard behavior work; related tools stay in-category without internal scrolling. | The registry drives five active labels: Organize, Convert, Edit & Sign, Protect & Repair, and Extract & Analyze. The empty Image Tools category was removed. Browser verified the labels in both menu and homepage; prior checks verified click-to-open/toggle, only one open submenu, pointer movement into submenu, outside click, Escape with trigger focus restoration, menu-link navigation to `/redact`, and mobile tap-to-open/switch/toggle. Browser verified the exact related headings for Organize, Convert, Edit & Sign, Protect & Repair, and Extract & Analyze. On Sign PDF, Related Tools contained Watermark and Redact only, excluding Sign. Search keyboard results are recorded above. | PASS — VERIFIED | Check all category assignments and destinations in a broader route sweep. |
+| Theme-aware menus and upload controls | `src/index.css`, `src/App.jsx`, PDF upload controls | Menu and upload text/icons/surfaces remain readable; normal, hover, focus, pressed, disabled, and drag-active states are distinct in both themes. | Browser computed dark menu panel/text as `rgb(17, 28, 46)` / `rgb(191, 219, 254)` on hover. Upload controls were checked in light and dark modes: dark normal surface `rgb(17, 28, 46)`, hover `rgb(30, 41, 59)`, focus outline `rgb(147, 197, 253)`, pressed `rgb(30, 53, 85)`, disabled opacity `0.55`/`not-allowed`; drag-enter showed a blue-tinted surface and blue border. Light hover and drag-enter also differed from normal. | PASS — VERIFIED | Manually inspect on additional browsers; drag styling was simulated with browser drag events. |
+| Customer-facing “How it works” | All active tool routes, `src/components/ToolPage.jsx` | Show Upload → document processing in browser → Download without technical implementation details; use the matching tool icon and keep the privacy note concise. | Browser verified the flow on `/merge` and `/pdf-to-word`; the shared note says selected files are processed in the browser and not uploaded to a processing server, with a Privacy Policy link. Detailed OCR/resource and ordinary site-request disclosures remain in the FAQ and Privacy Policy. Excel to PDF correctly says the unavailable converter accepts and processes no files. The flow is shared across active tool routes. | PASS — VERIFIED | Review claims if any tool's processing location changes. |
+| Single tool title heading | `/watermark`, `/compress`, `/pdf-to-word`, `ToolPage.jsx` and tool components | Show the tool name once as the page heading, without a repeated name heading inside the workspace. | Browser verified exactly one heading matching each tool name and one `<h1>` on Watermark PDF, Compress PDF, and PDF to Word. | PASS — VERIFIED | Check when adding a tool-specific workspace heading. |
+| Tool-page introductions | All tool detail pages, `src/components/ToolPage.jsx` | Provide a distinct, accurate 100–200-word customer-facing description below the main heading. | Browser visited all 16 tool and limitation routes; each rendered introduction measured 115–129 words. | PASS — VERIFIED | Recheck when changing tool capabilities or content. |
+| Organize PDF action visibility | `/organize`, `src/components/OrganizePdf.jsx` | Hide Organize PDF and Reset until a file is selected; show them with a selected PDF. | Browser found both buttons absent before selection, present after selecting a valid one-page PDF, and absent again after Reset. | PASS — VERIFIED | None. |
+
+## PDF tools — end-to-end flows
+
+### Merge PDF
+
+| Step | Expected result | Actual result / evidence | Status |
+|---|---|---|---|
+| Open `/merge`, refresh, and follow homepage card | Correct merger page; title and card route agree. | Source route exists; browser flow not run. | IMPLEMENTED — NOT YET VERIFIED |
+| Enforce the five-file maximum | At most five PDFs can be added; show the reached-limit message and disable upload at 5/5. | Browser selected six distinct valid PDFs; five were added, the limit message appeared, and the upload input was disabled at 5/5. Removing a file re-enabled upload at 4/5. | PASS — VERIFIED |
+| Merge valid PDFs and inspect output | Generated PDF preserves source pages and count; download remains available. | The five accepted, distinct one-page PDFs merged successfully and showed the existing Download PDF action. Output content/order for these five files was not independently inspected. Earlier synthetic merge output was reopened with PDF.js as six pages from merging one three-page source twice, with repeated source text. The actual browser download event was not captured. | PASS — VERIFIED |
+| Reorder selected files and verify merged order | Reordering by drag/buttons changes the merged output order to match the displayed list. | The existing reorder controls remain in place; file reordering and resulting output order were not tested in this pass. | IMPLEMENTED — NOT YET VERIFIED |
+| Reject password-protected/invalid PDF or fewer than 2 PDFs | Useful error; protected file is not added; no false success/download. | Password-protected PDF was rejected during selection with a clear message; no merger file list was shown for it. Fewer-than-two and other invalid-file flows were not retested in this pass. | PASS — VERIFIED |
+
+### Split PDF
+
+| Step | Expected result | Actual result / evidence | Status |
+|---|---|---|---|
+| Open `/split`, refresh, upload valid PDF | Page and page count/settings render. | Route/component exist; not browser tested. | IMPLEMENTED — NOT YET VERIFIED |
+| Extract valid page/range selection | Output contains only requested pages, in requested order. | Not tested. | IMPLEMENTED — NOT YET VERIFIED |
+| Split all pages | Each output contains its corresponding page. | Not tested. | IMPLEMENTED — NOT YET VERIFIED |
+| Test malformed, empty, reversed and out-of-range selection | Clear error; no false success. | Source range parser needs stricter empty/reversed validation review. | IMPLEMENTED — NOT YET VERIFIED |
+
+### Rotate PDF
+
+| Step | Expected result | Actual result / evidence | Status |
+|---|---|---|---|
+| Open `/rotate`, upload a multipage PDF | Page settings and selection work. | Route/component exist; not browser tested. | IMPLEMENTED — NOT YET VERIFIED |
+| Rotate all pages and selected pages | Output page rotation matches configured angle; page order/count retained. | Not tested. | IMPLEMENTED — NOT YET VERIFIED |
+| Test invalid/empty/out-of-range page selections and zero rotation | Clear validation and no incorrect output. | Not tested. | IMPLEMENTED — NOT YET VERIFIED |
+
+### Protect PDF
+
+| Step | Expected result | Actual result / evidence | Status |
+|---|---|---|---|
+| Open `/protect`, enter and confirm password | Inputs validate; processing state is visible. | Route/component exist; not browser tested. | IMPLEMENTED — NOT YET VERIFIED |
+| Protect synthetic PDF and reopen without/with password | Password required; correct password opens; incorrect password fails. | Not independently tested. | IMPLEMENTED — NOT YET VERIFIED |
+| Test mismatch, short password and encrypted input | Clear error and no misleading success. | Not tested. | IMPLEMENTED — NOT YET VERIFIED |
+
+### Image to PDF
+
+| Step | Expected result | Actual result / evidence | Status |
+|---|---|---|---|
+| Open `/image-to-pdf`, select supported image files | Previews, order and controls are usable. | Browser accepted a synthetic 2×2 BMP and displayed dimensions and preview. JPEG/PNG inputs and reorder behavior were not tested. | IMPLEMENTED — NOT YET VERIFIED |
+| Reorder images; select page size, orientation, fit and margin | UI reflects selected options. | Fit page size and 50% scale were selected in the browser. Orientation/margin and multi-image order were not tested. | IMPLEMENTED — NOT YET VERIFIED |
+| Generate PDF and inspect pages, image order and dimensions | Valid output reflects configuration. | Captured output reopened with PDF.js as one page at 48.75×48.75 pt for the 2×2 BMP resized to 1×1 px at 50% scale with Fit image dimensions. Browser download event was not captured. | PASS — VERIFIED |
+| Test unsupported WebP/invalid image and reset | Honest error/recovery; object URLs cleaned up. | Source explicitly rejects WebP; cleanup behavior needs verification. | IMPLEMENTED — NOT YET VERIFIED |
+
+### PDF to Images
+
+| Step | Expected result | Actual result / evidence | Status |
+|---|---|---|---|
+| Open `/pdf-to-images` from its route and Convert navigation | Dedicated tool is reachable and grouped with conversion tools. | Browser verified the route, category order, Convert membership, and same-category recommendations (Image to PDF and PDF to Word; current tool excluded). The empty Image Tools category has since been removed from the homepage and category menu; both now show only five active categories. | PASS — VERIFIED |
+| Convert a multipage PDF to PNG, JPG, or BMP | Each page is rendered as a genuine image in original order and included in one valid ZIP. | Three-page output for all formats contained sequential `page-001` through `page-003` entries. ZIP local/central entries, CRCs, file signatures, and image decoding were verified from generated Blobs. A one-page BMP and a 50-page BMP archive were also verified; the latter contained entries through `page-050.bmp`. | PASS — VERIFIED |
+| Change quality and inspect image dimensions | Standard/High selection changes resolution. | One-page PNG output decoded at 360×480 for Standard and 540×720 for High. | PASS — VERIFIED |
+| Validate page-count boundary and invalid/protected input | Accept at most 50 pages; reject corrupt and password-protected files with useful messages and no success download. | A 51-page PDF, corrupt file, and AES-256 protected PDF were rejected with user-facing messages; ZIP download remained unavailable after rejection. | PASS — VERIFIED |
+| Responsive/theme upload control | No narrow-screen overflow; upload control follows shared theme styles. | At 390 px, document/body width remained 375 px against a 390 px viewport. In dark mode the upload surface computed to `rgb(17, 28, 46)`; the shared hover rule resolves to the muted-surface token, but its rendered hover color was not verified because the automation page was hidden. | IMPLEMENTED — NOT YET VERIFIED |
+| Download archive and inspect it outside the browser | Browser saves the ZIP; independent archive/image viewer confirms the output. | Generated ZIP Blobs were inspected and parsed, but no browser download event was captured. The integrated browser page was hidden and the download click timed out; no external viewer inspection was performed. | IMPLEMENTED — NOT YET VERIFIED |
+
+### PDF to Word
+
+| Step | Expected result | Actual result / evidence | Status |
+|---|---|---|---|
+| Open `/pdf-to-word`, select text PDF | DOCX downloads with extracted text. | Route/component exist; not browser tested. | IMPLEMENTED — NOT YET VERIFIED |
+| Select scanned PDF | OCR state/progress is shown; output text reviewed. | Source uses Tesseract OCR; the configured worker, core, and English language data may be requested from jsDelivr. Recognition is performed in the browser. Output text not reviewed in this audit. | IMPLEMENTED — NOT YET VERIFIED |
+| Verify table/layout fidelity and difficult PDFs | Limitations communicated; no unsupported fidelity promise. | Not tested. | IMPLEMENTED — NOT YET VERIFIED |
+| Verify OCR/network and document privacy disclosures | File transfer and worker/model requests described accurately. | Source audit found no document upload flow; the shared FAQ, tool workflow, and Privacy Policy disclose the jsDelivr OCR resources and local recognition. No live network capture of a scanned conversion was performed. | IMPLEMENTED — NOT YET VERIFIED |
+
+### Compress PDF
+
+| Step | Expected result | Actual result / evidence | Status |
+|---|---|---|---|
+| Open `/compress`, select sample PDF(s), inspect count/size | Accurate information and settings. | Route/component exist; not retested in this pass. | IMPLEMENTED — NOT YET VERIFIED |
+| Run standard and high compression; inspect output size/content | Actual output matches displayed mode; larger output is not presented as compressed. | Browser enabled Higher compression, showed its quality-loss notice, and completed PDF.js rendering on a synthetic text PDF. Since no smaller candidate was produced, no larger compressed download was offered. A smaller output/quality tradeoff was not tested. | IMPLEMENTED — NOT YET VERIFIED |
+| Test already-optimized, image-heavy, encrypted and corrupt PDFs | Accurate fallback/error without data loss. | Not tested. | IMPLEMENTED — NOT YET VERIFIED |
+
+### Watermark PDF
+
+| Step | Expected result | Actual result / evidence | Status |
+|---|---|---|---|
+| Homepage card and direct `/watermark` | Opens tool; refresh works. | Browser verified card navigation to `/watermark`. | PASS — VERIFIED |
+| Upload synthetic 3-page PDF; filename, size, count; Replace/Remove/Reset | Correct information and one-file workflow. | Browser verified 3 pages, Replace picker, and Reset clearing the file. | PASS — VERIFIED |
+| Validate blank text, invalid settings and page ranges | Clear error; reject malformed/out-of-range selections. | Browser verified out-of-range page 4 rejected for 3-page PDF. Other invalid cases not tested. | IMPLEMENTED — NOT YET VERIFIED |
+| Apply settings to selected pages and all pages | Watermark drawn; page count/content preserved. | Prior Node/PDF.js test verified selected/all text watermarking. Browser numbering-only test with start 7 and selected pages 1,3 preserved three pages and yielded 7 on page 1 and 8 on page 3. Browser text-watermark range 2-3 yielded `DRAFT` on those pages only while preserving original text. One 48 pt long watermark was correctly rejected as too large for the synthetic page. | PASS — VERIFIED |
+| Download and visually inspect output | Browser saves valid PDF; visible placement/color/angle/opacity confirmed. | Generated Blob contents parsed with PDF.js, but the integrated browser did not emit a captured download event. No rendered page was visually inspected; do not claim visual verification of placement/color/angle/opacity. | BLOCKED |
+
+### Remove PDF Pages and Extract PDF Pages
+
+| Step | Expected result | Actual result / evidence | Status |
+|---|---|---|---|
+| Upload 3-page synthetic PDF and render previews | Actual page count and all previews match the source. | Both routes rendered all three actual previews. | PASS — VERIFIED |
+| Select, clear, remove/extract pages | Selection state updates; source remains unchanged; output preserves source order. | Remove page 2 produced a two-page output with `TEST PAGE 1`, `TEST PAGE 3`. Extract pages selected as 3 then 1 produced output in document order: `TEST PAGE 1`, `TEST PAGE 3`. | PASS — VERIFIED |
+| Select all pages for removal | Prevent creating a zero-page output and show a useful message. | All three pages were selectable; processing returned “At least one page must remain in the output PDF.” Clear Selection reset all selections. | PASS — VERIFIED |
+| Page-count boundary | Accept and preview 50 pages; reject over 50 without silent truncation. | 50-page PDF produced 50 thumbnails; 51-page PDF was rejected with an explicit limit message and no file loaded. | PASS — VERIFIED |
+| Download and inspect generated output | Browser saves valid PDF with expected content. | Generated output Blobs reopened and parsed with PDF.js. Browser download events were not captured in this environment. | IMPLEMENTED — NOT YET VERIFIED |
+
+### Organize PDF
+
+| Step | Expected result | Actual result / evidence | Status |
+|---|---|---|---|
+| Upload a 3-page synthetic PDF and render previews | Filename, size, actual page count, and page previews are shown. | Browser loaded the 3-page fixture and rendered all page previews. | PASS — VERIFIED |
+| Reorder, rotate, and remove pages | Output follows visible order, applies rotation, and contains only retained pages. | Moved source page 2 first, rotated it 90°, removed source page 3, and generated a 2-page PDF. PDF.js verified page order 2 then 1, preserved source text, and reported page 1 rotated 90°. | PASS — VERIFIED |
+| Download output | User can save a valid PDF from the explicit download control. | The generated Blob was opened and validated with PDF.js. The integrated browser did not emit a captured download event. | IMPLEMENTED — NOT YET VERIFIED |
+
+### Redact PDF
+
+| Step | Expected result | Actual result / evidence | Status |
+|---|---|---|---|
+| Upload a 3-page synthetic PDF and mark page 1 | Preview, page navigation, and drawn opaque mark work. | Browser rendered the preview and added a drag-drawn mark on page 1. | PASS — VERIFIED |
+| Create and inspect redacted output | Same page count; no source text remains extractable; mask is opaque; unmasked content remains visible. | PDF.js reopened the 3-page Blob. All page text extraction was empty; the sampled mask pixel was black `[0,0,0]`, and 273 dark pixels remained in an unmasked source-text area. | PASS — VERIFIED |
+| Download output and inspect in a desktop viewer | Browser saves and a separate viewer confirms appearance. | Generated Blob was tested in-browser; actual download event and independent desktop-viewer inspection were not captured. All pages are rasterized, losing selectable text and interactive features. | IMPLEMENTED — NOT YET VERIFIED |
+
+### Sign PDF
+
+| Step | Expected result | Actual result / evidence | Status |
+|---|---|---|---|
+| Typed signature on selected pages | Signature appears only on selected pages; source text/page count remain. | Typed `A. Tester` on pages 2-3 of a 3-page fixture. PDF.js verified unchanged source text on all pages, plus the signature only on pages 2 and 3. | PASS — VERIFIED |
+| Drawn and uploaded-image signatures | Signature artwork is embedded in the resulting PDF. | Browser generated output for both modes; PDF.js found an image-paint operation on page 1 for the drawn signature and for the uploaded PNG signature, while original page text remained. | PASS — VERIFIED |
+| Invalid page selection and reset | Reversed/out-of-range selections show errors; reset clears file, settings, and errors. | `3-1` reported a reversed range; page `4` was rejected for a 3-page PDF; Reset cleared the file and alert. | PASS — VERIFIED |
+| Download output and inspect appearance | Browser saves a valid output and signature placement is visually checked. | Generated Blobs were parsed with PDF.js; actual download event and independent visual inspection were not captured. Signature is visual only, not cryptographic. | IMPLEMENTED — NOT YET VERIFIED |
+
+### Unlock PDF
+
+| Step | Expected result | Actual result / evidence | Status |
+|---|---|---|---|
+| Provide correct password and create an unencrypted local copy | Decrypt only with the supplied correct password; preserve document content. | Not implemented. Installed `@pdfsmaller/pdf-encrypt` only encrypts; its README names a separate decrypt package. No route/card is registered pending explicit approval to add a browser-compatible decryption dependency. Password bypass/guessing is out of scope. | NEEDS USER ACTION |
+
+## Content, SEO, privacy and policy
+
+| Requirement | Expected result | Actual result / evidence | Status | Remaining action |
+|---|---|---|---|---|
+| Tool intros, instructions, FAQs, technical explanations, related links | Unique verified content on every tool page; links target real tools. | Shared tool content is present; route sweep found one `<h1>`, distinct title/description, and no render errors on every tool route. Merge PDF instructions/FAQ now state five inputs and explain browser-only processing in plain language. Interactive workflows were not all tested. | IMPLEMENTED — NOT YET VERIFIED | Verify content accuracy against completed end-to-end flows for every tool. |
+| Page titles/descriptions/headings | Unique, accurate metadata; clear semantic heading hierarchy. | Browser route sweep confirmed one `<h1>` and a route-specific title/description on all tool and site-content routes tested. | PASS — VERIFIED | Recheck after deployment and future content changes. |
+| Central FAQ/resource library | Useful original answers/articles; links work. | `/faq`, `/resources`, and all three article routes rendered with route-specific metadata; an unknown article slug shows the 404 recovery page. | PASS — VERIFIED | Continue reviewing accuracy as tool behavior changes. |
+| Privacy policy/terms/about/contact | Accurate processing, logs, analytics, ads, contacts; no invented identity; legal review flagged. | Draft pages are present and explicitly disclose unknown operator, host/log retention, and legal details without inventing them. | NEEDS USER ACTION | Owner supplies identity/contact/hosting/retention/jurisdiction and obtains legal review before publication. |
+| Homepage pricing | No pricing section or pricing promotion. | No Pricing section/link remains in the current homepage/navigation. | PASS — VERIFIED | None. |
+| PDFSwift reference | Use general organization only; no copying. | Fetch returned only brief marketing text; detailed page content not available. | BLOCKED | Continue using local design system and original content. |
+| Sitemap, robots, canonical, 404 | Correct domain-aware crawl configuration; useful not-found handling. | Local `/robots.txt` returned HTTP 200 with `User-agent: *` and `Allow: /`; no production domain is known for a sitemap URL or canonical metadata. Local 404 handling is verified. | IMPLEMENTED — NOT YET VERIFIED | Verify deployed `/robots.txt`; provide production domain before adding/testing sitemap and canonical URLs. |
+
+## Advertising and consent
+
+| Requirement | Expected result | Actual result / evidence | Status | Remaining action |
+|---|---|---|---|---|
+| Reusable centrally controlled ad slots | Optional, disabled by default; no fake ads, blank boxes, or proximity to controls. | Decorative homepage placeholders were removed. `AdSlot` is globally disabled with consent, IDs, and placements unset; browser resource inspection found no AdSense requests. | PASS — VERIFIED | Keep disabled until the owner configures real IDs and applicable consent. |
+| Publisher and units | Use genuine publisher/client and ad-unit IDs only. | None supplied/found. | NEEDS USER ACTION | Owner supplies verified AdSense IDs and chooses ad setup. |
+| Consent | Applicable certified CMP and regional behavior verified before ads enabled. | No consent system or target regions found. | NEEDS USER ACTION | Owner chooses target audience/CMP; verify current Google requirements. |
+| `ads.txt` | Real root-domain record served in production. | No `ads.txt` exists in `public/`; no publisher ID or production domain was supplied. | NEEDS USER ACTION | Provide publisher ID/domain; verify deployed root URL. |
+| AdSense policies | Site and placements follow current Google rules; no approval guarantee. | Official policy and privacy requirement pages were reviewed: `https://support.google.com/adsense/answer/48182` and `https://support.google.com/adsense/answer/1348695`. No approval or deployment compliance has been established. | NEEDS USER ACTION | Review applicable current policies after real ad, consent, domain, and publisher setup; keep ads disabled until resolved. |
+| Analytics / third-party requests | Inventory real scripts, OCR/model requests, host logs and disclosures. | Source inspection found no document-upload flow or analytics integration. The optional AdSense loader is disabled; the application conditionally loads Tesseract worker/core/English resources from jsDelivr for OCR. The shared tool disclosure and Privacy Policy now distinguish these resources from document processing. A live OCR network capture and hosting-provider log/retention details remain unverified. | IMPLEMENTED — NOT YET VERIFIED | Inspect a real OCR flow and obtain hosting-provider logging/retention details. |
+
+## Project setup and validation
+
+| Check | Expected result | Actual result / evidence | Status |
+|---|---|---|---|
+| Tool development standard | Permanent guidelines linked by project instructions and loaded in project config. | `.github/TOOL_DEVELOPMENT_GUIDELINES.md` and project-instruction references verified; `opencode.json` parses and contains all four shared document paths. | PASS — VERIFIED |
+| Persistent checklist | Per-tool flows, evidence, and statuses are recorded here. | Checklist contains tool-specific flows, observed evidence, explicit statuses, and remaining work; untested flows remain marked unverified. | PASS — VERIFIED |
+| Production build | `npm.cmd run build` succeeds. | Latest `npm.cmd run build` passed after PDF-to-Images and upload-zone styling changes (Vite 8.3.5; 2,595 modules). PDF.js worker asset: 1,375.83 kB; minified app chunk: 1,778.64 kB. Existing `docx` browser `buffer` externalization and large-chunk warnings remain. | PASS — VERIFIED |
+| Tests/lint | Existing tests/lint run without new dependencies. | VS Code test discovery reports no registered test controller or matching test items. No project test/lint script was found in the initial inventory; build and browser checks were used instead. | BLOCKED |
+| Git status | Inspect tracked/untracked changes when repository initialized. | `git status --short`: fatal, not a Git repository. | BLOCKED |
