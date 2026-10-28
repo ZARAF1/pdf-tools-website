@@ -629,6 +629,8 @@ body {
 }
 
 .tool-card {
+  position: relative;
+  isolation: isolate;
   display: flex;
   min-height: 6.75rem;
   align-items: center;
@@ -639,12 +641,34 @@ body {
   padding: 1rem;
   color: var(--text-primary);
   text-decoration: none;
-  transition: border-color 160ms ease, background-color 160ms ease;
+  transition: border-color 160ms ease;
+}
+
+.tool-card::before {
+  position: absolute;
+  z-index: -1;
+  border-radius: inherit;
+  background: linear-gradient(
+    to top,
+    rgb(191 219 254 / 0.88) 0%,
+    rgb(219 234 254 / 0.58) 42%,
+    rgb(239 246 255 / 0) 100%
+  );
+  content: '';
+  inset: 0;
+  pointer-events: none;
+  transform: scaleY(0);
+  transform-origin: bottom;
+  transition: transform 240ms ease-out;
 }
 
 .tool-card:hover {
   border-color: #93c5fd;
-  background-color: var(--surface-muted);
+}
+
+.tool-card:hover::before,
+.tool-card:focus-visible::before {
+  transform: scaleY(1);
 }
 
 .tool-card:focus-visible {
@@ -669,7 +693,8 @@ body {
   transition: color 160ms ease, transform 160ms ease;
 }
 
-.tool-card:hover .tool-card-arrow {
+.tool-card:hover .tool-card-arrow,
+.tool-card:focus-visible .tool-card-arrow {
   transform: translateX(2px);
   color: #2563eb;
 }
@@ -740,7 +765,17 @@ body {
   outline-color: #93c5fd;
 }
 
-:root[data-theme='dark'] .tool-card:hover .tool-card-arrow {
+:root[data-theme='dark'] .tool-card::before {
+  background: linear-gradient(
+    to top,
+    rgb(30 58 95 / 0.94) 0%,
+    rgb(30 58 95 / 0.58) 42%,
+    rgb(30 58 95 / 0) 100%
+  );
+}
+
+:root[data-theme='dark'] .tool-card:hover .tool-card-arrow,
+:root[data-theme='dark'] .tool-card:focus-visible .tool-card-arrow {
   color: #93c5fd;
 }
 
@@ -811,6 +846,7 @@ body {
   }
 
   .tool-card,
+  .tool-card::before,
   .tool-card-arrow,
   .category-menu-trigger,
   .pdf-upload-trigger {
