@@ -1,8 +1,7 @@
 {
   "name": "pdf",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "description": "Browser-based PDF tools built with React and Vite.",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
