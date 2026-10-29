@@ -1,5 +1,5 @@
-import React, { useState, useCallback, useRef } from 'react';
-import { useDropzone } from 'react-dropzone';
+import React, { useState, useCallback, useEffect, useRef } from 'react';
+import useAccessibleDropzone from '../lib/useAccessibleDropzone';
 import { PDFDocument } from 'pdf-lib';
 import { validateUnencryptedPdf } from '../lib/pdfValidation';
 import { motion, Reorder } from 'framer-motion';
@@ -24,7 +24,9 @@ const PdfMerger = () => {
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(false);
   const [outputBytes, setOutputBytes] = useState(null);
+  const [announcement, setAnnouncement] = useState('');
   const isValidatingRef = useRef(false);
+  const pendingFocusRef = useRef(null);
 
   const onDrop = useCallback(async (acceptedFiles, fileRejections) => {
     setError(null);
@@ -74,6 +76,7 @@ const PdfMerger = () => {
             size: (file.size / 1024 / 1024).toFixed(2) + ' MB'
           }))
         ]);
+        setAnnouncement(`${validatedFiles.length} PDF${validatedFiles.length === 1 ? '' : 's'} added. ${files.length + validatedFiles.length} of ${MAX_FILES} files selected.`);
       }
 
       if (validationErrors.length > 0) setError(validationErrors.join(' '));
@@ -84,7 +87,18 @@ const PdfMerger = () => {
     }
   }, [files.length]);
 
-  const { getRootProps, getInputProps, isDragActive } = useDropzone({
+  useEffect(() => {
+    const pendingFocus = pendingFocusRef.current;
+    if (!pendingFocus) return;
+    pendingFocusRef.current = null;
+    const target = pendingFocus === 'upload'
+      ? document.querySelector('[data-merge-upload]')
+      : [...document.querySelectorAll('[data-merge-file-remove]')]
+        .find((button) => button.dataset.mergeFileRemove === pendingFocus);
+    target?.focus();
+  }, [files]);
+
+  const { getRootProps, getInputProps, isDragActive } = useAccessibleDropzone({
     onDrop,
     accept: { 'application/pdf': ['.pdf'] },
     multiple: true,
@@ -92,7 +106,12 @@ const PdfMerger = () => {
   });
 
   const removeFile = (id) => {
+    const index = files.findIndex((file) => file.id === id);
+    const nextFile = files[index + 1] || files[index - 1];
+    pendingFocusRef.current = nextFile?.id || 'upload';
+    const removedFile = files[index];
     setFiles(files.filter(f => f.id !== id));
+    setAnnouncement(`${removedFile?.name || 'PDF'} removed.`);
     setError(null);
     setOutputBytes(null);
     setSuccess(false);
@@ -105,8 +124,14 @@ const PdfMerger = () => {
     
     [newFiles[index], newFiles[targetIndex]] = [newFiles[targetIndex], newFiles[index]];
     setFiles(newFiles);
+    setAnnouncement(`${newFiles[targetIndex].name} moved to position ${targetIndex + 1} of ${files.length}.`);
     setOutputBytes(null);
     setSuccess(false);
+  };
+
+  const reorderFiles = (nextFiles) => {
+    setFiles(nextFiles);
+    setAnnouncement(`File order updated. ${nextFiles.map((file) => file.name).join(', ')}.`);
   };
 
   const mergePdfs = async () => {
@@ -116,6 +141,7 @@ const PdfMerger = () => {
     }
 
     setIsMerging(true);
+    setAnnouncement('');
     setError(null);
     setSuccess(false);
     setOutputBytes(null);
@@ -156,19 +182,20 @@ const PdfMerger = () => {
     <div className="space-y-8">
       {/* Upload Zone */}
       <div 
-        {...getRootProps()} 
+        {...getRootProps({ 'aria-label': 'Choose PDF files to merge', 'data-merge-upload': '' })}
         className={`
           border-2 border-dashed rounded-2xl p-12 text-center cursor-pointer transition-all
           ${isDragActive ? 'border-blue-500 bg-blue-50' : 'border-slate-300 hover:border-blue-400 hover:bg-slate-50'}
           ${files.length >= MAX_FILES ? 'pointer-events-none opacity-50 cursor-not-allowed' : ''}
         `}
       >
-        <input {...getInputProps()} />
+        <input {...getInputProps({ 'aria-label': 'Choose PDF files to merge' })} />
         <div className="flex flex-col items-center">
           <div className="bg-blue-100 p-4 rounded-full mb-4">
             <Upload className="w-8 h-8 text-blue-600" />
           </div>
-          <h3 className="text-lg font-semibold text-slate-700">
+          <p className="sr-only" role="status" aria-live="polite" aria-atomic="true">{announcement}</p>
+          <h3 className="text-lg font-semibold text-slate-700" aria-live="polite" aria-atomic="true">
             {isValidating
               ? 'Checking selected PDFs...'
               : files.length >= MAX_FILES
@@ -184,6 +211,7 @@ const PdfMerger = () => {
         <motion.div 
           initial={{ opacity: 0, y: -10 }} 
           animate={{ opacity: 1, y: 0 }}
+          role="alert"
           className="flex items-center gap-3 p-4 bg-red-50 text-red-700 rounded-xl border border-red-200"
         >
           <AlertCircle className="w-5 h-5 flex-shrink-0" />
@@ -195,6 +223,7 @@ const PdfMerger = () => {
         <motion.div 
           initial={{ opacity: 0, y: -10 }} 
           animate={{ opacity: 1, y: 0 }}
+          role="status"
           className="flex items-center gap-3 p-4 bg-green-50 text-green-700 rounded-xl border border-green-200"
         >
           <CheckCircle2 className="w-5 h-5 flex-shrink-0" />
@@ -211,7 +240,7 @@ const PdfMerger = () => {
             </h4>
           </div>
           
-          <Reorder.Group axis="y" values={files} onReorder={setFiles} className="space-y-3">
+          <Reorder.Group axis="y" values={files} onReorder={reorderFiles} className="space-y-3">
             {files.map((fileObj, index) => (
               <Reorder.Item 
                 key={fileObj.id} 
@@ -231,27 +260,34 @@ const PdfMerger = () => {
                 <div className="flex items-center gap-1">
                   {/* Move controls for mobile/non-drag users */}
                   <div className="flex flex-col mr-2 border-r border-slate-100 pr-2">
-                    <button 
+                    <button
+                      type="button"
+                      aria-label={`Move ${fileObj.name} up`}
                       onClick={() => moveFile(index, -1)}
                       disabled={index === 0}
                       className="p-1 hover:bg-slate-100 rounded disabled:opacity-20"
                     >
-                      <ChevronUp className="w-4 h-4 text-slate-500" />
+                      <ChevronUp className="w-4 h-4 text-slate-500" aria-hidden="true" />
                     </button>
-                    <button 
+                    <button
+                      type="button"
+                      aria-label={`Move ${fileObj.name} down`}
                       onClick={() => moveFile(index, 1)}
                       disabled={index === files.length - 1}
                       className="p-1 hover:bg-slate-100 rounded disabled:opacity-20"
                     >
-                      <ChevronDown className="w-4 h-4 text-slate-500" />
+                      <ChevronDown className="w-4 h-4 text-slate-500" aria-hidden="true" />
                     </button>
                   </div>
 
-                  <button 
+                  <button
+                    type="button"
+                    aria-label={`Remove ${fileObj.name}`}
+                    data-merge-file-remove={fileObj.id}
                     onClick={() => removeFile(fileObj.id)}
                     className="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
                   >
-                    <Trash2 className="w-5 h-5" />
+                    <Trash2 className="w-5 h-5" aria-hidden="true" />
                   </button>
                 </div>
               </Reorder.Item>
@@ -260,6 +296,7 @@ const PdfMerger = () => {
 
           <div className="pt-4">
             <button
+              type="button"
               onClick={mergePdfs}
               disabled={isMerging || files.length < 2}
               className={`
@@ -281,8 +318,9 @@ const PdfMerger = () => {
                 </>
               )}
             </button>
+            {isMerging && <p className="sr-only" role="status">Merging the selected PDFs.</p>}
             {success && outputBytes && (
-              <div role="status" className="mt-4 flex flex-col gap-3 rounded-xl border border-green-200 bg-green-50 p-4 text-green-800 sm:flex-row sm:items-center sm:justify-between">
+              <div role="group" aria-label="Merged PDF download" className="mt-4 flex flex-col gap-3 rounded-xl border border-green-200 bg-green-50 p-4 text-green-800 sm:flex-row sm:items-center sm:justify-between">
                 <span className="flex items-center gap-2 text-sm font-medium"><CheckCircle2 className="h-5 w-5" aria-hidden="true" /> merged_document.pdf is ready ({(outputBytes.length / 1024).toFixed(1)} KB)</span>
                 <button type="button" onClick={downloadMergedPdf} className="inline-flex items-center justify-center gap-2 rounded-lg bg-green-600 px-4 py-2 font-semibold text-white transition hover:bg-green-700">
                   <Download className="h-4 w-4" aria-hidden="true" /> Download PDF

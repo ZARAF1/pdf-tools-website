@@ -1,5 +1,5 @@
 import React, { useState, useCallback } from 'react';
-import { useDropzone } from 'react-dropzone';
+import useAccessibleDropzone from '../lib/useAccessibleDropzone';
 import { validateUnencryptedPdf } from '../lib/pdfValidation';
 import pdfjsLib from '../lib/pdfjsClient';
 import { Document, Packer, Paragraph, Table, TableCell, TableRow, TextRun, WidthType } from 'docx';
@@ -93,7 +93,7 @@ const PdfToWord = () => {
     }
   }, []);
 
-  const { getRootProps, getInputProps, isDragActive } = useDropzone({
+  const { getRootProps, getInputProps, isDragActive } = useAccessibleDropzone({
     onDrop,
     accept: { 'application/pdf': ['.pdf'] },
     multiple: false
@@ -360,10 +360,12 @@ const PdfToWord = () => {
               </div>
             </div>
             <button
+              type="button"
+              aria-label={`Remove ${file.name}`}
               onClick={removeFile}
               className="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
             >
-              <Trash2 className="w-5 h-5" />
+              <Trash2 className="w-5 h-5" aria-hidden="true" />
             </button>
           </div>
 
@@ -371,10 +373,17 @@ const PdfToWord = () => {
             {isProcessing && (
               <div className="space-y-2">
                 <div className="flex justify-between text-sm text-slate-500">
-                  <span>{status || 'Converting PDF...'}</span>
+                  <span role="status" aria-atomic="true">{status || 'Converting PDF...'}</span>
                   <span>{progress}%</span>
                 </div>
-                <div className="w-full h-2 bg-slate-100 rounded-full overflow-hidden">
+                <div
+                  className="w-full h-2 bg-slate-100 rounded-full overflow-hidden"
+                  role="progressbar"
+                  aria-label="PDF to Word conversion progress"
+                  aria-valuemin={0}
+                  aria-valuemax={100}
+                  aria-valuenow={progress}
+                >
                   <div
                     className="h-full bg-blue-600 transition-all duration-200"
                     style={{ width: `${progress}%` }}
@@ -421,6 +430,7 @@ const PdfToWord = () => {
         <motion.div
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
+          role="alert"
           className="flex items-center gap-3 p-4 bg-red-50 text-red-700 rounded-xl border border-red-200"
         >
           <AlertCircle className="w-5 h-5 flex-shrink-0" />
@@ -432,6 +442,7 @@ const PdfToWord = () => {
         <motion.div
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
+          role="status"
           className="flex items-center gap-3 p-4 bg-green-50 text-green-700 rounded-xl border border-green-200"
         >
           <CheckCircle2 className="w-5 h-5 flex-shrink-0" />

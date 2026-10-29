@@ -4,6 +4,7 @@ import { Check } from 'lucide-react';
 
 const PdfPageGrid = ({ file, pageCount, selectedPages, onToggle, actionLabel }) => {
   const [previews, setPreviews] = useState([]);
+  const [pageSummaries, setPageSummaries] = useState([]);
   const [rendering, setRendering] = useState(false);
   const [previewError, setPreviewError] = useState('');
 
@@ -13,6 +14,7 @@ const PdfPageGrid = ({ file, pageCount, selectedPages, onToggle, actionLabel }) 
 
     const renderPages = async () => {
       setPreviews([]);
+      setPageSummaries([]);
       setPreviewError('');
       setRendering(true);
       try {
@@ -33,12 +35,28 @@ const PdfPageGrid = ({ file, pageCount, selectedPages, onToggle, actionLabel }) 
           if (!context) throw new Error('Your browser could not render a page preview.');
 
           await page.render({ canvasContext: context, viewport, intent: 'print' }).promise;
-          results.push(canvas.toDataURL('image/jpeg', 0.72));
+          let summary = '';
+          try {
+            const textContent = await page.getTextContent();
+            summary = textContent.items
+              .map((item) => ('str' in item ? item.str : ''))
+              .filter(Boolean)
+              .join(' ')
+              .replace(/\s+/g, ' ')
+              .trim()
+              .slice(0, 320);
+          } catch {
+            summary = 'Page text could not be extracted; the preview is visual-only.';
+          }
+          results.push({ preview: canvas.toDataURL('image/jpeg', 0.72), summary });
           canvas.width = 0;
           canvas.height = 0;
         }
 
-        if (active) setPreviews(results);
+        if (active) {
+          setPreviews(results.map((result) => result.preview));
+          setPageSummaries(results.map((result) => result.summary));
+        }
         await document.destroy();
       } catch (renderError) {
         console.error('Unable to render PDF page previews:', renderError);
@@ -72,6 +90,7 @@ const PdfPageGrid = ({ file, pageCount, selectedPages, onToggle, actionLabel }) 
               onClick={() => onToggle(pageNumber)}
               aria-pressed={selected}
               aria-label={`${selected ? 'Deselect' : 'Select'} page ${pageNumber} ${actionLabel}`}
+              aria-describedby={`pdf-page-${pageNumber}-description`}
               className={`group relative min-w-0 overflow-hidden rounded-xl border-2 p-2 text-left transition-all duration-200 hover:-translate-y-1 hover:border-blue-300 hover:shadow-lg focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 motion-reduce:transform-none ${
                 selected
                   ? 'border-blue-600 bg-blue-50 shadow-sm'
@@ -89,6 +108,9 @@ const PdfPageGrid = ({ file, pageCount, selectedPages, onToggle, actionLabel }) 
                   : <span className="text-sm text-slate-400">{rendering ? 'Loading…' : 'Preview unavailable'}</span>}
               </span>
               <span className="mt-2 block text-center text-xs font-semibold text-slate-600">Page {pageNumber}</span>
+              <span id={`pdf-page-${pageNumber}-description`} className="sr-only">
+                {pageSummaries[index] || 'No selectable text was found on this page; its preview is visual-only.'}
+              </span>
             </button>
           );
         })}

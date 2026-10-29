@@ -1,5 +1,5 @@
 import React, { useState, useCallback } from 'react';
-import { useDropzone } from 'react-dropzone';
+import useAccessibleDropzone from '../lib/useAccessibleDropzone';
 import { PDFDocument, degrees } from 'pdf-lib';
 import { validateUnencryptedPdf } from '../lib/pdfValidation';
 import { motion } from 'framer-motion';
@@ -48,7 +48,7 @@ const PdfRotator = () => {
     }
   }, []);
 
-  const { getRootProps, getInputProps, isDragActive } = useDropzone({
+  const { getRootProps, getInputProps, isDragActive } = useAccessibleDropzone({
     onDrop,
     accept: { 'application/pdf': ['.pdf'] },
     multiple: false
@@ -179,11 +179,13 @@ const PdfRotator = () => {
                 <p className="text-xs text-slate-400">{(file.size / 1024 / 1024).toFixed(2)} MB</p>
               </div>
             </div>
-            <button 
+            <button
+              type="button"
+              aria-label={`Remove ${file.name}`}
               onClick={removeFile}
               className="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
             >
-              <Trash2 className="w-5 h-5" />
+              <Trash2 className="w-5 h-5" aria-hidden="true" />
             </button>
           </div>
 
@@ -195,13 +197,15 @@ const PdfRotator = () => {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {/* Rotation Angle Selection */}
-              <div className="space-y-3">
-                <label className="text-sm font-semibold text-slate-700">Rotation Angle</label>
+              <fieldset className="space-y-3">
+                <legend className="text-sm font-semibold text-slate-700">Rotation Angle</legend>
                 <div className="flex flex-wrap gap-2">
                   {[90, 180, 270].map((angle) => (
                     <button
+                      type="button"
                       key={angle}
                       onClick={() => setRotationAngle(angle)}
+                      aria-pressed={rotationAngle === angle}
                       className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
                         rotationAngle === angle 
                         ? 'bg-amber-500 text-white shadow-md' 
@@ -212,7 +216,9 @@ const PdfRotator = () => {
                     </button>
                   ))}
                   <button
+                    type="button"
                     onClick={() => setRotationAngle(0)}
+                    aria-pressed={rotationAngle === 0}
                     className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
                       rotationAngle === 0 
                       ? 'bg-slate-800 text-white shadow-md' 
@@ -222,14 +228,16 @@ const PdfRotator = () => {
                     Reset
                   </button>
                 </div>
-              </div>
+              </fieldset>
 
               {/* Mode Selection */}
-              <div className="space-y-3">
-                <label className="text-sm font-semibold text-slate-700">Apply To</label>
+              <fieldset className="space-y-3">
+                <legend className="text-sm font-semibold text-slate-700">Apply To</legend>
                 <div className="flex gap-2">
                   <button
+                    type="button"
                     onClick={() => setMode('all')}
+                    aria-pressed={mode === 'all'}
                     className={`flex-1 py-2 rounded-lg text-sm font-medium transition-all ${
                       mode === 'all' ? 'bg-amber-50 text-amber-700 border border-amber-200' : 'bg-slate-50 text-slate-500'
                     }`}
@@ -237,15 +245,17 @@ const PdfRotator = () => {
                     All Pages
                   </button>
                   <button
+                    type="button"
                     onClick={() => setMode('selected')}
+                    aria-pressed={mode === 'selected'}
                     className={`flex-1 py-2 rounded-lg text-sm font-medium transition-all ${
                       mode === 'selected' ? 'bg-amber-50 text-amber-700 border border-amber-200' : 'bg-slate-50 text-slate-500'
                     }`}
                   >
                     Selected Pages
                   </button>
-                </div>
-              </div>
+                  </div>
+                </fieldset>
             </div>
 
             {mode === 'selected' && (
@@ -254,19 +264,22 @@ const PdfRotator = () => {
                 animate={{ opacity: 1, height: 'auto' }}
                 className="space-y-2"
               >
-                <label className="text-sm font-semibold text-slate-700">Page Numbers / Ranges</label>
+                <label htmlFor="rotate-page-ranges" className="text-sm font-semibold text-slate-700">Page Numbers / Ranges</label>
                 <input
+                  id="rotate-page-ranges"
                   type="text"
                   placeholder="e.g. 1-3, 5"
+                  aria-describedby="rotate-page-ranges-help"
                   className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-amber-500 focus:border-transparent outline-none transition-all"
                   value={rangeInput}
                   onChange={(e) => setRangeInput(e.target.value)}
                 />
-                <p className="text-xs text-slate-500">Separate with commas. Example: 1-3, 5</p>
+                <p id="rotate-page-ranges-help" className="text-xs text-slate-500">Separate with commas. Example: 1-3, 5</p>
               </motion.div>
             )}
 
             <button
+              type="button"
               onClick={handleRotate}
               disabled={isProcessing || rotationAngle === 0}
               className={`
@@ -286,6 +299,7 @@ const PdfRotator = () => {
                 </>
               )}
             </button>
+            {isProcessing && <p className="sr-only" role="status">Rotating your PDF.</p>}
           </div>
         </div>
       )}
@@ -294,6 +308,7 @@ const PdfRotator = () => {
         <motion.div 
           initial={{ opacity: 0, y: -10 }} 
           animate={{ opacity: 1, y: 0 }}
+          role="alert"
           className="flex items-center gap-3 p-4 bg-red-50 text-red-700 rounded-xl border border-red-200"
         >
           <AlertCircle className="w-5 h-5 flex-shrink-0" />
@@ -305,6 +320,7 @@ const PdfRotator = () => {
         <motion.div 
           initial={{ opacity: 0, y: -10 }} 
           animate={{ opacity: 1, y: 0 }}
+          role="status"
           className="flex items-center gap-3 p-4 bg-green-50 text-green-700 rounded-xl border border-green-200"
         >
           <CheckCircle2 className="w-5 h-5 flex-shrink-0" />

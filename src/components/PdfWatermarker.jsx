@@ -1,5 +1,5 @@
 import React, { useCallback, useRef, useState } from 'react';
-import { useDropzone } from 'react-dropzone';
+import useAccessibleDropzone from '../lib/useAccessibleDropzone';
 import { PDFDocument, StandardFonts, degrees, rgb } from 'pdf-lib';
 import { validateUnencryptedPdf } from '../lib/pdfValidation';
 import { motion } from 'framer-motion';
@@ -178,7 +178,7 @@ const PdfWatermarker = () => {
     }
   }, []);
 
-  const { getRootProps, getInputProps, isDragActive, open } = useDropzone({
+  const { getRootProps, getInputProps, isDragActive, open } = useAccessibleDropzone({
     onDrop,
     accept: { 'application/pdf': ['.pdf'] },
     multiple: false,
@@ -708,6 +708,7 @@ const PdfWatermarker = () => {
         <motion.div
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
+          role="status"
           className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 bg-green-50 text-green-700 rounded-xl border border-green-200"
         >
           <div className="flex items-center gap-3">

@@ -1,7 +1,7 @@
 import React, { useCallback, useRef, useState } from 'react';
 import { PDFDocument, StandardFonts } from 'pdf-lib';
 import { validateUnencryptedPdf } from '../lib/pdfValidation';
-import { useDropzone } from 'react-dropzone';
+import useAccessibleDropzone from '../lib/useAccessibleDropzone';
 import { CheckCircle2, Download, FileText, Loader2, PenLine, Trash2, Upload } from 'lucide-react';
 
 const parsePages = (input, pageCount) => {
@@ -84,12 +84,13 @@ const SignPdf = () => {
     }
   }, []);
 
-  const { getRootProps, getInputProps, isDragActive, open } = useDropzone({
+  const { getRootProps, getInputProps, isDragActive, open } = useAccessibleDropzone({
     onDrop,
     accept: { 'application/pdf': ['.pdf'] },
     multiple: false,
     disabled: isLoading || isProcessing,
-    noClick: Boolean(file)
+    noClick: Boolean(file),
+    noKeyboard: Boolean(file)
   });
 
   const reset = () => {
@@ -275,7 +276,10 @@ const SignPdf = () => {
         <p className="text-sm text-slate-600">Choose a typed, drawn, or image signature. This creates a visible mark, not a certificate-backed digital signature.</p>
       </div>
 
-      <div {...getRootProps()} className={`pdf-upload-zone rounded-2xl border-2 border-dashed p-8 text-center transition-all ${isDragActive ? 'border-blue-500 bg-blue-50' : 'cursor-pointer border-slate-300 bg-white hover:border-blue-400 hover:bg-blue-50/50'}`}>
+      <div {...getRootProps({
+        role: file ? 'group' : undefined,
+        'aria-label': file ? `Selected PDF ${file.name}` : 'Choose a PDF to sign'
+      })} className={`pdf-upload-zone rounded-2xl border-2 border-dashed p-8 text-center transition-all ${isDragActive ? 'border-blue-500 bg-blue-50' : 'cursor-pointer border-slate-300 bg-white hover:border-blue-400 hover:bg-blue-50/50'}`}>
         <input {...getInputProps()} />
         {file ? (
           <div className="flex flex-wrap items-center justify-between gap-4 text-left">
@@ -329,19 +333,24 @@ const SignPdf = () => {
 
           {signatureMode === 'draw' && (
             <div className="space-y-2">
-              <label htmlFor="signature-canvas" className="block text-sm font-medium text-slate-700">Draw your signature below</label>
+              <p className="block text-sm font-medium text-slate-700">Draw your signature below</p>
               <canvas
                 ref={canvasRef}
                 id="signature-canvas"
                 width="640"
                 height="160"
+                role="img"
                 aria-label="Signature drawing area"
+                aria-describedby="signature-drawing-help"
                 onPointerDown={(event) => drawAt(event, true)}
                 onPointerMove={(event) => drawAt(event, false)}
                 onPointerUp={() => { drawing.current = false; }}
                 onPointerCancel={() => { drawing.current = false; }}
                 className="h-32 w-full touch-none rounded-lg border border-slate-300 bg-white"
               />
+              <p id="signature-drawing-help" className="text-xs text-slate-500">
+                Drawing uses a pointer or touch input. Choose Type signature to enter your name with the keyboard.
+              </p>
               <button type="button" onClick={clearDrawing} className="inline-flex items-center gap-2 rounded-lg border border-slate-200 px-3 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"><Trash2 className="h-4 w-4" aria-hidden="true" /> Clear drawing</button>
             </div>
           )}

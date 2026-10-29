@@ -1,7 +1,7 @@
 import React, { useState, useCallback } from 'react';
 import { validateUnencryptedPdf } from '../lib/pdfValidation';
 import { encryptPDF } from '@pdfsmaller/pdf-encrypt';
-import { useDropzone } from 'react-dropzone';
+import useAccessibleDropzone from '../lib/useAccessibleDropzone';
 import { motion } from 'framer-motion';
 import {
   Upload,
@@ -45,7 +45,7 @@ const PdfProtector = () => {
     }
   }, []);
 
-  const { getRootProps, getInputProps, isDragActive } = useDropzone({
+  const { getRootProps, getInputProps, isDragActive } = useAccessibleDropzone({
     onDrop,
     accept: { 'application/pdf': ['.pdf'] },
     multiple: false,
@@ -164,10 +164,12 @@ const PdfProtector = () => {
               </div>
             </div>
             <button
+              type="button"
+              aria-label={`Remove ${file.name}`}
               onClick={removeFile}
               className="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
             >
-              <Trash2 className="w-5 h-5" />
+              <Trash2 className="w-5 h-5" aria-hidden="true" />
             </button>
           </div>
 
@@ -177,40 +179,51 @@ const PdfProtector = () => {
             </div>
 
             <div className="space-y-2">
-              <label className="text-sm font-semibold text-slate-700">Password</label>
+              <label htmlFor="protect-password" className="text-sm font-semibold text-slate-700">Password</label>
               <input
+                id="protect-password"
                 type="password"
                 value={password}
+                required
+                minLength={4}
+                aria-describedby="protect-password-help"
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="Set a password"
                 className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-red-500 focus:border-transparent outline-none transition-all"
               />
-              <p className="text-xs text-slate-500">
+              <p id="protect-password-help" className="text-xs text-slate-500">
                 Required to open the PDF. You will need this to view or unlock the file.
               </p>
             </div>
 
             <div className="space-y-2">
-              <label className="text-sm font-semibold text-slate-700">Confirm password</label>
+              <label htmlFor="protect-confirm-password" className="text-sm font-semibold text-slate-700">Confirm password</label>
               <input
+                id="protect-confirm-password"
                 type="password"
                 value={confirmPassword}
+                required
+                minLength={4}
+                aria-describedby="protect-confirm-password-help"
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 placeholder="Re-enter the password"
                 className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-red-500 focus:border-transparent outline-none transition-all"
               />
+              <p id="protect-confirm-password-help" className="text-xs text-slate-500">Enter the same password again.</p>
             </div>
 
             <div className="space-y-2">
-              <label className="text-sm font-semibold text-slate-700">Owner password <span className="text-slate-400">(optional)</span></label>
+              <label htmlFor="protect-owner-password" className="text-sm font-semibold text-slate-700">Owner password <span className="text-slate-400">(optional)</span></label>
               <input
+                id="protect-owner-password"
                 type="password"
                 value={ownerPassword}
+                aria-describedby="protect-owner-password-help"
                 onChange={(e) => setOwnerPassword(e.target.value)}
                 placeholder="Leave empty to use the same password"
                 className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-red-500 focus:border-transparent outline-none transition-all"
               />
-              <p className="text-xs text-slate-500">
+              <p id="protect-owner-password-help" className="text-xs text-slate-500">
                 Manages permissions. Leaving it empty uses the same password for both.
               </p>
             </div>
@@ -220,6 +233,7 @@ const PdfProtector = () => {
             </div>
 
             <button
+              type="button"
               onClick={protectPdf}
               disabled={isProcessing}
               className={`
@@ -239,6 +253,7 @@ const PdfProtector = () => {
                 </>
               )}
             </button>
+            {isProcessing && <p className="sr-only" role="status">Encrypting your PDF.</p>}
           </div>
         </div>
       )}
@@ -247,6 +262,7 @@ const PdfProtector = () => {
         <motion.div
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
+          role="alert"
           className="flex items-center gap-3 p-4 bg-red-50 text-red-700 rounded-xl border border-red-200"
         >
           <AlertCircle className="w-5 h-5 flex-shrink-0" />
@@ -258,6 +274,7 @@ const PdfProtector = () => {
         <motion.div
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
+          role="status"
           className="flex items-center gap-3 p-4 bg-green-50 text-green-700 rounded-xl border border-green-200"
         >
           <CheckCircle2 className="w-5 h-5 flex-shrink-0" />

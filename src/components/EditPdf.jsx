@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { PDFDocument, StandardFonts, rgb } from 'pdf-lib';
-import { useDropzone } from 'react-dropzone';
+import useAccessibleDropzone from '../lib/useAccessibleDropzone';
 import {
   ArrowDown,
   ArrowUp,
@@ -237,6 +237,7 @@ const EditPdf = () => {
   const [zoom, setZoom] = useState(1);
   const [canvasAreaWidth, setCanvasAreaWidth] = useState(720);
   const [renderInfo, setRenderInfo] = useState(null);
+  const [pageTextSummary, setPageTextSummary] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [isRendering, setIsRendering] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
@@ -393,12 +394,13 @@ const EditPdf = () => {
     }
   }, [clearImageUrls]);
 
-  const { getRootProps, getInputProps, isDragActive, open } = useDropzone({
+  const { getRootProps, getInputProps, isDragActive, open } = useAccessibleDropzone({
     onDrop,
     accept: { 'application/pdf': ['.pdf'] },
     multiple: false,
     disabled: isLoading || isSaving,
-    noClick: Boolean(file)
+    noClick: true,
+    noKeyboard: true
   });
 
   useEffect(() => {
@@ -407,6 +409,7 @@ const EditPdf = () => {
     let task;
     setIsRendering(true);
     setRenderInfo(null);
+    setPageTextSummary('');
 
     const renderPage = async () => {
       try {
@@ -437,6 +440,19 @@ const EditPdf = () => {
         task = page.render({ canvasContext: context, viewport, intent: 'display' });
         renderTaskRef.current = task;
         await task.promise;
+        try {
+          const textContent = await page.getTextContent();
+          const summary = textContent.items
+            .map((item) => ('str' in item ? item.str : ''))
+            .filter(Boolean)
+            .join(' ')
+            .replace(/\s+/g, ' ')
+            .trim()
+            .slice(0, 320);
+          if (active) setPageTextSummary(summary || 'No selectable text was found on this page; the preview is visual-only.');
+        } catch {
+          if (active) setPageTextSummary('Page text could not be extracted; the preview is visual-only.');
+        }
       } catch (renderError) {
         if (active && renderError?.name !== 'RenderingCancelledException') {
           console.error('Unable to render PDF editor page:', renderError);
@@ -1012,7 +1028,10 @@ const EditPdf = () => {
       />
 
       <div
-        {...getRootProps()}
+        {...getRootProps({
+          role: 'group',
+          'aria-label': file ? `Selected PDF ${file.name}` : 'PDF upload area'
+        })}
         className={`pdf-editor-upload-zone ${isDragActive ? 'is-dragging' : ''} ${file ? 'has-file' : ''}`}
       >
         {file ? (
@@ -1253,7 +1272,15 @@ const EditPdf = () => {
               <div className="pdf-editor-preview">
                 {isRendering && <p className="pdf-editor-rendering" role="status"><Loader2 className="h-5 w-5 animate-spin" aria-hidden="true" /> Rendering page…</p>}
                 <div className="pdf-editor-page-stage" style={renderInfo ? { width: renderInfo.width, height: renderInfo.height } : undefined}>
-                  <canvas ref={canvasRef} aria-label={`Preview of page ${currentPageId + 1}`} />
+                  <canvas
+                    ref={canvasRef}
+                    role="img"
+                    aria-label={`Preview of page ${currentPageId + 1}`}
+                    aria-describedby="edit-pdf-page-description"
+                  />
+                  <p id="edit-pdf-page-description" className="sr-only">
+                    {pageTextSummary || 'This is a visual preview of the PDF page; extracted text is not available yet.'}
+                  </p>
                   {renderInfo && (
                     <svg
                       ref={svgRef}
@@ -1261,7 +1288,7 @@ const EditPdf = () => {
                       viewBox={`0 0 ${renderInfo.width} ${renderInfo.height}`}
                       width={renderInfo.width}
                       height={renderInfo.height}
-                      role="application"
+                      role="group"
                       tabIndex={0}
                       aria-label={`Page ${currentPageId + 1} editor. Use arrow keys to position new text or images, then Enter. Select a mark and use arrow keys to move it.`}
                       aria-keyshortcuts="ArrowUp ArrowDown ArrowLeft ArrowRight Enter"

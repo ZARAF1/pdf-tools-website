@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, Link, NavLink, useLocation, useParams } from 'react-router-dom';
 import { Moon, Sun } from 'lucide-react';
 import Home from './components/Home';
@@ -48,7 +48,7 @@ const CategoryNavigation = () => {
           <Link
             key={category.id}
             to={category.path}
-            aria-current={isActive ? 'page' : undefined}
+            aria-current={category.path === pathname ? 'page' : isActive ? 'location' : undefined}
             className="category-tab-link"
           >
             {CategoryIcon && <CategoryIcon className="h-5 w-5" aria-hidden="true" />}
@@ -58,6 +58,23 @@ const CategoryNavigation = () => {
       })}
     </nav>
   );
+};
+
+const RouteFocusManager = () => {
+  const { pathname } = useLocation();
+  const previousPath = useRef(pathname);
+
+  useEffect(() => {
+    if (previousPath.current === pathname) return;
+    previousPath.current = pathname;
+
+    const heading = document.querySelector('#main-content h1');
+    if (!heading) return;
+    heading.tabIndex = -1;
+    heading.focus();
+  }, [pathname]);
+
+  return null;
 };
 
 function App() {
@@ -73,6 +90,8 @@ function App() {
   return (
     <Router>
       <div className="min-h-screen flex flex-col">
+        <RouteFocusManager />
+        <a className="skip-to-content" href="#main-content">Skip to main content</a>
         <header className="site-surface border-b border-slate-200 py-5">
           <div className="container mx-auto space-y-5 px-4">
             <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
@@ -112,7 +131,7 @@ function App() {
           </div>
         </header>
 
-        <main className="flex-grow container mx-auto px-4 py-12">
+        <main id="main-content" tabIndex={-1} className="flex-grow container mx-auto px-4 py-12">
           <Routes>
             <Route path="/" element={<Home />} />
             {TOOL_CATEGORIES.map((category) => (

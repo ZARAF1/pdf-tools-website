@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { degrees, PDFDocument } from 'pdf-lib';
 import { validateUnencryptedPdf } from '../lib/pdfValidation';
-import { useDropzone } from 'react-dropzone';
+import useAccessibleDropzone from '../lib/useAccessibleDropzone';
 import { ArrowDown, ArrowUp, CheckCircle2, Download, FileText, Loader2, RotateCw, Trash2, Upload } from 'lucide-react';
 import pdfjsLib from '../lib/pdfjsClient';
 
@@ -15,6 +15,7 @@ const OrganizePdf = () => {
   const [file, setFile] = useState(null);
   const [pages, setPages] = useState([]);
   const [previews, setPreviews] = useState([]);
+  const [previewSummaries, setPreviewSummaries] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const [output, setOutput] = useState(null);
@@ -41,6 +42,7 @@ const OrganizePdf = () => {
     setFile(null);
     setPages([]);
     setPreviews([]);
+    setPreviewSummaries([]);
 
     try {
       const source = await validateUnencryptedPdf(selectedFile);
@@ -61,12 +63,13 @@ const OrganizePdf = () => {
     }
   }, []);
 
-  const { getRootProps, getInputProps, isDragActive, open } = useDropzone({
+  const { getRootProps, getInputProps, isDragActive, open } = useAccessibleDropzone({
     onDrop,
     accept: { 'application/pdf': ['.pdf'] },
     multiple: false,
     disabled: isLoading || isProcessing,
-    noClick: Boolean(file)
+    noClick: Boolean(file),
+    noKeyboard: Boolean(file)
   });
 
   useEffect(() => {
@@ -93,11 +96,27 @@ const OrganizePdf = () => {
           const context = canvas.getContext('2d');
           if (!context) throw new Error('Your browser could not render a page preview.');
           await page.render({ canvasContext: context, viewport, intent: 'print' }).promise;
-          rendered.push(canvas.toDataURL('image/jpeg', 0.75));
+          let summary = '';
+          try {
+            const textContent = await page.getTextContent();
+            summary = textContent.items
+              .map((item) => ('str' in item ? item.str : ''))
+              .filter(Boolean)
+              .join(' ')
+              .replace(/\s+/g, ' ')
+              .trim()
+              .slice(0, 320);
+          } catch {
+            summary = 'Page text could not be extracted; the preview is visual-only.';
+          }
+          rendered.push({ preview: canvas.toDataURL('image/jpeg', 0.75), summary });
           canvas.width = 0;
           canvas.height = 0;
         }
-        if (active) setPreviews(rendered);
+        if (active) {
+          setPreviews(rendered.map((result) => result.preview));
+          setPreviewSummaries(rendered.map((result) => result.summary));
+        }
         await document.destroy();
       } catch (renderError) {
         console.error('Unable to render PDF organization previews:', renderError);
@@ -117,6 +136,7 @@ const OrganizePdf = () => {
     setFile(null);
     setPages([]);
     setPreviews([]);
+    setPreviewSummaries([]);
     setError('');
     setPreviewError('');
     setIsLoading(false);
@@ -206,7 +226,10 @@ const OrganizePdf = () => {
       </div>
 
       <div
-        {...getRootProps()}
+        {...getRootProps({
+          role: file ? 'group' : undefined,
+          'aria-label': file ? `Selected PDF ${file.name}` : 'Choose a PDF to organize'
+        })}
         className={`pdf-upload-zone rounded-2xl border-2 border-dashed p-8 text-center transition-all ${
           isDragActive ? 'border-blue-500 bg-blue-50' : 'cursor-pointer border-slate-300 bg-white hover:border-blue-400 hover:bg-blue-50/50'
         }`}
@@ -228,7 +251,7 @@ const OrganizePdf = () => {
         ) : (
           <div className="flex flex-col items-center gap-3">
             {isLoading ? <Loader2 className="h-9 w-9 animate-spin text-blue-600" aria-hidden="true" /> : <Upload className="h-9 w-9 text-blue-600" aria-hidden="true" />}
-            <p className="font-semibold text-slate-800">{isLoading ? 'Reading PDF…' : 'Drop a PDF here or click to choose'}</p>
+            <p className="font-semibold text-slate-800" aria-live="polite">{isLoading ? 'Reading PDF…' : 'Drop a PDF here or click to choose'}</p>
             <p className="text-sm text-slate-500">One PDF, up to {MAX_PAGES} pages</p>
           </div>
         )}
@@ -239,7 +262,7 @@ const OrganizePdf = () => {
 
       {pages.length > 0 && (
         <div className="space-y-4">
-          <p className="text-sm text-slate-500">Drag page cards to reorder, or use the controls on each page. At least one page must remain.</p>
+          <p className="text-sm text-slate-500">Drag page cards to reorder, or use the controls on each page. At least one page must remain. Screen readers can hear extracted page text where available.</p>
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
             {pages.map((page, index) => (
               <article
@@ -257,9 +280,12 @@ const OrganizePdf = () => {
               >
                 <div className="mb-2 flex aspect-[3/4] items-center justify-center overflow-hidden rounded-lg bg-slate-100">
                   {previews[page.sourceIndex]
-                    ? <img src={previews[page.sourceIndex]} alt={`Preview of original page ${page.sourceIndex + 1}`} className="h-full w-full object-contain" />
+                    ? <img src={previews[page.sourceIndex]} alt={`Preview of original page ${page.sourceIndex + 1}`} aria-describedby={`organize-page-${page.sourceIndex + 1}-description`} className="h-full w-full object-contain" />
                     : <span className="text-xs text-slate-400">Page {page.sourceIndex + 1}</span>}
                 </div>
+                <p id={`organize-page-${page.sourceIndex + 1}-description`} className="sr-only">
+                  {previewSummaries[page.sourceIndex] || 'No selectable text was found on this page; its preview is visual-only.'}
+                </p>
                 <p className="mb-2 text-center text-sm font-semibold text-slate-700">
                   Position {index + 1} · Source page {page.sourceIndex + 1}{page.rotation ? ` · +${page.rotation}°` : ''}
                 </p>

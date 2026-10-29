@@ -1,5 +1,5 @@
 import React, { useState, useCallback } from 'react';
-import { useDropzone } from 'react-dropzone';
+import useAccessibleDropzone from '../lib/useAccessibleDropzone';
 import { PDFDocument } from 'pdf-lib';
 import { validateUnencryptedPdf } from '../lib/pdfValidation';
 import { motion } from 'framer-motion';
@@ -46,7 +46,7 @@ const PdfSplitter = () => {
     }
   }, []);
 
-  const { getRootProps, getInputProps, isDragActive } = useDropzone({
+  const { getRootProps, getInputProps, isDragActive } = useAccessibleDropzone({
     onDrop,
     accept: { 'application/pdf': ['.pdf'] },
     multiple: false
@@ -181,17 +181,21 @@ const PdfSplitter = () => {
                 <p className="text-xs text-slate-400">{(file.size / 1024 / 1024).toFixed(2)} MB</p>
               </div>
             </div>
-            <button 
+            <button
+              type="button"
+              aria-label={`Remove ${file.name}`}
               onClick={removeFile}
               className="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
             >
-              <Trash2 className="w-5 h-5" />
+              <Trash2 className="w-5 h-5" aria-hidden="true" />
             </button>
           </div>
 
           <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-6">
-            <div className="flex gap-4 border-b border-slate-100 pb-4">
+            <div className="flex gap-4 border-b border-slate-100 pb-4" role="group" aria-label="Split action">
               <button
+                type="button"
+                aria-pressed={mode === 'extract'}
                 onClick={() => setMode('extract')}
                 className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${mode === 'extract' ? 'bg-blue-50 text-blue-700' : 'text-slate-500 hover:bg-slate-50'}`}
               >
@@ -199,6 +203,8 @@ const PdfSplitter = () => {
                 Extract Pages
               </button>
               <button
+                type="button"
+                aria-pressed={mode === 'split-all'}
                 onClick={() => setMode('split-all')}
                 className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${mode === 'split-all' ? 'bg-blue-50 text-blue-700' : 'text-slate-500 hover:bg-slate-50'}`}
               >
@@ -209,15 +215,17 @@ const PdfSplitter = () => {
 
             {mode === 'extract' && (
               <div className="space-y-2">
-                <label className="text-sm font-semibold text-slate-700">Enter Page Ranges</label>
+                <label htmlFor="split-page-ranges" className="text-sm font-semibold text-slate-700">Enter Page Ranges</label>
                 <input
+                  id="split-page-ranges"
                   type="text"
                   placeholder="e.g. 1-3, 5"
+                  aria-describedby="split-page-ranges-help"
                   className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
                   value={rangeInput}
                   onChange={(e) => setRangeInput(e.target.value)}
                 />
-                <p className="text-xs text-slate-500">Use commas to separate ranges. Example: 1-3, 5</p>
+                <p id="split-page-ranges-help" className="text-xs text-slate-500">Use commas to separate ranges. Example: 1-3, 5</p>
               </div>
             )}
 
@@ -228,6 +236,7 @@ const PdfSplitter = () => {
             )}
 
             <button
+              type="button"
               onClick={handleSplit}
               disabled={isProcessing}
               className={`
@@ -247,6 +256,7 @@ const PdfSplitter = () => {
                 </>
               )}
             </button>
+            {isProcessing && <p className="sr-only" role="status">Preparing your PDF files.</p>}
           </div>
         </div>
       )}
@@ -255,6 +265,7 @@ const PdfSplitter = () => {
         <motion.div 
           initial={{ opacity: 0, y: -10 }} 
           animate={{ opacity: 1, y: 0 }}
+          role="alert"
           className="flex items-center gap-3 p-4 bg-red-50 text-red-700 rounded-xl border border-red-200"
         >
           <AlertCircle className="w-5 h-5 flex-shrink-0" />
@@ -266,6 +277,7 @@ const PdfSplitter = () => {
         <motion.div 
           initial={{ opacity: 0, y: -10 }} 
           animate={{ opacity: 1, y: 0 }}
+          role="status"
           className="flex items-center gap-3 p-4 bg-green-50 text-green-700 rounded-xl border border-green-200"
         >
           <CheckCircle2 className="w-5 h-5 flex-shrink-0" />

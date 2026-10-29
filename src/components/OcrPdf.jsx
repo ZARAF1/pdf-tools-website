@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { useDropzone } from 'react-dropzone';
+import useAccessibleDropzone from '../lib/useAccessibleDropzone';
 import { PDFDocument, StandardFonts } from 'pdf-lib';
 import { createWorker } from 'tesseract.js';
 import {
@@ -252,7 +252,7 @@ const OcrPdf = () => {
     }
   }, [clearPreview]);
 
-  const { getRootProps, getInputProps, isDragActive, open } = useDropzone({
+  const { getRootProps, getInputProps, isDragActive, open } = useAccessibleDropzone({
     onDrop,
     accept: { 'application/pdf': ['.pdf'] },
     multiple: false,
@@ -590,6 +590,7 @@ const OcrPdf = () => {
 
       <section
         {...getRootProps({
+          role: 'group',
           className: `pdf-upload-trigger rounded-2xl border-2 border-dashed p-6 text-center ${
             isDragActive ? 'border-blue-500 bg-blue-50' : 'border-slate-300'
           } ${isValidating || isProcessing ? 'cursor-wait opacity-70' : ''}`

@@ -2,7 +2,7 @@ import React, { useCallback, useState } from 'react';
 import { decryptPDF, isEncrypted } from '@pdfsmaller/pdf-decrypt';
 import { PDFDocument } from 'pdf-lib';
 import pdfjsLib from '../lib/pdfjsClient';
-import { useDropzone } from 'react-dropzone';
+import useAccessibleDropzone from '../lib/useAccessibleDropzone';
 import {
   AlertCircle,
   CheckCircle2,
@@ -79,7 +79,7 @@ const UnlockPdf = () => {
     }
   }, []);
 
-  const { getRootProps, getInputProps, isDragActive } = useDropzone({
+  const { getRootProps, getInputProps, isDragActive } = useAccessibleDropzone({
     onDrop,
     accept: { 'application/pdf': ['.pdf'] },
     multiple: false,

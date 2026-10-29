@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { PDFDocument } from 'pdf-lib';
 import { validateUnencryptedPdf } from '../lib/pdfValidation';
-import { useDropzone } from 'react-dropzone';
+import useAccessibleDropzone from '../lib/useAccessibleDropzone';
 import { ArrowLeft, ArrowRight, CheckCircle2, Download, FileText, Loader2, RotateCcw, Trash2, Upload } from 'lucide-react';
 import pdfjsLib from '../lib/pdfjsClient';
 
@@ -21,7 +21,9 @@ const RedactPdf = () => {
   const [pageCount, setPageCount] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
   const [previews, setPreviews] = useState([]);
+  const [pageSummaries, setPageSummaries] = useState([]);
   const [marksByPage, setMarksByPage] = useState({});
+  const [coordinateBox, setCoordinateBox] = useState({ x: '10', y: '10', width: '30', height: '15' });
   const [draft, setDraft] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
@@ -49,6 +51,7 @@ const RedactPdf = () => {
     setPageCount(0);
     setCurrentPage(1);
     setPreviews([]);
+    setPageSummaries([]);
     setMarksByPage({});
     setIsLoading(true);
 
@@ -69,12 +72,13 @@ const RedactPdf = () => {
     }
   }, []);
 
-  const { getRootProps, getInputProps, isDragActive, open } = useDropzone({
+  const { getRootProps, getInputProps, isDragActive, open } = useAccessibleDropzone({
     onDrop,
     accept: { 'application/pdf': ['.pdf'] },
     multiple: false,
     disabled: isLoading || isProcessing,
-    noClick: Boolean(file)
+    noClick: Boolean(file),
+    noKeyboard: Boolean(file)
   });
 
   useEffect(() => {
@@ -84,6 +88,7 @@ const RedactPdf = () => {
 
     const renderPreviews = async () => {
       setPreviews([]);
+      setPageSummaries([]);
       setPreviewError('');
       try {
         const data = new Uint8Array(await file.arrayBuffer());
@@ -106,11 +111,27 @@ const RedactPdf = () => {
           const context = canvas.getContext('2d');
           if (!context) throw new Error('Your browser could not render a page preview.');
           await page.render({ canvasContext: context, viewport, intent: 'print' }).promise;
-          rendered.push(canvas.toDataURL('image/jpeg', 0.82));
+          let summary = '';
+          try {
+            const textContent = await page.getTextContent();
+            summary = textContent.items
+              .map((item) => ('str' in item ? item.str : ''))
+              .filter(Boolean)
+              .join(' ')
+              .replace(/\s+/g, ' ')
+              .trim()
+              .slice(0, 320);
+          } catch {
+            summary = 'Page text could not be extracted; the preview is visual-only.';
+          }
+          rendered.push({ preview: canvas.toDataURL('image/jpeg', 0.82), summary });
           canvas.width = 0;
           canvas.height = 0;
         }
-        if (active) setPreviews(rendered);
+        if (active) {
+          setPreviews(rendered.map((result) => result.preview));
+          setPageSummaries(rendered.map((result) => result.summary));
+        }
         await document.destroy();
       } catch (renderError) {
         console.error('Unable to render PDF redaction previews:', renderError);
@@ -131,6 +152,7 @@ const RedactPdf = () => {
     setPageCount(0);
     setCurrentPage(1);
     setPreviews([]);
+    setPageSummaries([]);
     setMarksByPage({});
     setDraft(null);
     setError('');
@@ -187,6 +209,34 @@ const RedactPdf = () => {
       ...current,
       [currentPage]: [...(current[currentPage] || []), mark]
     }));
+    clearOutput();
+  };
+
+  const addCoordinateMark = () => {
+    const values = Object.fromEntries(
+      Object.entries(coordinateBox).map(([key, value]) => [key, Number(value)])
+    );
+    const { x, y, width, height } = values;
+    if (
+      !Object.values(values).every(Number.isFinite)
+      || x < 0 || y < 0 || width <= 0 || height <= 0
+      || x + width > 100 || y + height > 100
+    ) {
+      setError('Enter positive width and height, with the entire redaction box inside the page (0–100%).');
+      return;
+    }
+
+    setMarksByPage((current) => ({
+      ...current,
+      [currentPage]: [...(current[currentPage] || []), {
+        x: x / 100,
+        y: y / 100,
+        width: width / 100,
+        height: height / 100
+      }]
+    }));
+    clearOutput();
+    setError('');
   };
 
   const cancelDrawing = () => {
@@ -305,7 +355,10 @@ const RedactPdf = () => {
       </div>
 
       <div
-        {...getRootProps()}
+        {...getRootProps({
+          role: file ? 'group' : undefined,
+          'aria-label': file ? `Selected PDF ${file.name}` : 'Choose a PDF to redact'
+        })}
         className={`pdf-upload-zone rounded-2xl border-2 border-dashed p-8 text-center transition-all ${
           isDragActive ? 'border-blue-500 bg-blue-50' : 'cursor-pointer border-slate-300 bg-white hover:border-blue-400 hover:bg-blue-50/50'
         }`}
@@ -364,14 +417,16 @@ const RedactPdf = () => {
 
           <div
             className="relative mx-auto w-full max-w-3xl touch-none select-none overflow-hidden rounded-lg border border-slate-300 bg-slate-100"
-            aria-label={`Draw redaction boxes on page ${currentPage}`}
+            role="group"
+            aria-label={`Visual preview and redaction drawing area for page ${currentPage}`}
+            aria-describedby={`redact-page-${currentPage}-description`}
             onPointerDown={startDrawing}
             onPointerMove={updateDrawing}
             onPointerUp={finishDrawing}
             onPointerCancel={cancelDrawing}
           >
             {previews[currentPage - 1]
-              ? <img src={previews[currentPage - 1]} alt={`Page ${currentPage} preview`} draggable="false" className="block h-auto w-full" />
+              ? <img src={previews[currentPage - 1]} alt={`Visual preview of page ${currentPage}`} draggable="false" className="block h-auto w-full" />
               : <div className="flex aspect-[3/4] items-center justify-center text-sm text-slate-500">Rendering page preview…</div>}
             {pageMarks.map((mark, index) => (
               <span
@@ -383,7 +438,41 @@ const RedactPdf = () => {
             ))}
             {draft && <span className="pointer-events-none absolute border-2 border-red-600 bg-black/70" style={{ left: `${draft.x * 100}%`, top: `${draft.y * 100}%`, width: `${draft.width * 100}%`, height: `${draft.height * 100}%` }} />}
           </div>
-          <p className="text-center text-sm text-slate-500">Drag across the page to add an opaque black redaction. {pageMarks.length} mark{pageMarks.length === 1 ? '' : 's'} on this page.</p>
+          <p id={`redact-page-${currentPage}-description`} className="sr-only">
+            {pageSummaries[currentPage - 1] || 'No selectable text was found on this page; its preview is visual-only.'}
+          </p>
+          <p className="text-center text-sm text-slate-500">Drag across the page to add an opaque black redaction. You can also enter coordinates below using the keyboard. {pageMarks.length} mark{pageMarks.length === 1 ? '' : 's'} on this page.</p>
+          <fieldset className="space-y-3 rounded-xl border border-slate-200 p-4">
+            <legend className="px-1 text-sm font-semibold text-slate-700">Add redaction by coordinates (percent from top left)</legend>
+            <div className="grid gap-3 sm:grid-cols-4">
+              {[
+                ['x', 'Left'],
+                ['y', 'Top'],
+                ['width', 'Width'],
+                ['height', 'Height']
+              ].map(([key, label]) => (
+                <div key={key} className="space-y-1">
+                  <label htmlFor={`redact-${key}`} className="text-sm font-medium text-slate-700">{label} (%)</label>
+                  <input
+                    id={`redact-${key}`}
+                    type="number"
+                    min="0"
+                    max="100"
+                    step="1"
+                    value={coordinateBox[key]}
+                    onChange={(event) => setCoordinateBox((current) => ({ ...current, [key]: event.target.value }))}
+                    className="w-full rounded-lg border border-slate-300 px-3 py-2"
+                  />
+                </div>
+              ))}
+            </div>
+            <button type="button" onClick={addCoordinateMark} disabled={isProcessing || !previews[currentPage - 1]} className="rounded-lg border border-slate-200 px-4 py-2 font-semibold text-slate-700 transition hover:bg-slate-50 disabled:opacity-50">
+              Add redaction box
+            </button>
+          </fieldset>
+          <p className="sr-only" role="status" aria-live="polite" aria-atomic="true">
+            {pageMarks.length} redaction {pageMarks.length === 1 ? 'mark' : 'marks'} on page {currentPage}.
+          </p>
           <p className="rounded-lg bg-amber-50 p-3 text-sm text-amber-900">
             Redaction rasterizes every page and removes selectable text, vector content, links, forms, and other interactive features. Inspect the downloaded PDF before sharing it.
           </p>
@@ -402,6 +491,7 @@ const RedactPdf = () => {
           </button>
         )}
       </div>
+      {isProcessing && <p className="sr-only" role="status">Creating the redacted PDF.</p>}
       {output && <p className="text-sm text-emerald-700" role="status">Redacted PDF is ready to download.</p>}
     </div>
   );

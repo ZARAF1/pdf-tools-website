@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { useDropzone } from 'react-dropzone';
+import useAccessibleDropzone from '../lib/useAccessibleDropzone';
 import {
   AlertCircle,
   CheckCircle2,
@@ -132,7 +132,7 @@ const PdfToImages = () => {
     }
   }, [clearZip, isProcessing, isValidating]);
 
-  const { getRootProps, getInputProps, isDragActive } = useDropzone({
+  const { getRootProps, getInputProps, isDragActive } = useAccessibleDropzone({
     onDrop,
     accept: { 'application/pdf': ['.pdf'] },
     multiple: false,
@@ -435,7 +435,7 @@ const PdfToImages = () => {
                   />
                   {item.name}
                 </span>
-                <span className="mt-2 block text-sm text-slate-500">{item.description}</span>
+                <span className="mt-2 block text-sm text-slate-600">{item.description}</span>
               </label>
             ))}
           </div>
@@ -462,7 +462,7 @@ const PdfToImages = () => {
                 />
                 Standard
               </span>
-              <span className="mt-1 block text-sm text-slate-500">About 144 DPI; recommended for most documents.</span>
+              <span className="mt-1 block text-sm text-slate-600">About 144 DPI; recommended for most documents.</span>
             </label>
             <label className={`cursor-pointer rounded-xl border p-4 ${quality === 'high' ? 'border-blue-500 bg-blue-50' : 'border-slate-200'}`}>
               <span className="flex items-center gap-2 font-semibold text-slate-800">
@@ -482,7 +482,7 @@ const PdfToImages = () => {
                 />
                 High quality
               </span>
-              <span className="mt-1 block text-sm text-slate-500">About 216 DPI; can use more memory and take longer.</span>
+              <span className="mt-1 block text-sm text-slate-600">About 216 DPI; can use more memory and take longer.</span>
             </label>
           </div>
         </fieldset>

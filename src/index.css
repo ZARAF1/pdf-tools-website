@@ -6,6 +6,26 @@ body {
   @apply bg-slate-50 text-slate-900 min-h-screen;
 }
 
+.skip-to-content {
+  position: fixed;
+  z-index: 1000;
+  top: 0.75rem;
+  left: 0.75rem;
+  transform: translateY(-180%);
+  border-radius: 0.5rem;
+  background: #1d4ed8;
+  padding: 0.75rem 1rem;
+  color: #ffffff;
+  font-weight: 700;
+  box-shadow: 0 8px 20px rgb(15 23 42 / 0.2);
+}
+
+.skip-to-content:focus {
+  transform: translateY(0);
+  outline: 3px solid #ffffff;
+  outline-offset: 3px;
+}
+
 :root {
   color-scheme: light;
   --page-background: #f8fafc;
@@ -229,6 +249,10 @@ body {
 :root[data-theme='dark'] .category-page-description,
 :root[data-theme='dark'] .category-page-tools-heading p {
   color: #cbd5e1;
+}
+
+:root[data-theme='dark'] .category-page-eyebrow {
+  color: #93c5fd;
 }
 
 :root[data-theme='dark'] .category-page-back {
@@ -993,6 +1017,52 @@ body {
   grid-column: 1 / -1;
 }
 
+.crop-pdf-bounds {
+  display: grid;
+  gap: 0.75rem;
+  min-width: 0;
+  padding: 1rem;
+  border: 1px solid var(--border-color);
+  border-radius: 0.75rem;
+  color: var(--text-primary);
+}
+
+.crop-pdf-bounds legend {
+  padding-inline: 0.25rem;
+  font-weight: 700;
+}
+
+.crop-pdf-bounds p {
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: 0.875rem;
+  line-height: 1.5;
+}
+
+.crop-pdf-bounds-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.75rem;
+}
+
+.crop-pdf-bounds-grid label {
+  display: block;
+  margin-bottom: 0.35rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.crop-pdf-bounds-grid input {
+  width: 100%;
+  min-height: 2.6rem;
+  padding: 0.45rem 0.6rem;
+  border: 1px solid var(--border-color);
+  border-radius: 0.55rem;
+  background: var(--surface-background);
+  color: var(--text-primary);
+  font: inherit;
+}
+
 .crop-pdf-preview-area {
   display: grid;
   min-height: 10rem;
@@ -1159,7 +1229,8 @@ body {
 .crop-pdf-button:focus-visible,
 .crop-pdf-icon-button:focus-visible,
 .crop-pdf-handle:focus-visible,
-.crop-pdf-scope select:focus-visible {
+.crop-pdf-scope select:focus-visible,
+.crop-pdf-bounds-grid input:focus-visible {
   outline: 3px solid #2563eb;
   outline-offset: 3px;
 }
@@ -1167,7 +1238,8 @@ body {
 :root[data-theme='dark'] .crop-pdf-button:focus-visible,
 :root[data-theme='dark'] .crop-pdf-icon-button:focus-visible,
 :root[data-theme='dark'] .crop-pdf-handle:focus-visible,
-:root[data-theme='dark'] .crop-pdf-scope select:focus-visible {
+:root[data-theme='dark'] .crop-pdf-scope select:focus-visible,
+.crop-pdf-bounds-grid input:focus-visible {
   outline-color: #93c5fd;
 }
 
@@ -1182,6 +1254,10 @@ body {
 
   .crop-pdf-scope select {
     width: 100%;
+  }
+
+  .crop-pdf-bounds-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .crop-pdf-actions > button {
@@ -1630,6 +1706,76 @@ body {
 :root[data-theme='dark'] .text-gray-500,
 :root[data-theme='dark'] .text-gray-400 {
   color: var(--text-secondary);
+}
+
+:root[data-theme='dark'] .text-blue-600,
+:root[data-theme='dark'] .text-blue-700 {
+  color: #93c5fd;
+}
+
+:root[data-theme='dark'] .text-blue-800,
+:root[data-theme='dark'] .text-blue-900 {
+  color: #bfdbfe;
+}
+
+:root[data-theme='dark'] .text-cyan-600,
+:root[data-theme='dark'] .text-cyan-700 {
+  color: #67e8f9;
+}
+
+:root[data-theme='dark'] .text-cyan-900 {
+  color: #a5f3fc;
+}
+
+:root[data-theme='dark'] .text-green-600,
+:root[data-theme='dark'] .text-green-700 {
+  color: #86efac;
+}
+
+:root[data-theme='dark'] .text-green-800,
+:root[data-theme='dark'] .text-green-900,
+:root[data-theme='dark'] .text-emerald-700,
+:root[data-theme='dark'] .text-emerald-900 {
+  color: #a7f3d0;
+}
+
+:root[data-theme='dark'] .text-amber-600,
+:root[data-theme='dark'] .text-amber-700 {
+  color: #fcd34d;
+}
+
+:root[data-theme='dark'] .text-amber-800,
+:root[data-theme='dark'] .text-amber-900,
+:root[data-theme='dark'] .text-amber-950 {
+  color: #fde68a;
+}
+
+:root[data-theme='dark'] .text-red-500,
+:root[data-theme='dark'] .text-red-600,
+:root[data-theme='dark'] .text-red-700 {
+  color: #fca5a5;
+}
+
+:root[data-theme='dark'] .text-red-800 {
+  color: #fecaca;
+}
+
+:root[data-theme='dark'] .text-rose-600,
+:root[data-theme='dark'] .text-rose-700 {
+  color: #fda4af;
+}
+
+:root[data-theme='dark'] .text-rose-800 {
+  color: #fecdd3;
+}
+
+:root[data-theme='dark'] .text-violet-600,
+:root[data-theme='dark'] .text-violet-700 {
+  color: #c4b5fd;
+}
+
+:root[data-theme='dark'] .text-violet-800 {
+  color: #ddd6fe;
 }
 
 :root[data-theme='dark'] [class*='border-slate-'],

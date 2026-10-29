@@ -1,5 +1,5 @@
 import React, { useCallback, useRef, useState } from 'react';
-import { useDropzone } from 'react-dropzone';
+import useAccessibleDropzone from '../lib/useAccessibleDropzone';
 import { PDFDocument } from 'pdf-lib';
 import { validateUnencryptedPdf } from '../lib/pdfValidation';
 import { AlertCircle, CheckCircle2, Download, FileText, Loader2, Trash2, Upload } from 'lucide-react';
@@ -71,12 +71,13 @@ const PageSelectionTool = ({ mode }) => {
     }
   }, []);
 
-  const { getRootProps, getInputProps, isDragActive, open } = useDropzone({
+  const { getRootProps, getInputProps, isDragActive, open } = useAccessibleDropzone({
     onDrop,
     accept: { 'application/pdf': ['.pdf'] },
     multiple: false,
     disabled: isProcessing,
-    noClick: Boolean(file)
+    noClick: Boolean(file),
+    noKeyboard: Boolean(file)
   });
 
   const clearFile = () => {
@@ -175,7 +176,10 @@ const PageSelectionTool = ({ mode }) => {
   return (
     <div className="space-y-6">
       <div
-        {...getRootProps()}
+        {...getRootProps({
+          role: file ? 'group' : undefined,
+          'aria-label': file ? `Selected PDF ${file.name}` : 'Choose a PDF'
+        })}
         className={`rounded-2xl border-2 border-dashed p-8 text-center transition-all duration-200 ${
           file ? 'border-slate-200 bg-white' : isDragActive
             ? 'border-blue-500 bg-blue-50'

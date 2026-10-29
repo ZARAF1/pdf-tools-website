@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { useDropzone } from 'react-dropzone';
+import useAccessibleDropzone from '../lib/useAccessibleDropzone';
 import { ArrowLeft, ArrowRight, Download, Loader2, RotateCcw, Upload, ZoomIn, ZoomOut } from 'lucide-react';
 import { PDFDocument } from 'pdf-lib';
 import pdfjsLib from '../lib/pdfjsClient';
@@ -80,12 +80,14 @@ const CropPdf = () => {
   const [pageCount, setPageCount] = useState(0);
   const [currentPage, setCurrentPage] = useState(0);
   const [crop, setCrop] = useState(fullPage);
+  const [cropBoundDrafts, setCropBoundDrafts] = useState({});
   const [draftCrops, setDraftCrops] = useState({});
   const [pageCrops, setPageCrops] = useState({});
   const [scope, setScope] = useState('current');
   const [previewWidth, setPreviewWidth] = useState(680);
   const [zoom, setZoom] = useState(1);
   const [renderInfo, setRenderInfo] = useState(null);
+  const [pageTextSummary, setPageTextSummary] = useState('');
   const [output, setOutput] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isRendering, setIsRendering] = useState(false);
@@ -173,6 +175,7 @@ const CropPdf = () => {
       setPageCount(count);
       setCurrentPage(0);
       setCrop(fullPage);
+      setCropBoundDrafts({});
       setDraftCrops({});
       setPageCrops({});
       setScope('current');
@@ -193,12 +196,13 @@ const CropPdf = () => {
     }
   }, [clearOutput]);
 
-  const { getRootProps, getInputProps, isDragActive, open } = useDropzone({
+  const { getRootProps, getInputProps, isDragActive, open } = useAccessibleDropzone({
     onDrop,
     accept: { 'application/pdf': ['.pdf'] },
     multiple: false,
     disabled: isLoading || isProcessing,
-    noClick: Boolean(file)
+    noClick: Boolean(file),
+    noKeyboard: Boolean(file)
   });
 
   useEffect(() => {
@@ -206,6 +210,7 @@ const CropPdf = () => {
     let active = true;
     let task;
     setIsRendering(true);
+    setPageTextSummary('');
     setRenderInfo(null);
     setPreviewMessage('');
 
@@ -232,6 +237,19 @@ const CropPdf = () => {
         task = page.render({ canvasContext: context, viewport, intent: 'display' });
         renderTaskRef.current = task;
         await task.promise;
+        try {
+          const textContent = await page.getTextContent();
+          const summary = textContent.items
+            .map((item) => ('str' in item ? item.str : ''))
+            .filter(Boolean)
+            .join(' ')
+            .replace(/\s+/g, ' ')
+            .trim()
+            .slice(0, 320);
+          if (active) setPageTextSummary(summary || 'No selectable text was found on this page; the preview is visual-only.');
+        } catch {
+          if (active) setPageTextSummary('Page text could not be extracted; the preview is visual-only.');
+        }
       } catch (renderError) {
         if (active && renderError?.name !== 'RenderingCancelledException') {
           console.error('Unable to render PDF crop preview:', renderError);
@@ -261,6 +279,7 @@ const CropPdf = () => {
     setPageCount(0);
     setCurrentPage(0);
     setCrop(fullPage);
+    setCropBoundDrafts({});
     setDraftCrops({});
     setPageCrops({});
     setScope('current');
@@ -280,6 +299,21 @@ const CropPdf = () => {
   const updateCrop = (nextCrop) => {
     setCrop(nextCrop);
     setDraftCrops((current) => ({ ...current, [currentPage]: nextCrop }));
+  };
+
+  const updateCropBound = (bound, value) => {
+    setCropBoundDrafts((current) => ({ ...current, [bound]: value }));
+    if (value.trim() === '') return;
+    const amount = Number(value) / 100;
+    if (!Number.isFinite(amount)) return;
+    const nextCrop = { ...crop };
+    if (bound === 'x') nextCrop.x = clamp(amount, 0, 1 - crop.width);
+    if (bound === 'y') nextCrop.y = clamp(amount, 0, 1 - crop.height);
+    if (bound === 'width') nextCrop.width = clamp(amount, MIN_CROP_SIZE, 1 - crop.x);
+    if (bound === 'height') nextCrop.height = clamp(amount, MIN_CROP_SIZE, 1 - crop.y);
+    updateCrop(nextCrop);
+    clearOutput();
+    setError('');
   };
 
   const pointFromEvent = (event) => {
@@ -370,6 +404,7 @@ const CropPdf = () => {
 
   const resetCrop = () => {
     setCrop(fullPage);
+    setCropBoundDrafts({});
     setDraftCrops({});
     setPageCrops({});
     clearOutput();
@@ -378,6 +413,7 @@ const CropPdf = () => {
 
   const adjustCurrentCrop = () => {
     setCrop(pageCrops[currentPage] || fullPage);
+    setCropBoundDrafts({});
     setOutput(null);
     setStatus('');
   };
@@ -497,7 +533,10 @@ const CropPdf = () => {
       </header>
 
       <div
-        {...getRootProps()}
+        {...getRootProps({
+          role: file ? 'group' : undefined,
+          'aria-label': file ? `Selected PDF ${file.name}` : 'Choose a PDF to crop'
+        })}
         className={`crop-pdf-upload ${isDragActive ? 'is-drag-active' : ''}`}
       >
         <input {...getInputProps()} />
@@ -574,6 +613,42 @@ const CropPdf = () => {
             </span>
           </div>
 
+          <fieldset className="crop-pdf-bounds" disabled={isProcessing || isRendering}>
+            <legend>Crop area bounds</legend>
+            <p id="crop-pdf-bounds-help">
+              Set the crop using the keyboard. Values are percentages measured from the page&apos;s top-left corner; the crop stays within the page.
+            </p>
+            <div className="crop-pdf-bounds-grid">
+              {[
+                ['width', 'Width', MIN_CROP_SIZE * 100, 100 - crop.x * 100],
+                ['height', 'Height', MIN_CROP_SIZE * 100, 100 - crop.y * 100],
+                ['x', 'Left', 0, 100 - crop.width * 100],
+                ['y', 'Top', 0, 100 - crop.height * 100]
+              ].map(([bound, label, min, max]) => (
+                <div key={bound}>
+                  <label htmlFor={`crop-pdf-${bound}`}>{label} (%)</label>
+                  <input
+                    id={`crop-pdf-${bound}`}
+                    type="number"
+                    min={min}
+                    max={max}
+                    step="0.1"
+                    value={Object.prototype.hasOwnProperty.call(cropBoundDrafts, bound)
+                      ? cropBoundDrafts[bound]
+                      : (crop[bound] * 100).toFixed(1)}
+                    aria-describedby="crop-pdf-bounds-help"
+                    onChange={(event) => updateCropBound(bound, event.target.value)}
+                    onBlur={() => setCropBoundDrafts((current) => {
+                      const next = { ...current };
+                      delete next[bound];
+                      return next;
+                    })}
+                  />
+                </div>
+              ))}
+            </div>
+          </fieldset>
+
           <div className="crop-pdf-preview-area" ref={previewAreaRef}>
             {isRendering && <p className="crop-pdf-preview-status" role="status"><Loader2 className="crop-pdf-spinner" aria-hidden="true" size={16} /> Rendering page preview...</p>}
             {previewMessage && <p className="crop-pdf-message crop-pdf-error" role="alert">{previewMessage}</p>}
@@ -590,7 +665,9 @@ const CropPdf = () => {
                 <canvas
                   ref={canvasRef}
                   className="crop-pdf-canvas"
+                  role="img"
                   aria-label={`Preview of page ${currentPage + 1}`}
+                  aria-describedby="crop-pdf-page-description"
                   style={{
                     width: renderInfo?.width ?? 0,
                     height: renderInfo?.height ?? 0,
@@ -598,6 +675,9 @@ const CropPdf = () => {
                     top: displayedCrop && renderInfo ? -displayedCrop.y * renderInfo.height : 0
                   }}
                 />
+                <p id="crop-pdf-page-description" className="sr-only">
+                  {pageTextSummary || 'This is a visual preview of the PDF page; extracted text is not available yet.'}
+                </p>
                 {renderInfo && !displayedCrop && (
                   <>
                     <svg className="crop-pdf-shade" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">

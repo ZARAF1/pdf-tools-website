@@ -301,7 +301,8 @@ const ToolPage = ({ tool, children }) => {
         </div>
       </header>
 
-      <section aria-label={`${content.title} workspace`}>
+      <section aria-labelledby="tool-workspace-heading">
+        <h2 id="tool-workspace-heading" className="sr-only">{content.title} workspace</h2>
         {children}
       </section>
 
