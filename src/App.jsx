@@ -68,6 +68,8 @@ const RouteFocusManager = () => {
     if (previousPath.current === pathname) return;
     previousPath.current = pathname;
 
+    if (document.activeElement?.closest('nav')) return;
+
     const heading = document.querySelector('#main-content h1');
     if (!heading) return;
     heading.tabIndex = -1;

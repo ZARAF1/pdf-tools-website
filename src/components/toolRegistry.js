@@ -24,31 +24,31 @@ export const TOOL_CATEGORIES = [
     id: 'organize',
     name: 'Organize',
     path: '/categories/organize',
-    description: 'Bring PDFs into a clearer order. Combine documents, rearrange pages, correct orientation, or remove pages you no longer need.'
+    description: 'Combine PDF files, rotate pages, remove unwanted pages, crop the visible page area, or rearrange and rotate pages into a new order. These tools help prepare a document’s page sequence and framing before you share it.'
   },
   {
     id: 'convert',
     name: 'Convert',
     path: '/categories/convert',
-    description: 'Convert supported PDFs and images into useful formats for reading, sharing, and editing. Each tool explains its supported files and current limitations.'
+    description: 'Create PDFs from JPG, PNG, or BMP images, export PDF pages as PNG, JPG, or BMP images, or turn PDF text into an editable Word document. PDF-to-Word can use OCR for scanned pages and explains its layout limitations.'
   },
   {
     id: 'edit-sign',
     name: 'Edit & Sign',
     path: '/categories/edit-sign',
-    description: 'Add visible marks and signatures, or permanently remove sensitive page content. Review each tool’s capabilities and output trade-offs before you begin.'
+    description: 'Add text, images, drawings, highlights, and shapes to a PDF copy; apply text watermarks or page numbers; add a visible signature; or permanently redact selected areas. Editing adds overlays rather than replacing existing text, while redaction rasterizes pages.'
   },
   {
     id: 'protect-repair',
     name: 'Protect & Repair',
     path: '/categories/protect-repair',
-    description: 'Protect, unlock with a password you know, or optimize PDF files. Check each tool’s settings and results to understand what changed in the output.'
+    description: 'Add an opening password, remove encryption when you know the correct password, or try to reduce a PDF’s file size. Higher compression rasterizes pages and can reduce image and text quality; compare the measured output before downloading.'
   },
   {
     id: 'extract-analyze',
     name: 'Extract',
     path: '/categories/extract',
-    description: 'Extract selected pages, split documents, or recognize text in scanned PDFs so documents are easier to search and work with.'
+    description: 'Save selected pages as a new PDF, split a document by page numbers or ranges, or recognize text in scanned pages to add a searchable text layer. OCR may download its supporting language resources when first used.'
   }
 ];
 

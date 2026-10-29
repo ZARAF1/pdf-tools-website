@@ -1,11 +1,16 @@
-import React, { useEffect } from 'react';
-import { ArrowDown, FileText, Sparkles } from 'lucide-react';
+import React, { useEffect, useRef, useState } from 'react';
+import { ArrowDown, FileText, Sparkles, X } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import AdSlot from './AdSlot';
 import ToolCard from './ToolCard';
 import { TOOL_CATEGORIES, TOOL_REGISTRY } from './toolRegistry';
 
 const Home = () => {
+  const [activeCategoryId, setActiveCategoryId] = useState(null);
+  const [fanReadyCategoryId, setFanReadyCategoryId] = useState(null);
+  const heroArtRef = useRef(null);
+  const categoryTriggerRefs = useRef(new Map());
+
   useEffect(() => {
     const previousTitle = document.title;
     const metaDescription = document.querySelector('meta[name="description"]');
@@ -22,6 +27,30 @@ const Home = () => {
       }
     };
   }, []);
+
+  useEffect(() => {
+    if (!activeCategoryId) return undefined;
+
+    const handlePointerDown = (event) => {
+      if (!heroArtRef.current?.contains(event.target)) {
+        setFanReadyCategoryId(null);
+        setActiveCategoryId(null);
+      }
+    };
+    const handleKeyDown = (event) => {
+      if (event.key !== 'Escape') return;
+      setFanReadyCategoryId(null);
+      setActiveCategoryId(null);
+      categoryTriggerRefs.current.get(activeCategoryId)?.focus();
+    };
+
+    document.addEventListener('pointerdown', handlePointerDown);
+    document.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.removeEventListener('pointerdown', handlePointerDown);
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [activeCategoryId]);
 
   return (
     <div className="space-y-16">
@@ -43,7 +72,11 @@ const Home = () => {
             <ArrowDown className="h-4 w-4" aria-hidden="true" />
           </a>
         </div>
-        <nav className="home-hero-art" aria-label="Browse tool categories">
+        <nav
+          ref={heroArtRef}
+          className={`home-hero-art${activeCategoryId ? ' is-expanded' : ''}`}
+          aria-label="Browse tool categories"
+        >
           <div className="home-hero-orbit home-hero-orbit-outer" aria-hidden="true" />
           <div className="home-hero-orbit home-hero-orbit-inner" aria-hidden="true" />
           <div className="home-hero-paper home-hero-paper-back" aria-hidden="true" />
@@ -58,23 +91,89 @@ const Home = () => {
             <span className="home-hero-document-line home-hero-document-line-short" />
             <span className="home-hero-document-block" />
           </div>
-          <div className="home-hero-category-orbit">
-            {TOOL_CATEGORIES.map((category, index) => (
-              <a
-                key={category.id}
-                className="home-hero-category-badge"
-                href={`#category-${category.id}`}
-                style={{ '--badge-angle': `${index * 72}deg` }}
-              >
-                <span className="home-hero-category-counter">
-                  <span className="home-hero-category-label">
-                    <span className="home-hero-category-chip">
-                      <span className="home-hero-category-text">{category.name}</span>
+          <div className={`home-hero-category-orbit${activeCategoryId ? ' is-expanded' : ''}`}>
+            {TOOL_CATEGORIES.map((category, index) => {
+              const tools = TOOL_REGISTRY.filter((tool) => tool.category === category.id);
+              const isExpanded = category.id === activeCategoryId;
+              const isFanReady = category.id === fanReadyCategoryId;
+              const fanId = `hero-tools-${category.id}`;
+
+              return (
+                <div
+                  key={category.id}
+                  className={`home-hero-category-badge${isExpanded ? ' is-expanded' : ''}`}
+                  aria-hidden={Boolean(activeCategoryId && !isExpanded)}
+                  style={{ '--badge-angle': `${index * 72}deg` }}
+                  onTransitionEnd={(event) => {
+                    if (
+                      event.target === event.currentTarget
+                      && event.propertyName === 'transform'
+                      && isExpanded
+                    ) {
+                      setFanReadyCategoryId(category.id);
+                    }
+                  }}
+                >
+                  <span className="home-hero-category-counter">
+                    <span className="home-hero-category-label">
+                      <button
+                        ref={(element) => {
+                          if (element) categoryTriggerRefs.current.set(category.id, element);
+                          else categoryTriggerRefs.current.delete(category.id);
+                        }}
+                        type="button"
+                        className="home-hero-category-chip"
+                        aria-expanded={isExpanded}
+                        aria-controls={fanId}
+                        aria-label={`${isExpanded ? 'Hide' : 'Show'} ${category.name} tools`}
+                        title={`${isExpanded ? 'Hide' : 'Show'} ${category.name} tools`}
+                        tabIndex={activeCategoryId && !isExpanded ? -1 : 0}
+                        onClick={() => {
+                          setFanReadyCategoryId(null);
+                          setActiveCategoryId(isExpanded ? null : category.id);
+                        }}
+                      >
+                        <span className="home-hero-category-text">{category.name}</span>
+                        <X className="home-hero-category-close" aria-hidden="true" />
+                      </button>
+                      <div
+                        id={fanId}
+                        className={`home-hero-tool-fan${isExpanded ? ' is-open' : ''}${isFanReady ? ' is-ready' : ''}`}
+                        role="group"
+                        aria-label={`${category.name} tools`}
+                        aria-hidden={!isExpanded}
+                      >
+                        <span className="home-hero-tool-fan-ring" aria-hidden="true" />
+                        {tools.map((tool, toolIndex) => {
+                          const ToolIcon = tool.icon;
+                          const toolAngle = -90 + (toolIndex * 360) / tools.length;
+                          return (
+                            <Link
+                              key={tool.id}
+                              to={tool.path}
+                              className={`home-hero-tool-link ${tool.color}`}
+                              style={{
+                                '--tool-angle': `${toolAngle}deg`,
+                                '--tool-delay': `${toolIndex * 55}ms`
+                              }}
+                              aria-label={`${tool.name}: ${tool.description}`}
+                              aria-hidden={!isExpanded}
+                              tabIndex={isExpanded ? 0 : -1}
+                              title={tool.name}
+                            >
+                              <ToolIcon className="home-hero-tool-icon" aria-hidden="true" />
+                              <span className="home-hero-tool-tooltip" aria-hidden="true" role="tooltip">
+                                {tool.name}
+                              </span>
+                            </Link>
+                          );
+                        })}
+                      </div>
                     </span>
                   </span>
-                </span>
-              </a>
-            ))}
+                </div>
+              );
+            })}
           </div>
         </nav>
       </section>
