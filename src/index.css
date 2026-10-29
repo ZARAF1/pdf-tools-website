@@ -534,7 +534,14 @@ body {
   left: 50%;
   width: 20rem;
   height: 20rem;
+  animation: home-hero-orbit 36s linear infinite;
   transform: translate(-50%, -50%);
+}
+
+.home-hero-art:hover .home-hero-category-orbit,
+.home-hero-art:focus-within .home-hero-category-orbit,
+.home-hero-category-orbit.is-expanded {
+  animation-play-state: paused;
 }
 
 .home-hero-category-badge {
@@ -560,6 +567,13 @@ body {
 
 .home-hero-category-counter {
   display: inline-flex;
+  animation: home-hero-counter-orbit 36s linear infinite;
+}
+
+.home-hero-art:hover .home-hero-category-counter,
+.home-hero-art:focus-within .home-hero-category-counter,
+.home-hero-category-orbit.is-expanded .home-hero-category-counter {
+  animation-play-state: paused;
 }
 
 .home-hero-category-label {
@@ -743,6 +757,15 @@ body {
   }
   to {
     transform: translate(-50%, -50%) rotate(1turn);
+  }
+}
+
+@keyframes home-hero-counter-orbit {
+  from {
+    transform: rotate(0turn);
+  }
+  to {
+    transform: rotate(-1turn);
   }
 }
 
