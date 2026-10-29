@@ -1,6 +1,8 @@
 # Project Status — PDF Utility Website
 
 ## Current state
+**All Tools submenu spacing (2026-10-29):** Added a 10 px gap between tool rows and a 10 px top margin below each category label in the All Tools mega-menu, creating clearer vertical separation without changing category popup spacing.
+
 **Mega-menu selection focus fix (2026-10-29):** When a mega-menu is open, route-based left-navigation highlights are temporarily suppressed so All Tools or the selected category is the only visually active control. This prevents a previous route such as Guides from remaining tinted beside an open All Tools menu; the previous route highlight returns automatically when the menu closes.
 
 **Navigation active-state fix (2026-10-29):** Corrected conflicting left-navigation selection state. Route-derived category selection and submenu-open selection now resolve to one category at a time, stale menus close whenever the pathname changes, and Home/NavLink selection remains controlled by the router's `aria-current` state. This prevents the Home or a previously selected category from remaining visually selected after another route/menu item is chosen.

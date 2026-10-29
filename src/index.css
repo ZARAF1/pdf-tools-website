@@ -480,6 +480,11 @@ body {
   gap: 0.2rem;
 }
 
+.site-tools-mega-list {
+  gap: 0.625rem;
+  margin-top: 0.625rem;
+}
+
 .site-tools-mega-tool {
   display: flex;
   min-height: 3rem;
