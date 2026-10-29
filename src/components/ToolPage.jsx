@@ -51,8 +51,20 @@ const TOOL_CONTENT = {
     steps: ['Choose one PDF.', 'Enter a password of at least four characters and confirm it.', 'Optionally enter a separate owner password.', 'Select Protect PDF and save the generated encrypted copy.'],
     faqs: [
       ['What does the opening password do?', 'It is required by compatible PDF readers to open the protected output. Keep it somewhere safe; the tool cannot recover it.'],
-      ['Can I protect an already password-protected PDF?', 'The current implementation rejects PDFs it detects as encrypted. Remove the existing password first.'],
+      ['Can I protect an already password-protected PDF?', 'This tool rejects PDFs it detects as encrypted. Use Unlock PDF with the correct password you are authorized to use, then select the unlocked copy here.'],
       ['Are permission settings unbreakable?', 'No. PDF permission restrictions are honored differently by readers and should not be treated as a substitute for access control.']
+    ]
+  },
+  unlock: {
+    title: 'Unlock PDF',
+    description: 'Remove PDF opening encryption when you know the correct password.',
+    intro: 'Remove opening-password encryption from a PDF copy when you know a valid user or owner password and are authorized to use it. Choose the encrypted PDF, enter the password, and let the browser create a separate unlocked copy; the original file is not changed. The tool verifies that the output can be opened without a password and that its page count matches the source. It never guesses, cracks, or recovers passwords. Supported encryption is AES-256 R6 and legacy RC4 R2/R3; AES-128 R4 and other encryption types are not supported. The PDF is rewritten during decryption, so review the downloaded copy carefully, especially if it contains digital signatures, forms, annotations, attachments, or specialized PDF features. The document and password are processed in your browser and are not sent to an external processing server.',
+    mechanism: 'The browser uses @pdfsmaller/pdf-decrypt and Web Crypto to decrypt supported PDF objects, then validates the resulting unencrypted document with pdf-lib. It confirms the output page count matches the encrypted source. No PDF or password is uploaded.',
+    steps: ['Choose one password-protected PDF that uses a supported encryption type.', 'Enter the correct password you are authorized to use.', 'Select Unlock PDF and wait for the output checks to finish.', 'Review and download the separate unlocked PDF.'],
+    faqs: [
+      ['Can this tool recover or guess a lost password?', 'No. You must enter a correct password. Password guessing and recovery are not supported.'],
+      ['Which encryption types can it unlock?', 'AES-256 R6 and legacy RC4 R2/R3 are supported. AES-128 R4 and other encryption types are not supported.'],
+      ['Will all PDF features be preserved?', 'The document is rewritten to remove encryption. The tool checks that the output opens without a password and retains the page count, but you should review forms, signatures, annotations, attachments, and specialized features in your downloaded copy.']
     ]
   },
   image: {
@@ -92,6 +104,20 @@ const TOOL_CONTENT = {
       ['Does this preserve the exact PDF layout?', 'No. Text positions and simple aligned rows are reconstructed; complex columns, tables, forms, and typography may need manual cleanup.'],
       ['Can scanned pages be converted?', 'The tool attempts English OCR for pages without readable text. Recognition quality depends on scan clarity and OCR resources being available.'],
       ['Does the whole process stay offline?', 'No. PDF reading and conversion run in the browser, but the current OCR configuration can fetch its worker, core, and English language data from jsDelivr when needed.']
+    ]
+  },
+  ocr: {
+    title: 'OCR PDF',
+    description: 'Recognize text in scanned PDF pages and add a searchable text layer.',
+    intro: 'Turn scanned, image-only pages into a PDF you can search and select text in, while retaining the original page appearance. Choose an unencrypted PDF with up to 50 pages. The tool reads the text already present on each page and invokes OCR only for pages that lack a usable text layer, which helps avoid unnecessary recognition work in mixed documents. The OCR engine is currently configured for printed English; handwritten, low-resolution, skewed, or complex pages can be misread, so review important results. Recognized words are added invisibly at their detected positions, and the output is checked for its page count and searchable text before a download is offered. PDF processing runs in your browser. The first scanned page may require downloading the Tesseract worker, core software, and English language data from jsDelivr; the PDF itself is not uploaded.',
+    mechanism: 'PDF.js checks existing page text and renders pages without usable text. Tesseract.js recognizes English text in the browser; pdf-lib adds an invisible text layer to the original pages, preserving their page artwork. The output is reopened and checked for page count and searchable text before download. OCR resources may be fetched from jsDelivr when a scanned page is processed.',
+    steps: ['Choose one unencrypted PDF with up to 50 pages.', 'Review the first-page preview and file details.', 'Select Create searchable PDF and wait while scanned pages are rendered and recognized.', 'Download the validated PDF and use your PDF viewer’s text selection or Find feature to check the OCR result.'],
+    faqs: [
+      ['Will the result be searchable?', 'The tool adds invisible text at OCR word positions, then reopens the output and checks that recognized text is present before it offers a download. Verify important content with your PDF viewer’s Find or text-selection feature.'],
+      ['Which languages are supported?', 'The current version runs English OCR only and does not provide a language selector. It is intended for clear printed English, not handwriting or other languages.'],
+      ['What happens with mixed PDFs?', 'Pages with a usable existing text layer are retained without OCR. Pages without enough selectable text are rendered and OCR processed.'],
+      ['Does OCR upload my PDF?', 'No. The PDF is read and processed in this browser. The first scanned page may trigger a download of the Tesseract worker, core, and English language data from jsDelivr; those are software resources, not your document. Ordinary website requests and hosting logs are separate.'],
+      ['How accurate is OCR?', 'Recognition depends on image resolution, contrast, orientation, print quality, and page layout. Review the output before relying on its text.']
     ]
   },
   compress: {

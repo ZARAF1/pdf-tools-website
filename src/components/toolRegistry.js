@@ -8,11 +8,13 @@ import {
   Lock,
   PenLine,
   RotateCw,
+  ScanText,
   ShieldAlert,
   Scissors,
   StretchHorizontal,
   Stamp,
-  Trash2
+  Trash2,
+  Unlock
 } from 'lucide-react';
 
 export const TOOL_CATEGORIES = [
@@ -38,13 +40,13 @@ export const TOOL_CATEGORIES = [
     id: 'protect-repair',
     name: 'Protect & Repair',
     path: '/categories/protect-repair',
-    description: 'Use the available protection and optimization tools for PDF files. Check each tool’s settings and results to understand what changed in the output.'
+    description: 'Protect, unlock with a password you know, or optimize PDF files. Check each tool’s settings and results to understand what changed in the output.'
   },
   {
     id: 'extract-analyze',
     name: 'Extract',
     path: '/categories/extract',
-    description: 'Pull selected pages from a PDF or split a document into separate files, so it is easier to share or work with only the pages you need.'
+    description: 'Extract selected pages, split documents, or recognize text in scanned PDFs so documents are easier to search and work with.'
   }
 ];
 
@@ -88,6 +90,16 @@ export const TOOL_REGISTRY = [
     keywords: 'password encrypt secure',
     icon: Lock,
     color: 'bg-red-500'
+  },
+  {
+    id: 'unlock',
+    name: 'Unlock PDF',
+    path: '/unlock',
+    category: 'protect-repair',
+    description: 'Remove PDF opening encryption when you know the correct password.',
+    keywords: 'decrypt remove password unprotect',
+    icon: Unlock,
+    color: 'bg-blue-500'
   },
   {
     id: 'image',
@@ -158,6 +170,16 @@ export const TOOL_REGISTRY = [
     keywords: 'copy selected pages',
     icon: FileText,
     color: 'bg-sky-500'
+  },
+  {
+    id: 'ocr',
+    name: 'OCR PDF',
+    path: '/ocr-pdf',
+    category: 'extract-analyze',
+    description: 'Recognize text in scanned PDF pages and add a searchable text layer.',
+    keywords: 'optical character recognition scanned image search text layer recognize',
+    icon: ScanText,
+    color: 'bg-cyan-500'
   },
   {
     id: 'organize-pages',

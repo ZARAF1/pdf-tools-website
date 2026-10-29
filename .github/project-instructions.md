@@ -61,7 +61,7 @@ The following is based on earlier user-reported inspection, not a substitute for
 - `src/App.jsx` was reported to route `/` to Home and `/merge` to `PdfMerger`, with placeholder routes for `/split`, `/rotate`, `/protect`, and `/image-to-pdf`. Verify current route states before relying on this list.
 - `src/components/Home.jsx` was reported to contain a malformed closing tag `</div}` inside `ToolCard`; verify whether it remains before changing it.
 - The user wants a polished, professional, responsive PDF tools website, with fully working tools and clearly marked nonfunctional “Coming Soon” cards.
-- A PDF-to-Word card is planned in addition to Split PDF, Rotate PDF, Protect PDF, Image to PDF, and the existing Merge PDF tool. Other planned tools include Compress PDF, PDF to JPG/PNG, Watermark PDF, Unlock PDF, and Organize PDF. Treat these as plans, not evidence that the tools exist or work.
+- A PDF-to-Word card is planned in addition to Split PDF, Rotate PDF, Protect PDF, Image to PDF, and the existing Merge PDF tool. Other planned tools include Compress PDF, PDF to JPG/PNG, Watermark PDF, and Organize PDF. Unlock PDF has since been implemented; verify the current route and workflow before relying on this historical baseline.
 
 ## 5. Scope and user approval
 

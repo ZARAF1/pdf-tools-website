@@ -18,7 +18,7 @@ Every tool must have:
 - Keyboard-operable controls, visible focus, semantic headings, associated form labels, accessible status/errors, and useful disabled/loading states.
 - A unique 100–200-word customer-facing introduction beneath the main heading, a tool-specific How to Use guide, accurate FAQs, an implementation-verified technical/privacy explanation, and links to a few genuinely related implemented tools. Unavailable conversion pages must use this space to explain the limitation without implying an upload or workflow exists.
 - Validated inputs, clear limitations, file replacement/removal/reset where appropriate, useful failure recovery, and a real output/download flow.
-- Reject password-protected/encrypted PDFs during file selection across every PDF-input tool. Use the shared `src/lib/pdfValidation.js` helper so an encrypted file is never added to a tool's selected-file state; do not bypass encryption or attempt password recovery.
+- Reject password-protected/encrypted PDFs during file selection across every PDF-input tool other than the dedicated Unlock PDF workflow. Use the shared `src/lib/pdfValidation.js` helper so encrypted files are never added to ordinary tools' selected-file state. Unlock PDF may accept a supported encrypted file only to decrypt it with the user's correct supplied password; do not weaken the shared validator, bypass encryption, or attempt password recovery.
 - Local processing claims only when verified from the implementation. Disclose network dependencies (for example OCR language-data downloads), hosting requests/logs, analytics, ads, and third-party services accurately.
 - A tool-specific end-to-end checklist section with steps, expected result, observed result, status, evidence, and remaining work.
 

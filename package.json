@@ -12,6 +12,7 @@
   "license": "ISC",
   "type": "commonjs",
   "dependencies": {
+    "@pdfsmaller/pdf-decrypt": "1.0.1",
     "@pdfsmaller/pdf-encrypt": "^1.2.0",
     "docx": "^9.2.0",
     "framer-motion": "^14.6.0",

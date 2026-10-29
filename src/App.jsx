@@ -9,7 +9,9 @@ import PdfRotator from './components/PdfRotator';
 import ImageToPdf from './components/ImageToPdf';
 import PdfToImages from './components/PdfToImages';
 import PdfProtector from './components/PdfProtector';
+import UnlockPdf from './components/UnlockPdf';
 import PdfToWord from './components/PdfToWord';
+import OcrPdf from './components/OcrPdf';
 import PdfCompressor from './components/PdfCompressor';
 import PdfWatermarker from './components/PdfWatermarker';
 import RemovePdfPages from './components/RemovePdfPages';
@@ -168,9 +170,11 @@ function App() {
             <Route path="/split" element={<ToolPage tool="split"><PdfSplitter /></ToolPage>} />
             <Route path="/rotate" element={<ToolPage tool="rotate"><PdfRotator /></ToolPage>} />
             <Route path="/protect" element={<ToolPage tool="protect"><PdfProtector /></ToolPage>} />
+            <Route path="/unlock" element={<ToolPage tool="unlock"><UnlockPdf /></ToolPage>} />
             <Route path="/image-to-pdf" element={<ToolPage tool="image"><ImageToPdf /></ToolPage>} />
             <Route path="/pdf-to-images" element={<ToolPage tool="pdf-images"><PdfToImages /></ToolPage>} />
             <Route path="/pdf-to-word" element={<ToolPage tool="word"><PdfToWord /></ToolPage>} />
+            <Route path="/ocr-pdf" element={<ToolPage tool="ocr"><OcrPdf /></ToolPage>} />
             <Route path="/compress" element={<ToolPage tool="compress"><PdfCompressor /></ToolPage>} />
             <Route path="/watermark" element={<ToolPage tool="watermark"><PdfWatermarker /></ToolPage>} />
             <Route path="/remove-pages" element={<ToolPage tool="remove"><RemovePdfPages /></ToolPage>} />

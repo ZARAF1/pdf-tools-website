@@ -3,14 +3,14 @@ import { Link } from 'react-router-dom';
 import { closeDisclosureOnEscape } from '../lib/detailsEscape';
 
 const FAQ_ITEMS = [
-  ['Are my PDF files uploaded?', 'PDF operations process the selected document in your browser; the app does not upload documents to a conversion server. PDF to Word may download its OCR worker, core software, and English language data from jsDelivr when a scanned page needs recognition. These are supporting resources, not your document; OCR recognition runs in your browser. The website also requests its pages and assets, and hosting log practices depend on the deployment provider.'],
+  ['Are my PDF files uploaded?', 'PDF operations process the selected document in your browser; the app does not upload documents to a conversion server. PDF to Word and OCR PDF may download Tesseract OCR worker, core software, and English language data from jsDelivr when scanned-page recognition is needed. These are supporting resources, not your document; OCR recognition runs in your browser. The website also requests its pages and assets, and hosting log practices depend on the deployment provider.'],
   ['How many PDF files can I merge?', 'You can merge up to five PDF files at a time. At least two files are required.'],
-  ['Why might a PDF fail to open?', 'The file may be corrupt, password-protected, use features the current browser library does not support, or exceed the available memory. Try a readable, unencrypted copy or a smaller file.'],
+  ['Why might a PDF fail to open?', 'The file may be corrupt, use unsupported encryption or PDF features, or exceed the available memory. If it is password-protected, use Unlock PDF with a correct password you are authorized to use; otherwise try a readable copy or a smaller file.'],
   ['Will compression always reduce file size?', 'No. PDFs may already be compressed or be dominated by embedded images. The compressor reports actual sizes and avoids offering a larger output. Higher compression rasterizes pages and reduces text/image quality.'],
   ['Will PDF to Word preserve the layout?', 'Not exactly. Text positions and simple aligned rows are reconstructed. Complex columns, tables, forms, and scanned text may need manual correction.'],
   ['How do I save a generated file?', 'Use the tool’s Download button and choose a destination in your browser’s save dialog. If downloads are blocked, check the browser’s download permissions and try again.'],
   ['Do you use analytics or advertising cookies?', 'No analytics integration or active advertising configuration is present in the inspected app. An optional AdSense loader exists but its global enable flag, consent state, publisher ID, and placements are all unset. The deployment host and external resources can still receive requests; review their applicable policies.'],
-  ['Can I use a password-protected PDF?', 'No. The PDF tools do not accept password-protected PDFs. Remove the password using a method you are authorized to use, then select the unlocked copy. Protect PDF can create a password-protected output copy.']
+  ['Can I use a password-protected PDF?', 'Yes. Unlock PDF can remove supported opening-password encryption when you provide the correct password you are authorized to use. It supports AES-256 R6 and legacy RC4 R2/R3; other tools continue to reject encrypted inputs. Password guessing or recovery is not available. Protect PDF can create a password-protected output copy.']
 ];
 
 const ARTICLES = {
@@ -28,7 +28,7 @@ const ARTICLES = {
     description: 'Learn what browser-side PDF processing protects and what it does not.',
     sections: [
       ['The selected document', 'A browser-side PDF library can read a file selected through a file picker and generate a new file without uploading the PDF to a conversion server. This describes the transformation path, not every request made by the website.'],
-      ['Website and resource requests', 'The browser still requests the website and its assets from the host. PDF-to-Word can use Tesseract.js OCR resources for scanned pages. Hosting providers may keep request logs under their own policies.'],
+      ['Website and resource requests', 'The browser still requests the website and its assets from the host. PDF to Word and OCR PDF can use Tesseract.js worker, core, and English language resources from jsDelivr for scanned pages. Hosting providers may keep request logs under their own policies.'],
       ['Make a privacy decision with the full picture', 'Do not enter sensitive content unless the processing and deployment behavior suit your needs. See the [Privacy Policy](/privacy) for the current implementation notes and outstanding operator/hosting details.']
     ]
   },
@@ -193,7 +193,7 @@ const INFO_PAGES = {
         title: 'PDF processing in the browser',
         content: <>
           <p>The inspected PDF tools read selected documents in the browser and create their outputs there; the app does not upload documents to an application conversion server. This describes document processing, not a fully offline website: opening a page requests website files from its hosting provider.</p>
-          <p>PDF to Word uses Tesseract.js for English OCR when a page has no readable text. Its current configuration downloads the OCR worker, core software, and English language data from jsDelivr when needed. These are supporting resources; scanned-page recognition is performed in the browser. Styling is built into the website assets; no Tailwind CSS CDN is used.</p>
+          <p>PDF to Word and OCR PDF use Tesseract.js for English OCR when a page has no readable text. Their configuration may download the OCR worker, core software, and English language data from jsDelivr when needed. These are supporting resources; scanned-page recognition is performed in the browser. Styling is built into the website assets; no Tailwind CSS CDN is used.</p>
         </>
       },
       {
