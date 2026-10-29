@@ -167,7 +167,7 @@ const UnlockPdf = () => {
       {!file ? (
         <section
           {...getRootProps({
-            className: `pdf-upload-trigger cursor-pointer rounded-2xl border-2 border-dashed p-8 text-center focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 ${
+            className: `pdf-upload-trigger w-full min-h-48 cursor-pointer rounded-2xl border-2 border-dashed p-8 text-center focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 ${
               isDragActive ? 'border-blue-500 bg-blue-50' : 'border-slate-300'
             } ${isValidating ? 'cursor-wait opacity-70' : ''}`
           })}

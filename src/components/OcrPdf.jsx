@@ -376,6 +376,9 @@ const OcrPdf = () => {
         if (!worker) {
           updateProgress('Loading English OCR engine and language data…', pageNumber);
           worker = await createWorker('eng', 1, {
+            workerPath: '/ocr-assets/worker.min.js',
+            corePath: '/ocr-assets',
+            langPath: '/ocr-assets/lang',
             logger: (message) => {
               if (processingRunRef.current !== runId) return;
               if (message.status === 'loading tesseract core') {
@@ -512,7 +515,7 @@ const OcrPdf = () => {
         const message = processingError?.message || '';
         setError(
           message.includes('traineddata') || message.includes('fetch') || message.includes('Network')
-            ? 'OCR resources could not be loaded from jsDelivr. Check your connection and retry; your PDF was not uploaded.'
+            ? 'The bundled OCR resources could not be loaded. Check your connection and retry; your PDF was not uploaded.'
             : message.includes('WinAnsi') || message.includes('cannot encode')
               ? 'The OCR result contains characters that the current searchable-PDF font cannot encode. No download was created.'
             : message || 'This PDF could not be OCR processed. Try another unencrypted PDF.'
@@ -580,8 +583,8 @@ const OcrPdf = () => {
         <h2 className="font-bold">English OCR · searchable PDF output</h2>
         <p className="mt-1">
           Existing text stays searchable. Pages without usable text are recognized from their images, and the original page appearance is retained.
-          On the first scanned PDF, Tesseract.js fetches its worker, core, and English language data from jsDelivr; these resources totaled about 4.4 MB in our verified browser run, though the core build can vary by device.
-          The language data may be cached for later use, but offline OCR is not guaranteed. These supporting resources are separate from your PDF; recognition and PDF creation happen in this browser.
+          Tesseract.js uses worker, core, and English language data bundled with this website. These supporting resources are separate from your PDF; recognition and PDF creation happen in this browser.
+          The PDF and its page images are not sent to a document conversion server.
         </p>
         <p className="mt-2 text-xs text-blue-800">
           Supports unencrypted PDFs up to {MAX_PAGES} pages. Recognition works best on clear, upright printed English; handwriting, scan quality, and complex layouts can affect accuracy.
@@ -590,8 +593,8 @@ const OcrPdf = () => {
 
       <section
         {...getRootProps({
-          role: 'group',
-          className: `pdf-upload-trigger rounded-2xl border-2 border-dashed p-6 text-center ${
+          role: 'button',
+          className: `pdf-upload-trigger cursor-pointer rounded-2xl border-2 border-dashed p-8 text-center ${
             isDragActive ? 'border-blue-500 bg-blue-50' : 'border-slate-300'
           } ${isValidating || isProcessing ? 'cursor-wait opacity-70' : ''}`
         })}
@@ -607,15 +610,6 @@ const OcrPdf = () => {
           {isDragActive ? 'Drop your PDF here' : file ? 'Drop a replacement PDF here' : 'Choose or drop one PDF'}
         </p>
         <p className="mt-1 text-sm text-slate-500">PDF files only · 1–{MAX_PAGES} pages · processed in your browser</p>
-        <button
-          type="button"
-          onClick={open}
-          disabled={isValidating || isProcessing}
-          className="mt-4 inline-flex items-center justify-center gap-2 rounded-lg bg-blue-600 px-4 py-2.5 font-semibold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
-        >
-          <Upload className="h-4 w-4" aria-hidden="true" />
-          {file ? 'Replace PDF' : 'Choose PDF'}
-        </button>
         {isValidating && <p className="mt-3 text-sm text-blue-700" role="status">{validationStatus}</p>}
       </section>
 

@@ -85,9 +85,17 @@ const LeftNavigation = ({ theme, setTheme }) => {
     const estimatedMenuHeight = window.matchMedia('(max-width: 580px)').matches
       ? viewportHeight - 16
       : 520;
-    const menuOffset = window.matchMedia('(max-width: 900px)').matches ? 8 : 18;
+    const isMobile = window.matchMedia('(max-width: 900px)').matches;
+    const categoryNavRect = document.querySelector('.site-left-category-nav')?.getBoundingClientRect();
+    const categoryMenuTop = categoryNavRect
+      ? categoryNavRect.top - 18
+      : triggerRect.top;
+    const menuOffset = isMobile ? 8 : menuId === 'all' ? 18 : 0;
+    const requestedTop = menuId !== 'all' && !isMobile
+      ? categoryMenuTop
+      : triggerRect.top + menuOffset;
     const top = Math.max(8, Math.min(
-      triggerRect.top + menuOffset,
+      requestedTop,
       viewportHeight - estimatedMenuHeight - 8
     ));
 
@@ -267,7 +275,7 @@ const LeftNavigation = ({ theme, setTheme }) => {
         <div
           ref={megaMenuRef}
           id="site-tools-mega-menu"
-          className="site-tools-mega-menu"
+          className={`site-tools-mega-menu${activeMenu !== 'all' ? ' is-category' : ''}`}
           role="dialog"
           aria-label={activeMenu === 'all' ? 'All PDF tools' : `${activeCategory?.name} PDF tools`}
           onKeyDown={handleMegaKeyDown}

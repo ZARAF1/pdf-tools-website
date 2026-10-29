@@ -393,14 +393,16 @@ const SignPdf = () => {
       )}
 
       {error && <p className="rounded-lg bg-red-50 p-3 text-sm text-red-700" role="alert">{error}</p>}
-      <div className="flex flex-wrap gap-3">
-        <button type="button" onClick={createSignedPdf} disabled={!file || isLoading || isProcessing} className="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-5 py-3 font-semibold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-slate-300">
-          {isProcessing ? <Loader2 className="h-5 w-5 animate-spin" aria-hidden="true" /> : <PenLine className="h-5 w-5" aria-hidden="true" />}
-          {isProcessing ? 'Signing PDF…' : 'Sign PDF'}
-        </button>
-        <button type="button" onClick={reset} disabled={isProcessing} className="rounded-lg border border-slate-200 px-5 py-3 font-semibold text-slate-700 transition hover:bg-slate-50 disabled:opacity-50">Reset</button>
-        {output && <button type="button" onClick={downloadPdf} className="inline-flex items-center gap-2 rounded-lg bg-emerald-600 px-5 py-3 font-semibold text-white transition hover:bg-emerald-700"><Download className="h-5 w-5" aria-hidden="true" /> Download Signed PDF</button>}
-      </div>
+      {file && (
+        <div className="flex flex-wrap gap-3">
+          <button type="button" onClick={createSignedPdf} disabled={isLoading || isProcessing} className="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-5 py-3 font-semibold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-slate-300">
+            {isProcessing ? <Loader2 className="h-5 w-5 animate-spin" aria-hidden="true" /> : <PenLine className="h-5 w-5" aria-hidden="true" />}
+            {isProcessing ? 'Signing PDF…' : 'Sign PDF'}
+          </button>
+          <button type="button" onClick={reset} disabled={isProcessing} className="rounded-lg border border-slate-200 px-5 py-3 font-semibold text-slate-700 transition hover:bg-slate-50 disabled:opacity-50">Reset</button>
+          {output && <button type="button" onClick={downloadPdf} className="inline-flex items-center gap-2 rounded-lg bg-emerald-600 px-5 py-3 font-semibold text-white transition hover:bg-emerald-700"><Download className="h-5 w-5" aria-hidden="true" /> Download Signed PDF</button>}
+        </div>
+      )}
       {output && <p className="text-sm text-emerald-700" role="status">Signed PDF is ready to download. This is a visible signature only, not a cryptographic signature.</p>}
       <p className="rounded-lg bg-amber-50 p-3 text-sm text-amber-900">A visible signature does not verify identity, create a certificate signature, or prevent later changes.</p>
     </div>

@@ -296,6 +296,7 @@ const PdfCompressor = () => {
             : entry
         )
       );
+      return resultSize < originalSize ? 'reduced' : 'unchanged';
     } catch (err) {
       const message = err?.message || 'This PDF could not be optimised. Please make sure it is valid and not encrypted.';
       setFiles((prev) =>
@@ -310,6 +311,7 @@ const PdfCompressor = () => {
             : entry
         )
       );
+      return 'failed';
     }
   };
 
@@ -330,14 +332,25 @@ const PdfCompressor = () => {
       return;
     }
 
+    let reduced = 0;
+    let unchanged = 0;
+    let failed = 0;
     for (const item of queue) {
-      await compressOneFile(item);
+      const outcome = await compressOneFile(item);
+      if (outcome === 'reduced') reduced += 1;
+      else if (outcome === 'unchanged') unchanged += 1;
+      else failed += 1;
     }
 
     setIsProcessing(false);
-    const successful = files.filter((item) => item.status === 'success').length;
-    if (successful > 0) {
-      setSummary(`${successful} PDF${successful > 1 ? 's were' : ' was'} optimised successfully.`);
+    if (reduced > 0 && unchanged === 0 && failed === 0) {
+      setSummary(`${reduced} PDF${reduced > 1 ? 's were' : ' was'} optimised successfully.`);
+    } else if (reduced > 0 || unchanged > 0 || failed > 0) {
+      const parts = [];
+      if (reduced > 0) parts.push(`${reduced} reduced`);
+      if (unchanged > 0) parts.push(`${unchanged} kept unchanged`);
+      if (failed > 0) parts.push(`${failed} failed`);
+      setSummary(`Compression complete: ${parts.join(', ')}.`);
     }
   };
 
@@ -459,11 +472,13 @@ const PdfCompressor = () => {
                   </div>
 
                   <button
+                    type="button"
                     onClick={() => removeFile(item.id)}
                     className="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
                     title="Remove file"
+                    aria-label={`Remove ${item.name}`}
                   >
-                    <Trash2 className="w-5 h-5" />
+                    <Trash2 className="w-5 h-5" aria-hidden="true" />
                   </button>
                 </div>
 

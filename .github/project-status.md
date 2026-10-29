@@ -1,6 +1,26 @@
 # Project Status — PDF Utility Website
 
 ## Current state
+**Sign and OCR upload control pass (2026-10-29):** Sign PDF and Reset now follow the Redact PDF pattern and stay hidden until a valid PDF is loaded; browser verification showed neither on initial load and both enabled after a one-page valid upload. The Unlock PDF initial upload card spans the full 896 px desktop workspace with a 192 px minimum height (275 px by 215 px at 390 px mobile). OCR PDF's standalone Choose PDF/Replace PDF button was removed; `/ocr-pdf` now uses the full upload area as a keyboard-focusable button, with no nested button, the shared 44 px tool-card icon tile, and measured desktop/mobile widths of 896 px and 275 px.
+
+**Redact PDF initial controls pass (2026-10-29):** Hidden the "Create Redacted PDF" and "Reset" buttons until a valid PDF is loaded. Browser verification showed neither button on initial `/redact` load; uploading a valid one-page synthetic PDF revealed both buttons enabled. The buttons remain available while a file is selected, including during processing states where action-specific disabling still applies.
+
+**Category submenu compact card pass (2026-10-29):** Reduced category-only submenu icon tiles from 52 px to 40 px, card columns from 200 px to 128 px, card height from 108 px to 84 px, and grid gaps from 16 px to 8 px. Desktop category popup width was reduced from 688 px to 480 px so it matches the compact grid without unused space. Mobile retains its existing responsive single-column layout while inheriting the smaller icon and card spacing.
+
+**Category submenu card-width correction (2026-10-29):** Replaced stretch-filled 295 px category tool cards with fixed 200 px columns and a 16 px column gap. Browser verification at 1440x900 measured icon centers 216 px apart instead of the previous 323.7 px, producing visibly closer icons rather than only changing grid gap. Fixed columns remain left-aligned in each category submenu.
+
+**Category submenu popup-width correction (2026-10-29):** Category popups now use a dedicated 688 px desktop width instead of the 992 px All Tools popup width, removing the empty area to the right of the third icon column. Browser verification measured a 638 px category grid and 298 px mobile popup width.
+
+**Category icon spacing reduction (2026-10-29):** Halved category-submenu card column spacing from the previous clamp range (up to 4.5rem/72px) to 2.25rem/36px maximum, and removed the extra inline grid padding. Browser verification at 1440x900 measured a 28.8 px computed column gap with 294.9 px cards.
+
+**Category submenu placement correction (2026-10-29):** Corrected category popovers so their desktop top aligns to the category navigation section rather than the individual clicked category row. Category popovers remain beside the 240 px rail and use a 3-column tool-icon grid with icons above labels, 52 px icons, centered cards, and wider horizontal/vertical spacing. Browser measurements at 1440x900 showed the category navigation at top 305 px and the submenu opening around the category-section level.
+
+**FAQ and category-submenu refinement (2026-10-29):** Added a shared animated FAQ accordion to the FAQ page and every tool-detail FAQ section. Opening and closing now transitions the answer height over 320 ms and rotates the chevron; browser verification confirmed a 131.5 px opened answer, 0 px after closing, and no underlying-layout jump problems. Category submenus now use the category-section level on desktop, with a three-column icon-card grid whose icons sit above tool labels. Earlier browser measurements were superseded by the placement correction on 29 October 2026. `npm.cmd run build` and `git diff --check` pass.
+
+**Security hardening pass (2026-10-29):** OCR worker/core/English language assets are now configured from `/ocr-assets`, `/ocr-assets`, and `/ocr-assets/lang`; all reviewed source disclosures and error text were updated away from jsDelivr runtime-download claims. Protect PDF now requires 12-character opening, confirmation, and optional owner passwords, with matching form constraints. `public/ocr-assets/` contains the worker, core variants, WASM files, and English trained data. `npm.cmd run build` and `git diff --check` pass after these changes. Browser verification of local OCR asset requests and Protect PDF encryption/decryption remains a next step.
+
+**Search transition slowdown (2026-10-29):** Increased the opening and closing search animation duration to 680 ms for shell expansion, 620 ms for the input scale and reveal, and 520 ms for trigger shape transition.
+
 **Mobile search suggestion cleanup (2026-10-29):** Mobile search suggestions now show only each tool icon and tool name; description and category details are hidden below 900 px. Desktop suggestions retain the existing description and category details.
 
 **Mobile utility and category alignment pass (2026-10-29):** Desktop category popovers now receive an 18 px lower opening offset. The mobile Privacy, Contact, About, and theme utility controls move out of the rail bottom and into a compact fixed horizontal row at the top right beside the icon search area. Verified at 390x844 with all five category controls visible and zero horizontal overflow. Existing category navigation spacing was pushed down slightly so the category list begins below the category section label.

@@ -479,18 +479,20 @@ const RedactPdf = () => {
         </div>
       )}
 
-      <div className="flex flex-wrap gap-3">
-        <button type="button" onClick={createRedactedPdf} disabled={!file || isLoading || isProcessing} className="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-5 py-3 font-semibold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-slate-300">
-          {isProcessing ? <Loader2 className="h-5 w-5 animate-spin" aria-hidden="true" /> : <CheckCircle2 className="h-5 w-5" aria-hidden="true" />}
-          {isProcessing ? 'Redacting PDF…' : 'Create Redacted PDF'}
-        </button>
-        <button type="button" onClick={clearFile} disabled={isProcessing || (!file && !error && !output)} className="rounded-lg border border-slate-200 px-5 py-3 font-semibold text-slate-700 transition hover:bg-slate-50 disabled:opacity-50">Reset</button>
-        {output && (
-          <button type="button" onClick={downloadPdf} className="inline-flex items-center gap-2 rounded-lg bg-emerald-600 px-5 py-3 font-semibold text-white transition hover:bg-emerald-700">
-            <Download className="h-5 w-5" aria-hidden="true" /> Download Redacted PDF
+      {file && (
+        <div className="flex flex-wrap gap-3">
+          <button type="button" onClick={createRedactedPdf} disabled={isLoading || isProcessing} className="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-5 py-3 font-semibold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-slate-300">
+            {isProcessing ? <Loader2 className="h-5 w-5 animate-spin" aria-hidden="true" /> : <CheckCircle2 className="h-5 w-5" aria-hidden="true" />}
+            {isProcessing ? 'Redacting PDF…' : 'Create Redacted PDF'}
           </button>
-        )}
-      </div>
+          <button type="button" onClick={clearFile} disabled={isProcessing} className="rounded-lg border border-slate-200 px-5 py-3 font-semibold text-slate-700 transition hover:bg-slate-50 disabled:opacity-50">Reset</button>
+          {output && (
+            <button type="button" onClick={downloadPdf} className="inline-flex items-center gap-2 rounded-lg bg-emerald-600 px-5 py-3 font-semibold text-white transition hover:bg-emerald-700">
+              <Download className="h-5 w-5" aria-hidden="true" /> Download Redacted PDF
+            </button>
+          )}
+        </div>
+      )}
       {isProcessing && <p className="sr-only" role="status">Creating the redacted PDF.</p>}
       {output && <p className="text-sm text-emerald-700" role="status">Redacted PDF is ready to download.</p>}
     </div>

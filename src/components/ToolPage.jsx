@@ -4,7 +4,7 @@ import { ArrowRight, Download, FileText, Upload } from 'lucide-react';
 import AdSlot from './AdSlot';
 import RelatedToolsCarousel from './RelatedToolsCarousel';
 import { TOOL_CATEGORIES, TOOL_REGISTRY } from './toolRegistry';
-import { closeDisclosureOnEscape } from '../lib/detailsEscape';
+import FaqAccordion from './FaqAccordion';
 
 const TOOL_CONTENT = {
   crop: {
@@ -126,26 +126,25 @@ const TOOL_CONTENT = {
   word: {
     title: 'PDF to Word',
     description: 'Extract text and create an editable Word document.',
-    intro: 'Create an editable Word document from text in a PDF. Select one PDF and start conversion; pages with selectable text are read and laid out as editable text in a DOCX file. The result is a practical starting point, not an exact reproduction of every original page. Complex columns, tables, unusual fonts, headers, and images may need adjustments in Word. For scanned pages without readable text, the tool can attempt English optical character recognition, but accuracy depends on scan quality and the final text should be checked. OCR may load its recognition resources from jsDelivr; these resources support the conversion and are separate from your document. Your PDF is processed in the browser rather than uploaded to a conversion server. Download and review the DOCX before relying on it.',
-    mechanism: 'PDF.js extracts text and page positions in the browser; Tesseract.js performs English OCR for pages without readable text; docx builds the output file. When OCR is needed, this setup defaults to loading Tesseract worker/core and English language resources from jsDelivr. Complex layouts are reconstructed approximately.',
+    intro: 'Create an editable Word document from text in a PDF. Select one PDF and start conversion; pages with selectable text are read and laid out as editable text in a DOCX file. The result is a practical starting point, not an exact reproduction of every original page. Complex columns, tables, unusual fonts, headers, and images may need adjustments in Word. For scanned pages without readable text, the tool can attempt English optical character recognition using locally bundled Tesseract assets, but accuracy depends on scan quality and the final text should be checked. Your PDF is processed in the browser rather than uploaded to a conversion server. Download and review the DOCX before relying on it.',
+    mechanism: 'PDF.js extracts text and page positions in the browser; Tesseract.js performs English OCR for pages without readable text using locally bundled worker, core, and English language assets; docx builds the output file. Complex layouts are reconstructed approximately.',
     steps: ['Choose one PDF.', 'Start conversion and wait while pages are read; scanned pages may require OCR setup and recognition.', 'Download the DOCX and review its formatting and text.'],
     faqs: [
       ['Does this preserve the exact PDF layout?', 'No. Text positions and simple aligned rows are reconstructed; complex columns, tables, forms, and typography may need manual cleanup.'],
       ['Can scanned pages be converted?', 'The tool attempts English OCR for pages without readable text. Recognition quality depends on scan clarity and OCR resources being available.'],
-      ['Does the whole process stay offline?', 'No. PDF reading and conversion run in the browser, but the current OCR configuration can fetch its worker, core, and English language data from jsDelivr when needed.']
     ]
   },
   ocr: {
     title: 'OCR PDF',
     description: 'Recognize text in scanned PDF pages and add a searchable text layer.',
-    intro: 'Turn scanned, image-only pages into a PDF you can search and select text in, while retaining the original page appearance. Choose an unencrypted PDF with up to 50 pages. The tool reads the text already present on each page and invokes OCR only for pages that lack a usable text layer, which helps avoid unnecessary recognition work in mixed documents. The OCR engine is currently configured for printed English; handwritten, low-resolution, skewed, or complex pages can be misread, so review important results. Recognized words are added invisibly at their detected positions, and the output is checked for its page count and searchable text before a download is offered. PDF processing runs in your browser. The first scanned page may require downloading the Tesseract worker, core software, and English language data from jsDelivr; the PDF itself is not uploaded.',
-    mechanism: 'PDF.js checks existing page text and renders pages without usable text. Tesseract.js recognizes English text in the browser; pdf-lib adds an invisible text layer to the original pages, preserving their page artwork. The output is reopened and checked for page count and searchable text before download. OCR resources may be fetched from jsDelivr when a scanned page is processed.',
+    intro: 'Turn scanned, image-only pages into a PDF you can search and select text in, while retaining the original page appearance. Choose an unencrypted PDF with up to 50 pages. The tool reads the text already present on each page and invokes OCR only for pages that lack a usable text layer, which helps avoid unnecessary recognition work in mixed documents. The OCR engine is currently configured for printed English; handwritten, low-resolution, skewed, or complex pages can be misread, so review important results. Recognized words are added invisibly at their detected positions, and the output is checked for its page count and searchable text before a download is offered. PDF processing and OCR run in your browser using locally bundled Tesseract assets; the PDF itself is not uploaded.',
+    mechanism: 'PDF.js checks existing page text and renders pages without usable text. Tesseract.js recognizes English text in the browser using OCR worker, core, and English language assets bundled with this website; pdf-lib adds an invisible text layer to the original pages, preserving their page artwork. The output is reopened and checked for page count and searchable text before download.',
     steps: ['Choose one unencrypted PDF with up to 50 pages.', 'Review the first-page preview and file details.', 'Select Create searchable PDF and wait while scanned pages are rendered and recognized.', 'Download the validated PDF and use your PDF viewer’s text selection or Find feature to check the OCR result.'],
     faqs: [
       ['Will the result be searchable?', 'The tool adds invisible text at OCR word positions, then reopens the output and checks that recognized text is present before it offers a download. Verify important content with your PDF viewer’s Find or text-selection feature.'],
       ['Which languages are supported?', 'The current version runs English OCR only and does not provide a language selector. It is intended for clear printed English, not handwriting or other languages.'],
       ['What happens with mixed PDFs?', 'Pages with a usable existing text layer are retained without OCR. Pages without enough selectable text are rendered and OCR processed.'],
-      ['Does OCR upload my PDF?', 'No. The PDF is read and processed in this browser. The first scanned page may trigger a download of the Tesseract worker, core, and English language data from jsDelivr; those are software resources, not your document. Ordinary website requests and hosting logs are separate.'],
+      ['Does OCR upload my PDF?', 'No. The PDF is read and processed in this browser. OCR uses worker, core, and English language assets bundled with the website, not third-party runtime downloads; ordinary website requests and hosting logs are separate.'],
       ['How accurate is OCR?', 'Recognition depends on image resolution, contrast, orientation, print quality, and page layout. Review the output before relying on its text.']
     ]
   },
@@ -356,18 +355,7 @@ const ToolPage = ({ tool, children }) => {
 
       <section aria-labelledby="tool-faq-heading" className="space-y-3">
         <h2 id="tool-faq-heading" className="text-2xl font-bold text-slate-800">Frequently Asked Questions</h2>
-        {content.faqs.map(([question, answer]) => (
-          <details
-            key={question}
-            className="group bg-white rounded-xl border border-slate-200 p-4"
-            onKeyDown={closeDisclosureOnEscape}
-          >
-            <summary className="cursor-pointer font-semibold text-slate-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600">
-              {question}
-            </summary>
-            <p className="mt-3 text-sm text-slate-600 leading-relaxed">{answer}</p>
-          </details>
-        ))}
+        <FaqAccordion items={content.faqs} />
       </section>
 
       <RelatedToolsCarousel currentToolId={tool} />

@@ -140,6 +140,9 @@ const PdfToWord = () => {
           onStatus(`Recognizing scanned page ${p} of ${doc.numPages}...`);
           if (!ocrWorker) {
             ocrWorker = await createWorker('eng', 1, {
+              workerPath: '/ocr-assets/worker.min.js',
+              corePath: '/ocr-assets',
+              langPath: '/ocr-assets/lang',
               logger: (message) => {
                 if (message.status === 'loading language traineddata') {
                   onStatus('Loading English OCR data...');

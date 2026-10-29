@@ -1,9 +1,9 @@
 import React, { useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { closeDisclosureOnEscape } from '../lib/detailsEscape';
+import FaqAccordion from './FaqAccordion';
 
 const FAQ_ITEMS = [
-  ['Are my PDF files uploaded?', 'PDF operations process the selected document in your browser; the app does not upload documents to a conversion server. PDF to Word and OCR PDF may download Tesseract OCR worker, core software, and English language data from jsDelivr when scanned-page recognition is needed. These are supporting resources, not your document; OCR recognition runs in your browser. The website also requests its pages and assets, and hosting log practices depend on the deployment provider.'],
+  ['Are my PDF files uploaded?', 'PDF operations process the selected document in your browser; the app does not upload documents to a conversion server. PDF to Word and OCR PDF use Tesseract OCR worker, core software, and English language data bundled with the website for scanned-page recognition. These are supporting resources, not your document; OCR recognition runs in your browser. The website also requests its pages and assets, and hosting log practices depend on the deployment provider.'],
   ['How many PDF files can I merge?', 'You can merge up to five PDF files at a time. At least two files are required.'],
   ['Why might a PDF fail to open?', 'The file may be corrupt, use unsupported encryption or PDF features, or exceed the available memory. If it is password-protected, use Unlock PDF with a correct password you are authorized to use; otherwise try a readable copy or a smaller file.'],
   ['Will compression always reduce file size?', 'No. PDFs may already be compressed or be dominated by embedded images. The compressor reports actual sizes and avoids offering a larger output. Higher compression rasterizes pages and reduces text/image quality.'],
@@ -28,7 +28,7 @@ const ARTICLES = {
     description: 'Learn what browser-side PDF processing protects and what it does not.',
     sections: [
       ['The selected document', 'A browser-side PDF library can read a file selected through a file picker and generate a new file without uploading the PDF to a conversion server. This describes the transformation path, not every request made by the website.'],
-      ['Website and resource requests', 'The browser still requests the website and its assets from the host. PDF to Word and OCR PDF can use Tesseract.js worker, core, and English language resources from jsDelivr for scanned pages. Hosting providers may keep request logs under their own policies.'],
+      ['Website and resource requests', 'The browser requests the website and its assets from the host, including locally bundled Tesseract.js OCR resources used by PDF to Word and OCR PDF. Hosting providers may keep request logs under their own policies.'],
       ['Make a privacy decision with the full picture', 'Do not enter sensitive content unless the processing and deployment behavior suit your needs. See the [Privacy Policy](/privacy) for the current implementation notes and outstanding operator/hosting details.']
     ]
   },
@@ -95,19 +95,8 @@ const FaqPage = () => {
   usePageMeta(PAGE_META.faq.title, PAGE_META.faq.description);
   return (
     <PageLayout title="Frequently Asked Questions" intro="Practical answers about using the PDF tools, their limits, and how the website processes files.">
-      <section className="space-y-3" aria-label="Frequently asked questions">
-        {FAQ_ITEMS.map(([question, answer]) => (
-          <details
-            key={question}
-            className="group bg-white rounded-xl border border-slate-200 p-4"
-            onKeyDown={closeDisclosureOnEscape}
-          >
-            <summary className="cursor-pointer font-semibold text-slate-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600">
-              {question}
-            </summary>
-            <p className="mt-3 text-sm text-slate-600 leading-relaxed">{answer}</p>
-          </details>
-        ))}
+      <section aria-label="Frequently asked questions">
+        <FaqAccordion items={FAQ_ITEMS} />
       </section>
       <p className="text-sm text-slate-600">Looking for a specific operation? Browse the <Link className="underline hover:text-blue-700" to="/">PDF tools</Link> or the <Link className="underline hover:text-blue-700" to="/resources">PDF guides</Link>.</p>
     </PageLayout>
@@ -193,7 +182,7 @@ const INFO_PAGES = {
         title: 'PDF processing in the browser',
         content: <>
           <p>The inspected PDF tools read selected documents in the browser and create their outputs there; the app does not upload documents to an application conversion server. This describes document processing, not a fully offline website: opening a page requests website files from its hosting provider.</p>
-          <p>PDF to Word and OCR PDF use Tesseract.js for English OCR when a page has no readable text. Their configuration may download the OCR worker, core software, and English language data from jsDelivr when needed. These are supporting resources; scanned-page recognition is performed in the browser. Styling is built into the website assets; no Tailwind CSS CDN is used.</p>
+          <p>PDF to Word and OCR PDF use Tesseract.js for English OCR when a page has no readable text. Their worker, core software, and English language data are bundled with the website as local assets. These are supporting resources; scanned-page recognition is performed in the browser. Styling is built into the website assets; no Tailwind CSS CDN is used.</p>
         </>
       },
       {

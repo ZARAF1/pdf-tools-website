@@ -70,12 +70,16 @@ const PdfProtector = () => {
       setError('Please enter a password to protect your document.');
       return;
     }
-    if (password.length < 4) {
-      setError('Password must be at least 4 characters.');
+    if (password.length < 12) {
+      setError('Password must be at least 12 characters.');
       return;
     }
     if (password !== confirmPassword) {
       setError('Passwords do not match.');
+      return;
+    }
+    if (ownerPassword && ownerPassword.length < 12) {
+      setError('Owner password must be at least 12 characters, or leave it empty to use the opening password.');
       return;
     }
 
@@ -185,14 +189,14 @@ const PdfProtector = () => {
                 type="password"
                 value={password}
                 required
-                minLength={4}
+                minLength={12}
                 aria-describedby="protect-password-help"
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="Set a password"
                 className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-red-500 focus:border-transparent outline-none transition-all"
               />
               <p id="protect-password-help" className="text-xs text-slate-500">
-                Required to open the PDF. You will need this to view or unlock the file.
+                Required to open the PDF. Use at least 12 characters.
               </p>
             </div>
 
@@ -203,7 +207,7 @@ const PdfProtector = () => {
                 type="password"
                 value={confirmPassword}
                 required
-                minLength={4}
+                minLength={12}
                 aria-describedby="protect-confirm-password-help"
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 placeholder="Re-enter the password"
@@ -218,13 +222,14 @@ const PdfProtector = () => {
                 id="protect-owner-password"
                 type="password"
                 value={ownerPassword}
+                minLength={12}
                 aria-describedby="protect-owner-password-help"
                 onChange={(e) => setOwnerPassword(e.target.value)}
                 placeholder="Leave empty to use the same password"
                 className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-red-500 focus:border-transparent outline-none transition-all"
               />
               <p id="protect-owner-password-help" className="text-xs text-slate-500">
-                Manages permissions. Leaving it empty uses the same password for both.
+                Manages permissions. Use at least 12 characters, or leave it empty to use the opening password.
               </p>
             </div>
 
