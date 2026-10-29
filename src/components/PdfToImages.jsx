@@ -366,10 +366,10 @@ const PdfToImages = () => {
   }, []);
 
   return (
-    <div className="mx-auto max-w-4xl space-y-6">
+    <div className="pdf-tool-workflow mx-auto max-w-4xl space-y-6">
       <section
         {...getRootProps({
-          className: `pdf-upload-trigger cursor-pointer rounded-2xl border-2 border-dashed p-8 text-center focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 ${
+          className: `pdf-workflow-upload pdf-upload-zone cursor-pointer rounded-2xl border-2 border-dashed p-8 text-center focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 ${
             isDragActive ? 'border-blue-500 bg-blue-50' : 'border-slate-300'
           } ${isValidating || isProcessing ? 'cursor-wait opacity-70' : ''}`
         })}
@@ -386,7 +386,7 @@ const PdfToImages = () => {
       </section>
 
       {file && (
-        <section className="flex flex-col gap-3 rounded-xl border border-slate-200 bg-white p-4 sm:flex-row sm:items-center sm:justify-between">
+        <section className="pdf-workflow-selected flex flex-col gap-3 rounded-xl border border-slate-200 bg-white p-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex min-w-0 items-center gap-3">
             <FileText className="h-8 w-8 shrink-0 text-blue-600" aria-hidden="true" />
             <div className="min-w-0">
@@ -406,7 +406,8 @@ const PdfToImages = () => {
         </section>
       )}
 
-      <section className="space-y-5 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+      {file && (
+      <section className="pdf-workflow-controls space-y-5 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
         <fieldset disabled={!file || isValidating || isProcessing}>
           <legend className="mb-3 text-lg font-bold text-slate-800">Output format</legend>
           <div className="grid gap-3 sm:grid-cols-3">
@@ -519,11 +520,15 @@ const PdfToImages = () => {
           </p>
         )}
 
-        <div className="flex flex-wrap gap-3">
+      </section>
+      )}
+
+      {file && (
+        <div className="pdf-workflow-actions flex flex-wrap gap-3">
           <button
             type="button"
             onClick={convert}
-            disabled={!file || isValidating || isProcessing}
+            disabled={isValidating || isProcessing}
             className="inline-flex items-center justify-center gap-2 rounded-xl bg-blue-600 px-5 py-3 font-semibold text-white shadow-sm transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
           >
             {isProcessing ? <Loader2 className="h-5 w-5 animate-spin" aria-hidden="true" /> : <FileImage className="h-5 w-5" aria-hidden="true" />}
@@ -547,7 +552,7 @@ const PdfToImages = () => {
             Reset
           </button>
         </div>
-      </section>
+      )}
 
       {progress && <p className="flex items-center gap-2 text-sm text-blue-700" role="status" aria-live="polite">
         {isProcessing && <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />}

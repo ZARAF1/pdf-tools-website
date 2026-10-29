@@ -363,6 +363,7 @@ const PdfCompressor = () => {
         <p className="text-slate-600">Reduce file size with standard or higher compression. Files are processed in your browser.</p>
       </div>
 
+      {files.length > 0 && (
       <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
         <div className="flex items-center justify-between gap-4">
           <div>
@@ -401,6 +402,7 @@ const PdfCompressor = () => {
           </motion.div>
         )}
       </div>
+      )}
 
       <div
         {...getRootProps()}

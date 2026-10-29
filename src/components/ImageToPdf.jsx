@@ -278,8 +278,9 @@ const ImageToPdf = () => {
   };
 
   return (
-    <div className="mx-auto max-w-4xl space-y-6">
-      <section className="grid grid-cols-1 gap-4 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm md:grid-cols-2 lg:grid-cols-3">
+    <div className="pdf-tool-workflow mx-auto max-w-4xl space-y-6">
+      {images.length > 0 && (
+      <section className="pdf-workflow-controls grid grid-cols-1 gap-4 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm md:grid-cols-2 lg:grid-cols-3">
         <div className="space-y-2">
           <label htmlFor="image-page-size" className="text-sm font-semibold text-slate-700">Page size</label>
           <select id="image-page-size" value={pageSize} onChange={(event) => updateSetting(setPageSize, event.target.value)} className="w-full rounded-lg border border-slate-200 px-3 py-2.5">
@@ -330,10 +331,11 @@ const ImageToPdf = () => {
           PNG and BMP inputs are encoded as PNG to retain decoded transparency; JPEG inputs are resized and re-encoded using the quality setting. All resizing uses temporary browser copies, not the originals.
         </p>
       </section>
+      )}
 
       <div
         {...getRootProps()}
-        className={`rounded-2xl border-2 border-dashed p-9 text-center transition-all duration-200 ${
+        className={`pdf-workflow-upload pdf-upload-zone rounded-2xl border-2 border-dashed p-9 text-center transition-all duration-200 ${
           isDragActive ? 'border-blue-500 bg-blue-50' : 'cursor-pointer border-slate-300 bg-white hover:border-blue-400 hover:bg-blue-50/50 hover:shadow-md'
         }`}
       >
@@ -348,7 +350,8 @@ const ImageToPdf = () => {
       {error && <div role="alert" className="flex items-start gap-3 rounded-xl border border-rose-200 bg-rose-50 p-4 text-rose-800"><AlertCircle className="h-5 w-5 shrink-0" aria-hidden="true" /><span className="text-sm">{error}</span></div>}
 
       {images.length > 0 ? (
-        <div className="space-y-3">
+        <>
+        <div className="pdf-workflow-selected space-y-3">
           {images.map((image, index) => (
             <div key={image.id} className="group flex items-center gap-3 rounded-xl border border-slate-200 bg-white p-3 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md motion-reduce:transform-none">
               <img src={image.preview} alt="" className="h-16 w-16 shrink-0 rounded-lg bg-slate-100 object-contain" />
@@ -363,7 +366,8 @@ const ImageToPdf = () => {
               </div>
             </div>
           ))}
-          <div className="flex flex-col gap-3 pt-2 sm:flex-row">
+        </div>
+          <div className="pdf-workflow-actions flex flex-col gap-3 pt-2 sm:flex-row">
             <button type="button" onClick={reset} disabled={isProcessing} className="inline-flex items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-5 py-3 font-semibold text-slate-700 transition hover:bg-slate-50 disabled:opacity-50">
               <RefreshCw className="h-4 w-4" aria-hidden="true" /> Reset
             </button>
@@ -373,10 +377,8 @@ const ImageToPdf = () => {
               {isProcessing ? 'Creating PDF…' : `Create PDF (${images.length} ${images.length === 1 ? 'page' : 'pages'})`}
             </button>
           </div>
-        </div>
-      ) : (
-        <p className="py-4 text-center text-sm text-slate-500">No images selected.</p>
-      )}
+        </>
+      ) : null}
 
       {outputBytes && (
         <div role="status" className="flex flex-col gap-4 rounded-xl border border-emerald-200 bg-emerald-50 p-4 text-emerald-900 sm:flex-row sm:items-center sm:justify-between">

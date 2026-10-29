@@ -1373,9 +1373,6 @@ const EditPdf = () => {
       )}
 
       {isLoading && !file && <p className="pdf-editor-secondary text-sm" role="status">Loading and validating the selected PDF…</p>}
-      <p className="pdf-editor-limitation">
-        This editor adds text, images, drawings, highlights, and shapes as new content; it does not replace or reflow existing PDF text. Rewriting may affect digital signatures, forms, annotations, bookmarks, metadata, accessibility tags, or specialized PDF features. Review the saved copy before sharing it.
-      </p>
     </div>
   );
 };

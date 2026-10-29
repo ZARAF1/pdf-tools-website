@@ -219,7 +219,7 @@ const OrganizePdf = () => {
   };
 
   return (
-    <div className="space-y-6 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+    <div className="pdf-tool-workflow space-y-6 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
       <div>
         <h2 className="mb-2 text-xl font-bold text-slate-800">Organize PDF pages</h2>
         <p className="text-sm text-slate-600">Reorder pages, rotate them in 90° steps, or remove pages. Your original file is not changed.</p>
@@ -230,7 +230,7 @@ const OrganizePdf = () => {
           role: file ? 'group' : undefined,
           'aria-label': file ? `Selected PDF ${file.name}` : 'Choose a PDF to organize'
         })}
-        className={`pdf-upload-zone rounded-2xl border-2 border-dashed p-8 text-center transition-all ${
+        className={`pdf-workflow-selected pdf-workflow-upload pdf-upload-zone rounded-2xl border-2 border-dashed p-8 text-center transition-all ${
           isDragActive ? 'border-blue-500 bg-blue-50' : 'cursor-pointer border-slate-300 bg-white hover:border-blue-400 hover:bg-blue-50/50'
         }`}
       >
@@ -261,7 +261,7 @@ const OrganizePdf = () => {
       {error && <p className="rounded-lg bg-red-50 p-3 text-sm text-red-700" role="alert">{error}</p>}
 
       {pages.length > 0 && (
-        <div className="space-y-4">
+        <div className="pdf-workflow-controls space-y-4">
           <p className="text-sm text-slate-500">Drag page cards to reorder, or use the controls on each page. At least one page must remain. Screen readers can hear extracted page text where available.</p>
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
             {pages.map((page, index) => (
@@ -309,7 +309,7 @@ const OrganizePdf = () => {
         </div>
       )}
 
-      <div className="flex flex-wrap gap-3">
+      <div className="pdf-workflow-actions flex flex-wrap gap-3">
         {file && (
           <>
             <button type="button" onClick={createPdf} disabled={isLoading || isProcessing} className="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-5 py-3 font-semibold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-slate-300">

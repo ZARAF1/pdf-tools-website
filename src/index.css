@@ -2958,6 +2958,180 @@ body {
   color: var(--text-primary);
 }
 
+.tool-attachment-section {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid #bfdbfe;
+  border-radius: 1.25rem;
+  background:
+    linear-gradient(135deg, rgb(239 246 255 / 0.92), rgb(255 255 255 / 0.82)),
+    var(--surface-background);
+  box-shadow:
+    0 0 0 1px rgb(96 165 250 / 0.12),
+    0 10px 34px rgb(37 99 235 / 0.14),
+    0 0 28px rgb(147 197 253 / 0.26);
+}
+
+.tool-attachment-section::before {
+  position: absolute;
+  top: 0;
+  right: 0;
+  left: 0;
+  height: 3px;
+  content: '';
+  background: linear-gradient(90deg, #60a5fa, #2563eb 48%, #93c5fd);
+}
+
+.tool-attachment-heading {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1rem 1.25rem 0.75rem;
+  border-bottom: 1px solid rgb(191 219 254 / 0.78);
+}
+
+.tool-attachment-icon {
+  display: flex;
+  width: 2.5rem;
+  height: 2.5rem;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.75rem;
+  background: #dbeafe;
+  color: #1d4ed8;
+}
+
+.tool-attachment-heading h2 {
+  margin: 0;
+  color: var(--text-primary);
+  font-size: 1.15rem;
+  line-height: 1.25;
+  font-weight: 800;
+}
+
+.tool-attachment-heading p {
+  margin: 0.25rem 0 0;
+  color: #1d4ed8;
+  font-size: 0.9rem;
+  line-height: 1.35;
+  font-weight: 800;
+}
+
+.tool-attachment-content {
+  padding: 1.25rem;
+}
+
+:root[data-theme='dark'] .tool-attachment-section {
+  border-color: rgb(147 197 253 / 0.42);
+  background: linear-gradient(135deg, rgb(30 58 95 / 0.58), rgb(15 23 42 / 0.92));
+  box-shadow:
+    0 0 0 1px rgb(96 165 250 / 0.12),
+    0 12px 36px rgb(2 6 23 / 0.32),
+    0 0 30px rgb(37 99 235 / 0.16);
+}
+
+:root[data-theme='dark'] .tool-attachment-heading {
+  border-bottom-color: rgb(147 197 253 / 0.24);
+}
+
+:root[data-theme='dark'] .tool-attachment-icon {
+  background: rgb(30 64 175 / 0.36);
+  color: #bfdbfe;
+}
+
+:root[data-theme='dark'] .tool-attachment-heading p {
+  color: #93c5fd;
+}
+
+@media (max-width: 580px) {
+  .tool-attachment-content .merge-pdf-upload-zone {
+    min-height: 88px;
+    padding: 0.875rem 1rem;
+  }
+
+  .merge-pdf-upload-content {
+    align-items: center;
+    flex-wrap: wrap;
+  }
+
+  .merge-pdf-upload-copy {
+    flex: 1 1 calc(100% - 52px);
+  }
+
+  .merge-pdf-upload-button {
+    width: 100%;
+    margin-top: 0.125rem;
+  }
+
+  .tool-attachment-heading {
+    align-items: flex-start;
+    padding: 0.875rem 1rem 0.75rem;
+  }
+
+  .tool-attachment-heading h2 {
+    font-size: 1.05rem;
+  }
+
+  .tool-attachment-heading p {
+    font-size: 0.82rem;
+  }
+
+  .tool-attachment-content {
+    padding: 1rem;
+  }
+}
+
+.pdf-tool-workflow {
+  display: flex;
+  flex-direction: column;
+}
+
+.pdf-tool-workflow .pdf-workflow-controls {
+  order: 1;
+}
+
+.pdf-tool-workflow .pdf-workflow-selected,
+.pdf-tool-workflow .pdf-workflow-attachment {
+  order: 2;
+}
+
+.pdf-tool-workflow .pdf-workflow-upload {
+  order: 3;
+}
+
+.pdf-tool-workflow .pdf-workflow-actions {
+  order: 4;
+}
+
+.pdf-tool-workflow .pdf-upload-zone,
+.tool-attachment-content .pdf-upload-zone,
+.tool-attachment-content .pdf-workflow-upload {
+  min-height: 148px;
+  border-width: 2px;
+  border-style: dashed;
+  border-color: var(--border-color);
+  background: var(--surface-background);
+  box-shadow: 0 0 0 1px rgb(59 130 246 / 0.04), 0 10px 28px rgb(59 130 246 / 0.08);
+  transition: border-color 160ms ease, background-color 160ms ease, box-shadow 160ms ease;
+}
+
+.pdf-tool-workflow .pdf-upload-zone:hover,
+.tool-attachment-content .pdf-upload-zone:hover,
+.tool-attachment-content .pdf-workflow-upload:hover {
+  border-color: #60a5fa;
+  background: var(--surface-muted);
+  box-shadow: 0 0 0 1px rgb(59 130 246 / 0.1), 0 12px 32px rgb(59 130 246 / 0.12);
+}
+
+:root[data-theme='dark'] .pdf-tool-workflow .pdf-upload-zone,
+:root[data-theme='dark'] .tool-attachment-content .pdf-upload-zone,
+:root[data-theme='dark'] .tool-attachment-content .pdf-workflow-upload {
+  border-color: #64748b;
+  background: #172033;
+  box-shadow: 0 0 0 1px rgb(96 165 250 / 0.08), 0 12px 30px rgb(37 99 235 / 0.16);
+}
+
 .pdf-upload-trigger {
   border-color: var(--border-color);
   background-color: var(--surface-background);
@@ -2977,6 +3151,248 @@ body {
 .pdf-upload-trigger:disabled {
   cursor: not-allowed;
   opacity: 0.55;
+}
+
+/* Shared attachment-zone treatment: compact horizontal structure like Edit PDF. */
+.tool-attachment-content .pdf-workflow-upload,
+.tool-attachment-content .pdf-upload-zone,
+.tool-attachment-content section.pdf-upload-trigger,
+.tool-attachment-content .crop-pdf-upload:not(:has(.crop-pdf-file)),
+.tool-attachment-content .pdf-editor-upload-zone,
+.tool-attachment-content [class*="border-dashed"] {
+  min-height: 88px;
+  height: auto;
+  border-width: 1px;
+  border-style: dashed;
+  border-radius: 1rem;
+  padding: 1rem 1.25rem;
+  box-shadow: none;
+}
+
+.tool-attachment-content .crop-pdf-upload:not(:has(.crop-pdf-file)),
+.tool-attachment-content .pdf-editor-upload-zone {
+  background: var(--surface-background);
+}
+
+.tool-attachment-content .pdf-workflow-upload,
+.tool-attachment-content .pdf-upload-zone,
+.tool-attachment-content section.pdf-upload-trigger,
+.tool-attachment-content .crop-pdf-upload:not(:has(.crop-pdf-file)),
+.tool-attachment-content .pdf-editor-upload-zone,
+.tool-attachment-content [class*="border-dashed"] {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  text-align: left;
+}
+
+.tool-attachment-content .pdf-workflow-upload > div,
+.tool-attachment-content .pdf-upload-zone > div,
+.tool-attachment-content .pdf-upload-trigger > div,
+.tool-attachment-content .crop-pdf-upload-prompt {
+  width: 100%;
+}
+
+.tool-attachment-content .pdf-workflow-upload > div.flex.flex-col.items-center,
+.tool-attachment-content .pdf-upload-zone > div.flex.flex-col.items-center,
+.tool-attachment-content .crop-pdf-upload-prompt {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 0.75rem;
+  text-align: left;
+}
+
+.tool-attachment-content .pdf-workflow-upload > div.flex.flex-col.items-center > div:first-child,
+.tool-attachment-content .pdf-upload-zone > div.flex.flex-col.items-center > div:first-child,
+.tool-attachment-content .crop-pdf-upload-prompt > svg {
+  width: 40px;
+  height: 40px;
+  flex: 0 0 40px;
+  margin: 0;
+  padding: 8px;
+  border-radius: 999px;
+  box-sizing: border-box;
+}
+
+.tool-attachment-content .pdf-workflow-upload > div.flex.flex-col.items-center > h3,
+.tool-attachment-content .pdf-workflow-upload > div.flex.flex-col.items-center > p:not(.sr-only),
+.tool-attachment-content .pdf-upload-zone > div.flex.flex-col.items-center > p {
+  margin: 0;
+}
+
+.tool-attachment-content .pdf-workflow-upload > div.flex.flex-col.items-center > h3 {
+  min-width: 0;
+  flex: 1 1 auto;
+  font-size: 1rem;
+  line-height: 1.35;
+}
+
+.tool-attachment-content .pdf-workflow-upload > div.flex.flex-col.items-center > p:not(.sr-only),
+.tool-attachment-content .pdf-upload-zone > div.flex.flex-col.items-center > p:last-child {
+  margin-left: auto;
+  flex: 0 1 230px;
+  text-align: right;
+  font-size: 0.875rem;
+}
+
+.tool-attachment-content .crop-pdf-upload-prompt {
+  min-height: 54px;
+  padding: 0;
+}
+
+.tool-attachment-content .crop-pdf-upload-prompt strong {
+  flex: 1 1 auto;
+  font-size: 1rem;
+  color: var(--text-primary);
+}
+
+.tool-attachment-content .crop-pdf-upload-prompt span {
+  flex: 0 1 230px;
+  margin: 0;
+  text-align: right;
+  color: var(--text-secondary);
+}
+
+.tool-attachment-content .merge-pdf-upload-zone {
+  min-height: 88px;
+  padding: 1rem 1.25rem;
+  border-width: 1px;
+  border-radius: 1rem;
+  text-align: left;
+}
+
+.merge-pdf-upload-content {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.merge-pdf-upload-icon {
+  display: flex;
+  width: 40px;
+  height: 40px;
+  flex: 0 0 40px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  background: #dbeafe;
+}
+
+.merge-pdf-upload-copy {
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+.merge-pdf-upload-copy h3 {
+  margin: 0;
+  color: var(--text-primary);
+  font-size: 1rem;
+  line-height: 1.35;
+  font-weight: 700;
+}
+
+.merge-pdf-upload-copy p {
+  margin: 0.125rem 0 0;
+  color: var(--text-secondary);
+  font-size: 0.875rem;
+  line-height: 1.35;
+}
+
+.merge-pdf-upload-button {
+  flex: 0 0 auto;
+  margin-left: auto;
+  white-space: nowrap;
+}
+
+:root[data-theme='dark'] .merge-pdf-upload-icon {
+  background: rgb(30 64 175 / 0.36);
+  color: #bfdbfe;
+}
+
+.tool-attachment-content > * {
+  width: 100%;
+  max-width: none !important;
+}
+
+.tool-attachment-content [class*="border-dashed"] > .flex.flex-col.items-center {
+  display: flex;
+  width: 100%;
+  flex-direction: row;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 0.75rem;
+  text-align: left;
+}
+
+.tool-attachment-content [class*="border-dashed"] > .flex.flex-col.items-center > div:first-child {
+  width: 40px;
+  height: 40px;
+  flex: 0 0 40px;
+  margin: 0;
+  padding: 8px;
+  border-radius: 999px;
+  box-sizing: border-box;
+}
+
+.tool-attachment-content [class*="border-dashed"] > .flex.flex-col.items-center > h3 {
+  min-width: 0;
+  flex: 1 1 auto;
+  margin: 0;
+  font-size: 1rem;
+  line-height: 1.35;
+  text-align: left;
+}
+
+.tool-attachment-content [class*="border-dashed"] > .flex.flex-col.items-center > p {
+  flex: 0 1 230px;
+  margin: 0 0 0 auto;
+  font-size: 0.875rem;
+  text-align: right;
+}
+
+.tool-attachment-content .pdf-editor-upload-zone {
+  border-width: 1px;
+}
+
+:root[data-theme='dark'] .tool-attachment-content .pdf-workflow-upload,
+:root[data-theme='dark'] .tool-attachment-content .pdf-upload-zone,
+:root[data-theme='dark'] .tool-attachment-content section.pdf-upload-trigger,
+:root[data-theme='dark'] .tool-attachment-content .crop-pdf-upload:not(:has(.crop-pdf-file)),
+:root[data-theme='dark'] .tool-attachment-content .pdf-editor-upload-zone,
+:root[data-theme='dark'] .tool-attachment-content [class*="border-dashed"] {
+  border-color: #64748b;
+  background: #172033;
+}
+
+@media (max-width: 580px) {
+  .tool-attachment-content .pdf-workflow-upload,
+  .tool-attachment-content .pdf-upload-zone,
+  .tool-attachment-content section.pdf-upload-trigger,
+  .tool-attachment-content .crop-pdf-upload:not(:has(.crop-pdf-file)),
+  .tool-attachment-content .pdf-editor-upload-zone,
+  .tool-attachment-content [class*="border-dashed"] {
+    min-height: 88px;
+    padding: 0.875rem 1rem;
+  }
+
+  .tool-attachment-content .pdf-workflow-upload > div.flex.flex-col.items-center,
+  .tool-attachment-content .pdf-upload-zone > div.flex.flex-col.items-center,
+  .tool-attachment-content .crop-pdf-upload-prompt {
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.625rem;
+  }
+
+  .tool-attachment-content .pdf-workflow-upload > div.flex.flex-col.items-center > p:not(.sr-only),
+  .tool-attachment-content .pdf-upload-zone > div.flex.flex-col.items-center > p:last-child,
+  .tool-attachment-content .crop-pdf-upload-prompt span {
+    flex-basis: calc(100% - 52px);
+    margin-left: 52px;
+    text-align: left;
+  }
 }
 
 :root[data-theme='dark'] .tool-card:focus-visible,

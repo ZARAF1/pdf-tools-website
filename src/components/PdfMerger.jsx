@@ -98,7 +98,7 @@ const PdfMerger = () => {
     target?.focus();
   }, [files]);
 
-  const { getRootProps, getInputProps, isDragActive } = useAccessibleDropzone({
+  const { getRootProps, getInputProps, open, isDragActive } = useAccessibleDropzone({
     onDrop,
     accept: { 'application/pdf': ['.pdf'] },
     multiple: true,
@@ -179,30 +179,47 @@ const PdfMerger = () => {
   };
 
   return (
-    <div className="space-y-8">
+    <div className="pdf-tool-workflow space-y-8">
       {/* Upload Zone */}
       <div 
-        {...getRootProps({ 'aria-label': 'Choose PDF files to merge', 'data-merge-upload': '' })}
+        {...getRootProps({ role: 'group', 'aria-label': 'Choose PDF files to merge', 'data-merge-upload': '' })}
         className={`
-          border-2 border-dashed rounded-2xl p-12 text-center cursor-pointer transition-all
+          pdf-workflow-upload merge-pdf-upload-zone border-2 border-dashed rounded-2xl cursor-pointer transition-all
           ${isDragActive ? 'border-blue-500 bg-blue-50' : 'border-slate-300 hover:border-blue-400 hover:bg-slate-50'}
           ${files.length >= MAX_FILES ? 'pointer-events-none opacity-50 cursor-not-allowed' : ''}
         `}
       >
         <input {...getInputProps({ 'aria-label': 'Choose PDF files to merge' })} />
-        <div className="flex flex-col items-center">
-          <div className="bg-blue-100 p-4 rounded-full mb-4">
-            <Upload className="w-8 h-8 text-blue-600" />
+        <div className="merge-pdf-upload-content">
+          <div className="merge-pdf-upload-icon" aria-hidden="true">
+            {isValidating
+              ? <Loader2 className="w-6 h-6 animate-spin text-blue-600" />
+              : <Upload className="w-6 h-6 text-blue-600" />}
           </div>
           <p className="sr-only" role="status" aria-live="polite" aria-atomic="true">{announcement}</p>
-          <h3 className="text-lg font-semibold text-slate-700" aria-live="polite" aria-atomic="true">
-            {isValidating
-              ? 'Checking selected PDFs...'
-              : files.length >= MAX_FILES
-                ? `Limit reached (max ${MAX_FILES})`
-                : 'Click or drag PDFs here to upload'}
-          </h3>
-          <p className="text-slate-500 mt-1">Up to {MAX_FILES} PDF files supported</p>
+          <div className="merge-pdf-upload-copy">
+            <h3 aria-live="polite" aria-atomic="true">
+              {isDragActive
+                ? 'Drop the PDFs here'
+                : isValidating
+                  ? 'Checking selected PDFs...'
+                  : files.length >= MAX_FILES
+                    ? `Limit reached (max ${MAX_FILES})`
+                    : 'Choose or drop PDFs to merge'}
+            </h3>
+            <p>Up to {MAX_FILES} PDF files · processed in your browser</p>
+          </div>
+          <button
+            type="button"
+            className="pdf-editor-primary-button merge-pdf-upload-button"
+            onClick={(event) => {
+              event.stopPropagation();
+              open();
+            }}
+            disabled={isValidating || isMerging || files.length >= MAX_FILES}
+          >
+            Choose Up to 5 PDFs
+          </button>
         </div>
       </div>
 
@@ -233,7 +250,8 @@ const PdfMerger = () => {
 
       {/* File List */}
       {files.length > 0 && (
-        <div className="space-y-3">
+        <>
+        <div className="pdf-workflow-selected space-y-3">
           <div className="flex justify-between items-center px-1">
             <h4 className="text-sm font-bold text-slate-500 uppercase tracking-wider">
               Files to merge ({files.length}/{MAX_FILES})
@@ -293,8 +311,9 @@ const PdfMerger = () => {
               </Reorder.Item>
             ))}
           </Reorder.Group>
+        </div>
 
-          <div className="pt-4">
+        <div className="pdf-workflow-actions pt-4">
             <button
               type="button"
               onClick={mergePdfs}
@@ -328,7 +347,7 @@ const PdfMerger = () => {
               </div>
             )}
           </div>
-        </div>
+        </>
       )}
     </div>
   );

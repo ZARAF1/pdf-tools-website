@@ -261,6 +261,49 @@ const TOOL_CONTENT = {
   }
 };
 
+const ATTACHMENT_RULES = {
+  merge: {
+    title: 'Attach PDFs Here',
+    rule: 'Up to 5 PDF files supported in one batch'
+  },
+  compress: {
+    title: 'Attach PDFs Here',
+    rule: 'Up to 5 PDF files supported in one batch'
+  },
+  image: {
+    title: 'Attach Images Here',
+    rule: 'JPEG, PNG, or BMP images'
+  },
+  'organize-pages': {
+    title: 'Attach PDF Here',
+    rule: 'One PDF file, up to 30 pages'
+  },
+  redact: {
+    title: 'Attach PDF Here',
+    rule: 'One PDF file, up to 15 pages'
+  },
+  'pdf-images': {
+    title: 'Attach PDF Here',
+    rule: 'One PDF file, up to 50 pages'
+  },
+  ocr: {
+    title: 'Attach PDF Here',
+    rule: 'One PDF file, up to 50 pages'
+  },
+  split: {
+    title: 'Attach PDF Here',
+    rule: 'One PDF file, up to 50 pages'
+  },
+  remove: {
+    title: 'Attach PDF Here',
+    rule: 'One PDF file, up to 50 pages'
+  },
+  extract: {
+    title: 'Attach PDF Here',
+    rule: 'One PDF file, up to 50 pages'
+  }
+};
+
 const ToolPage = ({ tool, children }) => {
   const content = TOOL_CONTENT[tool];
   const registeredTool = TOOL_REGISTRY.find((item) => item.id === tool);
@@ -268,6 +311,14 @@ const ToolPage = ({ tool, children }) => {
   const ToolIcon = ProcessingIcon || FileText;
   const categoryName = TOOL_CATEGORIES.find((category) => category.id === registeredTool?.category)?.name
     || 'Conversion status';
+  const attachmentRule = ATTACHMENT_RULES[tool] || (
+    tool === 'excel' || tool === 'powerpoint'
+      ? null
+      : {
+          title: 'Attach PDF Here',
+          rule: 'One PDF file · processed locally in your browser'
+        }
+  );
 
   useEffect(() => {
     const previousTitle = document.title;
@@ -302,55 +353,70 @@ const ToolPage = ({ tool, children }) => {
 
       <section aria-labelledby="tool-workspace-heading">
         <h2 id="tool-workspace-heading" className="sr-only">{content.title} workspace</h2>
-        {children}
+        {attachmentRule ? (
+          <div className="tool-attachment-section">
+            <div className="tool-attachment-heading">
+              <span className="tool-attachment-icon" aria-hidden="true">
+                <Upload className="h-5 w-5" />
+              </span>
+              <div>
+                <h2>{attachmentRule.title}</h2>
+                <p>{attachmentRule.rule}</p>
+              </div>
+            </div>
+            <div className="tool-attachment-content">{children}</div>
+          </div>
+        ) : children}
       </section>
 
-      <section aria-labelledby="how-to-heading" className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
-        <h2 id="how-to-heading" className="text-2xl font-bold text-slate-800 mb-4">How to Use {content.title}</h2>
-        <ol className="list-decimal space-y-3 pl-5 text-slate-600">
-          {content.steps.map((step) => <li key={step}>{step}</li>)}
-        </ol>
-      </section>
+      <section aria-label={`${content.title} instructions and workflow`} className="grid gap-4 lg:grid-cols-2">
+        <div aria-labelledby="how-to-heading" className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
+          <h2 id="how-to-heading" className="text-2xl font-bold text-slate-800 mb-4">How to Use {content.title}</h2>
+          <ol className="list-decimal space-y-3 pl-5 text-slate-600">
+            {content.steps.map((step) => <li key={step}>{step}</li>)}
+          </ol>
+        </div>
 
-      <section aria-labelledby="how-it-works-heading" className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
-        <h2 id="how-it-works-heading" className="text-2xl font-bold text-slate-800 mb-3">How it works</h2>
-        {ProcessingIcon ? (
-          <>
-            <ol aria-label="How this tool works" className="flex flex-col items-stretch gap-3 sm:flex-row sm:items-center sm:gap-4">
-              <li className="flex min-w-0 flex-1 items-center gap-3 rounded-xl border border-slate-200 bg-slate-50 p-4 sm:flex-col sm:justify-center sm:text-center">
-                <span className="tool-card-icon h-12 w-12" aria-hidden="true">
-                  <Upload className="h-6 w-6" />
-                </span>
-                <span className="text-sm font-semibold text-slate-800">Upload to tool</span>
-              </li>
-              <li aria-hidden="true" className="flex justify-center text-slate-400">
-                <ArrowRight className="h-5 w-5 rotate-90 sm:rotate-0" />
-              </li>
-              <li className="flex min-w-0 flex-1 items-center gap-3 rounded-xl border border-slate-200 bg-slate-50 p-4 sm:flex-col sm:justify-center sm:text-center">
-                <span className="tool-card-icon h-12 w-12" aria-hidden="true">
-                  <ProcessingIcon className="h-6 w-6" />
-                </span>
-                <span className="text-sm font-semibold text-slate-800">Process document in browser</span>
-              </li>
-              <li aria-hidden="true" className="flex justify-center text-slate-400">
-                <ArrowRight className="h-5 w-5 rotate-90 sm:rotate-0" />
-              </li>
-              <li className="flex min-w-0 flex-1 items-center gap-3 rounded-xl border border-slate-200 bg-slate-50 p-4 sm:flex-col sm:justify-center sm:text-center">
-                <span className="tool-card-icon h-12 w-12" aria-hidden="true">
-                  <Download className="h-6 w-6" />
-                </span>
-                <span className="text-sm font-semibold text-slate-800">Download</span>
-              </li>
-            </ol>
-            <p className="mt-4 text-sm text-slate-600">
-              Your selected files are processed in your browser and are not uploaded to a processing server. Learn more in our <Link className="underline hover:text-blue-700" to="/privacy">Privacy Policy</Link>.
+        <div aria-labelledby="how-it-works-heading" className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
+          <h2 id="how-it-works-heading" className="text-2xl font-bold text-slate-800 mb-3">How it works</h2>
+          {ProcessingIcon ? (
+            <>
+              <ol aria-label="How this tool works" className="flex flex-col items-stretch gap-3 xl:flex-row xl:items-center xl:gap-4">
+                <li className="flex min-w-0 flex-1 items-center gap-3 rounded-xl border border-slate-200 bg-slate-50 p-4 xl:flex-col xl:justify-center xl:text-center">
+                  <span className="tool-card-icon h-12 w-12" aria-hidden="true">
+                    <Upload className="h-6 w-6" />
+                  </span>
+                  <span className="text-sm font-semibold text-slate-800">Upload to tool</span>
+                </li>
+                <li aria-hidden="true" className="flex justify-center text-slate-400">
+                  <ArrowRight className="h-5 w-5 rotate-90 xl:rotate-0" />
+                </li>
+                <li className="flex min-w-0 flex-1 items-center gap-3 rounded-xl border border-slate-200 bg-slate-50 p-4 xl:flex-col xl:justify-center xl:text-center">
+                  <span className="tool-card-icon h-12 w-12" aria-hidden="true">
+                    <ProcessingIcon className="h-6 w-6" />
+                  </span>
+                  <span className="text-sm font-semibold text-slate-800">Process document in browser</span>
+                </li>
+                <li aria-hidden="true" className="flex justify-center text-slate-400">
+                  <ArrowRight className="h-5 w-5 rotate-90 xl:rotate-0" />
+                </li>
+                <li className="flex min-w-0 flex-1 items-center gap-3 rounded-xl border border-slate-200 bg-slate-50 p-4 xl:flex-col xl:justify-center xl:text-center">
+                  <span className="tool-card-icon h-12 w-12" aria-hidden="true">
+                    <Download className="h-6 w-6" />
+                  </span>
+                  <span className="text-sm font-semibold text-slate-800">Download</span>
+                </li>
+              </ol>
+              <p className="mt-4 text-sm text-slate-600">
+                Your selected files are processed in your browser and are not uploaded to a processing server. Learn more in our <Link className="underline hover:text-blue-700" to="/privacy">Privacy Policy</Link>.
+              </p>
+            </>
+          ) : (
+            <p className="text-slate-600 leading-relaxed">
+              This conversion is not available yet. No files are uploaded or processed by this tool.
             </p>
-          </>
-        ) : (
-          <p className="text-slate-600 leading-relaxed">
-            This conversion is not available yet. No files are uploaded or processed by this tool.
-          </p>
-        )}
+          )}
+        </div>
       </section>
 
       <section aria-labelledby="tool-faq-heading" className="space-y-3">
