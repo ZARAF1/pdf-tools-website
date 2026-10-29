@@ -1,6 +1,6 @@
-import React, { useEffect, useRef, useState } from 'react';
-import { BrowserRouter as Router, Routes, Route, Link, useParams } from 'react-router-dom';
-import { ChevronDown, Moon, Sun } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
+import { BrowserRouter as Router, Routes, Route, Link, NavLink, useLocation, useParams } from 'react-router-dom';
+import { Moon, Sun } from 'lucide-react';
 import Home from './components/Home';
 import CategoryPage from './components/CategoryPage';
 import PdfMerger from './components/PdfMerger';
@@ -31,34 +31,42 @@ const ResourceArticleRoute = () => {
   return <SitePages page="resources" article={articleSlug} />;
 };
 
+const CategoryNavigation = () => {
+  const { pathname } = useLocation();
+  const currentTool = TOOL_REGISTRY.find((tool) => tool.path === pathname);
+  const activeCategoryId = TOOL_CATEGORIES.find((category) => category.path === pathname)?.id
+    || currentTool?.category;
+
+  return (
+    <nav aria-label="PDF tool categories" className="category-tab-bar">
+      {TOOL_CATEGORIES.map((category) => {
+        const CategoryIcon = TOOL_REGISTRY.find((tool) => tool.category === category.id)?.icon;
+        const isActive = activeCategoryId === category.id;
+        return (
+          <Link
+            key={category.id}
+            to={category.path}
+            aria-current={isActive ? 'page' : undefined}
+            className="category-tab-link"
+          >
+            {CategoryIcon && <CategoryIcon className="h-5 w-5" aria-hidden="true" />}
+            <span className="category-tab-label">{category.name}</span>
+          </Link>
+        );
+      })}
+    </nav>
+  );
+};
+
 function App() {
   const [theme, setTheme] = useState(() => (
     document.documentElement.dataset.theme === 'dark' ? 'dark' : 'light'
   ));
-  const [openCategory, setOpenCategory] = useState(null);
-  const categoryNavRef = useRef(null);
-  const categoryTriggerRefs = useRef(new Map());
 
   useEffect(() => {
     document.documentElement.dataset.theme = theme;
     localStorage.setItem('pdf-tools-theme', theme);
   }, [theme]);
-
-  useEffect(() => {
-    if (!openCategory) return undefined;
-    const closeOnOutsidePointer = (event) => {
-      if (!categoryNavRef.current?.contains(event.target)) setOpenCategory(null);
-    };
-    document.addEventListener('pointerdown', closeOnOutsidePointer);
-    return () => document.removeEventListener('pointerdown', closeOnOutsidePointer);
-  }, [openCategory]);
-
-  const closeCategoryMenu = (event) => {
-    if (event.key !== 'Escape' || !openCategory) return;
-    event.preventDefault();
-    setOpenCategory(null);
-    categoryTriggerRefs.current.get(openCategory)?.focus();
-  };
 
   return (
     <Router>
@@ -76,11 +84,11 @@ function App() {
               </Link>
               <div className="flex items-center justify-center gap-5">
                 <nav aria-label="Main navigation" className="flex flex-wrap justify-center gap-x-5 gap-y-2 text-sm font-medium text-slate-600">
-                  <Link to="/" className="transition-colors hover:text-blue-600">Home</Link>
-                  <Link to="/faq" className="transition-colors hover:text-blue-600">FAQ</Link>
-                  <Link to="/resources" className="transition-colors hover:text-blue-600">Guides</Link>
-                  <Link to="/privacy" className="transition-colors hover:text-blue-600">Privacy</Link>
-                  <Link to="/contact" className="transition-colors hover:text-blue-600">Contact</Link>
+                  <NavLink to="/" end className="site-utility-link">Home</NavLink>
+                  <NavLink to="/faq" className="site-utility-link">FAQ</NavLink>
+                  <NavLink to="/resources" className="site-utility-link">Guides</NavLink>
+                  <NavLink to="/privacy" className="site-utility-link">Privacy</NavLink>
+                  <NavLink to="/contact" className="site-utility-link">Contact</NavLink>
                 </nav>
                 <button
                   type="button"
@@ -98,61 +106,7 @@ function App() {
             <div className="flex justify-center">
               <ToolSearch />
             </div>
-            <nav
-              ref={categoryNavRef}
-              aria-label="PDF tool categories"
-              onBlur={(event) => {
-                if (!event.currentTarget.contains(event.relatedTarget)) setOpenCategory(null);
-              }}
-              onKeyDown={closeCategoryMenu}
-              className="category-menu flex flex-wrap justify-center gap-2 text-sm"
-            >
-              {TOOL_CATEGORIES.map((category) => {
-                const isOpen = openCategory === category.id;
-                const menuId = `category-tools-${category.id}`;
-                const categoryTools = TOOL_REGISTRY.filter((tool) => tool.category === category.id);
-                return (
-                  <div key={category.id} className="relative">
-                    <button
-                      ref={(element) => {
-                        if (element) categoryTriggerRefs.current.set(category.id, element);
-                        else categoryTriggerRefs.current.delete(category.id);
-                      }}
-                      type="button"
-                      aria-expanded={isOpen}
-                      aria-controls={isOpen ? menuId : undefined}
-                      onClick={() => setOpenCategory((current) => (current === category.id ? null : category.id))}
-                      className="category-menu-trigger inline-flex items-center gap-1.5 rounded-lg border px-3 py-2 font-semibold transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
-                    >
-                      {category.name}
-                      <ChevronDown className={`h-4 w-4 transition-transform ${isOpen ? 'rotate-180' : ''}`} aria-hidden="true" />
-                    </button>
-                    {isOpen && (
-                      <ul id={menuId} aria-label={`${category.name} tools`} className="category-menu-panel absolute left-0 top-full z-50 mt-1 w-max min-w-56 rounded-xl border p-2 shadow-xl">
-                        <li>
-                          <Link
-                            to={category.path}
-                            onClick={() => setOpenCategory(null)}
-                            className="category-menu-link category-menu-overview-link block rounded-lg px-3 py-2 transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-600"
-                          >
-                            All {category.name} tools
-                          </Link>
-                        </li>
-                        {categoryTools.length
-                          ? categoryTools.map((tool) => (
-                            <li key={tool.id}>
-                              <Link to={tool.path} onClick={() => setOpenCategory(null)} className="category-menu-link block rounded-lg px-3 py-2 transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-600">
-                                {tool.name}
-                              </Link>
-                            </li>
-                          ))
-                          : <li className="px-3 py-2 text-sm text-slate-500">No tools are available in this category yet.</li>}
-                      </ul>
-                    )}
-                  </div>
-                );
-              })}
-            </nav>
+            <CategoryNavigation />
           </div>
         </header>
 

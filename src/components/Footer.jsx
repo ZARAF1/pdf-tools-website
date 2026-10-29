@@ -10,13 +10,13 @@ const Footer = () => {
             © {new Date().getFullYear()} PDF Merge Pro. All rights reserved.
           </div>
           <nav aria-label="Footer navigation" className="flex flex-wrap justify-center gap-x-6 gap-y-2">
-            <Link to="/" className="text-sm text-slate-600 hover:text-blue-600 transition-colors">Home</Link>
-            <Link to="/about" className="text-sm text-slate-600 hover:text-blue-600 transition-colors">About</Link>
-            <Link to="/contact" className="text-sm text-slate-600 hover:text-blue-600 transition-colors">Contact</Link>
-            <Link to="/faq" className="text-sm text-slate-600 hover:text-blue-600 transition-colors">FAQ</Link>
-            <Link to="/resources" className="text-sm text-slate-600 hover:text-blue-600 transition-colors">Guides</Link>
-            <Link to="/privacy" className="text-sm text-slate-600 hover:text-blue-600 transition-colors">Privacy</Link>
-            <Link to="/terms" className="text-sm text-slate-600 hover:text-blue-600 transition-colors">Terms</Link>
+            <Link to="/" className="footer-link">Home</Link>
+            <Link to="/about" className="footer-link">About</Link>
+            <Link to="/contact" className="footer-link">Contact</Link>
+            <Link to="/faq" className="footer-link">FAQ</Link>
+            <Link to="/resources" className="footer-link">Guides</Link>
+            <Link to="/privacy" className="footer-link">Privacy</Link>
+            <Link to="/terms" className="footer-link">Terms</Link>
           </nav>
         </div>
       </div>
