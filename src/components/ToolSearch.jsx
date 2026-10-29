@@ -43,17 +43,9 @@ const ToolSearch = () => {
 
   const handleKeyDown = (event) => {
     if (event.key === 'Escape') {
-      setIsOpen(false);
-      setActiveIndex(-1);
-      if (isExpanded) {
-        setIsExpanded(false);
-        suppressFocusOpen.current = true;
-        triggerRef.current?.focus();
-      }
-      if (event.target !== inputRef.current) {
-        suppressFocusOpen.current = true;
-        inputRef.current?.focus();
-      }
+      closeSearch();
+      suppressFocusOpen.current = true;
+      triggerRef.current?.focus();
       return;
     }
 
@@ -94,13 +86,16 @@ const ToolSearch = () => {
 
   const handleContainerBlur = (event) => {
     if (!containerRef.current?.contains(event.relatedTarget)) {
-      setIsOpen(false);
-      setActiveIndex(-1);
-      setIsExpanded(false);
+      closeSearch();
     }
   };
 
   const openSearch = () => {
+    if (isExpanded) {
+      closeSearch();
+      triggerRef.current?.focus();
+      return;
+    }
     setIsExpanded(true);
     requestAnimationFrame(() => inputRef.current?.focus());
   };

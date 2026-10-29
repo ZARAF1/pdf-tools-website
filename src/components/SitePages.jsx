@@ -1,5 +1,6 @@
 import React, { useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import { BookOpenText, CircleHelp, Info, Mail, ShieldCheck } from 'lucide-react';
 import FaqAccordion from './FaqAccordion';
 
 const FAQ_ITEMS = [
@@ -66,21 +67,35 @@ const usePageMeta = (title, description) => {
   }, [title, description]);
 };
 
-const PageLayout = ({ title, intro, children }) => (
+const PageLayout = ({ title, intro, children, icon: Icon }) => (
   <article className="mx-auto max-w-4xl space-y-8">
     <header className="text-center">
-      <h1 className="text-3xl font-bold text-slate-900 mb-2">{title}</h1>
+      <div className="page-heading">
+        {Icon && (
+          <span className="page-heading-icon" aria-hidden="true">
+            <Icon size={24} strokeWidth={2} />
+          </span>
+        )}
+        <h1 className="text-3xl font-bold text-slate-900">{title}</h1>
+      </div>
       <p className="text-slate-600 max-w-3xl mx-auto">{intro}</p>
     </header>
     <div className="space-y-6">{children}</div>
   </article>
 );
 
-const InfoPage = ({ page }) => {
+const INFO_PAGE_ICONS = {
+  privacy: ShieldCheck,
+  about: Info,
+  contact: Mail,
+  terms: ShieldCheck
+};
+
+const InfoPage = ({ page, pageKey }) => {
   const { title, description, intro, sections } = page;
   usePageMeta(title, description);
   return (
-    <PageLayout title={title.split(' | ')[0]} intro={intro}>
+    <PageLayout title={title.split(' | ')[0]} intro={intro} icon={INFO_PAGE_ICONS[pageKey]}>
       {sections.map((section) => (
         <section key={section.title} className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
           <h2 className="text-xl font-bold text-slate-800 mb-3">{section.title}</h2>
@@ -94,7 +109,7 @@ const InfoPage = ({ page }) => {
 const FaqPage = () => {
   usePageMeta(PAGE_META.faq.title, PAGE_META.faq.description);
   return (
-    <PageLayout title="Frequently Asked Questions" intro="Practical answers about using the PDF tools, their limits, and how the website processes files.">
+    <PageLayout title="Frequently Asked Questions" intro="Practical answers about using the PDF tools, their limits, and how the website processes files." icon={CircleHelp}>
       <section aria-label="Frequently asked questions">
         <FaqAccordion items={FAQ_ITEMS} />
       </section>
@@ -120,7 +135,7 @@ const ResourcePage = ({ article }) => {
   }
 
   return (
-    <PageLayout title={content.title} intro={content.description}>
+    <PageLayout title={content.title} intro={content.description} icon={BookOpenText}>
       <div className="flex flex-col gap-6">
         {content.sections.map(([heading, text]) => (
           <section key={heading} className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
@@ -144,7 +159,7 @@ const ResourcePage = ({ article }) => {
 const ResourcesPage = () => {
   usePageMeta(PAGE_META.resources.title, PAGE_META.resources.description);
   return (
-    <PageLayout title="PDF Guides and Resources" intro="Short, practical explanations of PDF workflows, output quality, and browser processing.">
+    <PageLayout title="PDF Guides and Resources" intro="Short, practical explanations of PDF workflows, output quality, and browser processing." icon={BookOpenText}>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
         {Object.entries(ARTICLES).map(([slug, article]) => (
           <Link
@@ -224,7 +239,14 @@ const INFO_PAGES = {
     intro: 'PDF Merge Pro is an existing browser-based utility website with tools for common PDF tasks.',
     sections: [
       { title: 'What the site offers', content: <p>The current project includes tools to merge, split, rotate, protect, compress, watermark, convert images to PDF, and convert PDF text to Word. Each tool's page describes its current workflow and limitations.</p> },
-      { title: 'Who operates the site', content: <p>No business name, individual operator, or history was supplied in the project. This page intentionally does not invent an identity. See the <Link className="underline hover:text-blue-700" to="/contact">Contact</Link> page for the current contact-information status.</p> }
+      {
+        title: 'Our story',
+        content: <>
+          <p>PDF Merge Pro began with a perfectly ordinary PDF, a second PDF, and the completely unreasonable belief that combining them should not require opening seventeen browser tabs. The small collection of tools grew one practical problem at a time, with no dramatic boardroom origin story and only a polite amount of debugging.</p>
+          <p>The product is owned and developed entirely by a full stack engineer and product manager, who handles the product decisions, engineering, design, and occasional conversation with a stubborn line of code. The goal is simple: useful PDF tools that stay approachable, respect the documents being processed, and do not take themselves more seriously than a PDF merger reasonably should.</p>
+        </>
+      },
+      { title: 'Who operates the site', content: <p>The site is owned and operated by the product's full stack engineer and product manager. A business name, legal operator details, and support contact method have not yet been supplied; the <Link className="underline hover:text-blue-700" to="/contact">Contact</Link> page shows the current status.</p> }
     ]
   },
   contact: {
@@ -243,7 +265,7 @@ const SitePages = ({ page, article }) => {
     if (!article) return <ResourcesPage />;
     return ARTICLES[article] ? <ResourcePage article={article} /> : <NotFoundPage />;
   }
-  return <InfoPage page={INFO_PAGES[page]} />;
+  return <InfoPage page={INFO_PAGES[page]} pageKey={page} />;
 };
 
 export { NotFoundPage, SitePages };

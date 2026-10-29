@@ -53,6 +53,8 @@ const LeftNavigation = ({ theme, setTheme }) => {
   const currentTool = TOOL_REGISTRY.find((tool) => tool.path === pathname);
   const activeCategoryId = TOOL_CATEGORIES.find((category) => category.path === pathname)?.id
     || currentTool?.category;
+  const menuCategoryId = activeMenu && activeMenu !== 'all' ? activeMenu : null;
+  const selectedCategoryId = menuCategoryId || activeCategoryId;
   const activeCategory = TOOL_CATEGORIES.find((category) => category.id === activeMenu);
   const activeCategoryTools = activeCategory
     ? TOOL_REGISTRY.filter((tool) => tool.category === activeCategory.id)
@@ -108,6 +110,10 @@ const LeftNavigation = ({ theme, setTheme }) => {
   };
 
   useEffect(() => () => cancelMenuClose(), []);
+
+  useEffect(() => {
+    setActiveMenu(null);
+  }, [pathname]);
 
   useEffect(() => {
     if (!activeMenu) return undefined;
@@ -170,7 +176,7 @@ const LeftNavigation = ({ theme, setTheme }) => {
 
   return (
     <aside
-      className="site-left-navigation"
+      className={`site-left-navigation${activeMenu ? ' is-mega-menu-open' : ''}`}
       aria-label="Website navigation"
       onKeyDown={(event) => {
         if (event.key === 'Escape') {
@@ -204,7 +210,7 @@ const LeftNavigation = ({ theme, setTheme }) => {
 
       <button
         type="button"
-        className="site-left-all-tools"
+        className={`site-left-all-tools${activeMenu === 'all' ? ' is-active' : ''}`}
         aria-expanded={activeMenu === 'all'}
         aria-controls="site-tools-mega-menu"
         aria-haspopup="menu"
@@ -222,13 +228,16 @@ const LeftNavigation = ({ theme, setTheme }) => {
         <p className="site-left-section-label">Categories</p>
         {TOOL_CATEGORIES.map((category) => {
           const CategoryIcon = TOOL_REGISTRY.find((tool) => tool.category === category.id)?.icon;
-          const isActive = activeCategoryId === category.id;
+          const isSelected = selectedCategoryId === category.id;
+          const isRouteActive = activeCategoryId === category.id && (!activeMenu || activeMenu === 'all');
           return (
             <button
               key={category.id}
               type="button"
-              aria-current={category.path === pathname ? 'page' : isActive ? 'location' : undefined}
-              className={`site-left-category-link${isActive ? ' is-active' : ''}`}
+              aria-current={isRouteActive
+                ? category.path === pathname ? 'page' : 'location'
+                : undefined}
+              className={`site-left-category-link${isSelected ? ' is-active' : ''}`}
               data-mega-trigger={category.id}
               aria-expanded={activeMenu === category.id}
               aria-controls="site-tools-mega-menu"
