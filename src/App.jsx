@@ -1,6 +1,17 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, Link, NavLink, useLocation, useParams } from 'react-router-dom';
-import { Moon, Sun } from 'lucide-react';
+import {
+  BookOpenText,
+  ChevronRight,
+  CircleHelp,
+  Grid2X2,
+  Home as HomeIcon,
+  Info,
+  Mail,
+  Moon,
+  ShieldCheck,
+  Sun
+} from 'lucide-react';
 import Home from './components/Home';
 import CategoryPage from './components/CategoryPage';
 import PdfMerger from './components/PdfMerger';
@@ -33,30 +44,322 @@ const ResourceArticleRoute = () => {
   return <SitePages page="resources" article={articleSlug} />;
 };
 
-const CategoryNavigation = () => {
+const LeftNavigation = ({ theme, setTheme }) => {
   const { pathname } = useLocation();
+  const [activeMenu, setActiveMenu] = useState(null);
+  const [megaPosition, setMegaPosition] = useState({ top: 12, left: 252 });
+  const megaMenuRef = useRef(null);
+  const closeMenuTimerRef = useRef(null);
   const currentTool = TOOL_REGISTRY.find((tool) => tool.path === pathname);
   const activeCategoryId = TOOL_CATEGORIES.find((category) => category.path === pathname)?.id
     || currentTool?.category;
+  const activeCategory = TOOL_CATEGORIES.find((category) => category.id === activeMenu);
+  const activeCategoryTools = activeCategory
+    ? TOOL_REGISTRY.filter((tool) => tool.category === activeCategory.id)
+    : [];
+
+  const getMegaTrigger = () => (
+    document.querySelector(`[data-mega-trigger="${activeMenu}"]`)
+  );
+
+  const cancelMenuClose = () => {
+    if (closeMenuTimerRef.current) {
+      window.clearTimeout(closeMenuTimerRef.current);
+      closeMenuTimerRef.current = null;
+    }
+  };
+
+  const scheduleMenuClose = () => {
+    cancelMenuClose();
+    closeMenuTimerRef.current = window.setTimeout(() => {
+      setActiveMenu(null);
+      closeMenuTimerRef.current = null;
+    }, 180);
+  };
+
+  const toggleMegaMenu = (event, menuId) => {
+    cancelMenuClose();
+    const triggerRect = event.currentTarget.getBoundingClientRect();
+    const railWidth = window.matchMedia('(max-width: 900px)').matches ? 76 : 240;
+    const viewportHeight = window.innerHeight;
+    const estimatedMenuHeight = window.matchMedia('(max-width: 580px)').matches
+      ? viewportHeight - 16
+      : 520;
+    const menuOffset = window.matchMedia('(max-width: 900px)').matches ? 8 : 18;
+    const top = Math.max(8, Math.min(
+      triggerRect.top + menuOffset,
+      viewportHeight - estimatedMenuHeight - 8
+    ));
+
+    setMegaPosition({
+      top: top + 0,
+      left: railWidth + 12
+    });
+    setActiveMenu((current) => current === menuId ? null : menuId);
+    event.currentTarget.focus();
+  };
+
+  useEffect(() => () => cancelMenuClose(), []);
+
+  useEffect(() => {
+    if (!activeMenu) return undefined;
+    const handlePointerDown = (event) => {
+      if (
+        megaMenuRef.current?.contains(event.target)
+        || event.target.closest('[data-mega-trigger]')
+      ) {
+        return;
+      }
+      setActiveMenu(null);
+    };
+    document.addEventListener('pointerdown', handlePointerDown);
+    return () => document.removeEventListener('pointerdown', handlePointerDown);
+  }, [activeMenu]);
+
+  const focusFirstMegaItem = (event) => {
+    if (event.key !== 'Tab' || event.shiftKey) return;
+    if (!activeMenu || event.currentTarget.dataset.megaTrigger !== activeMenu) return;
+    const firstItem = megaMenuRef.current?.querySelector('[data-mega-menu-item]');
+    if (!firstItem) return;
+    event.preventDefault();
+    firstItem.focus();
+  };
+
+  const handleMegaKeyDown = (event) => {
+    if (event.key === 'Escape') {
+      event.preventDefault();
+      setActiveMenu(null);
+      getMegaTrigger()?.focus();
+      return;
+    }
+
+    if (event.key !== 'Tab') return;
+    const items = Array.from(
+      megaMenuRef.current?.querySelectorAll('[data-mega-menu-item]') || []
+    );
+    const currentIndex = items.indexOf(document.activeElement);
+    if (event.shiftKey && currentIndex === 0) {
+      event.preventDefault();
+      getMegaTrigger()?.focus();
+    } else if (!event.shiftKey && currentIndex === items.length - 1 && items.length > 0) {
+      event.preventDefault();
+      if (activeMenu === 'all') {
+        items[0]?.focus();
+      } else {
+        const currentIndexInCategories = TOOL_CATEGORIES.findIndex(
+          (category) => category.id === activeMenu
+        );
+        const nextCategory = TOOL_CATEGORIES[currentIndexInCategories + 1];
+        setActiveMenu(null);
+        if (nextCategory) {
+          document.querySelector(`[data-mega-trigger="${nextCategory.id}"]`)?.focus();
+        } else {
+          document.querySelector('.site-left-privacy')?.focus();
+        }
+      }
+    }
+  };
 
   return (
-    <nav aria-label="PDF tool categories" className="category-tab-bar">
-      {TOOL_CATEGORIES.map((category) => {
-        const CategoryIcon = TOOL_REGISTRY.find((tool) => tool.category === category.id)?.icon;
-        const isActive = activeCategoryId === category.id;
-        return (
-          <Link
-            key={category.id}
-            to={category.path}
-            aria-current={category.path === pathname ? 'page' : isActive ? 'location' : undefined}
-            className="category-tab-link"
-          >
-            {CategoryIcon && <CategoryIcon className="h-5 w-5" aria-hidden="true" />}
-            <span className="category-tab-label">{category.name}</span>
-          </Link>
-        );
-      })}
-    </nav>
+    <aside
+      className="site-left-navigation"
+      aria-label="Website navigation"
+      onKeyDown={(event) => {
+        if (event.key === 'Escape') {
+          event.preventDefault();
+          setActiveMenu(null);
+          getMegaTrigger()?.focus();
+        }
+      }}
+    >
+      <Link to="/" className="site-left-brand" aria-label="PDF Merge Pro home">
+        <span className="site-left-brand-mark">PDF</span>
+        <span className="site-left-brand-name">Merge Pro</span>
+      </Link>
+
+      <nav className="site-left-primary-nav" aria-label="Main navigation">
+        <NavLink to="/" end className="site-left-link" aria-label="Home">
+          <HomeIcon className="site-left-link-icon" aria-hidden="true" />
+          <span>Home</span>
+        </NavLink>
+        <NavLink to="/faq" className="site-left-link" aria-label="FAQ">
+          <CircleHelp className="site-left-link-icon" aria-hidden="true" />
+          <span>FAQ</span>
+        </NavLink>
+        <NavLink to="/resources" className="site-left-link" aria-label="Guides">
+          <BookOpenText className="site-left-link-icon" aria-hidden="true" />
+          <span>Guides</span>
+        </NavLink>
+      </nav>
+
+      <div className="site-left-divider" />
+
+      <button
+        type="button"
+        className="site-left-all-tools"
+        aria-expanded={activeMenu === 'all'}
+        aria-controls="site-tools-mega-menu"
+        aria-haspopup="menu"
+        aria-label="All PDF tools"
+        data-mega-trigger="all"
+        onClick={(event) => toggleMegaMenu(event, 'all')}
+        onKeyDown={focusFirstMegaItem}
+      >
+        <Grid2X2 className="site-left-link-icon" aria-hidden="true" />
+        <span>All tools</span>
+        <ChevronRight className="site-left-link-chevron" aria-hidden="true" />
+      </button>
+
+      <nav aria-label="PDF tool categories" className="site-left-category-nav">
+        <p className="site-left-section-label">Categories</p>
+        {TOOL_CATEGORIES.map((category) => {
+          const CategoryIcon = TOOL_REGISTRY.find((tool) => tool.category === category.id)?.icon;
+          const isActive = activeCategoryId === category.id;
+          return (
+            <button
+              key={category.id}
+              type="button"
+              aria-current={category.path === pathname ? 'page' : isActive ? 'location' : undefined}
+              className={`site-left-category-link${isActive ? ' is-active' : ''}`}
+              data-mega-trigger={category.id}
+              aria-expanded={activeMenu === category.id}
+              aria-controls="site-tools-mega-menu"
+              aria-label={`${category.name} PDF tools`}
+              onClick={(event) => toggleMegaMenu(event, category.id)}
+              onKeyDown={focusFirstMegaItem}
+            >
+              {CategoryIcon && <CategoryIcon className="site-left-link-icon" aria-hidden="true" />}
+              <span>{category.name}</span>
+              <ChevronRight className="site-left-link-chevron" aria-hidden="true" />
+            </button>
+          );
+        })}
+      </nav>
+
+      <div className="site-left-bottom">
+        <NavLink to="/privacy" className="site-left-link site-left-privacy" aria-label="Privacy" title="Privacy">
+          <ShieldCheck className="site-left-link-icon" aria-hidden="true" />
+          <span>Privacy</span>
+        </NavLink>
+        <NavLink to="/contact" className="site-left-link site-left-contact" aria-label="Contact" title="Contact">
+          <Mail className="site-left-link-icon" aria-hidden="true" />
+          <span>Contact</span>
+        </NavLink>
+        <NavLink to="/about" className="site-left-link site-left-about" aria-label="About" title="About">
+          <Info className="site-left-link-icon" aria-hidden="true" />
+          <span>About</span>
+        </NavLink>
+        <button
+          type="button"
+          className="site-left-theme-button"
+          onClick={() => setTheme((current) => (current === 'dark' ? 'light' : 'dark'))}
+          aria-label={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
+          title={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
+        >
+          {theme === 'dark'
+            ? <Sun className="site-left-link-icon" aria-hidden="true" />
+            : <Moon className="site-left-link-icon" aria-hidden="true" />}
+          <span>{theme === 'dark' ? 'Light mode' : 'Dark mode'}</span>
+        </button>
+      </div>
+
+      {activeMenu && (
+        <div
+          ref={megaMenuRef}
+          id="site-tools-mega-menu"
+          className="site-tools-mega-menu"
+          role="dialog"
+          aria-label={activeMenu === 'all' ? 'All PDF tools' : `${activeCategory?.name} PDF tools`}
+          onKeyDown={handleMegaKeyDown}
+          onMouseEnter={cancelMenuClose}
+          onMouseLeave={scheduleMenuClose}
+          style={{ '--mega-menu-top': `${megaPosition.top}px`, '--mega-menu-left': `${megaPosition.left}px` }}
+        >
+          {activeMenu === 'all' ? (
+            <>
+              <div className="site-tools-mega-heading">
+                <div>
+                  <span className="site-tools-mega-eyebrow">PDF toolkit</span>
+                  <h2>All tools</h2>
+                </div>
+              </div>
+              <div className="site-tools-mega-columns">
+                {TOOL_CATEGORIES.map((category) => {
+                  const categoryTools = TOOL_REGISTRY.filter((tool) => tool.category === category.id);
+                  return (
+                    <section key={category.id} className="site-tools-mega-column">
+                      <Link
+                        to={category.path}
+                        className="site-tools-mega-category"
+                        data-mega-menu-item
+                        onClick={() => setActiveMenu(null)}
+                      >
+                        <span>{category.name}</span>
+                      </Link>
+                      <div className="site-tools-mega-list">
+                        {categoryTools.map((tool) => {
+                          const ToolIcon = tool.icon;
+                          return (
+                            <Link
+                              key={tool.id}
+                              to={tool.path}
+                              className="site-tools-mega-tool"
+                              data-mega-menu-item
+                              onClick={() => setActiveMenu(null)}
+                            >
+                              <span className={`site-tools-mega-tool-icon ${tool.color}`}>
+                                <ToolIcon aria-hidden="true" />
+                              </span>
+                              <span>{tool.name}</span>
+                            </Link>
+                          );
+                        })}
+                      </div>
+                    </section>
+                  );
+                })}
+              </div>
+            </>
+          ) : (
+            <>
+              <div className="site-tools-mega-heading">
+                <div>
+                  <span className="site-tools-mega-eyebrow">Category</span>
+                  <h2>{activeCategory?.name}</h2>
+                </div>
+              </div>
+              <div className="site-tools-mega-category-list">
+                <Link
+                  to={activeCategory?.path}
+                  className="site-tools-mega-category"
+                  data-mega-menu-item
+                  onClick={() => setActiveMenu(null)}
+                >
+                  View {activeCategory?.name} category
+                </Link>
+                {activeCategoryTools.map((tool) => {
+                  const ToolIcon = tool.icon;
+                  return (
+                    <Link
+                      key={tool.id}
+                      to={tool.path}
+                      className="site-tools-mega-tool"
+                      data-mega-menu-item
+                      onClick={() => setActiveMenu(null)}
+                    >
+                      <span className={`site-tools-mega-tool-icon ${tool.color}`}>
+                        <ToolIcon aria-hidden="true" />
+                      </span>
+                      <span>{tool.name}</span>
+                    </Link>
+                  );
+                })}
+              </div>
+            </>
+          )}
+        </div>
+      )}
+    </aside>
   );
 };
 
@@ -91,49 +394,18 @@ function App() {
 
   return (
     <Router>
-      <div className="min-h-screen flex flex-col">
+      <div className="site-app-shell">
         <RouteFocusManager />
         <a className="skip-to-content" href="#main-content">Skip to main content</a>
-        <header className="site-surface border-b border-slate-200 py-5">
-          <div className="container mx-auto space-y-5 px-4">
-            <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-              <Link to="/" className="flex flex-col items-center md:items-start">
-                <span className="text-3xl font-bold text-slate-800 tracking-tight">
-                  PDF <span className="text-blue-600">Merge</span> Pro
-                </span>
-                <p className="text-center md:text-left text-slate-500 text-sm">
-                  Browser-based PDF tools for everyday documents.
-                </p>
-              </Link>
-              <div className="flex items-center justify-center gap-5">
-                <nav aria-label="Main navigation" className="flex flex-wrap justify-center gap-x-5 gap-y-2 text-sm font-medium text-slate-600">
-                  <NavLink to="/" end className="site-utility-link">Home</NavLink>
-                  <NavLink to="/faq" className="site-utility-link">FAQ</NavLink>
-                  <NavLink to="/resources" className="site-utility-link">Guides</NavLink>
-                  <NavLink to="/privacy" className="site-utility-link">Privacy</NavLink>
-                  <NavLink to="/contact" className="site-utility-link">Contact</NavLink>
-                </nav>
-                <button
-                  type="button"
-                  onClick={() => setTheme((current) => (current === 'dark' ? 'light' : 'dark'))}
-                  aria-label={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
-                  title={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
-                  className="rounded-xl border border-slate-200 bg-white p-2.5 text-slate-700 shadow-sm transition hover:border-blue-300 hover:bg-blue-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
-                >
-                  {theme === 'dark'
-                    ? <Sun className="h-5 w-5" aria-hidden="true" />
-                    : <Moon className="h-5 w-5" aria-hidden="true" />}
-                </button>
-              </div>
-            </div>
-            <div className="flex justify-center">
+        <LeftNavigation theme={theme} setTheme={setTheme} />
+        <div className="site-workspace">
+          <header className="site-topbar">
+            <div className="site-topbar-search">
               <ToolSearch />
             </div>
-            <CategoryNavigation />
-          </div>
-        </header>
+          </header>
 
-        <main id="main-content" tabIndex={-1} className="flex-grow container mx-auto px-4 py-12">
+          <main id="main-content" tabIndex={-1} className="site-main-content">
           <Routes>
             <Route path="/" element={<Home />} />
             {TOOL_CATEGORIES.map((category) => (
@@ -175,6 +447,7 @@ function App() {
         </main>
 
         <Footer />
+        </div>
       </div>
     </Router>
   );

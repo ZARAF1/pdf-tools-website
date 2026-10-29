@@ -6,10 +6,12 @@ import { TOOL_CATEGORIES, TOOL_REGISTRY } from './toolRegistry';
 const ToolSearch = () => {
   const [query, setQuery] = useState('');
   const [isOpen, setIsOpen] = useState(false);
+  const [isExpanded, setIsExpanded] = useState(false);
   const [activeIndex, setActiveIndex] = useState(-1);
   const suppressFocusOpen = useRef(false);
   const containerRef = useRef(null);
   const inputRef = useRef(null);
+  const triggerRef = useRef(null);
   const navigate = useNavigate();
 
   const results = useMemo(() => {
@@ -27,14 +29,27 @@ const ToolSearch = () => {
     navigate(tool.path);
     setQuery('');
     setIsOpen(false);
+    setIsExpanded(false);
     setActiveIndex(-1);
     inputRef.current?.blur();
+  };
+
+  const closeSearch = () => {
+    setQuery('');
+    setIsOpen(false);
+    setIsExpanded(false);
+    setActiveIndex(-1);
   };
 
   const handleKeyDown = (event) => {
     if (event.key === 'Escape') {
       setIsOpen(false);
       setActiveIndex(-1);
+      if (isExpanded) {
+        setIsExpanded(false);
+        suppressFocusOpen.current = true;
+        triggerRef.current?.focus();
+      }
       if (event.target !== inputRef.current) {
         suppressFocusOpen.current = true;
         inputRef.current?.focus();
@@ -81,7 +96,13 @@ const ToolSearch = () => {
     if (!containerRef.current?.contains(event.relatedTarget)) {
       setIsOpen(false);
       setActiveIndex(-1);
+      setIsExpanded(false);
     }
+  };
+
+  const openSearch = () => {
+    setIsExpanded(true);
+    requestAnimationFrame(() => inputRef.current?.focus());
   };
 
   return (
@@ -89,11 +110,24 @@ const ToolSearch = () => {
       ref={containerRef}
       onBlur={handleContainerBlur}
       onKeyDown={handleKeyDown}
-      className="relative w-full max-w-xl"
+      className={`tool-search-shell${isExpanded ? ' is-expanded' : ''}`}
+      style={isExpanded && window.matchMedia('(max-width: 900px)').matches
+        ? { width: 'calc(100vw - 17rem)' }
+        : undefined}
     >
       <label htmlFor="tool-search" className="sr-only">Search PDF tools</label>
-      <div className="relative">
-        <Search className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-400" aria-hidden="true" />
+      <button
+        ref={triggerRef}
+        type="button"
+        className="tool-search-trigger"
+        aria-label="Search PDF tools"
+        aria-expanded={isExpanded}
+        aria-controls="tool-search-results"
+        onClick={openSearch}
+      >
+        <Search className="h-5 w-5" aria-hidden="true" />
+      </button>
+      <div className="tool-search-input-wrap">
         <input
           ref={inputRef}
           id="tool-search"
@@ -113,8 +147,8 @@ const ToolSearch = () => {
             }
             if (query.trim()) setIsOpen(true);
           }}
-          placeholder="Search PDF tools..."
-          className="w-full rounded-xl border border-slate-200 bg-white py-3 pl-11 pr-11 text-sm text-slate-800 shadow-sm transition placeholder:text-slate-400 focus:border-blue-400 focus:outline-none focus:ring-4 focus:ring-blue-100"
+          placeholder="Find a PDF tool"
+          className="tool-search-input w-full rounded-xl border border-slate-200 bg-white py-3 pl-11 pr-11 text-sm text-slate-800 shadow-sm transition placeholder:text-slate-400 focus:border-blue-400 focus:outline-none focus:ring-4 focus:ring-blue-100"
         />
         {query && (
           <button
