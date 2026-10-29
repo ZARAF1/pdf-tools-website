@@ -1,0 +1,678 @@
+import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { useDropzone } from 'react-dropzone';
+import { ArrowLeft, ArrowRight, Download, Loader2, RotateCcw, Upload, ZoomIn, ZoomOut } from 'lucide-react';
+import { PDFDocument } from 'pdf-lib';
+import pdfjsLib from '../lib/pdfjsClient';
+import { validateUnencryptedPdf } from '../lib/pdfValidation';
+
+const MIN_CROP_SIZE = 0.05;
+const clamp = (value, min, max) => Math.min(max, Math.max(min, value));
+const fullPage = { x: 0, y: 0, width: 1, height: 1 };
+const cropHandles = [
+  { id: 'nw', label: 'top left corner', x: 0, y: 0 },
+  { id: 'n', label: 'top edge', x: 50, y: 0 },
+  { id: 'ne', label: 'top right corner', x: 100, y: 0 },
+  { id: 'e', label: 'right edge', x: 100, y: 50 },
+  { id: 'se', label: 'bottom right corner', x: 100, y: 100 },
+  { id: 's', label: 'bottom edge', x: 50, y: 100 },
+  { id: 'sw', label: 'bottom left corner', x: 0, y: 100 },
+  { id: 'w', label: 'left edge', x: 0, y: 50 }
+];
+
+const formatBytes = (bytes) => (
+  bytes < 1024 * 1024 ? `${(bytes / 1024).toFixed(1)} KB` : `${(bytes / (1024 * 1024)).toFixed(1)} MB`
+);
+
+const adjustCrop = (crop, handle, dx, dy) => {
+  let left = crop.x;
+  let right = crop.x + crop.width;
+  let top = crop.y;
+  let bottom = crop.y + crop.height;
+
+  if (handle.includes('w')) left = clamp(left + dx, 0, right - MIN_CROP_SIZE);
+  if (handle.includes('e')) right = clamp(right + dx, left + MIN_CROP_SIZE, 1);
+  if (handle.includes('n')) top = clamp(top + dy, 0, bottom - MIN_CROP_SIZE);
+  if (handle.includes('s')) bottom = clamp(bottom + dy, top + MIN_CROP_SIZE, 1);
+
+  return { x: left, y: top, width: right - left, height: bottom - top };
+};
+
+const cropToPdfRectangle = (page, pdfPage, selection) => {
+  const viewport = page.getViewport({ scale: 1 });
+  const screenCorners = [
+    [selection.x * viewport.width, selection.y * viewport.height],
+    [(selection.x + selection.width) * viewport.width, selection.y * viewport.height],
+    [selection.x * viewport.width, (selection.y + selection.height) * viewport.height],
+    [(selection.x + selection.width) * viewport.width, (selection.y + selection.height) * viewport.height]
+  ];
+  const pdfCorners = screenCorners.map(([x, y]) => viewport.convertToPdfPoint(x, y));
+  const mediaBox = pdfPage.getMediaBox();
+  const cropBox = pdfPage.getCropBox();
+  const bounds = {
+    x: Math.max(mediaBox.x, cropBox.x),
+    y: Math.max(mediaBox.y, cropBox.y),
+    right: Math.min(mediaBox.x + mediaBox.width, cropBox.x + cropBox.width),
+    top: Math.min(mediaBox.y + mediaBox.height, cropBox.y + cropBox.height)
+  };
+  const x = Math.max(bounds.x, Math.min(...pdfCorners.map(([pointX]) => pointX)));
+  const y = Math.max(bounds.y, Math.min(...pdfCorners.map(([, pointY]) => pointY)));
+  const right = Math.min(bounds.right, Math.max(...pdfCorners.map(([pointX]) => pointX)));
+  const top = Math.min(bounds.top, Math.max(...pdfCorners.map(([, pointY]) => pointY)));
+  const rectangle = { x, y, width: right - x, height: top - y };
+
+  if (
+    !Object.values(rectangle).every(Number.isFinite)
+    || rectangle.width <= 0
+    || rectangle.height <= 0
+  ) {
+    throw new Error('The crop area is outside the page or too small. Adjust it and try again.');
+  }
+  return rectangle;
+};
+
+const rectanglesMatch = (actual, expected) => (
+  ['x', 'y', 'width', 'height'].every((key) => Math.abs(actual[key] - expected[key]) < 0.02)
+);
+
+const CropPdf = () => {
+  const [file, setFile] = useState(null);
+  const [pdfjsDocument, setPdfjsDocument] = useState(null);
+  const [pageCount, setPageCount] = useState(0);
+  const [currentPage, setCurrentPage] = useState(0);
+  const [crop, setCrop] = useState(fullPage);
+  const [draftCrops, setDraftCrops] = useState({});
+  const [pageCrops, setPageCrops] = useState({});
+  const [scope, setScope] = useState('current');
+  const [previewWidth, setPreviewWidth] = useState(680);
+  const [zoom, setZoom] = useState(1);
+  const [renderInfo, setRenderInfo] = useState(null);
+  const [output, setOutput] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [isRendering, setIsRendering] = useState(false);
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [error, setError] = useState('');
+  const [status, setStatus] = useState('');
+  const [previewMessage, setPreviewMessage] = useState('');
+  const requestId = useRef(0);
+  const loadingTaskRef = useRef(null);
+  const previewAreaRef = useRef(null);
+  const stageRef = useRef(null);
+  const canvasRef = useRef(null);
+  const renderTaskRef = useRef(null);
+  const dragRef = useRef(null);
+
+  const clearOutput = useCallback(() => {
+    setOutput(null);
+    setStatus('');
+  }, []);
+
+  useEffect(() => {
+    const element = previewAreaRef.current;
+    if (!element) return undefined;
+    const updateWidth = () => setPreviewWidth(Math.max(240, element.getBoundingClientRect().width - 32));
+    updateWidth();
+    const observer = new ResizeObserver(updateWidth);
+    observer.observe(element);
+    return () => observer.disconnect();
+  }, [file]);
+
+  useEffect(() => {
+    if (!pdfjsDocument) return undefined;
+    return () => {
+      pdfjsDocument.destroy().catch((destroyError) => {
+        console.error('Unable to release the Crop PDF preview:', destroyError);
+      });
+    };
+  }, [pdfjsDocument]);
+
+  useEffect(() => () => {
+    requestId.current += 1;
+    loadingTaskRef.current?.destroy().catch((destroyError) => {
+      console.error('Unable to cancel PDF loading:', destroyError);
+    });
+  }, []);
+
+  const onDrop = useCallback(async (acceptedFiles, rejections) => {
+    if (rejections.length) {
+      setError('Choose one valid, unencrypted PDF file.');
+      setStatus('');
+      return;
+    }
+
+    const selectedFile = acceptedFiles[0];
+    if (!selectedFile) return;
+    const request = requestId.current + 1;
+    requestId.current = request;
+    setIsLoading(true);
+    setError('');
+    setStatus('');
+    setPreviewMessage('');
+
+    let loadingTask;
+    try {
+      const validated = await validateUnencryptedPdf(selectedFile);
+      const count = validated.getPageCount();
+      if (!count) throw new Error('This PDF does not contain any pages.');
+
+      const data = new Uint8Array(await selectedFile.arrayBuffer());
+      loadingTask = pdfjsLib.getDocument({ data });
+      loadingTaskRef.current = loadingTask;
+      const document = await loadingTask.promise;
+      if (document.numPages !== count) {
+        await document.destroy();
+        throw new Error('The PDF preview could not read the expected page count.');
+      }
+
+      if (request !== requestId.current) {
+        await document.destroy();
+        return;
+      }
+
+      setFile(selectedFile);
+      setPdfjsDocument(document);
+      setPageCount(count);
+      setCurrentPage(0);
+      setCrop(fullPage);
+      setDraftCrops({});
+      setPageCrops({});
+      setScope('current');
+      setZoom(1);
+      setRenderInfo(null);
+      clearOutput();
+    } catch (loadError) {
+      if (request === requestId.current) {
+        console.error('Unable to load PDF for cropping:', loadError);
+        const message = loadError?.message || '';
+        setError(/failed to parse pdf document|no pdf header found/i.test(message)
+          ? 'This file could not be opened as a PDF. Choose a valid, unencrypted PDF.'
+          : (message || 'This PDF is invalid or could not be opened.'));
+      }
+    } finally {
+      if (loadingTaskRef.current === loadingTask) loadingTaskRef.current = null;
+      if (request === requestId.current) setIsLoading(false);
+    }
+  }, [clearOutput]);
+
+  const { getRootProps, getInputProps, isDragActive, open } = useDropzone({
+    onDrop,
+    accept: { 'application/pdf': ['.pdf'] },
+    multiple: false,
+    disabled: isLoading || isProcessing,
+    noClick: Boolean(file)
+  });
+
+  useEffect(() => {
+    if (!pdfjsDocument || !pageCount || !canvasRef.current) return undefined;
+    let active = true;
+    let task;
+    setIsRendering(true);
+    setRenderInfo(null);
+    setPreviewMessage('');
+
+    const renderPage = async () => {
+      try {
+        const page = await pdfjsDocument.getPage(currentPage + 1);
+        if (!active) return;
+        const baseViewport = page.getViewport({ scale: 1 });
+        const fitScale = Math.min(1.25, Math.max(0.1, (previewWidth - 16) / baseViewport.width));
+        const displayScale = fitScale * zoom;
+        const pixelRatio = Math.min(window.devicePixelRatio || 1, 2);
+        const viewport = page.getViewport({ scale: displayScale * pixelRatio });
+        const canvas = canvasRef.current;
+        const context = canvas?.getContext('2d');
+        if (!canvas || !context) throw new Error('Your browser could not create the PDF preview canvas.');
+        canvas.width = Math.ceil(viewport.width);
+        canvas.height = Math.ceil(viewport.height);
+        const info = {
+          width: viewport.width / pixelRatio,
+          height: viewport.height / pixelRatio,
+          pixelRatio
+        };
+        setRenderInfo(info);
+        task = page.render({ canvasContext: context, viewport, intent: 'display' });
+        renderTaskRef.current = task;
+        await task.promise;
+      } catch (renderError) {
+        if (active && renderError?.name !== 'RenderingCancelledException') {
+          console.error('Unable to render PDF crop preview:', renderError);
+          setPreviewMessage(renderError?.message || 'This page could not be rendered.');
+        }
+      } finally {
+        if (active) setIsRendering(false);
+        if (renderTaskRef.current === task) renderTaskRef.current = null;
+      }
+    };
+
+    renderPage();
+    return () => {
+      active = false;
+      task?.cancel();
+      if (renderTaskRef.current === task) renderTaskRef.current = null;
+    };
+  }, [currentPage, pdfjsDocument, pageCount, previewWidth, zoom]);
+
+  const removeFile = () => {
+    requestId.current += 1;
+    loadingTaskRef.current?.destroy().catch((destroyError) => {
+      console.error('Unable to cancel PDF loading:', destroyError);
+    });
+    setFile(null);
+    setPdfjsDocument(null);
+    setPageCount(0);
+    setCurrentPage(0);
+    setCrop(fullPage);
+    setDraftCrops({});
+    setPageCrops({});
+    setScope('current');
+    setRenderInfo(null);
+    setIsLoading(false);
+    setError('');
+    setPreviewMessage('');
+    clearOutput();
+  };
+
+  const navigatePage = (pageIndex) => {
+    if (pageIndex < 0 || pageIndex >= pageCount) return;
+    setCurrentPage(pageIndex);
+    setCrop(pageCrops[pageIndex] || draftCrops[pageIndex] || fullPage);
+  };
+
+  const updateCrop = (nextCrop) => {
+    setCrop(nextCrop);
+    setDraftCrops((current) => ({ ...current, [currentPage]: nextCrop }));
+  };
+
+  const pointFromEvent = (event) => {
+    const stage = stageRef.current;
+    const bounds = stage?.getBoundingClientRect();
+    if (!stage || !bounds || !stage.clientWidth || !stage.clientHeight) return null;
+    return {
+      x: clamp((event.clientX - bounds.left - stage.clientLeft) / stage.clientWidth, 0, 1),
+      y: clamp((event.clientY - bounds.top - stage.clientTop) / stage.clientHeight, 0, 1)
+    };
+  };
+
+  const handlePointerDown = (event) => {
+    if (!renderInfo || isRendering || isProcessing) return;
+    const point = pointFromEvent(event);
+    if (!point) return;
+    const handle = event.target.closest('[data-crop-handle]')?.dataset.cropHandle;
+    const inside = point.x >= crop.x
+      && point.x <= crop.x + crop.width
+      && point.y >= crop.y
+      && point.y <= crop.y + crop.height;
+    const start = handle
+      ? {
+        x: handle.includes('w') ? crop.x : (handle.includes('e') ? crop.x + crop.width : point.x),
+        y: handle.includes('n') ? crop.y : (handle.includes('s') ? crop.y + crop.height : point.y)
+      }
+      : point;
+    dragRef.current = {
+      mode: handle ? 'resize' : (inside ? 'move' : 'draw'),
+      handle,
+      start,
+      initialCrop: crop
+    };
+    event.currentTarget.setPointerCapture(event.pointerId);
+    event.preventDefault();
+    clearOutput();
+    setError('');
+  };
+
+  const handlePointerMove = (event) => {
+    const drag = dragRef.current;
+    if (!drag) return;
+    const point = pointFromEvent(event);
+    if (!point) return;
+    const dx = point.x - drag.start.x;
+    const dy = point.y - drag.start.y;
+    if (drag.mode === 'move') {
+      updateCrop({
+        ...drag.initialCrop,
+        x: clamp(drag.initialCrop.x + dx, 0, 1 - drag.initialCrop.width),
+        y: clamp(drag.initialCrop.y + dy, 0, 1 - drag.initialCrop.height)
+      });
+    } else if (drag.mode === 'resize') {
+      updateCrop(adjustCrop(drag.initialCrop, drag.handle, dx, dy));
+    } else {
+      const left = Math.min(drag.start.x, point.x);
+      const top = Math.min(drag.start.y, point.y);
+      updateCrop({
+        x: clamp(left, 0, 1 - MIN_CROP_SIZE),
+        y: clamp(top, 0, 1 - MIN_CROP_SIZE),
+        width: clamp(Math.abs(dx), MIN_CROP_SIZE, 1 - left),
+        height: clamp(Math.abs(dy), MIN_CROP_SIZE, 1 - top)
+      });
+    }
+  };
+
+  const finishPointer = (event) => {
+    dragRef.current = null;
+    if (event.currentTarget.hasPointerCapture(event.pointerId)) {
+      event.currentTarget.releasePointerCapture(event.pointerId);
+    }
+  };
+
+  const resizeByKeyboard = (event, handle) => {
+    const step = event.shiftKey ? 0.05 : 0.01;
+    const changes = {
+      ArrowLeft: [-step, 0],
+      ArrowRight: [step, 0],
+      ArrowUp: [0, -step],
+      ArrowDown: [0, step]
+    };
+    const change = changes[event.key];
+    if (!change) return;
+    event.preventDefault();
+    clearOutput();
+    updateCrop(adjustCrop(crop, handle, change[0], change[1]));
+  };
+
+  const resetCrop = () => {
+    setCrop(fullPage);
+    setDraftCrops({});
+    setPageCrops({});
+    clearOutput();
+    setError('');
+  };
+
+  const adjustCurrentCrop = () => {
+    setCrop(pageCrops[currentPage] || fullPage);
+    setOutput(null);
+    setStatus('');
+  };
+
+  const applyCrop = async () => {
+    if (!file || !pdfjsDocument || !pageCount) {
+      setError('Choose a PDF before applying a crop.');
+      return;
+    }
+    if (crop.width >= 0.9999 && crop.height >= 0.9999 && crop.x <= 0.0001 && crop.y <= 0.0001) {
+      setError('Adjust the crop area before applying it.');
+      return;
+    }
+
+    setIsProcessing(true);
+    setError('');
+    setStatus('');
+    clearOutput();
+    try {
+      const source = await PDFDocument.load(await file.arrayBuffer(), {
+        ignoreEncryption: false,
+        updateMetadata: false
+      });
+      if (source.isEncrypted) throw new Error('Password-protected PDFs are not supported.');
+      if (source.getPageCount() !== pageCount) throw new Error('The source PDF changed. Please select it again.');
+
+      const cropMap = scope === 'all'
+        ? Object.fromEntries(Array.from({ length: pageCount }, (_, index) => [index, { ...crop }]))
+        : { ...pageCrops, [currentPage]: { ...crop } };
+      const pageIndices = Object.keys(cropMap).map(Number).sort((a, b) => a - b);
+      const expected = new Map();
+      for (const pageIndex of pageIndices) {
+        const pdfJsPage = await pdfjsDocument.getPage(pageIndex + 1);
+        const pdfPage = source.getPage(pageIndex);
+        const pageSelection = cropMap[pageIndex];
+        const rectangle = cropToPdfRectangle(pdfJsPage, pdfPage, pageSelection);
+        const baseViewport = pdfJsPage.getViewport({ scale: 1 });
+        expected.set(pageIndex, {
+          rectangle,
+          width: baseViewport.width * pageSelection.width,
+          height: baseViewport.height * pageSelection.height
+        });
+        pdfPage.setCropBox(rectangle.x, rectangle.y, rectangle.width, rectangle.height);
+      }
+
+      const bytes = await source.save({ useObjectStreams: true });
+      const verified = await PDFDocument.load(bytes, { updateMetadata: false });
+      if (verified.getPageCount() !== pageCount || verified.isEncrypted) {
+        throw new Error('The generated PDF did not pass page-count or encryption validation.');
+      }
+      for (const [pageIndex, value] of expected) {
+        if (!rectanglesMatch(verified.getPage(pageIndex).getCropBox(), value.rectangle)) {
+          throw new Error(`The exported crop on page ${pageIndex + 1} did not match the selection.`);
+        }
+      }
+
+      const outputLoadingTask = pdfjsLib.getDocument({ data: new Uint8Array(bytes) });
+      try {
+        const outputPreview = await outputLoadingTask.promise;
+        if (outputPreview.numPages !== pageCount) throw new Error('The exported PDF preview has an unexpected page count.');
+        for (const [pageIndex, value] of expected) {
+          const outputPage = await outputPreview.getPage(pageIndex + 1);
+          const outputViewport = outputPage.getViewport({ scale: 1 });
+          if (
+            Math.abs(outputViewport.width - value.width) > 0.05
+            || Math.abs(outputViewport.height - value.height) > 0.05
+          ) {
+            throw new Error(`The exported dimensions on page ${pageIndex + 1} did not match the crop area.`);
+          }
+        }
+        await outputPreview.destroy();
+      } catch (verificationError) {
+        await outputLoadingTask.destroy().catch((destroyError) => {
+          console.error('Unable to release the exported PDF verification:', destroyError);
+        });
+        throw verificationError;
+      }
+
+      setOutput(new Blob([bytes], { type: 'application/pdf' }));
+      setPageCrops(cropMap);
+      setDraftCrops((current) => ({ ...current, ...cropMap }));
+      setStatus(`Crop applied to ${pageIndices.length === 1 ? `page ${pageIndices[0] + 1}` : `${pageIndices.length} pages`}. The validated PDF is ready to download.`);
+    } catch (processError) {
+      console.error('Unable to crop PDF:', processError);
+      setError(processError?.message || 'The PDF could not be cropped. Try another document.');
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  const downloadPdf = () => {
+    if (!output || !file) return;
+    const url = URL.createObjectURL(output);
+    const anchor = window.document.createElement('a');
+    anchor.href = url;
+    anchor.download = `${file.name.replace(/\.pdf$/i, '') || 'document'}_cropped.pdf`;
+    anchor.style.display = 'none';
+    window.document.body.appendChild(anchor);
+    anchor.click();
+    anchor.remove();
+    window.setTimeout(() => URL.revokeObjectURL(url), 10000);
+  };
+
+  const displayedCrop = output ? pageCrops[currentPage] : null;
+  const stageWidth = renderInfo ? renderInfo.width * (displayedCrop?.width ?? 1) : undefined;
+  const stageHeight = renderInfo ? renderInfo.height * (displayedCrop?.height ?? 1) : undefined;
+  const handleStyle = (handle) => ({
+    left: `${handle.x}%`,
+    top: `${handle.y}%`
+  });
+
+  return (
+    <section className="crop-pdf-tool" aria-labelledby="crop-pdf-heading">
+      <header className="crop-pdf-header">
+        <h2 id="crop-pdf-heading">Crop PDF pages</h2>
+        <p>Drag the crop area to move it, or use its handles to resize it. The original PDF is never changed.</p>
+      </header>
+
+      <div
+        {...getRootProps()}
+        className={`crop-pdf-upload ${isDragActive ? 'is-drag-active' : ''}`}
+      >
+        <input {...getInputProps()} />
+        {file ? (
+          <div className="crop-pdf-file">
+            <div>
+              <strong>{file.name}</strong>
+              <span>{formatBytes(file.size)} · {pageCount} {pageCount === 1 ? 'page' : 'pages'}</span>
+            </div>
+            <div className="crop-pdf-file-actions">
+              <button type="button" className="crop-pdf-button crop-pdf-button-secondary" onClick={open} disabled={isLoading || isProcessing}>
+                <Upload aria-hidden="true" size={16} /> Replace
+              </button>
+              <button type="button" className="crop-pdf-button crop-pdf-button-secondary" onClick={removeFile} disabled={isLoading || isProcessing}>
+                Delete
+              </button>
+            </div>
+          </div>
+        ) : (
+          <div className="crop-pdf-upload-prompt">
+            <Upload aria-hidden="true" size={28} />
+            <strong>{isDragActive ? 'Drop your PDF here' : 'Choose or drop a PDF'}</strong>
+            <span>One unencrypted PDF; processed locally in your browser.</span>
+          </div>
+        )}
+      </div>
+
+      {isLoading && (
+        <p className="crop-pdf-message" role="status"><Loader2 className="crop-pdf-spinner" aria-hidden="true" size={17} /> Loading and checking PDF pages...</p>
+      )}
+      {error && <p className="crop-pdf-message crop-pdf-error" role="alert">{error}</p>}
+
+      {file && pdfjsDocument && (
+        <div className="crop-pdf-workspace">
+          <div className="crop-pdf-toolbar">
+            <div className="crop-pdf-page-navigation" aria-label="PDF page navigation">
+              <button type="button" className="crop-pdf-icon-button" onClick={() => navigatePage(currentPage - 1)} disabled={currentPage === 0 || isProcessing} aria-label="Previous page">
+                <ArrowLeft aria-hidden="true" size={18} />
+              </button>
+              <span aria-live="polite">Page {currentPage + 1} of {pageCount}</span>
+              <button type="button" className="crop-pdf-icon-button" onClick={() => navigatePage(currentPage + 1)} disabled={currentPage >= pageCount - 1 || isProcessing} aria-label="Next page">
+                <ArrowRight aria-hidden="true" size={18} />
+              </button>
+            </div>
+            <div className="crop-pdf-zoom-controls" aria-label="Preview zoom">
+              <button type="button" className="crop-pdf-icon-button" onClick={() => setZoom((value) => Math.max(0.75, Math.round((value - 0.25) * 100) / 100))} disabled={zoom <= 0.75 || isProcessing} aria-label="Zoom out">
+                <ZoomOut aria-hidden="true" size={18} />
+              </button>
+              <span>{Math.round(zoom * 100)}%</span>
+              <button type="button" className="crop-pdf-icon-button" onClick={() => setZoom((value) => Math.min(1.5, Math.round((value + 0.25) * 100) / 100))} disabled={zoom >= 1.5 || isProcessing} aria-label="Zoom in">
+                <ZoomIn aria-hidden="true" size={18} />
+              </button>
+            </div>
+          </div>
+
+          <div className="crop-pdf-scope">
+            <label htmlFor="crop-pdf-scope">Apply crop to</label>
+            <select
+              id="crop-pdf-scope"
+              value={scope}
+              onChange={(event) => {
+                setScope(event.target.value);
+                clearOutput();
+              }}
+              disabled={isProcessing}
+            >
+              <option value="current">Current page only</option>
+              <option value="all">All pages</option>
+            </select>
+            <span>
+              {scope === 'all'
+                ? 'Applies this relative crop to every page, replacing earlier page-specific crop settings.'
+                : 'Crops only the current page; previously cropped pages remain included.'}
+            </span>
+          </div>
+
+          <div className="crop-pdf-preview-area" ref={previewAreaRef}>
+            {isRendering && <p className="crop-pdf-preview-status" role="status"><Loader2 className="crop-pdf-spinner" aria-hidden="true" size={16} /> Rendering page preview...</p>}
+            {previewMessage && <p className="crop-pdf-message crop-pdf-error" role="alert">{previewMessage}</p>}
+            {pdfjsDocument && (
+              <div
+                ref={stageRef}
+                className={`crop-pdf-page-stage ${displayedCrop ? 'is-cropped-preview' : ''}`}
+                style={{ width: renderInfo ? stageWidth : 1, height: renderInfo ? stageHeight : 1 }}
+                onPointerDown={handlePointerDown}
+                onPointerMove={handlePointerMove}
+                onPointerUp={finishPointer}
+                onPointerCancel={finishPointer}
+              >
+                <canvas
+                  ref={canvasRef}
+                  className="crop-pdf-canvas"
+                  aria-label={`Preview of page ${currentPage + 1}`}
+                  style={{
+                    width: renderInfo?.width ?? 0,
+                    height: renderInfo?.height ?? 0,
+                    left: displayedCrop && renderInfo ? -displayedCrop.x * renderInfo.width : 0,
+                    top: displayedCrop && renderInfo ? -displayedCrop.y * renderInfo.height : 0
+                  }}
+                />
+                {renderInfo && !displayedCrop && (
+                  <>
+                    <svg className="crop-pdf-shade" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
+                      <path
+                        d={`M0 0H100V100H0Z M${crop.x * 100} ${crop.y * 100}h${crop.width * 100}v${crop.height * 100}h${-crop.width * 100}Z`}
+                        fillRule="evenodd"
+                      />
+                    </svg>
+                    <div
+                      className="crop-pdf-selection"
+                      style={{
+                        left: `${crop.x * 100}%`,
+                        top: `${crop.y * 100}%`,
+                        width: `${crop.width * 100}%`,
+                        height: `${crop.height * 100}%`
+                      }}
+                    />
+                    {cropHandles.map((handle) => (
+                      <button
+                        key={handle.id}
+                        type="button"
+                        className={`crop-pdf-handle crop-pdf-handle-${handle.id}`}
+                        style={handleStyle(handle)}
+                        data-crop-handle={handle.id}
+                        aria-label={`Resize crop from ${handle.label}; use arrow keys to adjust`}
+                        title={`Resize from ${handle.label}`}
+                        disabled={isProcessing || isRendering}
+                        onKeyDown={(event) => resizeByKeyboard(event, handle.id)}
+                      />
+                    ))}
+                  </>
+                )}
+              </div>
+            )}
+            {renderInfo && (
+              <>
+                <p className="crop-pdf-measurement">
+                  {displayedCrop
+                    ? `Cropped preview: ${Math.round(displayedCrop.width * 100)}% × ${Math.round(displayedCrop.height * 100)}% of the original page.`
+                    : `Crop area: ${Math.round(crop.width * 100)}% × ${Math.round(crop.height * 100)}% of the visible page.`}
+                </p>
+                {output && !displayedCrop && (
+                  <p className="crop-pdf-message">The current page was not included in the last crop. The source page is shown here.</p>
+                )}
+              </>
+            )}
+          </div>
+
+          <div className="crop-pdf-actions">
+            {output && displayedCrop && (
+              <button type="button" className="crop-pdf-button crop-pdf-button-secondary" onClick={adjustCurrentCrop} disabled={isProcessing || isRendering}>
+                Adjust current page crop
+              </button>
+            )}
+            <button type="button" className="crop-pdf-button crop-pdf-button-secondary" onClick={resetCrop} disabled={isProcessing || isRendering}>
+              <RotateCcw aria-hidden="true" size={16} /> Reset crop
+            </button>
+            <button type="button" className="crop-pdf-button crop-pdf-button-primary" onClick={applyCrop} disabled={isProcessing || isRendering || isLoading}>
+              {isProcessing ? <Loader2 className="crop-pdf-spinner" aria-hidden="true" size={17} /> : null}
+              {isProcessing ? 'Applying crop...' : 'Apply crop'}
+            </button>
+            {output && (
+              <button type="button" className="crop-pdf-button crop-pdf-button-download" onClick={downloadPdf}>
+                <Download aria-hidden="true" size={17} /> Download cropped PDF
+              </button>
+            )}
+          </div>
+          <p className="crop-pdf-disclosure">
+            Cropping changes each page&apos;s visible CropBox boundary; it does not erase content outside that boundary. Hidden content may be recovered by changing the PDF page box. Your original file is left untouched.
+          </p>
+          {status && <p className="crop-pdf-message crop-pdf-success" role="status">{status}</p>}
+        </div>
+      )}
+    </section>
+  );
+};
+
+export default CropPdf;

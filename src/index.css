@@ -777,6 +777,422 @@ body {
   }
 }
 
+.crop-pdf-tool {
+  display: grid;
+  gap: 1.25rem;
+  padding: clamp(1rem, 3vw, 1.75rem);
+  border: 1px solid var(--border-color);
+  border-radius: 1.25rem;
+  background: var(--surface-background);
+  color: var(--text-primary);
+  box-shadow: 0 8px 24px rgb(15 23 42 / 0.06);
+}
+
+.crop-pdf-header h2 {
+  margin: 0 0 0.35rem;
+  font-size: 1.25rem;
+  font-weight: 700;
+}
+
+.crop-pdf-header p,
+.crop-pdf-scope span,
+.crop-pdf-measurement,
+.crop-pdf-disclosure {
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  line-height: 1.55;
+}
+
+.crop-pdf-header p,
+.crop-pdf-measurement,
+.crop-pdf-disclosure {
+  margin: 0;
+}
+
+.crop-pdf-upload {
+  min-height: 6rem;
+  border: 2px dashed var(--border-color);
+  border-radius: 1rem;
+  background: var(--surface-muted);
+  transition: border-color 160ms ease, background-color 160ms ease;
+}
+
+.crop-pdf-upload:not(:has(.crop-pdf-file)) {
+  cursor: pointer;
+}
+
+.crop-pdf-upload:hover,
+.crop-pdf-upload.is-drag-active {
+  border-color: #60a5fa;
+  background: color-mix(in srgb, var(--tool-icon-background) 70%, var(--surface-background));
+}
+
+.crop-pdf-upload-prompt {
+  display: flex;
+  min-height: 6rem;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  padding: 1rem;
+  color: var(--text-secondary);
+  text-align: center;
+}
+
+.crop-pdf-upload-prompt svg {
+  color: var(--tool-icon-foreground);
+}
+
+.crop-pdf-upload-prompt strong,
+.crop-pdf-file strong {
+  color: var(--text-primary);
+}
+
+.crop-pdf-upload-prompt span,
+.crop-pdf-file span {
+  font-size: 0.85rem;
+}
+
+.crop-pdf-file {
+  display: flex;
+  min-height: 6rem;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1rem 1.25rem;
+}
+
+.crop-pdf-file > div:first-child {
+  display: grid;
+  min-width: 0;
+  gap: 0.25rem;
+  overflow-wrap: anywhere;
+}
+
+.crop-pdf-file-actions,
+.crop-pdf-actions,
+.crop-pdf-page-navigation,
+.crop-pdf-zoom-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.65rem;
+}
+
+.crop-pdf-button,
+.crop-pdf-icon-button {
+  display: inline-flex;
+  min-height: 2.5rem;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  border: 1px solid var(--border-color);
+  border-radius: 0.7rem;
+  background: var(--surface-background);
+  color: var(--text-primary);
+  font: inherit;
+  font-size: 0.9rem;
+  font-weight: 600;
+  transition: border-color 160ms ease, background-color 160ms ease, color 160ms ease;
+}
+
+.crop-pdf-button {
+  padding: 0.55rem 0.9rem;
+}
+
+.crop-pdf-icon-button {
+  width: 2.5rem;
+  padding: 0;
+}
+
+.crop-pdf-button:hover:not(:disabled),
+.crop-pdf-icon-button:hover:not(:disabled) {
+  border-color: #60a5fa;
+  background: var(--surface-muted);
+}
+
+.crop-pdf-button:disabled,
+.crop-pdf-icon-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.crop-pdf-button-primary {
+  border-color: #2563eb;
+  background: #2563eb;
+  color: #fff;
+}
+
+.crop-pdf-button-primary:hover:not(:disabled) {
+  border-color: #1d4ed8;
+  background: #1d4ed8;
+  color: #fff;
+}
+
+.crop-pdf-button-download {
+  border-color: #15803d;
+  background: #15803d;
+  color: #fff;
+}
+
+.crop-pdf-button-download:hover:not(:disabled) {
+  border-color: #166534;
+  background: #166534;
+  color: #fff;
+}
+
+.crop-pdf-workspace {
+  display: grid;
+  gap: 1rem;
+}
+
+.crop-pdf-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.65rem 0.8rem;
+  border: 1px solid var(--border-color);
+  border-radius: 0.85rem;
+  background: var(--surface-muted);
+}
+
+.crop-pdf-page-navigation span,
+.crop-pdf-zoom-controls span {
+  min-width: 4.5rem;
+  color: var(--text-primary);
+  font-size: 0.9rem;
+  font-weight: 600;
+  text-align: center;
+}
+
+.crop-pdf-scope {
+  display: grid;
+  grid-template-columns: auto minmax(12rem, 18rem);
+  align-items: center;
+  gap: 0.5rem 0.75rem;
+}
+
+.crop-pdf-scope label {
+  font-weight: 600;
+}
+
+.crop-pdf-scope select {
+  min-height: 2.6rem;
+  padding: 0.45rem 0.7rem;
+  border: 1px solid var(--border-color);
+  border-radius: 0.65rem;
+  background: var(--surface-background);
+  color: var(--text-primary);
+  font: inherit;
+}
+
+.crop-pdf-scope span {
+  grid-column: 1 / -1;
+}
+
+.crop-pdf-preview-area {
+  display: grid;
+  min-height: 10rem;
+  justify-items: center;
+  gap: 0.7rem;
+  overflow: auto;
+  padding: 1rem;
+  border: 1px solid var(--border-color);
+  border-radius: 0.9rem;
+  background: var(--surface-muted);
+}
+
+.crop-pdf-page-stage {
+  position: relative;
+  flex: none;
+  overflow: hidden;
+  border: 0;
+  outline: 1px solid #64748b;
+  border-radius: 0.25rem;
+  background: #fff;
+  box-shadow: 0 8px 24px rgb(15 23 42 / 0.18);
+  touch-action: none;
+  user-select: none;
+}
+
+.crop-pdf-canvas {
+  position: absolute;
+  max-width: none;
+}
+
+.crop-pdf-shade,
+.crop-pdf-selection {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+.crop-pdf-shade {
+  z-index: 1;
+  overflow: visible;
+}
+
+.crop-pdf-shade path {
+  fill: rgb(2 6 23 / 0.48);
+}
+
+.crop-pdf-selection {
+  z-index: 2;
+  inset: auto;
+  border: 2px solid #2563eb;
+  box-shadow: 0 0 0 1px #fff;
+}
+
+.crop-pdf-handle {
+  position: absolute;
+  z-index: 3;
+  width: 16px;
+  height: 16px;
+  padding: 0;
+  transform: translate(-50%, -50%);
+  border: 2px solid #1d4ed8;
+  border-radius: 50%;
+  background: #fff;
+  cursor: grab;
+  touch-action: none;
+}
+
+.crop-pdf-handle:active {
+  cursor: grabbing;
+}
+
+.crop-pdf-handle-nw,
+.crop-pdf-handle-se {
+  cursor: nwse-resize;
+}
+
+.crop-pdf-handle-ne,
+.crop-pdf-handle-sw {
+  cursor: nesw-resize;
+}
+
+.crop-pdf-handle-n,
+.crop-pdf-handle-s {
+  cursor: ns-resize;
+}
+
+.crop-pdf-handle-e,
+.crop-pdf-handle-w {
+  cursor: ew-resize;
+}
+
+.crop-pdf-measurement {
+  text-align: center;
+}
+
+.crop-pdf-actions {
+  justify-content: flex-start;
+}
+
+.crop-pdf-disclosure {
+  padding: 0.8rem 1rem;
+  border-left: 3px solid #d97706;
+  border-radius: 0.25rem;
+  background: color-mix(in srgb, #fef3c7 45%, var(--surface-background));
+}
+
+.crop-pdf-message {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+.crop-pdf-error {
+  color: #b91c1c;
+}
+
+.crop-pdf-success {
+  color: #15803d;
+}
+
+.crop-pdf-preview-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+}
+
+.crop-pdf-spinner {
+  animation: crop-pdf-spin 1s linear infinite;
+}
+
+@keyframes crop-pdf-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+:root[data-theme='dark'] .crop-pdf-disclosure {
+  border-left-color: #fbbf24;
+  background: rgb(120 53 15 / 0.22);
+  color: #fde68a;
+}
+
+:root[data-theme='dark'] .crop-pdf-error {
+  color: #fca5a5;
+}
+
+:root[data-theme='dark'] .crop-pdf-success {
+  color: #86efac;
+}
+
+:root[data-theme='dark'] .crop-pdf-handle {
+  border-color: #60a5fa;
+}
+
+.crop-pdf-button:focus-visible,
+.crop-pdf-icon-button:focus-visible,
+.crop-pdf-handle:focus-visible,
+.crop-pdf-scope select:focus-visible {
+  outline: 3px solid #2563eb;
+  outline-offset: 3px;
+}
+
+:root[data-theme='dark'] .crop-pdf-button:focus-visible,
+:root[data-theme='dark'] .crop-pdf-icon-button:focus-visible,
+:root[data-theme='dark'] .crop-pdf-handle:focus-visible,
+:root[data-theme='dark'] .crop-pdf-scope select:focus-visible {
+  outline-color: #93c5fd;
+}
+
+@media (max-width: 600px) {
+  .crop-pdf-scope {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .crop-pdf-scope span {
+    grid-column: auto;
+  }
+
+  .crop-pdf-scope select {
+    width: 100%;
+  }
+
+  .crop-pdf-actions > button {
+    flex: 1 1 100%;
+  }
+
+  .crop-pdf-preview-area {
+    padding: 0.6rem;
+  }
+}
+
 .pdf-editor-shell {
   display: grid;
   gap: 1rem;

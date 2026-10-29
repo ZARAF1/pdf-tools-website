@@ -1,5 +1,6 @@
 import {
   Archive,
+  Crop,
   FileStack,
   FileText,
   FileType,
@@ -191,6 +192,16 @@ export const TOOL_REGISTRY = [
     keywords: 'optical character recognition scanned image search text layer recognize',
     icon: ScanText,
     color: 'bg-cyan-500'
+  },
+  {
+    id: 'crop',
+    name: 'Crop PDF',
+    path: '/crop-pdf',
+    category: 'organize',
+    description: 'Crop the visible page area in a PDF without rasterizing its content.',
+    keywords: 'trim page boundary crop box resize margins',
+    icon: Crop,
+    color: 'bg-indigo-500'
   },
   {
     id: 'organize-pages',

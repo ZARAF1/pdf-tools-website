@@ -7,6 +7,20 @@ import { TOOL_CATEGORIES, TOOL_REGISTRY } from './toolRegistry';
 import { closeDisclosureOnEscape } from '../lib/detailsEscape';
 
 const TOOL_CONTENT = {
+  crop: {
+    title: 'Crop PDF',
+    description: 'Adjust the visible page boundaries in a PDF.',
+    intro: 'Trim the visible area of PDF pages without rasterizing their content. Choose a PDF, navigate to a page, then drag the crop area or resize it with its corner and edge handles. The selection stays aligned as the preview zooms or resizes. Apply a crop to the current page and keep earlier page-specific crops in the same output, or apply the same relative selection to every page; the all-pages option replaces earlier per-page settings. Different page sizes and rotations are mapped to their own page coordinates. Apply the crop to create and validate a separate PDF copy, then preview and download it. The original file is not changed, and the document is processed in your browser. This tool changes the PDF page CropBox; it does not erase content outside the box. Hidden material may be recovered by changing the page boundary, so use genuine redaction for sensitive content. Rewriting may also invalidate existing digital signatures.',
+    mechanism: 'PDF.js renders each page and converts the normalized preview selection back to PDF page coordinates, accounting for page scaling and rotation. pdf-lib applies that rectangle to each selected page CropBox and saves a separate output. The content is not rasterized or permanently removed; content outside the new visible boundary may remain recoverable. Processing occurs in the browser.',
+    steps: ['Choose an unencrypted PDF and wait for its pages to load.', 'Navigate to a page and drag the crop boundary or use its handles to position and resize it.', 'Choose Current page only or All pages; the all-pages option applies the same relative selection to each page.', 'Select Apply crop and review the resulting cropped preview and validation message.', 'Select Download cropped PDF to save the separate copy.'],
+    faqs: [
+      ['Does cropping permanently delete what is outside the selection?', 'No. The tool changes the page CropBox, which hides content outside the visible boundary but does not erase it. Someone may recover it by changing the page box. Use a genuine redaction tool for sensitive information.'],
+      ['Can I crop only one page?', 'Yes. Choose Current page only. Crops applied on other pages remain included in the output. The All pages option applies the same relative crop area to each page, scaled to its dimensions and orientation, and replaces those individual settings.'],
+      ['Will cropping make the PDF blurry or remove searchable text?', 'The tool changes PDF page boundaries rather than converting pages to images, so it does not intentionally rasterize page content.'],
+      ['Will existing digital signatures remain valid?', 'Rewriting a PDF can invalidate its existing digital signatures. Check signed documents and specialized PDF features after cropping.'],
+      ['Does the tool upload my PDF?', 'No. The PDF is read, previewed, and modified in your browser; it is not sent to an external processing service. Ordinary website requests and hosting logs are separate.']
+    ]
+  },
   edit: {
     title: 'Edit PDF',
     description: 'Add text, images, drawings, highlights, and shapes to a PDF copy.',

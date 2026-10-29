@@ -17,6 +17,7 @@ import PdfWatermarker from './components/PdfWatermarker';
 import RemovePdfPages from './components/RemovePdfPages';
 import ExtractPdfPages from './components/ExtractPdfPages';
 import OrganizePdf from './components/OrganizePdf';
+import CropPdf from './components/CropPdf';
 import RedactPdf from './components/RedactPdf';
 import SignPdf from './components/SignPdf';
 import EditPdf from './components/EditPdf';
@@ -135,6 +136,7 @@ function App() {
             <Route path="/remove-pages" element={<ToolPage tool="remove"><RemovePdfPages /></ToolPage>} />
             <Route path="/extract-pages" element={<ToolPage tool="extract"><ExtractPdfPages /></ToolPage>} />
             <Route path="/organize" element={<ToolPage tool="organize-pages"><OrganizePdf /></ToolPage>} />
+            <Route path="/crop-pdf" element={<ToolPage tool="crop"><CropPdf /></ToolPage>} />
             <Route path="/redact" element={<ToolPage tool="redact"><RedactPdf /></ToolPage>} />
             <Route path="/sign" element={<ToolPage tool="sign"><SignPdf /></ToolPage>} />
             <Route path="/edit-pdf" element={<ToolPage tool="edit"><EditPdf /></ToolPage>} />
