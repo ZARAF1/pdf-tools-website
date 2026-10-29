@@ -164,6 +164,18 @@ This is the persistent evidence log. Update the observed result and evidence whe
 | Invalid page selection and reset | Reversed/out-of-range selections show errors; reset clears file, settings, and errors. | `3-1` reported a reversed range; page `4` was rejected for a 3-page PDF; Reset cleared the file and alert. | PASS — VERIFIED |
 | Download output and inspect appearance | Browser saves a valid output and signature placement is visually checked. | Generated Blobs were parsed with PDF.js; actual download event and independent visual inspection were not captured. Signature is visual only, not cryptographic. | IMPLEMENTED — NOT YET VERIFIED |
 
+### Edit PDF
+
+| Step | Expected result | Actual result / evidence | Status |
+|---|---|---|---|
+| Open `/edit-pdf` and the Edit & Sign category page | Direct route has one H1, unique title/description, and a category card that links to it. | Browser verified the direct route title and description, one H1, active Edit & Sign category, and the Edit PDF card on `/categories/edit-sign` (four category cards total). | PASS — VERIFIED |
+| Upload a valid PDF and navigate/delete/restore pages | Preview renders pages; page count stays accurate; undo restores page changes. | A synthetic three-page PDF rendered in the browser. Deleting page 3 reduced the page list to two; Undo restored three; deleting page 3 again left two pages for export. | PASS — VERIFIED |
+| Prevent deletion of the last remaining page | Keep at least one page and show a useful message. | The guard is present in the delete handler but was not exercised. | IMPLEMENTED — NOT YET VERIFIED |
+| Add text/freehand and inspect the saved output | Marks appear in the export while original page text remains and the page count is preserved. | A two-page output with added text and a freehand stroke was 1,916 bytes, began with `%PDF-1.7`, passed pdf-lib page-count validation, and was reloaded/rendered through the editor. A separate two-page export with added text and a generated PNG was 2,162 bytes; reloading it through the editor showed the retained source text, added text, and image. Placement/rotation was not exhaustively tested. | PASS — VERIFIED |
+| Replace the loaded file with invalid input | Show a useful error and preserve the existing valid document and its edits. | A non-PDF `.pdf` replacement showed “Choose a valid, unencrypted PDF that can be opened in this browser.” The current two-page PDF and image mark remained selected. | PASS — VERIFIED |
+| Capture the actual download and verify the saved file independently | Browser saves the expected `*_edited.pdf`; a separate viewer opens it with the expected pages and marks. | The download click created a PDF Blob and the generated output was reloaded and rendered through the editor. The automation bridge did not capture a browser download event or saved file, so disk filename and independent-viewer inspection remain unverified. | IMPLEMENTED — NOT YET VERIFIED |
+| Verify keyboard editing, shapes, encrypted input, dark theme and responsive states | Keyboard users can place and move marks; other tools and responsive theme states work as described. | At a 390 px viewport, the editor document width was 375 px with no horizontal overflow. Keyboard-only text placement (arrows + Enter), mark selection, and arrow-key movement were verified. Keyboard image placement, rectangle, highlight, line, encrypted-file rejection, and dark-theme appearance were not tested. | IMPLEMENTED — NOT YET VERIFIED |
+
 ### Unlock PDF
 
 | Step | Expected result | Actual result / evidence | Status |

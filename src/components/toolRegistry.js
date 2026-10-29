@@ -7,6 +7,7 @@ import {
   Image as ImageIcon,
   Lock,
   PenLine,
+  Pencil,
   RotateCw,
   ScanText,
   ShieldAlert,
@@ -140,6 +141,16 @@ export const TOOL_REGISTRY = [
     keywords: 'reduce size shrink optimize',
     icon: Archive,
     color: 'bg-violet-500'
+  },
+  {
+    id: 'edit',
+    name: 'Edit PDF',
+    path: '/edit-pdf',
+    category: 'edit-sign',
+    description: 'Add text, images, drawings, highlights, and shapes to a PDF copy.',
+    keywords: 'edit annotate markup text image draw highlight shape',
+    icon: Pencil,
+    color: 'bg-blue-500'
   },
   {
     id: 'watermark',

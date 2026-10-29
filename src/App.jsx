@@ -19,6 +19,7 @@ import ExtractPdfPages from './components/ExtractPdfPages';
 import OrganizePdf from './components/OrganizePdf';
 import RedactPdf from './components/RedactPdf';
 import SignPdf from './components/SignPdf';
+import EditPdf from './components/EditPdf';
 import OfficeConversionNotice from './components/OfficeConversionNotice';
 import ToolPage from './components/ToolPage';
 import { NotFoundPage, SitePages } from './components/SitePages';
@@ -136,6 +137,7 @@ function App() {
             <Route path="/organize" element={<ToolPage tool="organize-pages"><OrganizePdf /></ToolPage>} />
             <Route path="/redact" element={<ToolPage tool="redact"><RedactPdf /></ToolPage>} />
             <Route path="/sign" element={<ToolPage tool="sign"><SignPdf /></ToolPage>} />
+            <Route path="/edit-pdf" element={<ToolPage tool="edit"><EditPdf /></ToolPage>} />
             <Route path="/excel-to-pdf" element={<ToolPage tool="excel"><OfficeConversionNotice format="Excel" /></ToolPage>} />
             <Route path="/powerpoint-to-pdf" element={<ToolPage tool="powerpoint"><OfficeConversionNotice format="PowerPoint" /></ToolPage>} />
             <Route path="/faq" element={<SitePages page="faq" />} />

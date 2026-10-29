@@ -7,6 +7,21 @@ import { TOOL_CATEGORIES, TOOL_REGISTRY } from './toolRegistry';
 import { closeDisclosureOnEscape } from '../lib/detailsEscape';
 
 const TOOL_CONTENT = {
+  edit: {
+    title: 'Edit PDF',
+    description: 'Add text, images, drawings, highlights, and shapes to a PDF copy.',
+    intro: 'Place new text or image content on a PDF page, draw freehand marks, add highlights or outlines, and remove pages you no longer need. Choose a page, select an editing tool, and position your marks in the preview; you can move or delete marks, undo or redo edits, and review the result before saving. This editor adds content over the page—it does not select, replace, or reflow existing PDF text. The original file stays unchanged, and the edited copy is generated in your browser. Added text uses a built-in font with Latin and Western European character coverage; unsupported characters are reported rather than silently substituted. Rewriting may affect signatures, forms, annotations, bookmarks, metadata, accessibility tags, or specialized PDF features. Open and inspect the saved copy before sharing it.',
+    mechanism: 'PDF.js renders the page preview and maps edits to PDF coordinates. pdf-lib adds text, images, vector marks, and page removals to a separate copy in the browser. No document upload or external PDF-processing service is used.',
+    steps: ['Choose an unencrypted PDF and wait for its pages to load.', 'Select a tool, set its options, then click or drag on the page to add a mark.', 'Select marks to move or delete them; use Undo and Redo to revise edits.', 'Remove pages if needed, then select Save PDF and download the validated copy.', 'Open the downloaded PDF and review its pages and marks before sharing.'],
+    faqs: [
+      ['Can I change or replace text already in the PDF?', 'No. The editor adds new content over the page; it does not edit, remove, or reflow existing text.'],
+      ['Which editing tools are available?', 'You can add text or PNG/JPEG images, draw freehand, place highlights, draw rectangle outlines and lines, move or delete marks, and remove pages.'],
+      ['Will the original PDF be changed?', 'No. The editor works from the selected file and creates a separate edited copy when you save.'],
+      ['Can I edit a password-protected PDF?', 'No. Encrypted PDFs are rejected.'],
+      ['Will every PDF feature be preserved?', 'Not necessarily. Rewriting may affect digital signatures, forms, annotations, bookmarks, metadata, accessibility tags, or specialized features. Review the exported file carefully.'],
+      ['Does this tool upload my document?', 'The document preview and edits are processed in this browser; the PDF is not sent to an external processing server. Ordinary website requests and hosting logs are separate.']
+    ]
+  },
   merge: {
     title: 'Merge PDF',
     description: 'Combine PDF files into one document, with control over their order.',
