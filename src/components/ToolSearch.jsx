@@ -1,4 +1,4 @@
-import React, { useMemo, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Search, X } from 'lucide-react';
 import { TOOL_CATEGORIES, TOOL_REGISTRY } from './toolRegistry';
@@ -7,12 +7,21 @@ const ToolSearch = () => {
   const [query, setQuery] = useState('');
   const [isOpen, setIsOpen] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
+  const [isClosing, setIsClosing] = useState(false);
+  const [isBoundaryEnding, setIsBoundaryEnding] = useState(false);
   const [activeIndex, setActiveIndex] = useState(-1);
   const suppressFocusOpen = useRef(false);
   const containerRef = useRef(null);
   const inputRef = useRef(null);
   const triggerRef = useRef(null);
+  const closeTimerRef = useRef(null);
+  const boundaryTimerRef = useRef(null);
   const navigate = useNavigate();
+
+  useEffect(() => () => {
+    if (closeTimerRef.current) window.clearTimeout(closeTimerRef.current);
+    if (boundaryTimerRef.current) window.clearTimeout(boundaryTimerRef.current);
+  }, []);
 
   const results = useMemo(() => {
     const normalizedQuery = query.trim().toLowerCase();
@@ -27,18 +36,30 @@ const ToolSearch = () => {
 
   const openTool = (tool) => {
     navigate(tool.path);
-    setQuery('');
-    setIsOpen(false);
-    setIsExpanded(false);
-    setActiveIndex(-1);
+    closeSearch();
     inputRef.current?.blur();
   };
 
   const closeSearch = () => {
+    if (closeTimerRef.current) window.clearTimeout(closeTimerRef.current);
+    if (boundaryTimerRef.current) window.clearTimeout(boundaryTimerRef.current);
     setQuery('');
     setIsOpen(false);
     setIsExpanded(false);
+    setIsClosing(isExpanded);
+    setIsBoundaryEnding(false);
     setActiveIndex(-1);
+    if (isExpanded) {
+      boundaryTimerRef.current = window.setTimeout(() => {
+        setIsBoundaryEnding(true);
+        boundaryTimerRef.current = null;
+      }, 620);
+      closeTimerRef.current = window.setTimeout(() => {
+        setIsClosing(false);
+        setIsBoundaryEnding(false);
+        closeTimerRef.current = null;
+      }, 680);
+    }
   };
 
   const handleKeyDown = (event) => {
@@ -96,6 +117,10 @@ const ToolSearch = () => {
       triggerRef.current?.focus();
       return;
     }
+    if (closeTimerRef.current) window.clearTimeout(closeTimerRef.current);
+    if (boundaryTimerRef.current) window.clearTimeout(boundaryTimerRef.current);
+    setIsClosing(false);
+    setIsBoundaryEnding(false);
     setIsExpanded(true);
     requestAnimationFrame(() => inputRef.current?.focus());
   };
@@ -105,7 +130,7 @@ const ToolSearch = () => {
       ref={containerRef}
       onBlur={handleContainerBlur}
       onKeyDown={handleKeyDown}
-      className={`tool-search-shell${isExpanded ? ' is-expanded' : ''}`}
+      className={`tool-search-shell${isExpanded ? ' is-expanded' : ''}${isClosing ? ' is-closing' : ''}${isBoundaryEnding ? ' is-boundary-ending' : ''}`}
       style={isExpanded && window.matchMedia('(max-width: 900px)').matches
         ? { width: 'calc(100vw - 17rem)' }
         : undefined}
@@ -130,6 +155,10 @@ const ToolSearch = () => {
           role="searchbox"
           autoComplete="off"
           value={query}
+          style={{
+            borderWidth: '2px',
+            borderColor: 'rgba(255, 255, 255, 0.96)',
+          }}
           onChange={(event) => {
             setQuery(event.target.value);
             setIsOpen(true);
@@ -143,7 +172,7 @@ const ToolSearch = () => {
             if (query.trim()) setIsOpen(true);
           }}
           placeholder="Find a PDF tool"
-          className="tool-search-input w-full rounded-xl border border-slate-200 bg-white py-3 pl-11 pr-11 text-sm text-slate-800 shadow-sm transition placeholder:text-slate-400 focus:border-blue-400 focus:outline-none focus:ring-4 focus:ring-blue-100"
+          className="tool-search-input w-full rounded-xl border-2 border-white bg-white py-3 pl-11 pr-11 text-sm text-slate-800 shadow-sm transition placeholder:text-slate-400 focus:border-white focus:outline-none focus:ring-4 focus:ring-blue-100"
         />
         {query && (
           <button

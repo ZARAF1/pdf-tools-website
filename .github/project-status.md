@@ -1,6 +1,8 @@
 # Project Status — PDF Utility Website
 
 ## Current state
+**Search closing boundary fix (2026-10-29):** The open search retains a 2 px white shell/input border matching the same geometry throughout expansion and collapse. Closing now keeps that boundary fully visible for the first 620 ms of the 680 ms shell animation; it begins fading only during the final 60 ms and is gone by the 48 px completed collapse. Browser verification confirmed the boundary remained opacity 1 at 300 ms, began fading near 600 ms as the shell reached its nearly closed width, and reached opacity 0 at 680 ms. A closing-frame check confirmed the earlier split transition is retained but no longer removes the border prematurely. `npm.cmd run build` and `git diff --check` pass.
+
 **All Tools submenu spacing (2026-10-29):** Added a 10 px gap between tool rows and a 10 px top margin below each category label in the All Tools mega-menu, creating clearer vertical separation without changing category popup spacing.
 
 **Mega-menu selection focus fix (2026-10-29):** When a mega-menu is open, route-based left-navigation highlights are temporarily suppressed so All Tools or the selected category is the only visually active control. This prevents a previous route such as Guides from remaining tinted beside an open All Tools menu; the previous route highlight returns automatically when the menu closes.
