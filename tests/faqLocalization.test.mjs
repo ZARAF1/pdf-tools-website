@@ -20,8 +20,8 @@ test('standalone FAQ content and metadata are complete for every supported langu
     SUPPORTED_LANGUAGES.map(({ code }) => code).sort()
   );
 
-  const english = FAQ_TRANSLATIONS.en;
-  assert.equal(english.items.length, 8);
+  const english = getLocalizedFaq('en');
+  assert.equal(FAQ_TRANSLATIONS.en.items.length, 8);
   for (const { code } of SUPPORTED_LANGUAGES) {
     const localized = getLocalizedFaq(code);
     assert.ok(localized.title, `${code} is missing the FAQ title`);
@@ -30,7 +30,7 @@ test('standalone FAQ content and metadata are complete for every supported langu
     assert.ok(localized.sectionLabel, `${code} is missing the FAQ section label`);
     assert.ok(localized.toolsLabel, `${code} is missing the tools link label`);
     assert.ok(localized.guidesLabel, `${code} is missing the guides link label`);
-    assert.equal(localized.items.length, 8, `${code} has an incomplete FAQ list`);
+    assert.equal(localized.items.length, 9, `${code} has an incomplete FAQ list`);
     for (const [index, [question, answer]] of localized.items.entries()) {
       assert.ok(question, `${code} FAQ ${index + 1} has no question`);
       assert.ok(answer, `${code} FAQ ${index + 1} has no answer`);
@@ -39,6 +39,21 @@ test('standalone FAQ content and metadata are complete for every supported langu
         assert.notEqual(answer, english.items[index][1], `${code} FAQ ${index + 1} answer is still English`);
       }
     }
+  }
+});
+
+test('standalone FAQ distinguishes local file processing from offline availability', () => {
+  const english = getLocalizedFaq('en').items.at(-1);
+  assert.match(english[0], /offline/i);
+  assert.match(english[1], /not guaranteed/i);
+  assert.match(english[1], /conversion server/i);
+
+  for (const { code } of SUPPORTED_LANGUAGES.filter(({ code }) => code !== 'en')) {
+    const offlineItem = getLocalizedFaq(code).items.at(-1);
+    assert.ok(offlineItem[0], `${code} is missing the offline question`);
+    assert.ok(offlineItem[1], `${code} is missing the offline answer`);
+    assert.notEqual(offlineItem[0], english[0], `${code} offline question is still English`);
+    assert.notEqual(offlineItem[1], english[1], `${code} offline answer is still English`);
   }
 });
 

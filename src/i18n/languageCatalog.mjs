@@ -146,6 +146,29 @@ const navigationToggleTranslations = {
   'zh-CN': { collapseNavigation: '折叠导航栏', expandNavigation: '展开导航栏' }
 };
 
+const sitePolicyTranslations = {
+  en: { security: 'Security', cookiePolicy: 'Cookie Policy' },
+  es: { security: 'Seguridad', cookiePolicy: 'Política de cookies' },
+  fr: { security: 'Sécurité', cookiePolicy: 'Politique relative aux cookies' },
+  de: { security: 'Sicherheit', cookiePolicy: 'Cookie-Richtlinie' },
+  pt: { security: 'Segurança', cookiePolicy: 'Política de cookies' },
+  it: { security: 'Sicurezza', cookiePolicy: 'Informativa sui cookie' },
+  nl: { security: 'Beveiliging', cookiePolicy: 'Cookiebeleid' },
+  pl: { security: 'Bezpieczeństwo', cookiePolicy: 'Polityka plików cookie' },
+  sv: { security: 'Säkerhet', cookiePolicy: 'Cookiepolicy' },
+  fi: { security: 'Tietoturva', cookiePolicy: 'Evästekäytäntö' },
+  da: { security: 'Sikkerhed', cookiePolicy: 'Cookiepolitik' },
+  nb: { security: 'Sikkerhet', cookiePolicy: 'Retningslinjer for informasjonskapsler' },
+  tr: { security: 'Güvenlik', cookiePolicy: 'Çerez Politikası' },
+  ru: { security: 'Безопасность', cookiePolicy: 'Политика использования файлов cookie' },
+  uk: { security: 'Безпека', cookiePolicy: 'Політика щодо файлів cookie' },
+  ar: { security: 'الأمان', cookiePolicy: 'سياسة ملفات تعريف الارتباط' },
+  hi: { security: 'सुरक्षा', cookiePolicy: 'कुकी नीति' },
+  ja: { security: 'セキュリティ', cookiePolicy: 'Cookieポリシー' },
+  ko: { security: '보안', cookiePolicy: '쿠키 정책' },
+  'zh-CN': { security: '安全', cookiePolicy: 'Cookie 政策' }
+};
+
 const messagesByLanguage = Object.fromEntries(
   SUPPORTED_LANGUAGES.map(({ code }) => [
     code,
@@ -153,6 +176,7 @@ const messagesByLanguage = Object.fromEntries(
       ...keys.map((key, index) => [key, translations[code][index]]),
       ...extraKeys.map((key, index) => [key, extraTranslations[code][index]]),
       ...workflowKeys.map((key, index) => [key, workflowTranslations[code][index]]),
+      ...Object.entries(sitePolicyTranslations[code]),
       ...Object.entries(navigationToggleTranslations[code])
     ])
   ])

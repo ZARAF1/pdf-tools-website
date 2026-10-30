@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { BookOpenText, CircleHelp, Info, Mail, ShieldCheck } from 'lucide-react';
+import { ArrowRight, BookOpenText, CircleHelp, Info, Mail, ShieldCheck } from 'lucide-react';
 import FaqAccordion from './FaqAccordion';
 import { getLocalizedFaq } from '../i18n/faqLocalization.mjs';
 import { getLocalizedResources } from '../i18n/resourceLocalization.mjs';
@@ -38,7 +38,9 @@ const ARTICLES = {
 
 const PAGE_META = {
   privacy: { title: 'Privacy Policy | PDF Merge Pro', description: 'Privacy and processing disclosures for the PDF Merge Pro website and browser-based PDF tools.' },
-  terms: { title: 'Terms of Use | PDF Merge Pro', description: 'Terms and limitations for using the PDF Merge Pro website and PDF tools.' },
+  security: { title: 'Security Policy | PDF Merge Pro', description: 'How PDF Merge Pro handles local PDF processing, browser security, and responsible security reports.' },
+  terms: { title: 'Terms of Use | PDF Merge Pro', description: 'Draft terms and limitations for using PDF Merge Pro browser-based document tools.' },
+  cookies: { title: 'Cookie Policy | PDF Merge Pro', description: 'Cookie and browser-storage practices for the PDF Merge Pro website and local PDF tools.' },
   about: { title: 'About | PDF Merge Pro', description: 'About the PDF Merge Pro browser-based PDF utility website.' },
   contact: { title: 'Contact | PDF Merge Pro', description: 'Contact information availability for PDF Merge Pro.' },
   resources: { title: 'PDF Guides and Resources | PDF Merge Pro', description: 'Practical guides to PDF compression, local processing, and scanned PDF conversion.' }
@@ -77,6 +79,8 @@ const PageLayout = ({ title, intro, children, icon: Icon }) => (
 
 const INFO_PAGE_ICONS = {
   privacy: ShieldCheck,
+  security: ShieldCheck,
+  cookies: Info,
   about: Info,
   contact: Mail,
   terms: ShieldCheck
@@ -159,14 +163,16 @@ const ResourcesPage = () => {
     <PageLayout title={resources.title} intro={resources.intro} icon={BookOpenText}>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
         {Object.entries(resources.articles).map(([slug, article]) => (
-          <Link
-            key={slug}
-            to={`/resources/${slug}`}
-            className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 hover:shadow-lg transition-shadow focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
-          >
-            <h2 className="text-lg font-bold text-slate-800 mb-2">{article.title}</h2>
-            <p className="text-sm text-slate-600">{article.description}</p>
-            <span className="mt-4 inline-block text-sm font-semibold text-blue-700">{resources.readGuide}</span>
+          <Link key={slug} to={`/resources/${slug}`} className="tool-card group resource-card">
+            <span className="tool-card-icon resource-card-icon" aria-hidden="true">
+              <BookOpenText className="h-5 w-5" />
+            </span>
+            <span className="resource-card-content">
+              <span className="resource-card-title">{article.title}</span>
+              <span className="resource-card-description">{article.description}</span>
+              <span className="resource-card-read">{resources.readGuide}</span>
+            </span>
+            <ArrowRight className="tool-card-arrow h-4 w-4 shrink-0" aria-hidden="true" />
           </Link>
         ))}
       </div>
@@ -188,48 +194,114 @@ const NotFoundPage = () => {
 const INFO_PAGES = {
   privacy: {
     ...PAGE_META.privacy,
-    intro: 'This notice describes the current website code as inspected on 28 October 2026. Hosting configuration and legal operator details have not been supplied, so those parts require owner review before publication.',
+    intro: 'This notice describes the browser application as reviewed on 31 October 2026. Hosting-provider settings and legal operator details are not available in the project and must be confirmed before publication.',
     sections: [
       {
         title: 'PDF processing in the browser',
         content: <>
-          <p>The inspected PDF tools read selected documents in the browser and create their outputs there; the app does not upload documents to an application conversion server. This describes document processing, not a fully offline website: opening a page requests website files from its hosting provider.</p>
-          <p>PDF to Word and OCR PDF use Tesseract.js for English OCR when a page has no readable text. Their worker, core software, and English language data are bundled with the website as local assets. These are supporting resources; scanned-page recognition is performed in the browser. Styling is built into the website assets; no Tailwind CSS CDN is used.</p>
+          <p>The inspected PDF tools read selected documents in the browser and create their outputs there; the app does not upload documents to an application conversion server. The app code does not deliberately store document contents or tool passwords in its persistent browser preferences. This is local processing, not a promise that the website itself works offline: opening a page requests the site and its assets from its hosting provider.</p>
+          <p>PDF to Word and OCR PDF use Tesseract.js and bundled English OCR resources when a page has no readable text. Those supporting resources are part of the site; recognition runs in the browser. The selected document is not sent to a translation or OCR service.</p>
         </>
       },
       {
         title: 'Website requests, logs, analytics and advertising',
         content: <>
-          <p>Opening the site sends ordinary requests for pages and assets to the hosting provider. The provider may record connection or request information under its own terms; the provider and retention periods are not identified in this project.</p>
-          <p>No analytics integration is configured in the inspected application. An optional AdSense loader is present, but its global enable flag, consent state, publisher ID, and placements are unset, so it does not load ads. This statement does not establish what the hosting provider, browser, or future deployment configuration records.</p>
+          <p>Opening or using the site sends page and asset requests to the web host. That provider may process connection details such as an IP address, request time, or browser information in server logs. The provider, its purposes, locations, and retention periods are not identified in this project.</p>
+          <p>No analytics integration is configured in the inspected application. An optional AdSense loader is present in the codebase but its enable flag, consent state, publisher ID, and placements are unset. This code review cannot determine what a future hosting setup or browser extensions may collect.</p>
         </>
       },
       {
-        title: 'Cookies and third parties',
+        title: 'Cookies and browser preferences',
         content: <>
-          <p>No application analytics or advertising cookies are intentionally configured in the inspected source. Third-party resources, browser settings, or deployment services may have their own request and storage behavior.</p>
-          <p>The selected interface language is stored in this browser's localStorage as <code>pdf-tools-language</code>. Translated interface strings come from dictionaries bundled with the site; no translation API receives this preference or page content.</p>
-          <p>Before enabling Google AdSense, the site owner must update this notice for the real advertising setup, review Google's current disclosure requirements, and configure appropriate consent tools for the site's audience and regions.</p>
+          <p>The application stores the chosen theme and language in browser localStorage, not in cookies. The preference keys are <code>pdf-tools-theme</code> and <code>pdf-tools-language</code>; they do not contain PDF contents. Interface translations are bundled with the site, and no translation API receives the preference or document.</p>
+          <p>See the <Link className="underline hover:text-blue-700" to="/cookies">Cookie Policy</Link> for the distinction between app storage and cookies that a host or future integration might set. Before enabling advertising or analytics, the operator must update this notice and configure any required consent controls.</p>
         </>
       },
       {
         title: 'Operator, retention and privacy requests',
         content: <>
-          <p>The project does not provide a legal operator name, contact address, hosting provider, retention schedule, or jurisdiction. These details must be supplied by the site owner; none are invented here.</p>
-          <p>This draft is not legal advice. The owner should obtain jurisdiction-specific review and publish accurate contact and data-rights procedures before launch.</p>
+          <p>The project does not identify a legal operator, contact address, hosting provider, jurisdiction, or server-log retention schedule. No document-retention period is claimed because documents are processed locally by the app and are not submitted to its conversion server.</p>
+          <p>This draft is not legal advice. The operator must add accurate identity, hosting, retention, privacy-rights, and contact information and obtain jurisdiction-specific review before launch.</p>
           <p><Link className="underline hover:text-blue-700" to="/contact">Contact information status</Link></p>
+        </>
+      }
+    ]
+  },
+  security: {
+    ...PAGE_META.security,
+    intro: 'This overview describes safeguards in the current browser application; it is not a security certification or a guarantee about the hosting environment.',
+    sections: [
+      {
+        title: 'Documents are processed on your device',
+        content: <>
+          <p>For the supported PDF tools reviewed, file reading, transformations, and output creation run in the browser. The application does not send selected PDFs to a conversion server. The site itself must still be delivered by a host, and its request logs are outside this repository; see the <Link className="underline hover:text-blue-700" to="/privacy">Privacy Policy</Link>.</p>
+          <p>PDF to Word and OCR PDF use OCR resources bundled with the website, with recognition running in the browser. This avoids sending document pages to an external OCR service in the inspected implementation.</p>
+        </>
+      },
+      {
+        title: 'Protect the device and browser',
+        content: <>
+          <p>Local processing means the document is available to the browser on your device. Keep your operating system and browser up to date, use a trusted device, and consider browser extensions, shared accounts, malware, screen capture, and other software that may access browser data.</p>
+          <p>When working on a shared device, download outputs only to a location you control and clear downloads or temporary browser state when appropriate. The app does not control your device, browser profile, extensions, backups, or downloaded copies.</p>
+        </>
+      },
+      {
+        title: 'Passwords and generated files',
+        content: <>
+          <p>Use a strong, unique password when creating a protected PDF and keep it somewhere safe; the app cannot recover a forgotten password. Unlock PDF requires a correct supported password that you are authorized to use. Check important output files before relying on them and retain the original where needed.</p>
+          <p>No browser-based tool can provide an absolute security guarantee. Local processing reduces document transfer to a conversion server, but it does not remove risks from the device, browser, network, or hosting environment.</p>
+        </>
+      },
+      {
+        title: 'Report a security concern',
+        content: <>
+          <p>A dedicated security contact is not configured in this project. The operator should publish a monitored security-reporting address before launch. The current <Link className="underline hover:text-blue-700" to="/contact">Contact page</Link> does not yet provide a verified reporting channel; do not include sensitive PDFs in a report.</p>
         </>
       }
     ]
   },
   terms: {
     ...PAGE_META.terms,
-    intro: 'These draft terms describe general use of the tools. The site owner must review them with qualified counsel for the applicable jurisdiction before relying on them.',
+    intro: 'This product-specific terms template is a draft for review, not legal advice. The site operator must complete the missing identity and jurisdiction details and review it with qualified counsel before publication.',
     sections: [
-      { title: 'Use of the tools', content: <p>Use the tools only for documents you are authorized to process. You are responsible for checking generated output before relying on, sharing, or submitting it.</p> },
-      { title: 'Technical limits', content: <p>PDF compatibility, available device memory, encryption, OCR accuracy, conversion layout, and output quality vary. Compression is not guaranteed to reduce file size; conversion may require manual corrections. Do not rely on any tool as the only copy of an important document.</p> },
-      { title: 'No professional advice or service guarantee', content: <p>The website provides general document utilities, not legal, financial, or professional advice. No uptime, output fidelity, or fitness for a particular purpose is promised by this draft.</p> },
-      { title: 'Operator and governing terms', content: <p>The legal operator, jurisdiction, contact method, and dispute terms have not been supplied. The site owner must provide and legally review these details before publication.</p> }
+      { title: 'Scope and changes', content: <p>These terms cover access to the PDF Merge Pro website and its browser-based document tools. Features and limits may change as the site is maintained. The operator should publish an effective date and explain how material changes will be communicated before putting this template into use.</p> },
+      { title: 'Your documents and permitted use', content: <p>Use the tools only for documents you are authorized to process and for lawful purposes. You keep your rights to your own files. You are responsible for their contents, permissions, backups, and the decision to process a file in your browser, download an output, or share it with someone else.</p> },
+      { title: 'Browser-side processing and privacy', content: <p>Supported tools process selected documents in the browser and do not send them to an application conversion server. This does not make the website fully offline or determine what a hosting provider logs. Review the <Link className="underline hover:text-blue-700" to="/privacy">Privacy Policy</Link> and <Link className="underline hover:text-blue-700" to="/cookies">Cookie Policy</Link> for current implementation notes and deployment details that remain to be supplied.</p> },
+      { title: 'Output, limits, and backups', content: <p>PDF compatibility, device memory, encryption, OCR recognition, conversion layout, and output quality vary. Compression may produce a larger file; higher-compression settings may reduce image and text quality; conversions may need manual corrections. Review each result and keep an independent copy of important originals. Do not rely on a tool as your only backup.</p> },
+      { title: 'Availability and warranty disclaimer', content: <p>The site is provided for general document tasks and may be changed or unavailable. The operator does not promise uninterrupted access, error-free processing, exact fidelity, or suitability for a particular purpose. Any disclaimer or limitation applies only to the extent allowed by applicable law and does not remove rights that cannot legally be excluded.</p> },
+      { title: 'Acceptable use and intellectual property', content: <p>Do not use the site to violate law or another person’s rights, interfere with its operation, or attempt unauthorized access. The website’s software, design, and original site content remain with their respective rights holders; these terms do not transfer ownership of your documents or grant rights beyond ordinary use of the service.</p> },
+      { title: 'Operator, governing law, and contact', content: <p>The legal operator, jurisdiction, dispute process, and contact method have not been supplied. The operator must fill in these details, add any locally required consumer terms, and obtain legal review before publication. Until then, this page is an incomplete template, not a finalized contract.</p> }
+    ]
+  },
+  cookies: {
+    ...PAGE_META.cookies,
+    intro: 'This policy separates cookies from browser storage and reflects the application code reviewed on 31 October 2026. The actual hosting configuration has not been supplied.',
+    sections: [
+      {
+        title: 'Cookies used by the application',
+        content: <>
+          <p>No application cookies are configured in the inspected client code. The app has no active analytics or advertising integration. An optional AdSense loader is present in the codebase but is not enabled in the current configuration.</p>
+          <p>This source review cannot identify cookies that a production host, CDN, browser extension, or future third-party integration might set. The site operator must inspect the deployed site and update this policy with real cookie names, providers, purposes, durations, and consent choices before launch.</p>
+        </>
+      },
+      {
+        title: 'Preferences stored in your browser',
+        content: <>
+          <p>The app stores your selected theme and interface language in localStorage under <code>pdf-tools-theme</code> and <code>pdf-tools-language</code>. These are browser storage entries, not cookies, and do not contain document contents. They remain until changed or cleared through your browser’s site-data controls.</p>
+          <p>If browser storage is unavailable or cleared, the app uses its default theme and language selection. PDF files are not saved to these preference keys.</p>
+        </>
+      },
+      {
+        title: 'Hosting, consent, and future changes',
+        content: <>
+          <p>The hosting provider is not identified in this project, so its cookie behavior and retention periods cannot be confirmed here. Browser and hosting requests may be handled under the provider’s own settings and policies.</p>
+          <p>No cookie-consent interface is configured in the inspected app. If deployment adds cookies or similar storage that require notice or consent under applicable law, the operator must configure the appropriate controls and revise this policy before enabling them.</p>
+        </>
+      },
+      {
+        title: 'Managing browser data',
+        content: <p>You can review or clear cookies and local storage using your browser’s site settings. Clearing local storage resets the site’s saved theme and language preferences; clearing a cookie does not delete a PDF saved to your device.</p>
+      }
     ]
   },
   about: {

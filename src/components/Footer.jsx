@@ -21,7 +21,9 @@ const Footer = () => {
             <Link to="/resources" className="footer-link">{translate('guides')}</Link>
             <LanguagePicker placement="footer" />
             <Link to="/privacy" className="footer-link">{translate('privacy')}</Link>
+            <Link to="/security" className="footer-link">{translate('security')}</Link>
             <Link to="/terms" className="footer-link">{translate('terms')}</Link>
+            <Link to="/cookies" className="footer-link">{translate('cookiePolicy')}</Link>
           </nav>
         </div>
       </div>

@@ -26,7 +26,7 @@ test('language regions group each supported language exactly once', () => {
 test('every supported language has localized navigation and category labels', () => {
   const keys = [
     'home', 'faq', 'guides', 'language', 'chooseLanguage', 'allTools',
-    'categories', 'privacy', 'contact', 'about', 'terms',
+    'categories', 'privacy', 'contact', 'about', 'terms', 'security', 'cookiePolicy',
     'category.organize', 'category.convert', 'category.edit-sign',
     'category.protect-repair', 'category.extract-analyze', 'homeEyebrow', 'homeTitle',
     'homeTagline', 'homeDescription', 'homeExplore', 'browseToolCategories',

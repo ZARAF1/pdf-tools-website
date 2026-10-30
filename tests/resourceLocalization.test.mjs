@@ -6,6 +6,11 @@ import {
 } from '../src/i18n/resourceLocalization.mjs';
 import { SUPPORTED_LANGUAGES } from '../src/i18n/languageCatalog.mjs';
 
+const sitePages = await (await import('node:fs/promises')).readFile(
+  new URL('../src/components/SitePages.jsx', import.meta.url),
+  'utf8'
+);
+
 const articles = {
   'pdf-compression': {
     title: 'What PDF compression can and cannot do',
@@ -62,4 +67,12 @@ test('resource translation keeps embedded tool links and leaves English unchange
     Object.keys(RESOURCE_TRANSLATIONS).sort(),
     SUPPORTED_LANGUAGES.filter(({ code }) => code !== 'en').map(({ code }) => code).sort()
   );
+});
+
+test('guide index uses accessible shared tool-card styling with a clear read action', () => {
+  assert.match(sitePages, /className="tool-card group resource-card"/);
+  assert.match(sitePages, /className="tool-card-icon resource-card-icon"/);
+  assert.match(sitePages, /className="tool-card-arrow h-4 w-4 shrink-0"/);
+  assert.match(sitePages, /className="resource-card-read"/);
+  assert.match(sitePages, /resources\.readGuide/);
 });

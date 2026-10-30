@@ -283,6 +283,7 @@ const LeftNavigation = ({ theme, setTheme, isSidebarCollapsed, onToggleSidebar }
               aria-expanded={activeMenu === category.id}
               aria-controls="site-tools-mega-menu"
               aria-label={translate(`category.${category.id}`)}
+              title={translate(`category.${category.id}`)}
               onClick={(event) => toggleMegaMenu(event, category.id)}
               onKeyDown={focusFirstMegaItem}
             >
@@ -572,7 +573,9 @@ function App() {
             <Route path="/resources" element={<SitePages page="resources" />} />
             <Route path="/resources/:articleSlug" element={<ResourceArticleRoute />} />
             <Route path="/privacy" element={<SitePages page="privacy" />} />
+            <Route path="/security" element={<SitePages page="security" />} />
             <Route path="/terms" element={<SitePages page="terms" />} />
+            <Route path="/cookies" element={<SitePages page="cookies" />} />
             <Route path="/about" element={<SitePages page="about" />} />
             <Route path="/contact" element={<SitePages page="contact" />} />
             <Route path="*" element={<NotFoundPage />} />

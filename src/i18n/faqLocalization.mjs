@@ -7,13 +7,13 @@ export const FAQ_TRANSLATIONS = {
     toolsLabel: 'PDF tools',
     guidesLabel: 'PDF guides',
     items: [
-      ['Are my PDF files uploaded?', 'PDF operations process the selected document in your browser; the app does not upload documents to a conversion server. PDF to Word and OCR PDF use Tesseract OCR worker, core software, and English language data bundled with the website for scanned-page recognition. These are supporting resources, not your document; OCR recognition runs in your browser. The website also requests its pages and assets, and hosting log practices depend on the deployment provider.'],
+      ['Are my PDF files uploaded?', 'For the supported tools, your selected document is processed in this browser and is not sent to a conversion server. PDF to Word and OCR PDF use English OCR resources bundled with the site; recognition also runs on your device. Loading the site still sends ordinary page and asset requests to its host, whose logging practices depend on the deployment provider.'],
       ['How many PDF files can I merge?', 'You can merge up to five PDF files at a time. At least two files are required.'],
       ['Why might a PDF fail to open?', 'The file may be corrupt, use unsupported encryption or PDF features, or exceed the available memory. If it is password-protected, use Unlock PDF with a correct password you are authorized to use; otherwise try a readable copy or a smaller file.'],
       ['Will compression always reduce file size?', 'No. PDFs may already be compressed or be dominated by embedded images. The compressor reports actual sizes and avoids offering a larger output. Higher compression rasterizes pages and reduces text/image quality.'],
       ['Will PDF to Word preserve the layout?', 'Not exactly. Text positions and simple aligned rows are reconstructed. Complex columns, tables, forms, and scanned text may need manual correction.'],
       ['How do I save a generated file?', 'Use the tool’s Download button and choose a destination in your browser’s save dialog. If downloads are blocked, check the browser’s download permissions and try again.'],
-      ['Do you use analytics or advertising cookies?', 'No analytics integration or active advertising configuration is present in the inspected app. An optional AdSense loader exists but its global enable flag, consent state, publisher ID, and placements are all unset. The deployment host and external resources can still receive requests; review their applicable policies.'],
+      ['Do you use analytics or advertising cookies?', 'The inspected app has no configured analytics and no active advertising. It saves your language and theme preferences in browser storage, not in cookies. Hosting providers or future integrations may have separate storage or logging practices; see the Cookie Policy for details.'],
       ['Can I use a password-protected PDF?', 'Yes. Unlock PDF can remove supported opening-password encryption when you provide the correct password you are authorized to use. It supports AES-256 R6 and legacy RC4 R2/R3; other tools continue to reject encrypted inputs. Password guessing or recovery is not available. Protect PDF can create a password-protected output copy.']
     ]
   },
@@ -361,10 +361,34 @@ export const FAQ_TRANSLATIONS = {
   }
 };
 
+const offlineFaqTranslations = {
+  en: ['Can I use the tools offline?', 'Offline use is not guaranteed. The website must load in your browser, and a connection may be needed to open or reload it. Supported PDF operations run on your device after the page loads; your document is not sent to a conversion server.'],
+  es: ['¿Puedo usar las herramientas sin conexión?', 'No se garantiza el uso sin conexión. El sitio debe cargarse en el navegador y puede que necesites conexión para abrirlo o volver a cargarlo. Las operaciones PDF compatibles se ejecutan en tu dispositivo una vez cargada la página; tu documento no se envía a un servidor de conversión.'],
+  fr: ['Puis-je utiliser les outils hors ligne ?', 'L’utilisation hors ligne n’est pas garantie. Le site doit se charger dans votre navigateur et une connexion peut être nécessaire pour l’ouvrir ou le recharger. Une fois la page chargée, les opérations PDF prises en charge s’exécutent sur votre appareil ; votre document n’est pas envoyé à un serveur de conversion.'],
+  de: ['Kann ich die Tools offline verwenden?', 'Die Offline-Nutzung wird nicht garantiert. Die Website muss im Browser geladen werden; zum Öffnen oder erneuten Laden kann eine Verbindung nötig sein. Unterstützte PDF-Vorgänge laufen nach dem Laden der Seite auf Ihrem Gerät; das Dokument wird nicht an einen Konvertierungsserver gesendet.'],
+  pt: ['Posso usar as ferramentas sem conexão?', 'O uso sem conexão não é garantido. O site precisa ser carregado no navegador, e pode ser necessária uma conexão para abri-lo ou recarregá-lo. Depois que a página carrega, as operações PDF compatíveis são executadas no dispositivo; o documento não é enviado a um servidor de conversão.'],
+  it: ['Posso usare gli strumenti offline?', 'L’uso offline non è garantito. Il sito deve essere caricato nel browser e potrebbe servire una connessione per aprirlo o ricaricarlo. Dopo il caricamento della pagina, le operazioni PDF supportate vengono eseguite sul dispositivo; il documento non viene inviato a un server di conversione.'],
+  nl: ['Kan ik de tools offline gebruiken?', 'Offline gebruik is niet gegarandeerd. De website moet in je browser worden geladen en er kan een verbinding nodig zijn om de website te openen of opnieuw te laden. Ondersteunde PDF-bewerkingen worden na het laden op je apparaat uitgevoerd; je document wordt niet naar een conversieserver gestuurd.'],
+  pl: ['Czy mogę korzystać z narzędzi offline?', 'Działanie offline nie jest gwarantowane. Witryna musi załadować się w przeglądarce, a do jej otwarcia lub ponownego załadowania może być potrzebne połączenie. Obsługiwane operacje PDF są wykonywane na urządzeniu po załadowaniu strony; dokument nie jest wysyłany na serwer konwersji.'],
+  sv: ['Kan jag använda verktygen offline?', 'Offlineanvändning garanteras inte. Webbplatsen måste läsas in i webbläsaren och en anslutning kan behövas för att öppna eller läsa in den igen. PDF-åtgärder som stöds körs på din enhet när sidan har lästs in; dokumentet skickas inte till en konverteringsserver.'],
+  fi: ['Voinko käyttää työkaluja offline-tilassa?', 'Offline-käyttöä ei taata. Sivusto on ladattava selaimeen, ja sen avaamiseen tai uudelleenlataamiseen voidaan tarvita verkkoyhteys. Tuetut PDF-toiminnot suoritetaan laitteellasi sivun latauduttua; asiakirjaa ei lähetetä muunnospalvelimelle.'],
+  da: ['Kan jeg bruge værktøjerne offline?', 'Offlinebrug er ikke garanteret. Webstedet skal indlæses i browseren, og der kan være brug for en forbindelse for at åbne eller genindlæse det. Understøttede PDF-handlinger udføres på din enhed, når siden er indlæst; dokumentet sendes ikke til en konverteringsserver.'],
+  nb: ['Kan jeg bruke verktøyene uten nett?', 'Bruk uten nett er ikke garantert. Nettstedet må lastes inn i nettleseren, og det kan være nødvendig med en tilkobling for å åpne eller laste det inn på nytt. Støttede PDF-operasjoner kjøres på enheten etter at siden er lastet inn; dokumentet sendes ikke til en konverteringsserver.'],
+  tr: ['Araçları çevrimdışı kullanabilir miyim?', 'Çevrimdışı kullanım garanti edilmez. Web sitesinin tarayıcıya yüklenmesi gerekir; siteyi açmak veya yeniden yüklemek için bağlantı gerekebilir. Desteklenen PDF işlemleri sayfa yüklendikten sonra cihazınızda çalışır; belgeniz bir dönüştürme sunucusuna gönderilmez.'],
+  ru: ['Можно ли пользоваться инструментами без интернета?', 'Работа без интернета не гарантируется. Сайт должен загрузиться в браузере; для его открытия или повторной загрузки может понадобиться подключение. Поддерживаемые операции с PDF выполняются на устройстве после загрузки страницы; документ не отправляется на сервер конвертации.'],
+  uk: ['Чи можна користуватися інструментами офлайн?', 'Офлайн-робота не гарантується. Сайт має завантажитися у браузері, а для його відкриття чи повторного завантаження може знадобитися підключення. Підтримувані операції з PDF виконуються на вашому пристрої після завантаження сторінки; документ не надсилається на сервер конвертації.'],
+  ar: ['هل يمكنني استخدام الأدوات دون اتصال بالإنترنت؟', 'لا نضمن العمل دون اتصال. يجب تحميل الموقع في المتصفح، وقد يلزم الاتصال لفتحه أو إعادة تحميله. تُنفَّذ عمليات PDF المدعومة على جهازك بعد تحميل الصفحة؛ ولا يُرسل المستند إلى خادم تحويل.'],
+  hi: ['क्या मैं इन टूल का उपयोग ऑफ़लाइन कर सकता हूँ?', 'ऑफ़लाइन उपयोग की गारंटी नहीं है। वेबसाइट को ब्राउज़र में लोड होना चाहिए और उसे खोलने या फिर से लोड करने के लिए कनेक्शन की आवश्यकता हो सकती है। पेज लोड होने के बाद समर्थित PDF प्रक्रियाएँ आपके डिवाइस पर चलती हैं; दस्तावेज़ किसी रूपांतरण सर्वर पर नहीं भेजा जाता।'],
+  ja: ['オフラインでツールを使えますか？', 'オフラインでの利用は保証されません。サイトをブラウザーに読み込む必要があり、開くときや再読み込み時に接続が必要な場合があります。ページの読み込み後、対応するPDF処理はお使いの端末で実行され、文書が変換サーバーに送信されることはありません。'],
+  ko: ['오프라인으로 도구를 사용할 수 있나요?', '오프라인 사용은 보장되지 않습니다. 웹사이트가 브라우저에 로드되어야 하며 사이트를 열거나 다시 로드할 때 연결이 필요할 수 있습니다. 페이지가 로드된 후 지원되는 PDF 작업은 기기에서 실행되며 문서는 변환 서버로 전송되지 않습니다.'],
+  'zh-CN': ['我可以离线使用这些工具吗？', '我们不保证离线使用。网站需要先加载到浏览器中，打开或重新加载时可能需要网络连接。页面加载后，支持的 PDF 操作会在您的设备上运行；文档不会发送到转换服务器。']
+};
+
 export const getLocalizedFaq = (language) => {
   const localized = FAQ_TRANSLATIONS[language] || FAQ_TRANSLATIONS.en;
   return {
     ...localized,
+    items: [...localized.items, offlineFaqTranslations[language] || offlineFaqTranslations.en],
     pageTitle: `${localized.title} | PDF Merge Pro`
   };
 };
