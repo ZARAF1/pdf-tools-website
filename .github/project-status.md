@@ -1,6 +1,8 @@
 # Project Status — PDF Utility Website
 
 ## Current state
+**Shared attachment top padding (2026-10-30):** Removed the top padding from `.tool-attachment-content` across tool attachment sections while preserving the 1.25rem horizontal and bottom padding. Production build and `git diff --check` pass. Browser spacing measurement remains unverified.
+
 **Rotate PDF upload spacing (2026-10-30):** Removed the unintended 2rem top margin on the initial upload card. The outer vertical-spacing utility now applies only after a file is selected, preserving the existing spacing in the selected-file workflow. `npm.cmd run build` and `git diff --check` pass. No other rotation behavior was changed.
 
 **Protect & Extract attachment match (2026-10-30):** Protect PDF, Unlock PDF, Compress PDF, Split PDF, and OCR PDF now use the Merge attachment-card structure; Extract PDF Pages already used it. Preserved distinct rules, including password-protected input for Unlock and the five-file batch limit for Compress. Browser checks measured Merge and all six affected routes at 994×88 px on the available 1355 px CSS viewport, with matching card geometry; all chooser buttons opened their file picker, and only Compress allowed multiple files. A mobile viewport could not be established in the browser, so the 219 px narrow-screen layout remains unverified. `npm.cmd run build` and `git diff --check` pass. PDF selection/processing and output workflows were not retested.

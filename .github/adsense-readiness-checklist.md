@@ -15,6 +15,8 @@ This is the persistent evidence log. Update the observed result and evidence whe
 
 **Attachment visual follow-up (2026-10-30):** Browser comparisons confirmed that Merge, Rotate, Remove Pages, Crop, Organize, and all four Edit & Sign tools share the attachment-card pattern. The Edit & Sign set matched Merge at 919×88 px on a 1280×900 viewport and 242×219 px at 390×844; document scroll width was 375 px. Their 40×40 px icon tiles, 16 px headings, 14 px subtitles, and 14 px/600-weight 40 px-high blue buttons match in light and dark themes. Each chooser invoked its file input, and each route accepted a synthetic one-page PDF and displayed its filename/page count. PDF creation workflows remain untested.
 
+**Shared attachment top padding (2026-10-30):** Set `.tool-attachment-content` top padding to zero across tool attachment sections; kept horizontal and bottom padding at 1.25rem. The production build and `git diff --check` pass. Browser geometry was not measured.
+
 ## Site-wide structure and navigation
 
 | Requirement / flow | Route and files | Test steps / expected result | Actual result / evidence | Status | Remaining action |
