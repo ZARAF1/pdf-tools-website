@@ -2,17 +2,9 @@ import React, { useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { BookOpenText, CircleHelp, Info, Mail, ShieldCheck } from 'lucide-react';
 import FaqAccordion from './FaqAccordion';
-
-const FAQ_ITEMS = [
-  ['Are my PDF files uploaded?', 'PDF operations process the selected document in your browser; the app does not upload documents to a conversion server. PDF to Word and OCR PDF use Tesseract OCR worker, core software, and English language data bundled with the website for scanned-page recognition. These are supporting resources, not your document; OCR recognition runs in your browser. The website also requests its pages and assets, and hosting log practices depend on the deployment provider.'],
-  ['How many PDF files can I merge?', 'You can merge up to five PDF files at a time. At least two files are required.'],
-  ['Why might a PDF fail to open?', 'The file may be corrupt, use unsupported encryption or PDF features, or exceed the available memory. If it is password-protected, use Unlock PDF with a correct password you are authorized to use; otherwise try a readable copy or a smaller file.'],
-  ['Will compression always reduce file size?', 'No. PDFs may already be compressed or be dominated by embedded images. The compressor reports actual sizes and avoids offering a larger output. Higher compression rasterizes pages and reduces text/image quality.'],
-  ['Will PDF to Word preserve the layout?', 'Not exactly. Text positions and simple aligned rows are reconstructed. Complex columns, tables, forms, and scanned text may need manual correction.'],
-  ['How do I save a generated file?', 'Use the tool’s Download button and choose a destination in your browser’s save dialog. If downloads are blocked, check the browser’s download permissions and try again.'],
-  ['Do you use analytics or advertising cookies?', 'No analytics integration or active advertising configuration is present in the inspected app. An optional AdSense loader exists but its global enable flag, consent state, publisher ID, and placements are all unset. The deployment host and external resources can still receive requests; review their applicable policies.'],
-  ['Can I use a password-protected PDF?', 'Yes. Unlock PDF can remove supported opening-password encryption when you provide the correct password you are authorized to use. It supports AES-256 R6 and legacy RC4 R2/R3; other tools continue to reject encrypted inputs. Password guessing or recovery is not available. Protect PDF can create a password-protected output copy.']
-];
+import { getLocalizedFaq } from '../i18n/faqLocalization.mjs';
+import { getLocalizedResources } from '../i18n/resourceLocalization.mjs';
+import { useLanguage } from '../i18n/useLanguage';
 
 const ARTICLES = {
   'pdf-compression': {
@@ -45,7 +37,6 @@ const ARTICLES = {
 };
 
 const PAGE_META = {
-  faq: { title: 'Frequently Asked Questions | PDF Merge Pro', description: 'Answers about PDF tools, processing, downloads, compatibility, and privacy.' },
   privacy: { title: 'Privacy Policy | PDF Merge Pro', description: 'Privacy and processing disclosures for the PDF Merge Pro website and browser-based PDF tools.' },
   terms: { title: 'Terms of Use | PDF Merge Pro', description: 'Terms and limitations for using the PDF Merge Pro website and PDF tools.' },
   about: { title: 'About | PDF Merge Pro', description: 'About the PDF Merge Pro browser-based PDF utility website.' },
@@ -107,19 +98,23 @@ const InfoPage = ({ page, pageKey }) => {
 };
 
 const FaqPage = () => {
-  usePageMeta(PAGE_META.faq.title, PAGE_META.faq.description);
+  const { language } = useLanguage();
+  const localizedFaq = getLocalizedFaq(language);
+  usePageMeta(localizedFaq.pageTitle, localizedFaq.description);
   return (
-    <PageLayout title="Frequently Asked Questions" intro="Practical answers about using the PDF tools, their limits, and how the website processes files." icon={CircleHelp}>
-      <section aria-label="Frequently asked questions">
-        <FaqAccordion items={FAQ_ITEMS} />
+    <PageLayout title={localizedFaq.title} intro={localizedFaq.intro} icon={CircleHelp}>
+      <section aria-label={localizedFaq.sectionLabel}>
+        <FaqAccordion items={localizedFaq.items} />
       </section>
-      <p className="text-sm text-slate-600">Looking for a specific operation? Browse the <Link className="underline hover:text-blue-700" to="/">PDF tools</Link> or the <Link className="underline hover:text-blue-700" to="/resources">PDF guides</Link>.</p>
+      <p className="text-sm text-slate-600"><Link className="underline hover:text-blue-700" to="/">{localizedFaq.toolsLabel}</Link> · <Link className="underline hover:text-blue-700" to="/resources">{localizedFaq.guidesLabel}</Link></p>
     </PageLayout>
   );
 };
 
 const ResourcePage = ({ article }) => {
-  const content = ARTICLES[article];
+  const { language } = useLanguage();
+  const resources = getLocalizedResources(language, ARTICLES);
+  const content = resources.articles[article];
   const title = content ? `${content.title} | PDF Merge Pro` : 'Page Not Found | PDF Merge Pro';
   const description = content?.description || 'The requested page could not be found.';
   usePageMeta(title, description);
@@ -151,17 +146,19 @@ const ResourcePage = ({ article }) => {
           </section>
         ))}
       </div>
-      <Link to="/resources" className="inline-block text-blue-700 font-medium hover:underline">Back to all resources</Link>
+      <Link to="/resources" className="inline-block text-blue-700 font-medium hover:underline">{resources.backToResources}</Link>
     </PageLayout>
   );
 };
 
 const ResourcesPage = () => {
-  usePageMeta(PAGE_META.resources.title, PAGE_META.resources.description);
+  const { language } = useLanguage();
+  const resources = getLocalizedResources(language, ARTICLES);
+  usePageMeta(`${resources.title} | PDF Merge Pro`, resources.intro);
   return (
-    <PageLayout title="PDF Guides and Resources" intro="Short, practical explanations of PDF workflows, output quality, and browser processing." icon={BookOpenText}>
+    <PageLayout title={resources.title} intro={resources.intro} icon={BookOpenText}>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-        {Object.entries(ARTICLES).map(([slug, article]) => (
+        {Object.entries(resources.articles).map(([slug, article]) => (
           <Link
             key={slug}
             to={`/resources/${slug}`}
@@ -169,7 +166,7 @@ const ResourcesPage = () => {
           >
             <h2 className="text-lg font-bold text-slate-800 mb-2">{article.title}</h2>
             <p className="text-sm text-slate-600">{article.description}</p>
-            <span className="mt-4 inline-block text-sm font-semibold text-blue-700">Read guide</span>
+            <span className="mt-4 inline-block text-sm font-semibold text-blue-700">{resources.readGuide}</span>
           </Link>
         ))}
       </div>
@@ -211,6 +208,7 @@ const INFO_PAGES = {
         title: 'Cookies and third parties',
         content: <>
           <p>No application analytics or advertising cookies are intentionally configured in the inspected source. Third-party resources, browser settings, or deployment services may have their own request and storage behavior.</p>
+          <p>The selected interface language is stored in this browser's localStorage as <code>pdf-tools-language</code>. Translated interface strings come from dictionaries bundled with the site; no translation API receives this preference or page content.</p>
           <p>Before enabling Google AdSense, the site owner must update this notice for the real advertising setup, review Google's current disclosure requirements, and configure appropriate consent tools for the site's audience and regions.</p>
         </>
       },

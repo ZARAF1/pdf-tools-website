@@ -2,8 +2,11 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Search, X } from 'lucide-react';
 import { TOOL_CATEGORIES, TOOL_REGISTRY } from './toolRegistry';
+import { useLanguage } from '../i18n/useLanguage';
+import { getLocalizedTool } from '../i18n/toolTranslations.mjs';
 
 const ToolSearch = () => {
+  const { language, translate } = useLanguage();
   const [query, setQuery] = useState('');
   const [isOpen, setIsOpen] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
@@ -28,11 +31,12 @@ const ToolSearch = () => {
     if (!normalizedQuery) return [];
     return TOOL_REGISTRY.filter((tool) => {
       const category = TOOL_CATEGORIES.find((item) => item.id === tool.category);
-      return `${tool.name} ${tool.description} ${tool.keywords} ${category?.name || ''}`
+      const localizedTool = getLocalizedTool(language, tool);
+      return `${localizedTool.name} ${localizedTool.description} ${tool.keywords} ${category ? translate(`category.${category.id}`) : ''}`
         .toLowerCase()
         .includes(normalizedQuery);
     });
-  }, [query]);
+  }, [language, query, translate]);
 
   const openTool = (tool) => {
     navigate(tool.path);
@@ -135,12 +139,12 @@ const ToolSearch = () => {
         ? { width: 'calc(100vw - 17rem)' }
         : undefined}
     >
-      <label htmlFor="tool-search" className="sr-only">Search PDF tools</label>
+      <label htmlFor="tool-search" className="sr-only">{translate('searchPdfTools')}</label>
       <button
         ref={triggerRef}
         type="button"
         className="tool-search-trigger"
-        aria-label="Search PDF tools"
+        aria-label={translate('searchPdfTools')}
         aria-expanded={isExpanded}
         aria-controls="tool-search-results"
         onClick={openSearch}
@@ -171,13 +175,13 @@ const ToolSearch = () => {
             }
             if (query.trim()) setIsOpen(true);
           }}
-          placeholder="Find a PDF tool"
+          placeholder={translate('findPdfTool')}
           className="tool-search-input w-full rounded-xl border-2 border-white bg-white py-3 pl-11 pr-11 text-sm text-slate-800 shadow-sm transition placeholder:text-slate-400 focus:border-white focus:outline-none focus:ring-4 focus:ring-blue-100"
         />
         {query && (
           <button
             type="button"
-            aria-label="Clear search"
+            aria-label={translate('clearSearch')}
             onClick={() => {
               setQuery('');
               setIsOpen(false);
@@ -196,10 +200,11 @@ const ToolSearch = () => {
           className="tool-search-panel absolute left-0 right-0 top-full z-50 mt-2 max-h-80 overflow-y-auto rounded-2xl border p-2 shadow-xl"
         >
           {results.length ? (
-            <ul aria-label="Matching PDF tools" className="space-y-1">
+            <ul aria-label={translate('matchingTools')} className="space-y-1">
               {results.map((tool, index) => {
-                const Icon = tool.icon;
-                const categoryName = TOOL_CATEGORIES.find((item) => item.id === tool.category)?.name;
+                const localizedTool = getLocalizedTool(language, tool);
+                const Icon = localizedTool.icon;
+                const categoryName = translate(`category.${tool.category}`);
                 return (
                   <li key={tool.id}>
                     <button
@@ -212,12 +217,12 @@ const ToolSearch = () => {
                         index === activeIndex ? 'is-active' : ''
                       }`}
                     >
-                      <span className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${tool.color} text-white`}>
+                      <span className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${localizedTool.color} text-white`}>
                         <Icon className="h-5 w-5" aria-hidden="true" />
                       </span>
                       <span className="min-w-0">
-                        <span className="block font-semibold text-slate-800">{tool.name}</span>
-                        <span className="block truncate text-xs text-slate-500">{tool.description}</span>
+                        <span className="block font-semibold text-slate-800">{localizedTool.name}</span>
+                        <span className="block truncate text-xs text-slate-500">{localizedTool.description}</span>
                         {categoryName && <span className="block text-xs text-slate-400">{categoryName}</span>}
                       </span>
                     </button>
@@ -226,7 +231,7 @@ const ToolSearch = () => {
               })}
             </ul>
           ) : (
-            <p className="p-4 text-sm text-slate-500" role="status">No tools match “{query}”. Try another search.</p>
+            <p className="p-4 text-sm text-slate-500" role="status">{translate('noMatchingTools')} “{query}”.</p>
           )}
         </div>
       )}

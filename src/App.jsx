@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, Link, NavLink, useLocation, useParams } from 'react-router-dom';
 import {
   BookOpenText,
+  Check,
   ChevronRight,
   CircleHelp,
   Grid2X2,
@@ -9,6 +10,8 @@ import {
   Info,
   Mail,
   Moon,
+  PanelLeftClose,
+  PanelLeftOpen,
   ShieldCheck,
   Sun
 } from 'lucide-react';
@@ -36,16 +39,22 @@ import OfficeConversionNotice from './components/OfficeConversionNotice';
 import ToolPage from './components/ToolPage';
 import { NotFoundPage, SitePages } from './components/SitePages';
 import Footer from './components/Footer';
+import LanguagePicker from './components/LanguagePicker';
 import ToolSearch from './components/ToolSearch';
 import { TOOL_CATEGORIES, TOOL_REGISTRY } from './components/toolRegistry';
+import { LanguageProvider } from './i18n/LanguageProvider';
+import { useLanguage } from './i18n/useLanguage';
+import { LANGUAGE_REGIONS, SUPPORTED_LANGUAGES } from './i18n/languageCatalog.mjs';
+import { getLocalizedTool } from './i18n/toolTranslations.mjs';
 
 const ResourceArticleRoute = () => {
   const { articleSlug } = useParams();
   return <SitePages page="resources" article={articleSlug} />;
 };
 
-const LeftNavigation = ({ theme, setTheme }) => {
+const LeftNavigation = ({ theme, setTheme, isSidebarCollapsed, onToggleSidebar }) => {
   const { pathname } = useLocation();
+  const { language, setLanguage, translate } = useLanguage();
   const [activeMenu, setActiveMenu] = useState(null);
   const [megaPosition, setMegaPosition] = useState({ top: 12, left: 252 });
   const megaMenuRef = useRef(null);
@@ -82,18 +91,18 @@ const LeftNavigation = ({ theme, setTheme }) => {
   const toggleMegaMenu = (event, menuId) => {
     cancelMenuClose();
     const triggerRect = event.currentTarget.getBoundingClientRect();
-    const railWidth = window.matchMedia('(max-width: 900px)').matches ? 76 : 240;
+    const isMobile = window.matchMedia('(max-width: 900px)').matches;
+    const railWidth = isMobile || isSidebarCollapsed ? 76 : 240;
     const viewportHeight = window.innerHeight;
     const estimatedMenuHeight = window.matchMedia('(max-width: 580px)').matches
       ? viewportHeight - 16
       : 520;
-    const isMobile = window.matchMedia('(max-width: 900px)').matches;
     const categoryNavRect = document.querySelector('.site-left-category-nav')?.getBoundingClientRect();
     const categoryMenuTop = categoryNavRect
       ? categoryNavRect.top - 18
       : triggerRect.top;
     const menuOffset = isMobile ? 8 : menuId === 'all' ? 18 : 0;
-    const requestedTop = menuId !== 'all' && !isMobile
+    const requestedTop = menuId !== 'all' && menuId !== 'language' && !isMobile
       ? categoryMenuTop
       : triggerRect.top + menuOffset;
     const top = Math.max(8, Math.min(
@@ -147,6 +156,21 @@ const LeftNavigation = ({ theme, setTheme }) => {
       return;
     }
 
+    if (activeMenu === 'language' && ['ArrowDown', 'ArrowUp', 'Home', 'End'].includes(event.key)) {
+      const options = Array.from(
+        megaMenuRef.current?.querySelectorAll('[data-language-option]') || []
+      );
+      const currentIndex = options.indexOf(document.activeElement);
+      const nextIndex = event.key === 'Home'
+        ? 0
+        : event.key === 'End'
+          ? options.length - 1
+          : (currentIndex + (event.key === 'ArrowDown' ? 1 : -1) + options.length) % options.length;
+      event.preventDefault();
+      options[nextIndex]?.focus();
+      return;
+    }
+
     if (event.key !== 'Tab') return;
     const items = Array.from(
       megaMenuRef.current?.querySelectorAll('[data-mega-menu-item]') || []
@@ -160,6 +184,11 @@ const LeftNavigation = ({ theme, setTheme }) => {
       if (activeMenu === 'all') {
         items[0]?.focus();
       } else {
+        if (activeMenu === 'language') {
+          setActiveMenu(null);
+          document.querySelector('[data-mega-trigger="all"]')?.focus();
+          return;
+        }
         const currentIndexInCategories = TOOL_CATEGORIES.findIndex(
           (category) => category.id === activeMenu
         );
@@ -176,8 +205,8 @@ const LeftNavigation = ({ theme, setTheme }) => {
 
   return (
     <aside
-      className={`site-left-navigation${activeMenu ? ' is-mega-menu-open' : ''}`}
-      aria-label="Website navigation"
+      className={`site-left-navigation${isSidebarCollapsed ? ' is-collapsed' : ''}${activeMenu ? ' is-mega-menu-open' : ''}`}
+      aria-label={translate('mainNavigation')}
       onKeyDown={(event) => {
         if (event.key === 'Escape') {
           event.preventDefault();
@@ -186,24 +215,36 @@ const LeftNavigation = ({ theme, setTheme }) => {
         }
       }}
     >
-      <Link to="/" className="site-left-brand" aria-label="PDF Merge Pro home">
-        <span className="site-left-brand-mark">PDF</span>
-        <span className="site-left-brand-name">Merge Pro</span>
-      </Link>
+      <div className="site-left-brand-row">
+        <Link to="/" className="site-left-brand" aria-label="PDF Merge Pro home">
+          <span className="site-left-brand-mark">PDF</span>
+          <span className="site-left-brand-name">Merge Pro</span>
+        </Link>
+      </div>
 
-      <nav className="site-left-primary-nav" aria-label="Main navigation">
-        <NavLink to="/" end className="site-left-link" aria-label="Home">
+      <nav className="site-left-primary-nav" aria-label={translate('mainNavigation')}>
+        <NavLink to="/" end className="site-left-link" aria-label={translate('home')}>
           <HomeIcon className="site-left-link-icon" aria-hidden="true" />
-          <span>Home</span>
+          <span>{translate('home')}</span>
         </NavLink>
-        <NavLink to="/faq" className="site-left-link" aria-label="FAQ">
+        <NavLink to="/faq" className="site-left-link" aria-label={translate('faq')}>
           <CircleHelp className="site-left-link-icon" aria-hidden="true" />
-          <span>FAQ</span>
+          <span>{translate('faq')}</span>
         </NavLink>
-        <NavLink to="/resources" className="site-left-link" aria-label="Guides">
+        <NavLink to="/resources" className="site-left-link" aria-label={translate('guides')}>
           <BookOpenText className="site-left-link-icon" aria-hidden="true" />
-          <span>Guides</span>
+          <span>{translate('guides')}</span>
         </NavLink>
+        <LanguagePicker
+          placement="sidebar"
+          isOpen={activeMenu === 'language'}
+          onToggle={(event) => toggleMegaMenu(event, 'language')}
+          onSelected={() => {
+            setActiveMenu(null);
+            getMegaTrigger()?.focus();
+          }}
+          onKeyDown={focusFirstMegaItem}
+        />
       </nav>
 
       <div className="site-left-divider" />
@@ -214,18 +255,18 @@ const LeftNavigation = ({ theme, setTheme }) => {
         aria-expanded={activeMenu === 'all'}
         aria-controls="site-tools-mega-menu"
         aria-haspopup="menu"
-        aria-label="All PDF tools"
+        aria-label={translate('allTools')}
         data-mega-trigger="all"
         onClick={(event) => toggleMegaMenu(event, 'all')}
         onKeyDown={focusFirstMegaItem}
       >
         <Grid2X2 className="site-left-link-icon" aria-hidden="true" />
-        <span>All tools</span>
+        <span>{translate('allTools')}</span>
         <ChevronRight className="site-left-link-chevron" aria-hidden="true" />
       </button>
 
-      <nav aria-label="PDF tool categories" className="site-left-category-nav">
-        <p className="site-left-section-label">Categories</p>
+      <nav aria-label={translate('categories')} className="site-left-category-nav">
+        <p className="site-left-section-label">{translate('categories')}</p>
         {TOOL_CATEGORIES.map((category) => {
           const CategoryIcon = TOOL_REGISTRY.find((tool) => tool.category === category.id)?.icon;
           const isSelected = selectedCategoryId === category.id;
@@ -241,12 +282,12 @@ const LeftNavigation = ({ theme, setTheme }) => {
               data-mega-trigger={category.id}
               aria-expanded={activeMenu === category.id}
               aria-controls="site-tools-mega-menu"
-              aria-label={`${category.name} PDF tools`}
+              aria-label={translate(`category.${category.id}`)}
               onClick={(event) => toggleMegaMenu(event, category.id)}
               onKeyDown={focusFirstMegaItem}
             >
               {CategoryIcon && <CategoryIcon className="site-left-link-icon" aria-hidden="true" />}
-              <span>{category.name}</span>
+              <span>{translate(`category.${category.id}`)}</span>
               <ChevronRight className="site-left-link-chevron" aria-hidden="true" />
             </button>
           );
@@ -254,50 +295,116 @@ const LeftNavigation = ({ theme, setTheme }) => {
       </nav>
 
       <div className="site-left-bottom">
-        <NavLink to="/privacy" className="site-left-link site-left-privacy" aria-label="Privacy" title="Privacy">
+        <NavLink to="/privacy" className="site-left-link site-left-privacy" aria-label={translate('privacy')} title={translate('privacy')}>
           <ShieldCheck className="site-left-link-icon" aria-hidden="true" />
-          <span>Privacy</span>
+          <span>{translate('privacy')}</span>
         </NavLink>
-        <NavLink to="/contact" className="site-left-link site-left-contact" aria-label="Contact" title="Contact">
+        <NavLink to="/contact" className="site-left-link site-left-contact" aria-label={translate('contact')} title={translate('contact')}>
           <Mail className="site-left-link-icon" aria-hidden="true" />
-          <span>Contact</span>
+          <span>{translate('contact')}</span>
         </NavLink>
-        <NavLink to="/about" className="site-left-link site-left-about" aria-label="About" title="About">
+        <NavLink to="/about" className="site-left-link site-left-about" aria-label={translate('about')} title={translate('about')}>
           <Info className="site-left-link-icon" aria-hidden="true" />
-          <span>About</span>
+          <span>{translate('about')}</span>
         </NavLink>
-        <button
-          type="button"
-          className="site-left-theme-button"
-          onClick={() => setTheme((current) => (current === 'dark' ? 'light' : 'dark'))}
-          aria-label={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
-          title={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
-        >
-          {theme === 'dark'
-            ? <Sun className="site-left-link-icon" aria-hidden="true" />
-            : <Moon className="site-left-link-icon" aria-hidden="true" />}
-          <span>{theme === 'dark' ? 'Light mode' : 'Dark mode'}</span>
-        </button>
+        <div className="site-left-mode-controls">
+          <button
+            type="button"
+            className="site-left-collapse-button"
+            aria-label={translate(isSidebarCollapsed ? 'expandNavigation' : 'collapseNavigation')}
+            title={translate(isSidebarCollapsed ? 'expandNavigation' : 'collapseNavigation')}
+            aria-pressed={isSidebarCollapsed}
+            onClick={() => {
+              setActiveMenu(null);
+              onToggleSidebar();
+            }}
+          >
+            {isSidebarCollapsed
+              ? <PanelLeftOpen aria-hidden="true" />
+              : <PanelLeftClose aria-hidden="true" />}
+          </button>
+          <button
+            type="button"
+            className="site-left-theme-button"
+            onClick={() => setTheme((current) => (current === 'dark' ? 'light' : 'dark'))}
+            aria-label={translate(theme === 'dark' ? 'switchToLightMode' : 'switchToDarkMode')}
+            title={translate(theme === 'dark' ? 'switchToLightMode' : 'switchToDarkMode')}
+          >
+            {theme === 'dark'
+              ? <Sun className="site-left-link-icon" aria-hidden="true" />
+              : <Moon className="site-left-link-icon" aria-hidden="true" />}
+            <span>{translate(theme === 'dark' ? 'lightMode' : 'darkMode')}</span>
+          </button>
+        </div>
       </div>
 
       {activeMenu && (
         <div
           ref={megaMenuRef}
           id="site-tools-mega-menu"
-          className={`site-tools-mega-menu${activeMenu !== 'all' ? ' is-category' : ''}`}
+          className={`site-tools-mega-menu${activeMenu !== 'all' && activeMenu !== 'language' ? ' is-category' : ''}${activeMenu === 'language' ? ' site-language-mega-menu' : ''}`}
           role="dialog"
-          aria-label={activeMenu === 'all' ? 'All PDF tools' : `${activeCategory?.name} PDF tools`}
+          aria-label={activeMenu === 'all'
+            ? translate('allTools')
+            : activeMenu === 'language'
+              ? translate('chooseLanguage')
+              : `${translate('categories')}: ${translate(`category.${activeCategory?.id}`)}`}
           onKeyDown={handleMegaKeyDown}
           onMouseEnter={cancelMenuClose}
           onMouseLeave={scheduleMenuClose}
           style={{ '--mega-menu-top': `${megaPosition.top}px`, '--mega-menu-left': `${megaPosition.left}px` }}
         >
-          {activeMenu === 'all' ? (
+          {activeMenu === 'language' ? (
             <>
               <div className="site-tools-mega-heading">
                 <div>
-                  <span className="site-tools-mega-eyebrow">PDF toolkit</span>
-                  <h2>All tools</h2>
+                  <span className="site-tools-mega-eyebrow">{translate('pdfToolkit')}</span>
+                  <h2>{translate('chooseLanguage')}</h2>
+                </div>
+              </div>
+              <div className="site-language-columns">
+                {LANGUAGE_REGIONS.map((region) => (
+                  <section
+                    key={region.name}
+                    className="site-language-column"
+                    aria-label={region.name}
+                  >
+                    <h3 className="site-tools-mega-category">{region.name}</h3>
+                    <div className="site-language-list">
+                      {region.languages.map((code) => {
+                        const option = SUPPORTED_LANGUAGES.find((item) => item.code === code);
+                        return (
+                          <button
+                            key={code}
+                            type="button"
+                            className="site-tools-mega-tool site-language-option"
+                            aria-pressed={language === code}
+                            data-mega-menu-item
+                            data-language-option
+                            lang={code}
+                            dir={code === 'ar' ? 'rtl' : 'ltr'}
+                            onClick={() => {
+                              setLanguage(code);
+                              setActiveMenu(null);
+                              getMegaTrigger()?.focus();
+                            }}
+                          >
+                            <span>{option.name}</span>
+                            {language === code && <Check aria-hidden="true" />}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </section>
+                ))}
+              </div>
+            </>
+          ) : activeMenu === 'all' ? (
+            <>
+              <div className="site-tools-mega-heading">
+                <div>
+                  <span className="site-tools-mega-eyebrow">{translate('pdfToolkit')}</span>
+                  <h2>{translate('allTools')}</h2>
                 </div>
               </div>
               <div className="site-tools-mega-columns">
@@ -311,23 +418,24 @@ const LeftNavigation = ({ theme, setTheme }) => {
                         data-mega-menu-item
                         onClick={() => setActiveMenu(null)}
                       >
-                        <span>{category.name}</span>
+                        <span>{translate(`category.${category.id}`)}</span>
                       </Link>
                       <div className="site-tools-mega-list">
                         {categoryTools.map((tool) => {
-                          const ToolIcon = tool.icon;
+                          const localizedTool = getLocalizedTool(language, tool);
+                          const ToolIcon = localizedTool.icon;
                           return (
                             <Link
-                              key={tool.id}
-                              to={tool.path}
+                              key={localizedTool.id}
+                              to={localizedTool.path}
                               className="site-tools-mega-tool"
                               data-mega-menu-item
                               onClick={() => setActiveMenu(null)}
                             >
-                              <span className={`site-tools-mega-tool-icon ${tool.color}`}>
+                              <span className={`site-tools-mega-tool-icon ${localizedTool.color}`}>
                                 <ToolIcon aria-hidden="true" />
                               </span>
-                              <span>{tool.name}</span>
+                              <span>{localizedTool.name}</span>
                             </Link>
                           );
                         })}
@@ -341,8 +449,8 @@ const LeftNavigation = ({ theme, setTheme }) => {
             <>
               <div className="site-tools-mega-heading">
                 <div>
-                  <span className="site-tools-mega-eyebrow">Category</span>
-                  <h2>{activeCategory?.name}</h2>
+                  <span className="site-tools-mega-eyebrow">{translate('categories')}</span>
+                  <h2>{translate(`category.${activeCategory?.id}`)}</h2>
                 </div>
               </div>
               <div className="site-tools-mega-category-list">
@@ -352,22 +460,23 @@ const LeftNavigation = ({ theme, setTheme }) => {
                   data-mega-menu-item
                   onClick={() => setActiveMenu(null)}
                 >
-                  View {activeCategory?.name} category
+                  {translate('viewCategory')} {translate(`category.${activeCategory?.id}`)}
                 </Link>
                 {activeCategoryTools.map((tool) => {
-                  const ToolIcon = tool.icon;
+                  const localizedTool = getLocalizedTool(language, tool);
+                  const ToolIcon = localizedTool.icon;
                   return (
                     <Link
-                      key={tool.id}
-                      to={tool.path}
+                      key={localizedTool.id}
+                      to={localizedTool.path}
                       className="site-tools-mega-tool"
                       data-mega-menu-item
                       onClick={() => setActiveMenu(null)}
                     >
-                      <span className={`site-tools-mega-tool-icon ${tool.color}`}>
+                      <span className={`site-tools-mega-tool-icon ${localizedTool.color}`}>
                         <ToolIcon aria-hidden="true" />
                       </span>
-                      <span>{tool.name}</span>
+                      <span>{localizedTool.name}</span>
                     </Link>
                   );
                 })}
@@ -403,6 +512,7 @@ function App() {
   const [theme, setTheme] = useState(() => (
     document.documentElement.dataset.theme === 'dark' ? 'dark' : 'light'
   ));
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
 
   useEffect(() => {
     document.documentElement.dataset.theme = theme;
@@ -410,11 +520,17 @@ function App() {
   }, [theme]);
 
   return (
+    <LanguageProvider>
     <Router>
-      <div className="site-app-shell">
+      <div className={`site-app-shell${isSidebarCollapsed ? ' is-sidebar-collapsed' : ''}`}>
         <RouteFocusManager />
         <a className="skip-to-content" href="#main-content">Skip to main content</a>
-        <LeftNavigation theme={theme} setTheme={setTheme} />
+        <LeftNavigation
+          theme={theme}
+          setTheme={setTheme}
+          isSidebarCollapsed={isSidebarCollapsed}
+          onToggleSidebar={() => setIsSidebarCollapsed((current) => !current)}
+        />
         <div className="site-workspace">
           <header className="site-topbar">
             <div className="site-topbar-search">
@@ -467,6 +583,7 @@ function App() {
         </div>
       </div>
     </Router>
+    </LanguageProvider>
   );
 }
 

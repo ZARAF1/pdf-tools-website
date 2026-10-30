@@ -22,6 +22,13 @@ const expectedAttachments = new Map([
   ['redact', ['One unencrypted PDF · up to 15 pages', 'Permanently redact page content', 'Drag over sensitive text or images to mark them. Every page is rasterized in the output so the original text beneath a redaction is not retained.']],
   ['sign', ['One unencrypted PDF · no fixed page cap', 'Add a visible signature to PDF pages', 'Use a typed, drawn, or image signature; this is not a certificate-based digital signature.']]
 ]);
+const expectedRuleKeys = new Map([
+  ['crop', 'pdfOne'], ['edit', 'pdfOne'], ['merge', 'pdf2To5'], ['split', 'pdfOne'],
+  ['rotate', 'pdfOne'], ['protect', 'pdfOne'], ['unlock', 'passwordPdf'], ['image', 'images10'],
+  ['pdf-images', 'pdf50'], ['word', 'pdfOne'], ['compress', 'pdfUpTo5'], ['watermark', 'pdfOne'],
+  ['remove', 'pdf50'], ['extract', 'pdf50'], ['ocr', 'pdf50'], ['organize-pages', 'pdf30'],
+  ['redact', 'pdf15'], ['sign', 'pdfOne']
+]);
 
 const source = await readFile(new URL('../src/components/ToolPage.jsx', import.meta.url), 'utf8');
 const rulesBlock = source.match(/const ATTACHMENT_RULES = \{([\s\S]*?)\r?\n\};/)?.[1];
@@ -38,6 +45,7 @@ test('every attach section documents accurate input limits and tool-specific gui
     const entryPattern = new RegExp(
       `^  ${escapePattern(key)}: \\{\\r?\\n` +
       `    title: 'Attach (?:PDF|PDFs|Images) Here',\\r?\\n` +
+      `    ruleKey: '${escapePattern(expectedRuleKeys.get(tool))}',\\r?\\n` +
       `    rule: '${escapePattern(rule)}',\\r?\\n` +
       `    infoTitle: '${escapePattern(title)}',\\r?\\n` +
       `    info: '${escapePattern(description)}'\\r?\\n` +
@@ -50,8 +58,8 @@ test('every attach section documents accurate input limits and tool-specific gui
 
 test('shared attachment section renders the guidance panel and redact copy is not duplicated', async () => {
   assert.match(source, /<aside className="tool-attachment-guidance" aria-labelledby=/);
-  assert.match(source, /<h3 id=\{attachmentGuidanceHeadingId\}>\{attachmentRule\.infoTitle\}<\/h3>/);
-  assert.match(source, /<p>\{attachmentRule\.info\}<\/p>/);
+  assert.match(source, /<h3 id=\{attachmentGuidanceHeadingId\}>\{localizedTool\?\.name \|\| localizedContent\.attachment\.infoTitle\}<\/h3>/);
+  assert.match(source, /<p>\{localizedContent\.attachment\.info\}<\/p>/);
 
   const redactComponent = await readFile(new URL('../src/components/RedactPdf.jsx', import.meta.url), 'utf8');
   assert.doesNotMatch(redactComponent, /Permanently redact page content/);

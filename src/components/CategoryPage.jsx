@@ -3,10 +3,13 @@ import { Link } from 'react-router-dom';
 import { ArrowLeft, ArrowRight } from 'lucide-react';
 import ToolCard from './ToolCard';
 import { TOOL_REGISTRY } from './toolRegistry';
+import { useLanguage } from '../i18n/useLanguage';
 
 const CategoryPage = ({ category }) => {
+  const { translate } = useLanguage();
   const tools = TOOL_REGISTRY.filter((tool) => tool.category === category.id);
-  const pageTitle = `${category.name} PDF Tools | PDF Merge Pro`;
+  const categoryName = translate(`category.${category.id}`);
+  const pageTitle = `${categoryName} | PDF Merge Pro`;
   const metaDescription = category.description;
 
   useEffect(() => {
@@ -30,21 +33,21 @@ const CategoryPage = ({ category }) => {
       <header className="category-page-hero">
         <Link to="/" className="category-page-back">
           <ArrowLeft className="h-4 w-4" aria-hidden="true" />
-          All PDF tools
+          {translate('allPdfTools')}
         </Link>
-        <p className="category-page-eyebrow">PDF tool category</p>
-        <h1 className="category-page-title">{category.name} PDF Tools</h1>
+        <p className="category-page-eyebrow">{translate('categoryEyebrow')}</p>
+        <h1 className="category-page-title">{categoryName}</h1>
         <p className="category-page-description">{category.description}</p>
       </header>
 
       <section aria-labelledby="category-tools-heading" className="category-page-tools">
         <div className="category-page-tools-heading">
           <div>
-            <h2 id="category-tools-heading">Tools in {category.name}</h2>
-            <p>{tools.length} {tools.length === 1 ? 'tool' : 'tools'} to choose from</p>
+            <h2 id="category-tools-heading">{translate('toolsIn')} {categoryName}</h2>
+            <p>{tools.length} {translate('toolsToChooseFrom')}</p>
           </div>
           <Link to="/" className="category-page-home-link">
-            Browse all categories
+            {translate('browseAllCategories')}
             <ArrowRight className="h-4 w-4" aria-hidden="true" />
           </Link>
         </div>

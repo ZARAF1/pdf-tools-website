@@ -5,6 +5,9 @@ import AdSlot from './AdSlot';
 import RelatedToolsCarousel from './RelatedToolsCarousel';
 import { TOOL_CATEGORIES, TOOL_REGISTRY } from './toolRegistry';
 import FaqAccordion from './FaqAccordion';
+import { getLocalizedTool } from '../i18n/toolTranslations.mjs';
+import { getLocalizedToolPage } from '../i18n/toolPageLocalization.mjs';
+import { useLanguage } from '../i18n/useLanguage';
 
 const TOOL_CONTENT = {
   crop: {
@@ -266,108 +269,126 @@ const TOOL_CONTENT = {
 const ATTACHMENT_RULES = {
   merge: {
     title: 'Attach PDFs Here',
+    ruleKey: 'pdf2To5',
     rule: '2–5 unencrypted PDF files',
     infoTitle: 'Combine PDFs into one file',
     info: 'Arrange whole files before merging; pages within each file stay together.'
   },
   compress: {
     title: 'Attach PDFs Here',
+    ruleKey: 'pdfUpTo5',
     rule: 'Up to 5 unencrypted PDF files',
     infoTitle: 'Try to reduce PDF file size',
     info: 'Higher compression rasterizes pages and can reduce image quality and remove selectable text; larger outputs are not offered.'
   },
   image: {
     title: 'Attach Images Here',
+    ruleKey: 'images10',
     rule: 'Up to 10 JPEG, PNG, or BMP images',
     infoTitle: 'Create a PDF from images',
     info: 'Arrange and rotate images, then adjust page size, background, fit, alignment, and resizing.'
   },
   edit: {
     title: 'Attach PDF Here',
+    ruleKey: 'pdfOne',
     rule: 'One unencrypted PDF · no fixed page cap',
     infoTitle: 'Add content to PDF pages',
     info: 'Add text, images, drawings, highlights, or shapes, and remove pages. Existing text is not edited or replaced; added marks are overlays.'
   },
   watermark: {
     title: 'Attach PDF Here',
+    ruleKey: 'pdfOne',
     rule: 'One unencrypted PDF · no fixed page cap',
     infoTitle: 'Add watermarks to PDF pages',
     info: 'Add text watermarks and optional page numbers to all or selected pages.'
   },
   word: {
     title: 'Attach PDF Here',
+    ruleKey: 'pdfOne',
     rule: 'One unencrypted PDF · no fixed page cap',
     infoTitle: 'Convert PDF content to Word',
     info: 'Text-based pages become editable text; scanned pages can use English OCR and complex layouts may need cleanup.'
   },
   protect: {
     title: 'Attach PDF Here',
+    ruleKey: 'pdfOne',
     rule: 'One unencrypted PDF · no fixed page cap',
     infoTitle: 'Protect a PDF with a password',
     info: 'Add an opening password to a new copy; keep the password because it cannot be recovered here.'
   },
   unlock: {
     title: 'Attach PDF Here',
+    ruleKey: 'passwordPdf',
     rule: 'One password-protected PDF · AES-256 R6 or RC4 R2/R3 only',
     infoTitle: 'Unlock a PDF with its password',
     info: 'A correct password is required; password guessing and recovery are not supported.'
   },
   split: {
     title: 'Attach PDF Here',
+    ruleKey: 'pdfOne',
     rule: 'One unencrypted PDF · no fixed page cap',
     infoTitle: 'Split or extract PDF pages',
     info: 'Extract selected pages into one PDF or split the whole document into single-page PDFs.'
   },
   ocr: {
     title: 'Attach PDF Here',
+    ruleKey: 'pdf50',
     rule: 'One unencrypted PDF · up to 50 pages',
     infoTitle: 'Make scanned PDF text searchable',
     info: 'English OCR adds an invisible text layer to pages without readable text.'
   },
   'organize-pages': {
     title: 'Attach PDF Here',
+    ruleKey: 'pdf30',
     rule: 'One unencrypted PDF · up to 30 pages',
     infoTitle: 'Organize PDF pages',
     info: 'Reorder, rotate, or remove pages; at least one page must remain.'
   },
   redact: {
     title: 'Attach PDF Here',
+    ruleKey: 'pdf15',
     rule: 'One unencrypted PDF · up to 15 pages',
     infoTitle: 'Permanently redact page content',
     info: 'Drag over sensitive text or images to mark them. Every page is rasterized in the output so the original text beneath a redaction is not retained.'
   },
   sign: {
     title: 'Attach PDF Here',
+    ruleKey: 'pdfOne',
     rule: 'One unencrypted PDF · no fixed page cap',
     infoTitle: 'Add a visible signature to PDF pages',
     info: 'Use a typed, drawn, or image signature; this is not a certificate-based digital signature.'
   },
   'pdf-images': {
     title: 'Attach PDF Here',
+    ruleKey: 'pdf50',
     rule: 'One unencrypted PDF · up to 50 pages',
     infoTitle: 'Convert PDF pages to images',
     info: 'Export pages as PNG, JPG, or BMP files in a ZIP archive.'
   },
   remove: {
     title: 'Attach PDF Here',
+    ruleKey: 'pdf50',
     rule: 'One unencrypted PDF · up to 50 pages',
     infoTitle: 'Remove selected PDF pages',
     info: 'Choose pages to omit; at least one page must remain in the output.'
   },
   extract: {
     title: 'Attach PDF Here',
+    ruleKey: 'pdf50',
     rule: 'One unencrypted PDF · up to 50 pages',
     infoTitle: 'Extract selected PDF pages',
     info: 'Save the selected pages as a new PDF in their original document order.'
   },
   rotate: {
     title: 'Attach PDF Here',
+    ruleKey: 'pdfOne',
     rule: 'One unencrypted PDF · no fixed page cap',
     infoTitle: 'Rotate PDF pages',
     info: 'Rotate every page or only the pages and ranges you select.'
   },
   crop: {
     title: 'Attach PDF Here',
+    ruleKey: 'pdfOne',
     rule: 'One unencrypted PDF · no fixed page cap',
     infoTitle: 'Crop PDF pages',
     info: 'Cropping changes the visible page boundary; it does not permanently remove content outside it.'
@@ -375,21 +396,37 @@ const ATTACHMENT_RULES = {
 };
 
 const ToolPage = ({ tool, children }) => {
+  const { language, translate } = useLanguage();
   const content = TOOL_CONTENT[tool];
   const registeredTool = TOOL_REGISTRY.find((item) => item.id === tool);
-  const ProcessingIcon = registeredTool?.icon;
+  const localizedTool = registeredTool ? getLocalizedTool(language, registeredTool) : null;
+  const pageTitleText = localizedTool?.name || content.title;
+  const pageDescription = localizedTool?.description || content.description;
+  const ProcessingIcon = localizedTool?.icon;
   const ToolIcon = ProcessingIcon || FileText;
-  const categoryName = TOOL_CATEGORIES.find((category) => category.id === registeredTool?.category)?.name
-    || 'Conversion status';
+  const category = TOOL_CATEGORIES.find((item) => item.id === registeredTool?.category);
+  const categoryName = category ? translate(`category.${category.id}`) : translate('conversionStatus');
+  const attachmentTitleKey = tool === 'image'
+    ? 'attachImagesHere'
+    : tool === 'merge' || tool === 'compress'
+      ? 'attachPdfsHere'
+      : 'attachPdfHere';
   const attachmentRule = ATTACHMENT_RULES[tool] || (
     tool === 'excel' || tool === 'powerpoint'
       ? null
       : {
-          title: 'Attach PDF Here',
+          title: translate(attachmentTitleKey),
           rule: 'One unencrypted PDF · no fixed page cap',
-          infoTitle: content.title,
-          info: content.description
+          infoTitle: pageTitleText,
+          info: pageDescription
         }
+  );
+  const localizedContent = getLocalizedToolPage(
+    language,
+    tool,
+    localizedTool,
+    content,
+    attachmentRule
   );
   const attachmentGuidanceHeadingId = `${tool}-attachment-guidance-heading`;
 
@@ -397,8 +434,8 @@ const ToolPage = ({ tool, children }) => {
     const previousTitle = document.title;
     const description = document.querySelector('meta[name="description"]');
     const previousDescription = description?.content;
-    document.title = `${content.title} | PDF Merge Pro`;
-    if (description) description.content = content.description;
+    document.title = `${pageTitleText} | PDF Merge Pro`;
+    if (description) description.content = pageDescription;
 
     return () => {
       document.title = previousTitle;
@@ -406,7 +443,7 @@ const ToolPage = ({ tool, children }) => {
         description.content = previousDescription;
       }
     };
-  }, [content]);
+  }, [content, pageDescription, pageTitleText]);
 
   return (
     <article className="space-y-8">
@@ -416,16 +453,16 @@ const ToolPage = ({ tool, children }) => {
             <ToolIcon className="h-7 w-7" />
           </span>
           <p className="tool-detail-category">{categoryName}</p>
-          <h1 className="tool-detail-title">{content.title}</h1>
-          <p className="tool-detail-description">{content.description}</p>
+          <h1 className="tool-detail-title">{pageTitleText}</h1>
+          <p className="tool-detail-description">{pageDescription}</p>
         </div>
         <div className="tool-detail-intro">
-          <p>{content.intro}</p>
+          <p>{localizedContent.intro}</p>
         </div>
       </header>
 
       <section aria-labelledby="tool-workspace-heading">
-        <h2 id="tool-workspace-heading" className="sr-only">{content.title} workspace</h2>
+        <h2 id="tool-workspace-heading" className="sr-only">{pageTitleText} {translate('toolWorkspace')}</h2>
         {attachmentRule ? (
           <div className="tool-attachment-section">
             <div className="tool-attachment-heading">
@@ -433,37 +470,37 @@ const ToolPage = ({ tool, children }) => {
                 <Upload className="h-5 w-5" />
               </span>
               <div>
-                <h2>{attachmentRule.title}</h2>
-                <p>{attachmentRule.rule}</p>
+                <h2>{translate(attachmentTitleKey)}</h2>
+                <p>{localizedContent.attachment.rule}</p>
               </div>
             </div>
             <aside className="tool-attachment-guidance" aria-labelledby={attachmentGuidanceHeadingId}>
-              <h3 id={attachmentGuidanceHeadingId}>{attachmentRule.infoTitle}</h3>
-              <p>{attachmentRule.info}</p>
+              <h3 id={attachmentGuidanceHeadingId}>{localizedTool?.name || localizedContent.attachment.infoTitle}</h3>
+              <p>{localizedContent.attachment.info}</p>
             </aside>
             <div className="tool-attachment-content">{children}</div>
           </div>
         ) : children}
       </section>
 
-      <section aria-label={`${content.title} instructions and workflow`} className="grid gap-4 lg:grid-cols-2">
+      <section aria-label={`${pageTitleText} ${translate('instructionsAndWorkflow')}`} className="grid gap-4 lg:grid-cols-2">
         <div aria-labelledby="how-to-heading" className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
-          <h2 id="how-to-heading" className="text-2xl font-bold text-slate-800 mb-4">How to Use {content.title}</h2>
+          <h2 id="how-to-heading" className="text-2xl font-bold text-slate-800 mb-4">{translate('howToUse')} {pageTitleText}</h2>
           <ol className="list-decimal space-y-3 pl-5 text-slate-600">
-            {content.steps.map((step) => <li key={step}>{step}</li>)}
+            {localizedContent.steps.map((step) => <li key={step}>{step}</li>)}
           </ol>
         </div>
 
         <div aria-labelledby="how-it-works-heading" className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
-          <h2 id="how-it-works-heading" className="text-2xl font-bold text-slate-800 mb-3">How it works</h2>
+          <h2 id="how-it-works-heading" className="text-2xl font-bold text-slate-800 mb-3">{translate('howItWorks')}</h2>
           {ProcessingIcon ? (
             <>
-              <ol aria-label="How this tool works" className="flex flex-col items-stretch gap-3 xl:flex-row xl:items-center xl:gap-4">
+              <ol aria-label={translate('howItWorks')} className="flex flex-col items-stretch gap-3 xl:flex-row xl:items-center xl:gap-4">
                 <li className="flex min-w-0 flex-1 items-center gap-3 rounded-xl border border-slate-200 bg-slate-50 p-4 xl:flex-col xl:justify-center xl:text-center">
                   <span className="tool-card-icon h-12 w-12" aria-hidden="true">
                     <Upload className="h-6 w-6" />
                   </span>
-                  <span className="text-sm font-semibold text-slate-800">Upload to tool</span>
+                  <span className="text-sm font-semibold text-slate-800">{translate('uploadToTool')}</span>
                 </li>
                 <li aria-hidden="true" className="flex justify-center text-slate-400">
                   <ArrowRight className="h-5 w-5 rotate-90 xl:rotate-0" />
@@ -472,7 +509,7 @@ const ToolPage = ({ tool, children }) => {
                   <span className="tool-card-icon h-12 w-12" aria-hidden="true">
                     <ProcessingIcon className="h-6 w-6" />
                   </span>
-                  <span className="text-sm font-semibold text-slate-800">Process document in browser</span>
+                  <span className="text-sm font-semibold text-slate-800">{translate('processDocumentInBrowser')}</span>
                 </li>
                 <li aria-hidden="true" className="flex justify-center text-slate-400">
                   <ArrowRight className="h-5 w-5 rotate-90 xl:rotate-0" />
@@ -481,11 +518,11 @@ const ToolPage = ({ tool, children }) => {
                   <span className="tool-card-icon h-12 w-12" aria-hidden="true">
                     <Download className="h-6 w-6" />
                   </span>
-                  <span className="text-sm font-semibold text-slate-800">Download</span>
+                  <span className="text-sm font-semibold text-slate-800">{translate('download')}</span>
                 </li>
               </ol>
               <p className="mt-4 text-sm text-slate-600">
-                Your selected files are processed in your browser and are not uploaded to a processing server. Learn more in our <Link className="underline hover:text-blue-700" to="/privacy">Privacy Policy</Link>.
+                {translate('filesStayInBrowser')} <Link className="underline hover:text-blue-700" to="/privacy">{translate('privacyPolicy')}</Link>.
               </p>
             </>
           ) : (
@@ -497,8 +534,8 @@ const ToolPage = ({ tool, children }) => {
       </section>
 
       <section aria-labelledby="tool-faq-heading" className="space-y-3">
-        <h2 id="tool-faq-heading" className="text-2xl font-bold text-slate-800">Frequently Asked Questions</h2>
-        <FaqAccordion items={content.faqs} />
+        <h2 id="tool-faq-heading" className="text-2xl font-bold text-slate-800">{translate('frequentlyAskedQuestions')}</h2>
+        <FaqAccordion items={localizedContent.faqs} />
       </section>
 
       <RelatedToolsCarousel currentToolId={tool} />
