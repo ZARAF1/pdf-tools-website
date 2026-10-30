@@ -213,7 +213,7 @@ const PageSelectionTool = ({ mode }) => {
             </div>
             <div className="merge-pdf-upload-copy">
               <h3>{isLoading ? 'Checking PDF pages…' : isDragActive ? 'Drop the PDF here' : `Choose or drop a PDF to ${isRemoving ? 'remove pages' : 'extract pages'}`}</h3>
-              <p>One PDF, up to {MAX_PAGES} pages · processed in your browser</p>
+              <p>{isRemoving ? 'Remove selected pages from a PDF.' : 'Extract selected pages into a new PDF.'}</p>
             </div>
             <button
               type="button"

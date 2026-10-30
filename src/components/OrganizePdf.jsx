@@ -272,7 +272,7 @@ const OrganizePdf = () => {
             </div>
             <div className="merge-pdf-upload-copy">
               <h3 aria-live="polite">{isLoading ? 'Reading PDF…' : isDragActive ? 'Drop the PDF here' : 'Choose or drop a PDF to organize'}</h3>
-              <p>One PDF, up to {MAX_PAGES} pages · processed in your browser</p>
+              <p>Reorder, rotate, or remove PDF pages.</p>
             </div>
             <button
               type="button"

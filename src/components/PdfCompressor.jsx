@@ -483,13 +483,7 @@ const PdfCompressor = () => {
   ) : null;
 
   return (
-    <div className="space-y-8">
-      {files.length === 0 && (
-      <div className="mb-8 text-center">
-        <p className="text-slate-600">Reduce file size with standard or higher compression. Files are processed in your browser.</p>
-      </div>
-      )}
-
+    <div className="compress-pdf-workspace space-y-8">
       {selectedFileCards}
 
       {files.length > 0 && (
@@ -558,7 +552,7 @@ const PdfCompressor = () => {
                   ? 'Drop the PDFs here'
                   : 'Choose or drop PDFs to compress'}
             </h3>
-            <p>Up to {MAX_FILES} unencrypted PDF files · processed in your browser</p>
+            <p>Try to reduce PDF file size with standard or higher compression.</p>
           </div>
           <button
             type="button"

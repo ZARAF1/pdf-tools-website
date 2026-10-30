@@ -277,7 +277,7 @@ const PdfMerger = () => {
                   ? `Limit reached (max ${MAX_FILES})`
                   : 'Choose or drop PDFs to merge'}
           </h3>
-          <p>Up to {MAX_FILES} PDF files · processed in your browser</p>
+          <p>Combine PDFs into a single document in your chosen order.</p>
         </div>
         <button
           type="button"

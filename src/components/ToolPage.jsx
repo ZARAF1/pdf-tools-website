@@ -266,67 +266,111 @@ const TOOL_CONTENT = {
 const ATTACHMENT_RULES = {
   merge: {
     title: 'Attach PDFs Here',
-    rule: 'Up to 5 PDF files supported in one batch'
+    rule: '2–5 unencrypted PDF files',
+    infoTitle: 'Combine PDFs into one file',
+    info: 'Arrange whole files before merging; pages within each file stay together.'
   },
   compress: {
     title: 'Attach PDFs Here',
-    rule: 'Up to 5 unencrypted PDF files supported in one batch'
+    rule: 'Up to 5 unencrypted PDF files',
+    infoTitle: 'Try to reduce PDF file size',
+    info: 'Higher compression rasterizes pages and can reduce image quality and remove selectable text; larger outputs are not offered.'
   },
   image: {
     title: 'Attach Images Here',
-    rule: 'JPEG, PNG, or BMP images · processed locally in your browser'
+    rule: 'Up to 10 JPEG, PNG, or BMP images',
+    infoTitle: 'Create a PDF from images',
+    info: 'Arrange and rotate images, then adjust page size, background, fit, alignment, and resizing.'
   },
   edit: {
     title: 'Attach PDF Here',
-    rule: 'One unencrypted PDF · processed in your browser'
+    rule: 'One unencrypted PDF · no fixed page cap',
+    infoTitle: 'Add content to PDF pages',
+    info: 'Add text, images, drawings, highlights, or shapes, and remove pages. Existing text is not edited or replaced; added marks are overlays.'
   },
   watermark: {
     title: 'Attach PDF Here',
-    rule: 'One unencrypted PDF · processed in your browser'
+    rule: 'One unencrypted PDF · no fixed page cap',
+    infoTitle: 'Add watermarks to PDF pages',
+    info: 'Add text watermarks and optional page numbers to all or selected pages.'
   },
   word: {
     title: 'Attach PDF Here',
-    rule: 'One PDF file · processed in your browser'
+    rule: 'One unencrypted PDF · no fixed page cap',
+    infoTitle: 'Convert PDF content to Word',
+    info: 'Text-based pages become editable text; scanned pages can use English OCR and complex layouts may need cleanup.'
   },
   protect: {
     title: 'Attach PDF Here',
-    rule: 'One unencrypted PDF · processed in your browser'
+    rule: 'One unencrypted PDF · no fixed page cap',
+    infoTitle: 'Protect a PDF with a password',
+    info: 'Add an opening password to a new copy; keep the password because it cannot be recovered here.'
   },
   unlock: {
     title: 'Attach PDF Here',
-    rule: 'One password-protected PDF · processed in your browser'
+    rule: 'One password-protected PDF · AES-256 R6 or RC4 R2/R3 only',
+    infoTitle: 'Unlock a PDF with its password',
+    info: 'A correct password is required; password guessing and recovery are not supported.'
   },
   split: {
     title: 'Attach PDF Here',
-    rule: 'One unencrypted PDF · processed in your browser'
+    rule: 'One unencrypted PDF · no fixed page cap',
+    infoTitle: 'Split or extract PDF pages',
+    info: 'Extract selected pages into one PDF or split the whole document into single-page PDFs.'
   },
   ocr: {
     title: 'Attach PDF Here',
-    rule: 'One unencrypted PDF · up to 50 pages'
+    rule: 'One unencrypted PDF · up to 50 pages',
+    infoTitle: 'Make scanned PDF text searchable',
+    info: 'English OCR adds an invisible text layer to pages without readable text.'
   },
   'organize-pages': {
     title: 'Attach PDF Here',
-    rule: 'One PDF file, up to 30 pages'
+    rule: 'One unencrypted PDF · up to 30 pages',
+    infoTitle: 'Organize PDF pages',
+    info: 'Reorder, rotate, or remove pages; at least one page must remain.'
   },
   redact: {
     title: 'Attach PDF Here',
-    rule: 'One unencrypted PDF · up to 15 pages'
+    rule: 'One unencrypted PDF · up to 15 pages',
+    infoTitle: 'Permanently redact page content',
+    info: 'Drag over sensitive text or images to mark them. Every page is rasterized in the output so the original text beneath a redaction is not retained.'
   },
   sign: {
     title: 'Attach PDF Here',
-    rule: 'One unencrypted PDF · processed in your browser'
+    rule: 'One unencrypted PDF · no fixed page cap',
+    infoTitle: 'Add a visible signature to PDF pages',
+    info: 'Use a typed, drawn, or image signature; this is not a certificate-based digital signature.'
   },
   'pdf-images': {
     title: 'Attach PDF Here',
-    rule: 'One PDF file, up to 50 pages'
+    rule: 'One unencrypted PDF · up to 50 pages',
+    infoTitle: 'Convert PDF pages to images',
+    info: 'Export pages as PNG, JPG, or BMP files in a ZIP archive.'
   },
   remove: {
     title: 'Attach PDF Here',
-    rule: 'One PDF file, up to 50 pages'
+    rule: 'One unencrypted PDF · up to 50 pages',
+    infoTitle: 'Remove selected PDF pages',
+    info: 'Choose pages to omit; at least one page must remain in the output.'
   },
   extract: {
     title: 'Attach PDF Here',
-    rule: 'One PDF file, up to 50 pages'
+    rule: 'One unencrypted PDF · up to 50 pages',
+    infoTitle: 'Extract selected PDF pages',
+    info: 'Save the selected pages as a new PDF in their original document order.'
+  },
+  rotate: {
+    title: 'Attach PDF Here',
+    rule: 'One unencrypted PDF · no fixed page cap',
+    infoTitle: 'Rotate PDF pages',
+    info: 'Rotate every page or only the pages and ranges you select.'
+  },
+  crop: {
+    title: 'Attach PDF Here',
+    rule: 'One unencrypted PDF · no fixed page cap',
+    infoTitle: 'Crop PDF pages',
+    info: 'Cropping changes the visible page boundary; it does not permanently remove content outside it.'
   }
 };
 
@@ -342,9 +386,12 @@ const ToolPage = ({ tool, children }) => {
       ? null
       : {
           title: 'Attach PDF Here',
-          rule: 'One PDF file · processed locally in your browser'
+          rule: 'One unencrypted PDF · no fixed page cap',
+          infoTitle: content.title,
+          info: content.description
         }
   );
+  const attachmentGuidanceHeadingId = `${tool}-attachment-guidance-heading`;
 
   useEffect(() => {
     const previousTitle = document.title;
@@ -390,6 +437,10 @@ const ToolPage = ({ tool, children }) => {
                 <p>{attachmentRule.rule}</p>
               </div>
             </div>
+            <aside className="tool-attachment-guidance" aria-labelledby={attachmentGuidanceHeadingId}>
+              <h3 id={attachmentGuidanceHeadingId}>{attachmentRule.infoTitle}</h3>
+              <p>{attachmentRule.info}</p>
+            </aside>
             <div className="tool-attachment-content">{children}</div>
           </div>
         ) : children}

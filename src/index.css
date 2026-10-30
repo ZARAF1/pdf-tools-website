@@ -3049,8 +3049,48 @@ body {
   font-weight: 800;
 }
 
+.tool-attachment-guidance {
+  margin: 1rem 1.25rem 0;
+  border: 1px solid var(--border-color);
+  border-radius: 0.875rem;
+  background: var(--surface-muted);
+  padding: 1rem;
+}
+
+.tool-attachment-guidance h3 {
+  margin: 0;
+  color: var(--text-primary);
+  font-size: 1rem;
+  line-height: 1.35;
+  font-weight: 700;
+}
+
+.tool-attachment-guidance p {
+  margin: 0.375rem 0 0;
+  color: var(--text-secondary);
+  font-size: 0.875rem;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+
 .tool-attachment-content {
   padding: 1.25rem 1.25rem 1.25rem;
+}
+
+.tool-attachment-content:has(> .pdf-editor-shell) {
+  padding-top: 0;
+}
+
+.tool-attachment-content:has(> .watermark-tool-workspace) {
+  padding-top: 0;
+}
+
+.tool-attachment-content:has(> .protect-pdf-workspace) {
+  padding-top: 0;
+}
+
+.tool-attachment-content .unlock-pdf-workspace > section.pdf-upload-trigger {
+  margin-top: 0;
 }
 
 .pdf-attached-file-card {
@@ -3373,6 +3413,11 @@ body {
     font-size: 0.82rem;
   }
 
+  .tool-attachment-guidance {
+    margin: 0.875rem 1rem 0;
+    padding: 0.875rem;
+  }
+
   .tool-attachment-content {
     padding: 1rem;
   }
@@ -3432,6 +3477,18 @@ body {
 }
 
 .pdf-tool-workflow.pdf-to-images-workflow > .pdf-workflow-upload {
+  margin-top: 0;
+}
+
+.tool-attachment-content .compress-pdf-workspace > .pdf-workflow-upload {
+  margin-top: 0;
+}
+
+.tool-attachment-content .split-pdf-workspace > .pdf-workflow-upload {
+  margin-top: 0;
+}
+
+.tool-attachment-content .ocr-pdf-workspace > .ocr-pdf-notice {
   margin-top: 0;
 }
 

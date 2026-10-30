@@ -279,13 +279,6 @@ const SignPdf = () => {
 
   return (
     <div className="space-y-6">
-      {!file && (
-        <div>
-          <h2 className="mb-2 text-xl font-bold text-slate-800">Add a visible signature</h2>
-          <p className="text-sm text-slate-600">Choose a typed, drawn, or image signature. This creates a visible mark, not a certificate-backed digital signature.</p>
-        </div>
-      )}
-
       <div
         {...getRootProps({
           role: 'group',
@@ -323,7 +316,7 @@ const SignPdf = () => {
             </div>
             <div className="merge-pdf-upload-copy">
               <h3>{isLoading ? 'Checking PDF pages…' : isDragActive ? 'Drop the PDF here' : 'Choose or drop a PDF to sign'}</h3>
-              <p>One PDF · processed in your browser</p>
+              <p>Add a visible typed, drawn, or image signature to PDF pages.</p>
             </div>
             <button
               type="button"

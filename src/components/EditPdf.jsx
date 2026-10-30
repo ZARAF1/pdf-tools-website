@@ -1051,7 +1051,7 @@ const EditPdf = () => {
             </div>
             <div className="merge-pdf-upload-copy">
               <h3>{isLoading ? 'Loading and validating PDF…' : isDragActive ? 'Drop the PDF to open it' : 'Choose or drop a PDF to edit'}</h3>
-              <p>One unencrypted PDF · processed in your browser</p>
+              <p>Add text, images, drawings, highlights, and shapes to a PDF copy.</p>
             </div>
             <button
               type="button"

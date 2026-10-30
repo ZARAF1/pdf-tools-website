@@ -314,7 +314,7 @@ const PdfRotator = () => {
             </div>
             <div className="merge-pdf-upload-copy">
               <h3>{isDragActive ? 'Drop the PDF here' : 'Choose or drop a PDF to rotate'}</h3>
-              <p>One PDF file · processed in your browser</p>
+              <p>Rotate all pages or selected pages in a PDF.</p>
             </div>
             <button
               type="button"

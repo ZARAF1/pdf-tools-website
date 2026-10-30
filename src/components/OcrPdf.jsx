@@ -577,7 +577,7 @@ const OcrPdf = () => {
   }, []);
 
   const ocrNotice = (
-    <section className="rounded-2xl border border-blue-100 bg-blue-50 p-5 text-sm text-blue-900">
+    <section className="ocr-pdf-notice rounded-2xl border border-blue-100 bg-blue-50 p-5 text-sm text-blue-900">
       <h2 className="font-bold">English OCR · searchable PDF output</h2>
       <p className="mt-1">
         Existing text stays searchable. Pages without usable text are recognized from their images, and the original page appearance is retained.
@@ -591,7 +591,7 @@ const OcrPdf = () => {
   );
 
   return (
-    <div className="mx-auto max-w-4xl space-y-6">
+    <div className="ocr-pdf-workspace mx-auto max-w-4xl space-y-6">
       <input {...getInputProps()} aria-label="Choose a PDF for OCR" />
       {!file && ocrNotice}
 
@@ -619,7 +619,7 @@ const OcrPdf = () => {
                   ? 'Drop the PDF here'
                   : 'Choose or drop a PDF for OCR'}
             </h3>
-            <p>One unencrypted PDF · up to {MAX_PAGES} pages</p>
+            <p>Recognize scanned text and add a searchable text layer to PDF pages.</p>
           </div>
           <button
             type="button"

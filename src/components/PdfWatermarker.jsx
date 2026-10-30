@@ -381,14 +381,8 @@ const PdfWatermarker = () => {
     : 'watermarked.pdf';
 
   return (
-    <div className="space-y-8">
+    <div className="watermark-tool-workspace space-y-8">
       <input {...getInputProps()} />
-      {!file && (
-        <div className="mb-8 text-center">
-          <p className="text-slate-600">Add a custom text watermark to all pages or selected pages. Files are processed in your browser.</p>
-        </div>
-      )}
-
       {!file ? (
         <div
           {...getRootProps({
@@ -407,7 +401,7 @@ const PdfWatermarker = () => {
             </div>
             <div className="merge-pdf-upload-copy">
               <h3>{isLoadingPages ? 'Checking PDF pages…' : isDragActive ? 'Drop the PDF here' : 'Choose or drop a PDF to watermark'}</h3>
-              <p>One unencrypted PDF · processed in your browser</p>
+              <p>Add a text watermark and page numbers to selected PDF pages.</p>
             </div>
             <button
               type="button"

@@ -599,7 +599,7 @@ const ImageToPdf = () => {
             </div>
             <div className="merge-pdf-upload-copy">
               <h3>{isDragActive ? 'Drop images to add them' : 'Choose or drop JPEG, PNG, or BMP images'}</h3>
-              <p>Up to {MAX_IMAGES} images · processed in your browser</p>
+              <p>Create a PDF from up to {MAX_IMAGES} JPEG, PNG, or BMP images.</p>
             </div>
             <button
               type="button"

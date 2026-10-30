@@ -160,7 +160,7 @@ const UnlockPdf = () => {
   };
 
   return (
-    <div className="mx-auto max-w-4xl space-y-6">
+    <div className="unlock-pdf-workspace mx-auto max-w-4xl space-y-6">
       <input {...getInputProps()} />
       {!file ? (
         <section
@@ -188,7 +188,7 @@ const UnlockPdf = () => {
                     ? 'Drop the password-protected PDF here'
                     : 'Choose or drop a password-protected PDF'}
               </h3>
-              <p>One password-protected PDF · processed in your browser</p>
+              <p>Remove supported PDF encryption with the correct password.</p>
             </div>
             <button
               type="button"

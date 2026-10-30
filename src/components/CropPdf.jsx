@@ -559,7 +559,7 @@ const CropPdf = () => {
             </div>
             <div className="merge-pdf-upload-copy">
               <h3>{isLoading ? 'Loading and validating PDF…' : isDragActive ? 'Drop the PDF here' : 'Choose or drop a PDF to crop'}</h3>
-              <p>One PDF file · processed in your browser</p>
+              <p>Crop PDF pages to adjust the visible page area.</p>
             </div>
             <button
               type="button"

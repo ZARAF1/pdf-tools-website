@@ -391,7 +391,7 @@ const PdfToImages = () => {
                   ? 'Drop the PDF here'
                   : 'Choose or drop a PDF to convert to images'}
             </h3>
-            <p>One PDF, up to {MAX_PAGES} pages · processed in your browser</p>
+            <p>Convert PDF pages to PNG, JPG, or BMP images in a ZIP file.</p>
           </div>
           <button
             type="button"

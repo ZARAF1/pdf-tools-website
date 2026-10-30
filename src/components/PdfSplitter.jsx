@@ -151,7 +151,7 @@ const PdfSplitter = () => {
   };
 
   return (
-    <div className="space-y-8">
+    <div className="split-pdf-workspace space-y-8">
       <input {...getInputProps()} />
       {!file ? (
         <div 
@@ -171,7 +171,7 @@ const PdfSplitter = () => {
             </div>
             <div className="merge-pdf-upload-copy">
               <h3>{isDragActive ? 'Drop the PDF here' : 'Choose or drop a PDF to split'}</h3>
-              <p>One unencrypted PDF · processed in your browser</p>
+              <p>Extract selected pages or split the PDF into single-page files.</p>
             </div>
             <button
               type="button"

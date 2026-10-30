@@ -136,7 +136,7 @@ const PdfProtector = () => {
   };
 
   return (
-    <div className="space-y-8">
+    <div className="protect-pdf-workspace space-y-8">
       <input {...getInputProps()} />
       {/* Upload Zone */}
       {!file ? (
@@ -157,7 +157,7 @@ const PdfProtector = () => {
             </div>
             <div className="merge-pdf-upload-copy">
               <h3>{isDragActive ? 'Drop the PDF here' : 'Choose or drop a PDF to protect'}</h3>
-              <p>One unencrypted PDF · processed in your browser</p>
+              <p>Add an opening password to protect a PDF.</p>
             </div>
             <button
               type="button"

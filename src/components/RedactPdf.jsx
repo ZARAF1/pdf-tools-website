@@ -348,13 +348,6 @@ const RedactPdf = () => {
 
   return (
     <div className="space-y-6">
-      {!file && (
-        <div>
-          <h2 className="mb-2 text-xl font-bold text-slate-800">Permanently redact page content</h2>
-          <p className="text-sm text-slate-600">Drag over sensitive text or images to mark them. Every page is rasterized in the output so the original text beneath a redaction is not retained.</p>
-        </div>
-      )}
-
       <div
         {...getRootProps({
           role: 'group',
@@ -392,7 +385,7 @@ const RedactPdf = () => {
             </div>
             <div className="merge-pdf-upload-copy">
               <h3>{isLoading ? 'Checking PDF pages…' : isDragActive ? 'Drop the PDF here' : 'Choose or drop a PDF to redact'}</h3>
-              <p>One PDF · up to {MAX_PAGES} pages</p>
+              <p>Permanently cover selected content on PDF pages.</p>
             </div>
             <button
               type="button"
