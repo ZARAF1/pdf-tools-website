@@ -5,8 +5,6 @@ import { validateUnencryptedPdf } from '../lib/pdfValidation';
 import { motion } from 'framer-motion';
 import { 
   Upload, 
-  FileText, 
-  Trash2, 
   Download, 
   Loader2, 
   AlertCircle,
@@ -14,6 +12,7 @@ import {
   Scissors,
   Layers
 } from 'lucide-react';
+import { AttachedFileActions, AttachedFileIcon } from './AttachedFileControls';
 
 const PdfSplitter = () => {
   const [file, setFile] = useState(null);
@@ -153,6 +152,7 @@ const PdfSplitter = () => {
 
   return (
     <div className="space-y-8">
+      <input {...getInputProps()} />
       {!file ? (
         <div 
           {...getRootProps({
@@ -165,7 +165,6 @@ const PdfSplitter = () => {
               : 'border-slate-300 bg-white hover:border-blue-400 hover:bg-blue-50/50'
           }`}
         >
-          <input {...getInputProps()} />
           <div className="merge-pdf-upload-content">
             <div className="pdf-upload-icon" aria-hidden="true">
               <Upload className="h-6 w-6 text-blue-600" />
@@ -189,24 +188,20 @@ const PdfSplitter = () => {
         </div>
       ) : (
         <div className="space-y-6">
-          <div className="flex items-center justify-between bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+          <div className="pdf-attached-file-card flex items-center justify-between bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
             <div className="flex items-center gap-4">
-              <div className="bg-blue-100 p-2 rounded-lg">
-                <FileText className="w-6 h-6 text-blue-600" />
-              </div>
+              <AttachedFileIcon />
               <div className="truncate max-w-[200px] md:max-w-sm">
                 <p className="text-sm font-medium text-slate-700 truncate">{file.name}</p>
                 <p className="text-xs text-slate-400">{(file.size / 1024 / 1024).toFixed(2)} MB</p>
               </div>
             </div>
-            <button
-              type="button"
-              aria-label={`Remove ${file.name}`}
-              onClick={removeFile}
-              className="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
-            >
-              <Trash2 className="w-5 h-5" aria-hidden="true" />
-            </button>
+            <AttachedFileActions
+              fileName={file.name}
+              onReplace={open}
+              onRemove={removeFile}
+              disabled={isProcessing}
+            />
           </div>
 
           <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-6">

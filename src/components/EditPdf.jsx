@@ -9,7 +9,6 @@ import {
   ChevronRight,
   Download,
   FileImage,
-  FileText,
   Highlighter,
   ImagePlus,
   Loader2,
@@ -27,6 +26,7 @@ import {
 } from 'lucide-react';
 import pdfjsLib from '../lib/pdfjsClient';
 import { validateUnencryptedPdf } from '../lib/pdfValidation';
+import { AttachedFileActions, AttachedFileIcon } from './AttachedFileControls';
 
 const TOOL_OPTIONS = [
   { id: 'select', label: 'Select / move', icon: MousePointer2 },
@@ -1036,7 +1036,7 @@ const EditPdf = () => {
       >
         {file ? (
           <div className="flex min-w-0 flex-1 items-center gap-3">
-            <FileText className="h-8 w-8 shrink-0 text-blue-600" aria-hidden="true" />
+            <AttachedFileIcon />
             <div className="min-w-0">
               <p className="truncate font-semibold pdf-editor-text">{file.name}</p>
               <p className="text-sm pdf-editor-secondary">{formatBytes(file.size)} · {pageCount} {pageCount === 1 ? 'page' : 'pages'} · {visiblePageIds.length} remaining</p>
@@ -1067,14 +1067,12 @@ const EditPdf = () => {
           </div>
         )}
         {file && (
-          <div className="flex shrink-0 gap-2">
-            <button type="button" onClick={open} disabled={isLoading || isSaving} className="pdf-upload-trigger rounded-lg border px-3 py-2 text-sm font-semibold disabled:opacity-50">
-              Replace
-            </button>
-            <button type="button" onClick={clearWorkspace} disabled={isLoading || isSaving} className="pdf-upload-trigger rounded-lg border px-3 py-2 text-sm font-semibold disabled:opacity-50">
-              Delete
-            </button>
-          </div>
+          <AttachedFileActions
+            fileName={file.name}
+            onReplace={open}
+            onRemove={clearWorkspace}
+            disabled={isLoading || isSaving}
+          />
         )}
       </div>
 

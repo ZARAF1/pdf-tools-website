@@ -2,8 +2,9 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { PDFDocument } from 'pdf-lib';
 import { validateUnencryptedPdf } from '../lib/pdfValidation';
 import useAccessibleDropzone from '../lib/useAccessibleDropzone';
-import { ArrowLeft, ArrowRight, CheckCircle2, Download, FileText, Loader2, RotateCcw, Trash2, Upload } from 'lucide-react';
+import { ArrowLeft, ArrowRight, CheckCircle2, Download, Loader2, RotateCcw, Trash2, Upload } from 'lucide-react';
 import pdfjsLib from '../lib/pdfjsClient';
+import { AttachedFileActions, AttachedFileIcon } from './AttachedFileControls';
 
 const MAX_PAGES = 15;
 
@@ -47,12 +48,6 @@ const RedactPdf = () => {
     if (!selectedFile) return;
     const currentRequest = requestId.current + 1;
     requestId.current = currentRequest;
-    setFile(null);
-    setPageCount(0);
-    setCurrentPage(1);
-    setPreviews([]);
-    setPageSummaries([]);
-    setMarksByPage({});
     setIsLoading(true);
 
     try {
@@ -61,6 +56,10 @@ const RedactPdf = () => {
       if (!count) throw new Error('This PDF does not contain any pages.');
       if (count > MAX_PAGES) throw new Error(`This tool supports PDFs with up to ${MAX_PAGES} pages; this file has ${count}.`);
       if (requestId.current === currentRequest) {
+        setCurrentPage(1);
+        setPreviews([]);
+        setPageSummaries([]);
+        setMarksByPage({});
         setFile(selectedFile);
         setPageCount(count);
       }
@@ -349,10 +348,12 @@ const RedactPdf = () => {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h2 className="mb-2 text-xl font-bold text-slate-800">Permanently redact page content</h2>
-        <p className="text-sm text-slate-600">Drag over sensitive text or images to mark them. Every page is rasterized in the output so the original text beneath a redaction is not retained.</p>
-      </div>
+      {!file && (
+        <div>
+          <h2 className="mb-2 text-xl font-bold text-slate-800">Permanently redact page content</h2>
+          <p className="text-sm text-slate-600">Drag over sensitive text or images to mark them. Every page is rasterized in the output so the original text beneath a redaction is not retained.</p>
+        </div>
+      )}
 
       <div
         {...getRootProps({
@@ -370,24 +371,17 @@ const RedactPdf = () => {
         <input {...getInputProps()} />
         {file ? (
           <div className="merge-pdf-upload-content">
-            <div className="pdf-upload-icon" aria-hidden="true">
-              <FileText className="h-5 w-5 text-blue-600" />
-            </div>
+            <AttachedFileIcon />
             <div className="merge-pdf-upload-copy">
               <h3 className="truncate">{file.name}</h3>
               <p>{(file.size / 1024).toFixed(1)} KB · {pageCount} pages</p>
             </div>
-            <button
-              type="button"
-              onClick={(event) => {
-                event.stopPropagation();
-                open();
-              }}
+            <AttachedFileActions
+              fileName={file.name}
+              onReplace={open}
+              onRemove={clearFile}
               disabled={isLoading || isProcessing}
-              className="pdf-editor-primary-button merge-pdf-upload-button"
-            >
-              Replace PDF
-            </button>
+            />
           </div>
         ) : (
           <div className="merge-pdf-upload-content">

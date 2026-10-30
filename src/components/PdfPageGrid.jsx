@@ -59,8 +59,10 @@ const PdfPageGrid = ({ file, pageCount, selectedPages, onToggle, actionLabel }) 
         }
         await document.destroy();
       } catch (renderError) {
-        console.error('Unable to render PDF page previews:', renderError);
-        if (active) setPreviewError('Page previews could not be rendered. Try a different PDF or browser.');
+        if (active) {
+          console.error('Unable to render PDF page previews:', renderError);
+          setPreviewError('Page previews could not be rendered. Try a different PDF or browser.');
+        }
       } finally {
         if (active) setRendering(false);
       }

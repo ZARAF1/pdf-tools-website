@@ -2,7 +2,8 @@ import React, { useCallback, useRef, useState } from 'react';
 import { PDFDocument, StandardFonts } from 'pdf-lib';
 import { validateUnencryptedPdf } from '../lib/pdfValidation';
 import useAccessibleDropzone from '../lib/useAccessibleDropzone';
-import { CheckCircle2, Download, FileText, Loader2, PenLine, Trash2, Upload } from 'lucide-react';
+import { CheckCircle2, Download, Loader2, PenLine, Trash2, Upload } from 'lucide-react';
+import { AttachedFileActions, AttachedFileIcon } from './AttachedFileControls';
 
 const parsePages = (input, pageCount) => {
   const value = input.trim();
@@ -67,8 +68,6 @@ const SignPdf = () => {
     const currentRequest = requestId.current + 1;
     requestId.current = currentRequest;
     setIsLoading(true);
-    setFile(null);
-    setPageCount(0);
     try {
       const source = await validateUnencryptedPdf(selectedFile);
       if (!source.getPageCount()) throw new Error('This PDF does not contain any pages.');
@@ -114,6 +113,15 @@ const SignPdf = () => {
     const canvas = canvasRef.current;
     const context = canvas?.getContext('2d');
     if (canvas && context) context.clearRect(0, 0, canvas.width, canvas.height);
+  };
+
+  const removeFile = () => {
+    requestId.current += 1;
+    setFile(null);
+    setPageCount(0);
+    setIsLoading(false);
+    setOutput(null);
+    setError('');
   };
 
   const updateSetting = (setter) => (event) => {
@@ -271,10 +279,12 @@ const SignPdf = () => {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h2 className="mb-2 text-xl font-bold text-slate-800">Add a visible signature</h2>
-        <p className="text-sm text-slate-600">Choose a typed, drawn, or image signature. This creates a visible mark, not a certificate-backed digital signature.</p>
-      </div>
+      {!file && (
+        <div>
+          <h2 className="mb-2 text-xl font-bold text-slate-800">Add a visible signature</h2>
+          <p className="text-sm text-slate-600">Choose a typed, drawn, or image signature. This creates a visible mark, not a certificate-backed digital signature.</p>
+        </div>
+      )}
 
       <div
         {...getRootProps({
@@ -292,24 +302,17 @@ const SignPdf = () => {
         <input {...getInputProps()} />
         {file ? (
           <div className="merge-pdf-upload-content">
-            <div className="pdf-upload-icon" aria-hidden="true">
-              <FileText className="h-5 w-5 text-blue-600" />
-            </div>
+            <AttachedFileIcon />
             <div className="merge-pdf-upload-copy">
               <h3 className="truncate">{file.name}</h3>
               <p>{(file.size / 1024).toFixed(1)} KB · {pageCount} pages</p>
             </div>
-            <button
-              type="button"
-              onClick={(event) => {
-                event.stopPropagation();
-                open();
-              }}
+            <AttachedFileActions
+              fileName={file.name}
+              onReplace={open}
+              onRemove={removeFile}
               disabled={isLoading || isProcessing}
-              className="pdf-editor-primary-button merge-pdf-upload-button"
-            >
-              Replace PDF
-            </button>
+            />
           </div>
         ) : (
           <div className="merge-pdf-upload-content">

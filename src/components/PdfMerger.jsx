@@ -5,8 +5,8 @@ import { validateUnencryptedPdf } from '../lib/pdfValidation';
 import { motion, Reorder } from 'framer-motion';
 import { 
   Upload, 
-  FileText, 
   Trash2, 
+  RefreshCw,
   ChevronUp, 
   ChevronDown, 
   Download, 
@@ -14,6 +14,7 @@ import {
   AlertCircle,
   CheckCircle2
 } from 'lucide-react';
+import { AttachedFileIcon } from './AttachedFileControls';
 
 const MAX_FILES = 5;
 
@@ -27,6 +28,7 @@ const PdfMerger = () => {
   const [announcement, setAnnouncement] = useState('');
   const isValidatingRef = useRef(false);
   const pendingFocusRef = useRef(null);
+  const replaceTargetRef = useRef(null);
 
   const onDrop = useCallback(async (acceptedFiles, fileRejections) => {
     setError(null);
@@ -87,14 +89,63 @@ const PdfMerger = () => {
     }
   }, [files.length]);
 
+  const onReplaceDrop = useCallback(async (acceptedFiles, fileRejections) => {
+    const targetId = replaceTargetRef.current;
+    replaceTargetRef.current = null;
+    if (!acceptedFiles.length && !fileRejections.length) return;
+    setError(null);
+    setSuccess(false);
+    setOutputBytes(null);
+
+    if (isValidatingRef.current) {
+      setError('Please wait while the selected PDFs are checked.');
+      return;
+    }
+
+    const replacementFile = acceptedFiles[0];
+    if (fileRejections.length > 0 || acceptedFiles.length !== 1 || !replacementFile) {
+      setError('Choose one valid PDF file to replace the selected file.');
+      return;
+    }
+
+    isValidatingRef.current = true;
+    setIsValidating(true);
+    try {
+      await validateUnencryptedPdf(replacementFile);
+      const currentFile = files.find((file) => file.id === targetId);
+      if (!currentFile) {
+        setError('The selected PDF is no longer available to replace.');
+        return;
+      }
+
+      pendingFocusRef.current = { id: targetId, action: 'replace' };
+      setFiles((previous) => previous.map((file) => file.id === targetId
+        ? {
+            ...file,
+            file: replacementFile,
+            name: replacementFile.name,
+            size: (replacementFile.size / 1024 / 1024).toFixed(2) + ' MB'
+          }
+        : file
+      ));
+      setAnnouncement(`${currentFile.name} replaced with ${replacementFile.name}.`);
+    } catch (validationError) {
+      console.error('Unable to validate replacement PDF:', validationError);
+      setError(`${replacementFile.name}: ${validationError.message || 'This PDF could not be opened.'}`);
+    } finally {
+      isValidatingRef.current = false;
+      setIsValidating(false);
+    }
+  }, [files]);
+
   useEffect(() => {
     const pendingFocus = pendingFocusRef.current;
     if (!pendingFocus) return;
     pendingFocusRef.current = null;
-    const target = pendingFocus === 'upload'
+    const target = pendingFocus.action === 'upload'
       ? document.querySelector('[data-merge-upload]')
-      : [...document.querySelectorAll('[data-merge-file-remove]')]
-        .find((button) => button.dataset.mergeFileRemove === pendingFocus);
+      : [...document.querySelectorAll(`[data-merge-file-${pendingFocus.action}]`)]
+        .find((button) => button.getAttribute(`data-merge-file-${pendingFocus.action}`) === pendingFocus.id);
     target?.focus();
   }, [files]);
 
@@ -105,10 +156,30 @@ const PdfMerger = () => {
     disabled: isValidating || files.length >= MAX_FILES,
   });
 
+  const {
+    getInputProps: getReplaceInputProps,
+    open: openReplace
+  } = useAccessibleDropzone({
+    onDrop: onReplaceDrop,
+    accept: { 'application/pdf': ['.pdf'] },
+    multiple: false,
+    maxFiles: 1,
+    disabled: isValidating || isMerging,
+    noClick: true,
+    noKeyboard: true
+  });
+
+  const replaceFile = (id) => {
+    replaceTargetRef.current = id;
+    openReplace();
+  };
+
   const removeFile = (id) => {
     const index = files.findIndex((file) => file.id === id);
     const nextFile = files[index + 1] || files[index - 1];
-    pendingFocusRef.current = nextFile?.id || 'upload';
+    pendingFocusRef.current = nextFile
+      ? { id: nextFile.id, action: 'remove' }
+      : { action: 'upload' };
     const removedFile = files[index];
     setFiles(files.filter(f => f.id !== id));
     setAnnouncement(`${removedFile?.name || 'PDF'} removed.`);
@@ -178,75 +249,54 @@ const PdfMerger = () => {
     setTimeout(() => URL.revokeObjectURL(url), 10000);
   };
 
+  const uploadZone = (
+    <div
+      {...getRootProps({ role: 'group', 'aria-label': 'Choose PDF files to merge', 'data-merge-upload': '' })}
+      className={`
+        pdf-workflow-upload merge-pdf-upload-zone border-2 border-dashed rounded-2xl cursor-pointer transition-all
+        ${isDragActive ? 'border-blue-500 bg-blue-50' : 'border-slate-300 hover:border-blue-400 hover:bg-slate-50'}
+        ${files.length >= MAX_FILES ? 'pointer-events-none opacity-50 cursor-not-allowed' : ''}
+      `}
+    >
+      <input {...getInputProps({ 'aria-label': 'Choose PDF files to merge' })} />
+      <input {...getReplaceInputProps()} />
+      <div className="merge-pdf-upload-content">
+        <div className="pdf-upload-icon" aria-hidden="true">
+          {isValidating
+            ? <Loader2 className="w-6 h-6 animate-spin text-blue-600" />
+            : <Upload className="w-6 h-6 text-blue-600" />}
+        </div>
+        <p className="sr-only" role="status" aria-live="polite" aria-atomic="true">{announcement}</p>
+        <div className="merge-pdf-upload-copy">
+          <h3 aria-live="polite" aria-atomic="true">
+            {isDragActive
+              ? 'Drop the PDFs here'
+              : isValidating
+                ? 'Checking selected PDFs...'
+                : files.length >= MAX_FILES
+                  ? `Limit reached (max ${MAX_FILES})`
+                  : 'Choose or drop PDFs to merge'}
+          </h3>
+          <p>Up to {MAX_FILES} PDF files · processed in your browser</p>
+        </div>
+        <button
+          type="button"
+          className="pdf-editor-primary-button merge-pdf-upload-button"
+          onClick={(event) => {
+            event.stopPropagation();
+            open();
+          }}
+          disabled={isValidating || isMerging || files.length >= MAX_FILES}
+        >
+          Choose Up to 5 PDFs
+        </button>
+      </div>
+    </div>
+  );
+
   return (
     <div className="pdf-tool-workflow space-y-8">
-      {/* Upload Zone */}
-      <div 
-        {...getRootProps({ role: 'group', 'aria-label': 'Choose PDF files to merge', 'data-merge-upload': '' })}
-        className={`
-          pdf-workflow-upload merge-pdf-upload-zone border-2 border-dashed rounded-2xl cursor-pointer transition-all
-          ${isDragActive ? 'border-blue-500 bg-blue-50' : 'border-slate-300 hover:border-blue-400 hover:bg-slate-50'}
-          ${files.length >= MAX_FILES ? 'pointer-events-none opacity-50 cursor-not-allowed' : ''}
-        `}
-      >
-        <input {...getInputProps({ 'aria-label': 'Choose PDF files to merge' })} />
-        <div className="merge-pdf-upload-content">
-          <div className="pdf-upload-icon" aria-hidden="true">
-            {isValidating
-              ? <Loader2 className="w-6 h-6 animate-spin text-blue-600" />
-              : <Upload className="w-6 h-6 text-blue-600" />}
-          </div>
-          <p className="sr-only" role="status" aria-live="polite" aria-atomic="true">{announcement}</p>
-          <div className="merge-pdf-upload-copy">
-            <h3 aria-live="polite" aria-atomic="true">
-              {isDragActive
-                ? 'Drop the PDFs here'
-                : isValidating
-                  ? 'Checking selected PDFs...'
-                  : files.length >= MAX_FILES
-                    ? `Limit reached (max ${MAX_FILES})`
-                    : 'Choose or drop PDFs to merge'}
-            </h3>
-            <p>Up to {MAX_FILES} PDF files · processed in your browser</p>
-          </div>
-          <button
-            type="button"
-            className="pdf-editor-primary-button merge-pdf-upload-button"
-            onClick={(event) => {
-              event.stopPropagation();
-              open();
-            }}
-            disabled={isValidating || isMerging || files.length >= MAX_FILES}
-          >
-            Choose Up to 5 PDFs
-          </button>
-        </div>
-      </div>
-
-      {/* Error/Success Messages */}
-      {error && (
-        <motion.div 
-          initial={{ opacity: 0, y: -10 }} 
-          animate={{ opacity: 1, y: 0 }}
-          role="alert"
-          className="flex items-center gap-3 p-4 bg-red-50 text-red-700 rounded-xl border border-red-200"
-        >
-          <AlertCircle className="w-5 h-5 flex-shrink-0" />
-          <span className="text-sm font-medium">{error}</span>
-        </motion.div>
-      )}
-
-      {success && (
-        <motion.div 
-          initial={{ opacity: 0, y: -10 }} 
-          animate={{ opacity: 1, y: 0 }}
-          role="status"
-          className="flex items-center gap-3 p-4 bg-green-50 text-green-700 rounded-xl border border-green-200"
-        >
-          <CheckCircle2 className="w-5 h-5 flex-shrink-0" />
-          <span className="text-sm font-medium">PDFs merged successfully. Your output is ready to download below.</span>
-        </motion.div>
-      )}
+      {files.length === 0 && uploadZone}
 
       {/* File List */}
       {files.length > 0 && (
@@ -263,12 +313,10 @@ const PdfMerger = () => {
               <Reorder.Item 
                 key={fileObj.id} 
                 value={fileObj}
-                className="group relative flex items-center justify-between bg-white p-4 rounded-xl border border-slate-200 shadow-sm hover:shadow-md transition-shadow"
+                className="pdf-attached-file-card group relative flex items-center justify-between bg-white p-4 rounded-xl border border-slate-200 shadow-sm hover:shadow-md transition-shadow"
               >
                 <div className="flex items-center gap-4 flex-1 min-w-0">
-                  <div className="bg-slate-100 p-2 rounded-lg">
-                    <FileText className="w-6 h-6 text-slate-500" />
-                  </div>
+                  <AttachedFileIcon />
                   <div className="truncate">
                     <p className="text-sm font-medium text-slate-700 truncate">{fileObj.name}</p>
                     <p className="text-xs text-slate-400">{fileObj.size}</p>
@@ -300,10 +348,26 @@ const PdfMerger = () => {
 
                   <button
                     type="button"
+                    aria-label={`Replace ${fileObj.name}`}
+                    title={`Replace ${fileObj.name}`}
+                    data-merge-file-replace={fileObj.id}
+                    onPointerDown={(event) => event.stopPropagation()}
+                    onClick={() => replaceFile(fileObj.id)}
+                    disabled={isValidating || isMerging}
+                    className="pdf-attached-file-action is-replace disabled:cursor-not-allowed disabled:opacity-50"
+                  >
+                    <RefreshCw className="w-5 h-5" aria-hidden="true" />
+                  </button>
+
+                  <button
+                    type="button"
                     aria-label={`Remove ${fileObj.name}`}
+                    title={`Remove ${fileObj.name}`}
                     data-merge-file-remove={fileObj.id}
+                    onPointerDown={(event) => event.stopPropagation()}
                     onClick={() => removeFile(fileObj.id)}
-                    className="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                    disabled={isValidating || isMerging}
+                    className="pdf-attached-file-action is-remove disabled:cursor-not-allowed disabled:opacity-50"
                   >
                     <Trash2 className="w-5 h-5" aria-hidden="true" />
                   </button>
@@ -312,6 +376,8 @@ const PdfMerger = () => {
             ))}
           </Reorder.Group>
         </div>
+
+        {uploadZone}
 
         <div className="pdf-workflow-actions pt-4">
             <button
@@ -348,6 +414,30 @@ const PdfMerger = () => {
             )}
           </div>
         </>
+      )}
+
+      {error && (
+        <motion.div
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          role="alert"
+          className="flex items-center gap-3 p-4 bg-red-50 text-red-700 rounded-xl border border-red-200"
+        >
+          <AlertCircle className="w-5 h-5 flex-shrink-0" />
+          <span className="text-sm font-medium">{error}</span>
+        </motion.div>
+      )}
+
+      {success && (
+        <motion.div
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          role="status"
+          className="flex items-center gap-3 p-4 bg-green-50 text-green-700 rounded-xl border border-green-200"
+        >
+          <CheckCircle2 className="w-5 h-5 flex-shrink-0" />
+          <span className="text-sm font-medium">PDFs merged successfully. Your output is ready to download.</span>
+        </motion.div>
       )}
     </div>
   );

@@ -2,8 +2,9 @@ import React, { useCallback, useRef, useState } from 'react';
 import useAccessibleDropzone from '../lib/useAccessibleDropzone';
 import { PDFDocument } from 'pdf-lib';
 import { validateUnencryptedPdf } from '../lib/pdfValidation';
-import { AlertCircle, CheckCircle2, Download, FileText, Loader2, Trash2, Upload } from 'lucide-react';
+import { AlertCircle, CheckCircle2, Download, Loader2, Upload } from 'lucide-react';
 import PdfPageGrid from './PdfPageGrid';
+import { AttachedFileActions, AttachedFileIcon } from './AttachedFileControls';
 
 const MAX_PAGES = 50;
 
@@ -45,9 +46,6 @@ const PageSelectionTool = ({ mode }) => {
     if (!selectedFile) return;
     const currentRequestId = requestId.current + 1;
     requestId.current = currentRequestId;
-    setFile(null);
-    setPageCount(0);
-    setSelectedPages(new Set());
     setIsLoading(true);
 
     try {
@@ -60,6 +58,7 @@ const PageSelectionTool = ({ mode }) => {
       if (requestId.current === currentRequestId) {
         setFile(selectedFile);
         setPageCount(count);
+        setSelectedPages(new Set());
       }
     } catch (loadError) {
       console.error('Unable to load PDF page selection:', loadError);
@@ -180,29 +179,33 @@ const PageSelectionTool = ({ mode }) => {
           role: 'group',
           'aria-label': file ? `Selected PDF ${file.name}` : 'Choose a PDF'
         })}
-        className={`pdf-workflow-upload merge-pdf-upload-zone rounded-2xl border-2 border-dashed cursor-pointer transition-all duration-200 ${
-          file ? 'border-slate-200 bg-white' : isDragActive
-            ? 'border-blue-500 bg-blue-50'
-            : 'cursor-pointer border-slate-300 bg-white hover:border-blue-400 hover:bg-blue-50/50 hover:shadow-md'
-        }`}
+        className={file
+          ? 'pdf-attached-file-card flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between'
+          : `pdf-workflow-upload merge-pdf-upload-zone rounded-2xl border-2 border-dashed cursor-pointer transition-all duration-200 ${
+            isDragActive
+              ? 'border-blue-500 bg-blue-50'
+              : 'cursor-pointer border-slate-300 bg-white hover:border-blue-400 hover:bg-blue-50/50 hover:shadow-md'
+          }`}
       >
         <input {...getInputProps()} />
         {file ? (
-          <div className="flex flex-col items-center justify-between gap-4 sm:flex-row">
-            <div className="flex min-w-0 items-center gap-3">
-              <span className="rounded-xl bg-blue-100 p-3 text-blue-700"><FileText aria-hidden="true" /></span>
-              <span className="min-w-0 text-left">
-                <span className="block truncate font-semibold text-slate-800">{file.name}</span>
-                <span className="block text-sm text-slate-500">{formatBytes(file.size)} · {pageCount} pages</span>
+          <>
+            <div className="flex min-w-0 flex-1 items-center gap-3">
+              <AttachedFileIcon />
+              <span className="min-w-0">
+                <span className="block truncate text-sm font-medium text-slate-700">{file.name}</span>
+                <span className="block text-xs text-slate-400">{formatBytes(file.size)} · {pageCount} pages</span>
               </span>
             </div>
-            <span className="flex shrink-0 gap-2">
-              <button type="button" onClick={open} className="pdf-upload-trigger rounded-lg border px-3 py-2 text-sm font-medium">Replace</button>
-              <button type="button" onClick={clearFile} aria-label="Remove PDF" className="rounded-lg p-2 text-slate-500 transition hover:bg-rose-50 hover:text-rose-600">
-                <Trash2 className="h-5 w-5" aria-hidden="true" />
-              </button>
-            </span>
-          </div>
+            <div className="self-end sm:self-auto">
+              <AttachedFileActions
+                fileName={file.name}
+                onReplace={open}
+                onRemove={clearFile}
+                disabled={isLoading || isProcessing}
+              />
+            </div>
+          </>
         ) : (
           <div className="merge-pdf-upload-content">
             <div className="pdf-upload-icon" aria-hidden="true">

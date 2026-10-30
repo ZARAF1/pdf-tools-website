@@ -4,6 +4,7 @@ import { ArrowLeft, ArrowRight, Download, Loader2, RotateCcw, Upload, ZoomIn, Zo
 import { PDFDocument } from 'pdf-lib';
 import pdfjsLib from '../lib/pdfjsClient';
 import { validateUnencryptedPdf } from '../lib/pdfValidation';
+import { AttachedFileActions, AttachedFileIcon } from './AttachedFileControls';
 
 const MIN_CROP_SIZE = 0.05;
 const clamp = (value, min, max) => Math.min(max, Math.max(min, value));
@@ -537,18 +538,19 @@ const CropPdf = () => {
         <input {...getInputProps()} />
         {file ? (
           <div className="crop-pdf-file">
-            <div>
+            <div className="crop-pdf-file-details">
+              <AttachedFileIcon />
+              <div>
               <strong>{file.name}</strong>
               <span>{formatBytes(file.size)} · {pageCount} {pageCount === 1 ? 'page' : 'pages'}</span>
+              </div>
             </div>
-            <div className="crop-pdf-file-actions">
-              <button type="button" className="crop-pdf-button crop-pdf-button-secondary" onClick={open} disabled={isLoading || isProcessing}>
-                <Upload aria-hidden="true" size={16} /> Replace
-              </button>
-              <button type="button" className="crop-pdf-button crop-pdf-button-secondary" onClick={removeFile} disabled={isLoading || isProcessing}>
-                Delete
-              </button>
-            </div>
+            <AttachedFileActions
+              fileName={file.name}
+              onReplace={open}
+              onRemove={removeFile}
+              disabled={isLoading || isProcessing}
+            />
           </div>
         ) : (
           <div className="merge-pdf-upload-content">

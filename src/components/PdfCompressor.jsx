@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useRef, useState } from 'react';
 import useAccessibleDropzone from '../lib/useAccessibleDropzone';
 import { PDFDocument } from 'pdf-lib';
 import { validateUnencryptedPdf } from '../lib/pdfValidation';
@@ -6,8 +6,6 @@ import pdfjsLib from '../lib/pdfjsClient';
 import { motion } from 'framer-motion';
 import {
   Upload,
-  FileText,
-  Trash2,
   Download,
   Loader2,
   AlertCircle,
@@ -15,6 +13,7 @@ import {
   FileArchive,
   Info
 } from 'lucide-react';
+import { AttachedFileActions, AttachedFileIcon } from './AttachedFileControls';
 
 const MAX_FILES = 5;
 const MAX_PAGE_PIXELS = 16000000;
@@ -129,7 +128,9 @@ const downloadBlob = (bytes, filename) => {
 
 const PdfCompressor = () => {
   const [files, setFiles] = useState([]);
+  const replaceTargetRef = useRef(null);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [isValidatingReplacement, setIsValidatingReplacement] = useState(false);
   const [error, setError] = useState(null);
   const [summary, setSummary] = useState('');
   const [highCompression, setHighCompression] = useState(false);
@@ -218,13 +219,81 @@ const PdfCompressor = () => {
     else if (newEntries.length === 0) setError('Please upload a valid PDF file.');
   }, [files]);
 
+  const onReplaceDrop = useCallback(async (acceptedFiles, fileRejections) => {
+    const targetId = replaceTargetRef.current;
+    replaceTargetRef.current = null;
+    if (!acceptedFiles.length && !fileRejections.length) return;
+    setError(null);
+    setSummary('');
+    if (isValidatingReplacement) {
+      setError('Please wait while the selected PDF is checked.');
+      return;
+    }
+
+    const replacementFile = acceptedFiles[0];
+    if (fileRejections.length > 0 || acceptedFiles.length !== 1 || !replacementFile) {
+      setError('Choose one valid PDF file to replace the selected file.');
+      return;
+    }
+
+    const currentFile = files.find((item) => item.id === targetId);
+    if (!currentFile) {
+      setError('The selected PDF is no longer available to replace.');
+      return;
+    }
+
+    setIsValidatingReplacement(true);
+    try {
+      await validateUnencryptedPdf(replacementFile);
+      const replacementEntry = {
+        ...currentFile,
+        file: replacementFile,
+        name: replacementFile.name,
+        size: replacementFile.size,
+        pageCount: null,
+        status: 'ready',
+        outputBytes: null,
+        outputName: null,
+        error: '',
+        summary: ''
+      };
+      setFiles((previous) => previous.map((item) => (
+        item.id === targetId ? replacementEntry : item
+      )));
+      refreshPageCounts([replacementEntry]);
+    } catch (validationError) {
+      console.error('Unable to validate replacement PDF for compression:', validationError);
+      setError(`${replacementFile.name}: ${validationError.message || 'This PDF could not be opened.'}`);
+    } finally {
+      setIsValidatingReplacement(false);
+    }
+  }, [files, isValidatingReplacement]);
+
   const { getRootProps, getInputProps, isDragActive, open } = useAccessibleDropzone({
     onDrop,
     accept: { 'application/pdf': ['.pdf'] },
     multiple: true,
     maxFiles: MAX_FILES,
-    disabled: isProcessing || files.length >= MAX_FILES
+    disabled: isProcessing || isValidatingReplacement || files.length >= MAX_FILES
   });
+
+  const {
+    getInputProps: getReplaceInputProps,
+    open: openReplace
+  } = useAccessibleDropzone({
+    onDrop: onReplaceDrop,
+    accept: { 'application/pdf': ['.pdf'] },
+    multiple: false,
+    maxFiles: 1,
+    disabled: isProcessing || isValidatingReplacement,
+    noClick: true,
+    noKeyboard: true
+  });
+
+  const replaceFile = (id) => {
+    replaceTargetRef.current = id;
+    openReplace();
+  };
 
   const removeFile = (id) => {
     setFiles((prev) => prev.filter((item) => item.id !== id));
@@ -357,12 +426,71 @@ const PdfCompressor = () => {
 
   const fileResults = files.filter((item) => item.status === 'success' && item.outputBytes);
   const hasReadyFiles = files.some((item) => item.status === 'ready' || item.status === 'processing');
+  const selectedFileCards = files.length > 0 ? (
+    <div className="space-y-4">
+      <div className="flex justify-between items-center px-1">
+        <h4 className="text-sm font-bold text-slate-500 uppercase tracking-wider">
+          Selected PDFs ({files.length}/{MAX_FILES})
+        </h4>
+      </div>
+
+      <div className="space-y-3">
+        {files.map((item) => (
+          <div
+            key={item.id}
+            className="pdf-attached-file-card bg-white p-4 rounded-xl border border-slate-200 shadow-sm hover:shadow-md transition-shadow"
+          >
+            <div className="flex items-start justify-between gap-4">
+              <div className="flex items-center gap-4 flex-1 min-w-0">
+                <AttachedFileIcon />
+                <div className="truncate min-w-0">
+                  <p className="text-sm font-medium text-slate-700 truncate">{item.name}</p>
+                  <p className="text-xs text-slate-400">
+                    {formatBytes(item.size)} • {item.pageCount === null ? 'Checking pages...' : `${item.pageCount} pages`}
+                  </p>
+                </div>
+              </div>
+
+              <AttachedFileActions
+                fileName={item.name}
+                onReplace={() => replaceFile(item.id)}
+                onRemove={() => removeFile(item.id)}
+                disabled={isProcessing || isValidatingReplacement || item.status === 'processing'}
+              />
+            </div>
+
+            <div className="mt-4 space-y-2 text-xs text-slate-600">
+              {item.status === 'processing' && (
+                <div className="flex items-center gap-2 text-violet-700">
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  Optimising PDF...
+                </div>
+              )}
+              {item.status === 'error' && (
+                <div className="flex items-center gap-2 text-red-700">
+                  <AlertCircle className="w-4 h-4" />
+                  <span>{item.error || 'Could not optimise this PDF.'}</span>
+                </div>
+              )}
+              {item.status === 'ready' && (
+                <div className="text-slate-500">Ready to optimise.</div>
+              )}
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  ) : null;
 
   return (
     <div className="space-y-8">
+      {files.length === 0 && (
       <div className="mb-8 text-center">
         <p className="text-slate-600">Reduce file size with standard or higher compression. Files are processed in your browser.</p>
       </div>
+      )}
+
+      {selectedFileCards}
 
       {files.length > 0 && (
       <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
@@ -405,6 +533,7 @@ const PdfCompressor = () => {
       </div>
       )}
 
+      <input {...getReplaceInputProps()} />
       <div
         {...getRootProps({
           role: 'group',
@@ -470,113 +599,55 @@ const PdfCompressor = () => {
       )}
 
       {files.length > 0 && (
-        <div className="space-y-4">
-          <div className="flex justify-between items-center px-1">
-            <h4 className="text-sm font-bold text-slate-500 uppercase tracking-wider">
-              Selected PDFs ({files.length}/{MAX_FILES})
-            </h4>
-          </div>
+        <div className="pt-2">
+          <button
+            onClick={compressBatch}
+            disabled={isProcessing || isValidatingReplacement || files.length === 0 || !hasReadyFiles}
+            className={`w-full flex items-center justify-center gap-2 py-4 px-6 rounded-xl font-bold text-white transition-all ${
+              isProcessing || isValidatingReplacement || files.length === 0 || !hasReadyFiles
+                ? 'bg-slate-300 cursor-not-allowed'
+                : 'bg-violet-600 hover:bg-violet-700 shadow-lg shadow-violet-200 active:scale-[0.98]'
+            }`}
+          >
+            {isProcessing ? (
+              <>
+                <Loader2 className="w-5 h-5 animate-spin" />
+                Compressing...
+              </>
+            ) : (
+              <>
+                <FileArchive className="w-5 h-5" />
+                Compress PDFs
+              </>
+            )}
+          </button>
+        </div>
+      )}
 
-          <div className="space-y-3">
-            {files.map((item) => (
-              <div
-                key={item.id}
-                className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm hover:shadow-md transition-shadow"
-              >
-                <div className="flex items-start justify-between gap-4">
-                  <div className="flex items-center gap-4 flex-1 min-w-0">
-                    <div className="bg-violet-100 p-2 rounded-lg">
-                      <FileText className="w-6 h-6 text-violet-600" />
-                    </div>
-                    <div className="truncate min-w-0">
-                      <p className="text-sm font-medium text-slate-700 truncate">{item.name}</p>
-                      <p className="text-xs text-slate-400">
-                        {formatBytes(item.size)} • {item.pageCount === null ? 'Checking pages...' : `${item.pageCount} pages`}
-                      </p>
-                    </div>
-                  </div>
-
-                  <button
-                    type="button"
-                    onClick={() => removeFile(item.id)}
-                    className="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
-                    title="Remove file"
-                    aria-label={`Remove ${item.name}`}
-                  >
-                    <Trash2 className="w-5 h-5" aria-hidden="true" />
-                  </button>
-                </div>
-
-                <div className="mt-4 space-y-2 text-xs text-slate-600">
-                  {item.status === 'processing' && (
-                    <div className="flex items-center gap-2 text-violet-700">
-                      <Loader2 className="w-4 h-4 animate-spin" />
-                      Optimising PDF...
-                    </div>
-                  )}
-
-                  {item.status === 'success' && item.outputBytes && (
-                    <div className="space-y-2">
-                      <div className="flex flex-wrap gap-3">
-                        <span>Original: {formatBytes(item.size)}</span>
-                        <span>Result: {formatBytes(item.outputBytes.length)}</span>
-                      </div>
-                      <div className="flex items-center gap-2 text-slate-700">
-                        <Info className="w-4 h-4 text-violet-600" />
-                        <span>{item.summary}</span>
-                      </div>
-                      {item.reduced && (
-                        <div className="flex justify-end">
-                          <button
-                            onClick={() => downloadBlob(item.outputBytes, item.outputName)}
-                            className="inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-violet-600 text-white font-medium hover:bg-violet-700 transition-colors"
-                          >
-                            <Download className="w-4 h-4" />
-                            Download
-                          </button>
-                        </div>
-                      )}
-                    </div>
-                  )}
-
-                  {item.status === 'error' && (
-                    <div className="flex items-center gap-2 text-red-700">
-                      <AlertCircle className="w-4 h-4" />
-                      <span>{item.error || 'Could not optimise this PDF.'}</span>
-                    </div>
-                  )}
-
-                  {item.status === 'ready' && (
-                    <div className="text-slate-500">Ready to optimise.</div>
-                  )}
-                </div>
+      {fileResults.length > 0 && (
+        <div className="space-y-3">
+          {fileResults.map((item) => (
+            <div key={item.id} className="flex flex-col gap-3 rounded-xl border border-slate-200 bg-white p-4 shadow-sm sm:flex-row sm:items-center sm:justify-between">
+              <div className="space-y-1 text-sm text-slate-700">
+                <p className="font-semibold">{item.name}</p>
+                <p>Original: {formatBytes(item.size)} · Result: {formatBytes(item.outputBytes.length)}</p>
+                <p className="flex items-center gap-2">
+                  <Info className="w-4 h-4 text-violet-600" />
+                  {item.summary}
+                </p>
               </div>
-            ))}
-          </div>
-
-          <div className="pt-2">
-            <button
-              onClick={compressBatch}
-              disabled={isProcessing || files.length === 0 || !hasReadyFiles}
-              className={`w-full flex items-center justify-center gap-2 py-4 px-6 rounded-xl font-bold text-white transition-all ${
-                isProcessing || files.length === 0 || !hasReadyFiles
-                  ? 'bg-slate-300 cursor-not-allowed'
-                  : 'bg-violet-600 hover:bg-violet-700 shadow-lg shadow-violet-200 active:scale-[0.98]'
-              }`}
-            >
-              {isProcessing ? (
-                <>
-                  <Loader2 className="w-5 h-5 animate-spin" />
-                  Compressing...
-                </>
-              ) : (
-                <>
-                  <FileArchive className="w-5 h-5" />
-                  Compress PDFs
-                </>
+              {item.reduced && (
+                <button
+                  type="button"
+                  onClick={() => downloadBlob(item.outputBytes, item.outputName)}
+                  className="inline-flex shrink-0 items-center justify-center gap-2 rounded-lg bg-violet-600 px-3 py-2 font-medium text-white transition-colors hover:bg-violet-700"
+                >
+                  <Download className="w-4 h-4" />
+                  Download
+                </button>
               )}
-            </button>
-          </div>
+            </div>
+          ))}
         </div>
       )}
 

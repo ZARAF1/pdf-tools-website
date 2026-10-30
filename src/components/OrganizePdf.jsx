@@ -2,8 +2,9 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { degrees, PDFDocument } from 'pdf-lib';
 import { validateUnencryptedPdf } from '../lib/pdfValidation';
 import useAccessibleDropzone from '../lib/useAccessibleDropzone';
-import { ArrowDown, ArrowUp, CheckCircle2, Download, FileText, Loader2, RotateCw, Trash2, Upload } from 'lucide-react';
+import { ArrowDown, ArrowUp, CheckCircle2, Download, Loader2, RotateCw, Trash2, Upload } from 'lucide-react';
 import pdfjsLib from '../lib/pdfjsClient';
+import { AttachedFileActions, AttachedFileIcon } from './AttachedFileControls';
 
 const MAX_PAGES = 30;
 
@@ -23,6 +24,10 @@ const OrganizePdf = () => {
   const [previewError, setPreviewError] = useState('');
   const [draggedPage, setDraggedPage] = useState(null);
   const requestId = useRef(0);
+  const previewRotationKey = pages
+    .map(({ sourceIndex, rotation }) => `${sourceIndex}:${rotation}`)
+    .sort()
+    .join('|');
 
   const clearOutput = () => setOutput(null);
 
@@ -39,10 +44,6 @@ const OrganizePdf = () => {
     const currentRequest = requestId.current + 1;
     requestId.current = currentRequest;
     setIsLoading(true);
-    setFile(null);
-    setPages([]);
-    setPreviews([]);
-    setPreviewSummaries([]);
 
     try {
       const source = await validateUnencryptedPdf(selectedFile);
@@ -50,6 +51,8 @@ const OrganizePdf = () => {
       if (!count) throw new Error('This PDF does not contain any pages.');
       if (count > MAX_PAGES) throw new Error(`This tool supports PDFs with up to ${MAX_PAGES} pages; this file has ${count}.`);
       if (requestId.current === currentRequest) {
+        setPreviews([]);
+        setPreviewSummaries([]);
         setFile(selectedFile);
         setPages(Array.from({ length: count }, (_, sourceIndex) => ({ sourceIndex, rotation: 0 })));
       }
@@ -76,20 +79,26 @@ const OrganizePdf = () => {
     if (!file || !pages.length) return undefined;
     let active = true;
     let loadingTask;
+    const rotationsBySourceIndex = new Map(
+      pages.map(({ sourceIndex, rotation }) => [sourceIndex, rotation])
+    );
 
     const renderPreviews = async () => {
-      setPreviews([]);
       setPreviewError('');
       try {
         const data = new Uint8Array(await file.arrayBuffer());
         loadingTask = pdfjsLib.getDocument({ data });
         const document = await loadingTask.promise;
         const rendered = [];
-        for (let pageNumber = 1; pageNumber <= pages.length; pageNumber += 1) {
+        for (let pageNumber = 1; pageNumber <= document.numPages; pageNumber += 1) {
           if (!active) return;
           const page = await document.getPage(pageNumber);
-          const baseViewport = page.getViewport({ scale: 1 });
-          const viewport = page.getViewport({ scale: Math.min(1, 180 / baseViewport.width) });
+          const rotation = page.rotate + (rotationsBySourceIndex.get(pageNumber - 1) || 0);
+          const baseViewport = page.getViewport({ scale: 1, rotation });
+          const viewport = page.getViewport({
+            scale: Math.min(1, 180 / baseViewport.width),
+            rotation
+          });
           const canvas = window.document.createElement('canvas');
           canvas.width = Math.ceil(viewport.width);
           canvas.height = Math.ceil(viewport.height);
@@ -109,17 +118,27 @@ const OrganizePdf = () => {
           } catch {
             summary = 'Page text could not be extracted; the preview is visual-only.';
           }
-          rendered.push({ preview: canvas.toDataURL('image/jpeg', 0.75), summary });
+          rendered.push({
+            sourceIndex: pageNumber - 1,
+            preview: canvas.toDataURL('image/jpeg', 0.75),
+            summary
+          });
           canvas.width = 0;
           canvas.height = 0;
         }
         if (active) {
-          setPreviews(rendered.map((result) => result.preview));
-          setPreviewSummaries(rendered.map((result) => result.summary));
+          const nextPreviews = Array(document.numPages);
+          const nextSummaries = Array(document.numPages);
+          rendered.forEach(({ sourceIndex, preview, summary }) => {
+            nextPreviews[sourceIndex] = preview;
+            nextSummaries[sourceIndex] = summary;
+          });
+          setPreviews(nextPreviews);
+          setPreviewSummaries(nextSummaries);
         }
         await document.destroy();
       } catch (renderError) {
-        console.error('Unable to render PDF organization previews:', renderError);
+        if (active) console.error('Unable to render PDF organization previews:', renderError);
         if (active) setPreviewError('Page previews could not be rendered, but the page controls remain available.');
       }
     };
@@ -129,7 +148,7 @@ const OrganizePdf = () => {
       active = false;
       loadingTask?.destroy();
     };
-  }, [file, pages.length]);
+  }, [file, pages.length, previewRotationKey]);
 
   const clearFile = () => {
     requestId.current += 1;
@@ -225,23 +244,26 @@ const OrganizePdf = () => {
           role: 'group',
           'aria-label': file ? `Selected PDF ${file.name}` : 'Choose a PDF to organize'
         })}
-        className={`pdf-workflow-selected pdf-workflow-upload pdf-upload-zone merge-pdf-upload-zone rounded-2xl border-2 border-dashed p-8 text-center transition-all ${
+        className={`pdf-workflow-selected pdf-workflow-upload pdf-upload-zone merge-pdf-upload-zone rounded-2xl border-2 border-dashed p-8 text-center transition-all ${file ? 'has-attached-file' : ''} ${
           isDragActive ? 'border-blue-500 bg-blue-50' : 'cursor-pointer border-slate-300 bg-white hover:border-blue-400 hover:bg-blue-50/50'
         }`}
       >
         <input {...getInputProps()} />
         {file ? (
           <div className="flex flex-wrap items-center justify-between gap-4 text-left">
-            <div className="flex items-center gap-3">
-              <FileText className="h-8 w-8 text-blue-600" aria-hidden="true" />
+            <div className="flex min-w-0 items-center gap-3">
+              <AttachedFileIcon />
               <div>
                 <p className="font-semibold text-slate-800">{file.name}</p>
                 <p className="text-sm text-slate-500">{formatBytes(file.size)} · {pages.length} pages</p>
               </div>
             </div>
-            <button type="button" onClick={open} className="pdf-upload-trigger rounded-lg border px-4 py-2 font-semibold">
-              Replace PDF
-            </button>
+            <AttachedFileActions
+              fileName={file.name}
+              onReplace={open}
+              onRemove={clearFile}
+              disabled={isLoading || isProcessing}
+            />
           </div>
         ) : (
           <div className="merge-pdf-upload-content">
@@ -290,7 +312,7 @@ const OrganizePdf = () => {
               >
                 <div className="mb-2 flex aspect-[3/4] items-center justify-center overflow-hidden rounded-lg bg-slate-100">
                   {previews[page.sourceIndex]
-                    ? <img src={previews[page.sourceIndex]} alt={`Preview of original page ${page.sourceIndex + 1}`} aria-describedby={`organize-page-${page.sourceIndex + 1}-description`} className="h-full w-full object-contain" />
+                    ? <img src={previews[page.sourceIndex]} alt={`Preview of source page ${page.sourceIndex + 1}, ${page.rotation ? `rotated clockwise ${page.rotation} degrees` : 'original orientation'}`} aria-describedby={`organize-page-${page.sourceIndex + 1}-description`} className="h-full w-full object-contain" />
                     : <span className="text-xs text-slate-400">Page {page.sourceIndex + 1}</span>}
                 </div>
                 <p id={`organize-page-${page.sourceIndex + 1}-description`} className="sr-only">

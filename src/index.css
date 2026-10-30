@@ -1727,7 +1727,7 @@ body {
   cursor: pointer;
 }
 
-.crop-pdf-upload:hover,
+.crop-pdf-upload:not(:has(.crop-pdf-file)):hover,
 .crop-pdf-upload.is-drag-active {
   border-color: #60a5fa;
   background: color-mix(in srgb, var(--tool-icon-background) 70%, var(--surface-background));
@@ -1761,7 +1761,7 @@ body {
 
 .crop-pdf-file {
   display: flex;
-  min-height: 6rem;
+  min-height: auto;
   flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
@@ -1769,7 +1769,21 @@ body {
   padding: 1rem 1.25rem;
 }
 
-.crop-pdf-file > div:first-child {
+.crop-pdf-upload:has(.crop-pdf-file) {
+  border: 1px solid var(--border-color);
+  background: var(--surface-background);
+  cursor: default;
+}
+
+.crop-pdf-file-details {
+  display: flex;
+  min-width: 0;
+  flex: 1 1 auto;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.crop-pdf-file-details > div {
   display: grid;
   min-width: 0;
   gap: 0.25rem;
@@ -2977,6 +2991,28 @@ body {
   background: linear-gradient(90deg, #60a5fa, #2563eb 48%, #93c5fd);
 }
 
+.tool-attachment-section {
+  border-color: #60a5fa;
+  animation: tool-attachment-border-pulse 2.8s ease-in-out infinite;
+}
+
+@keyframes tool-attachment-border-pulse {
+  0%,
+  100% {
+    box-shadow:
+      0 0 0 2px rgb(37 99 235 / 0.32),
+      0 0 20px 6px rgb(59 130 246 / 0.18),
+      0 12px 34px rgb(37 99 235 / 0.18);
+  }
+
+  50% {
+    box-shadow:
+      0 0 0 7px rgb(37 99 235 / 0.42),
+      0 0 32px 12px rgb(59 130 246 / 0.26),
+      0 14px 42px rgb(37 99 235 / 0.28);
+  }
+}
+
 .tool-attachment-heading {
   display: flex;
   align-items: center;
@@ -3014,7 +3050,248 @@ body {
 }
 
 .tool-attachment-content {
-  padding: 0 1.25rem 1.25rem;
+  padding: 1.25rem 1.25rem 1.25rem;
+}
+
+.pdf-attached-file-card {
+  border: 1px solid var(--border-color);
+  border-radius: 0.75rem;
+  background: var(--surface-background);
+  box-shadow: 0 1px 2px rgb(15 23 42 / 0.08);
+}
+
+.edit-sign-upload-zone.has-file,
+.pdf-editor-upload-zone.has-file {
+  border-style: solid;
+  background: var(--surface-background);
+  cursor: default;
+}
+
+.pdf-attached-file-icon {
+  display: flex;
+  width: 2.5rem;
+  height: 2.5rem;
+  flex: 0 0 2.5rem;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.5rem;
+  background: #f1f5f9;
+  color: #64748b;
+}
+
+.pdf-attached-file-icon svg {
+  width: 1.5rem;
+  height: 1.5rem;
+}
+
+.pdf-attached-file-actions {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.pdf-attached-file-action {
+  display: inline-flex;
+  width: 2.25rem;
+  height: 2.25rem;
+  align-items: center;
+  justify-content: center;
+  padding: 0.5rem;
+  border: 0;
+  border-radius: 0.5rem;
+  background: transparent;
+  color: #64748b;
+  cursor: pointer;
+  transition: background-color 150ms ease, color 150ms ease;
+}
+
+.pdf-attached-file-action svg {
+  width: 1.25rem;
+  height: 1.25rem;
+}
+
+.pdf-attached-file-action.is-replace:hover:not(:disabled) {
+  background: #eff6ff;
+  color: #2563eb;
+}
+
+.pdf-attached-file-action.is-remove:hover:not(:disabled) {
+  background: #fff1f2;
+  color: #e11d48;
+}
+
+.pdf-attached-file-action:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.pdf-attached-file-action:focus-visible {
+  outline: 2px solid #2563eb;
+  outline-offset: 2px;
+}
+
+.rotate-page-tabs {
+  display: flex;
+  gap: 0.5rem;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.rotate-page-tab {
+  margin-bottom: -1px;
+  padding: 0.75rem 1rem;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  background: transparent;
+  color: var(--text-secondary);
+  font-weight: 600;
+}
+
+.rotate-page-tab.is-active {
+  border-bottom-color: #2563eb;
+  color: #1d4ed8;
+}
+
+.rotate-page-tab:focus-visible,
+.rotate-page-select:focus-visible,
+.rotate-page-action:focus-visible {
+  outline: 2px solid #2563eb;
+  outline-offset: 2px;
+}
+
+.rotate-page-grid {
+  display: grid;
+  width: calc(100% + 3rem);
+  margin-inline: -1.5rem;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.75rem;
+}
+
+@media (min-width: 640px) {
+  .rotate-page-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 768px) {
+  .rotate-page-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 1024px) {
+  .rotate-page-grid {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+  }
+}
+
+.rotate-page-tile {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 0.75rem;
+  border: 1px solid var(--border-color);
+  border-radius: 0.75rem;
+  background: var(--surface-background);
+  color: var(--text-primary);
+  text-align: center;
+}
+
+.rotate-page-tile.is-selected {
+  border-color: #2563eb;
+  background: #eff6ff;
+  box-shadow: 0 0 0 2px rgb(37 99 235 / 0.18);
+}
+
+.rotate-page-select,
+.rotate-page-content {
+  display: flex;
+  width: 100%;
+  min-width: 0;
+  flex: 1;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.rotate-page-select {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  text-align: center;
+}
+
+.rotate-page-select:hover .rotate-page-thumbnail {
+  outline: 1px solid #60a5fa;
+}
+
+.rotate-page-select:disabled,
+.rotate-page-action:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.rotate-page-thumbnail {
+  display: flex;
+  width: 100%;
+  aspect-ratio: 3 / 4;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  border-radius: 0.5rem;
+  background: var(--surface-muted);
+  color: var(--text-secondary);
+  font-size: 0.75rem;
+}
+
+.rotate-page-thumbnail img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.rotate-page-number {
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.rotate-page-action {
+  display: inline-flex;
+  min-height: 2.25rem;
+  align-items: center;
+  justify-content: center;
+  gap: 0.375rem;
+  align-self: center;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--border-color);
+  border-radius: 0.5rem;
+  background: var(--surface-background);
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: background-color 150ms ease, color 150ms ease, border-color 150ms ease;
+}
+
+.rotate-page-action:hover:not(:disabled) {
+  border-color: #93c5fd;
+  background: #eff6ff;
+  color: #1d4ed8;
+}
+
+:root[data-theme='dark'] .rotate-page-tab.is-active {
+  color: #93c5fd;
+}
+
+:root[data-theme='dark'] .rotate-page-tile.is-selected {
+  border-color: #60a5fa;
+  background: color-mix(in srgb, #2563eb 18%, var(--surface-background));
+}
+
+:root[data-theme='dark'] .rotate-page-action:hover:not(:disabled) {
+  border-color: #3b82f6;
+  background: color-mix(in srgb, #2563eb 20%, var(--surface-background));
+  color: #bfdbfe;
 }
 
 :root[data-theme='dark'] .tool-attachment-section {
@@ -3037,6 +3314,25 @@ body {
 
 :root[data-theme='dark'] .tool-attachment-heading p {
   color: #93c5fd;
+}
+
+:root[data-theme='dark'] .pdf-attached-file-icon {
+  background: var(--surface-muted);
+  color: var(--text-secondary);
+}
+
+:root[data-theme='dark'] .pdf-attached-file-action {
+  color: var(--text-secondary);
+}
+
+:root[data-theme='dark'] .pdf-attached-file-action.is-replace:hover:not(:disabled) {
+  background: color-mix(in srgb, #3b82f6 18%, var(--surface-background));
+  color: #93c5fd;
+}
+
+:root[data-theme='dark'] .pdf-attached-file-action.is-remove:hover:not(:disabled) {
+  background: color-mix(in srgb, #e11d48 18%, var(--surface-background));
+  color: #fda4af;
 }
 
 @media (max-width: 580px) {
@@ -3367,6 +3663,20 @@ body {
   background: #172033;
 }
 
+.tool-attachment-content .pdf-workflow-upload.has-attached-file,
+.tool-attachment-content .crop-pdf-upload:has(.crop-pdf-file),
+.tool-attachment-content .edit-sign-upload-zone.has-file,
+.tool-attachment-content .pdf-editor-upload-zone.has-file {
+  min-height: auto;
+  height: auto;
+  border: 1px solid var(--border-color);
+  border-radius: 0.75rem;
+  background: var(--surface-background);
+  padding: 1rem;
+  box-shadow: 0 1px 2px rgb(15 23 42 / 0.08);
+  cursor: default;
+}
+
 @media (max-width: 580px) {
   .tool-attachment-content .pdf-workflow-upload,
   .tool-attachment-content .pdf-upload-zone,
@@ -3685,7 +3995,9 @@ body {
   .tool-card::before,
   .tool-card-arrow,
   .category-tab-link,
-  .pdf-upload-trigger {
+  .pdf-upload-trigger,
+  .tool-attachment-section {
     transition: none;
+    animation: none;
   }
 }

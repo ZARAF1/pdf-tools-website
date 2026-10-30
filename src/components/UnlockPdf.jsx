@@ -7,12 +7,11 @@ import {
   AlertCircle,
   CheckCircle2,
   Download,
-  FileText,
   Loader2,
-  Trash2,
   Unlock,
   Upload
 } from 'lucide-react';
+import { AttachedFileActions, AttachedFileIcon } from './AttachedFileControls';
 
 const formatBytes = (bytes) => {
   if (bytes < 1024) return `${bytes} B`;
@@ -47,12 +46,6 @@ const UnlockPdf = () => {
 
   const onDrop = useCallback(async (acceptedFiles, rejections) => {
     setError('');
-    setFile(null);
-    setPageCount(0);
-    setAlgorithm('');
-    setPassword('');
-    setOutputBytes(null);
-    setOutputName('');
 
     if (rejections.length > 0) {
       setError('Choose one valid PDF file.');
@@ -72,6 +65,10 @@ const UnlockPdf = () => {
 
       setFile(selectedFile);
       setAlgorithm(encryptionInfo.algorithm);
+      setPageCount(0);
+      setPassword('');
+      setOutputBytes(null);
+      setOutputName('');
     } catch (validationError) {
       setError(getErrorMessage(validationError));
     } finally {
@@ -164,6 +161,7 @@ const UnlockPdf = () => {
 
   return (
     <div className="mx-auto max-w-4xl space-y-6">
+      <input {...getInputProps()} />
       {!file ? (
         <section
           {...getRootProps({
@@ -176,7 +174,6 @@ const UnlockPdf = () => {
             } ${isValidating ? 'cursor-wait opacity-70' : ''}`
           })}
         >
-          <input {...getInputProps()} />
           <div className="merge-pdf-upload-content">
             <div className="pdf-upload-icon" aria-hidden="true">
               {isValidating
@@ -207,24 +204,20 @@ const UnlockPdf = () => {
           </div>
         </section>
       ) : (
-        <section className="flex flex-col gap-3 rounded-xl border border-slate-200 bg-white p-4 sm:flex-row sm:items-center sm:justify-between">
+        <section className="pdf-attached-file-card flex flex-col gap-3 rounded-xl border border-slate-200 bg-white p-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex min-w-0 items-center gap-3">
-            <FileText className="h-8 w-8 shrink-0 text-blue-600" aria-hidden="true" />
+            <AttachedFileIcon />
             <div className="min-w-0">
               <p className="truncate font-semibold text-slate-800">{file.name}</p>
               <p className="text-sm text-slate-500">{formatBytes(file.size)} · {algorithm}{pageCount > 0 ? ` · ${pageCount} ${pageCount === 1 ? 'page' : 'pages'}` : ''}</p>
             </div>
           </div>
-          <button
-            type="button"
-            onClick={reset}
-            disabled={isProcessing}
-            aria-label="Remove selected PDF"
-            className="inline-flex shrink-0 items-center justify-center gap-2 rounded-lg border border-slate-200 px-3 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
-          >
-            <Trash2 className="h-4 w-4" aria-hidden="true" />
-            Remove PDF
-          </button>
+          <AttachedFileActions
+            fileName={file.name}
+            onReplace={open}
+            onRemove={reset}
+            disabled={isValidating || isProcessing}
+          />
         </section>
       )}
 

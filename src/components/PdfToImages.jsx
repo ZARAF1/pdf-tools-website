@@ -5,15 +5,14 @@ import {
   CheckCircle2,
   Download,
   FileImage,
-  FileText,
   Loader2,
   RefreshCw,
-  Trash2,
   Upload
 } from 'lucide-react';
 import { PASSWORD_PROTECTED_PDF_MESSAGE, validateUnencryptedPdf } from '../lib/pdfValidation';
 import pdfjsLib from '../lib/pdfjsClient';
 import { createZipBlob, encodeBmp } from '../lib/imageArchive';
+import { AttachedFileActions, AttachedFileIcon } from './AttachedFileControls';
 
 const MAX_PAGES = 50;
 const MAX_PAGE_PIXELS = 16_000_000;
@@ -367,16 +366,17 @@ const PdfToImages = () => {
 
   return (
     <div className="pdf-tool-workflow mx-auto max-w-4xl space-y-6">
+      <input {...getInputProps()} aria-label="Choose a PDF to convert to images" />
+      {!file && (
       <section
         {...getRootProps({
           role: 'group',
-          'aria-label': file ? `Selected PDF ${file.name}` : 'Choose a PDF to convert to images',
+          'aria-label': 'Choose a PDF to convert to images',
           className: `pdf-workflow-upload pdf-upload-zone merge-pdf-upload-zone cursor-pointer focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 ${
             isDragActive ? 'border-blue-500 bg-blue-50' : 'border-slate-300'
           } ${isValidating || isProcessing ? 'cursor-wait opacity-70' : ''}`
         })}
       >
-        <input {...getInputProps()} />
         <div className="merge-pdf-upload-content">
           <div className="pdf-upload-icon" aria-hidden="true">
             {isValidating
@@ -389,9 +389,7 @@ const PdfToImages = () => {
                 ? 'Checking PDF pages…'
                 : isDragActive
                   ? 'Drop the PDF here'
-                  : file
-                    ? 'Choose or drop another PDF to convert'
-                    : 'Choose or drop a PDF to convert to images'}
+                  : 'Choose or drop a PDF to convert to images'}
             </h3>
             <p>One PDF, up to {MAX_PAGES} pages · processed in your browser</p>
           </div>
@@ -408,25 +406,23 @@ const PdfToImages = () => {
           </button>
         </div>
       </section>
+      )}
 
       {file && (
-        <section className="pdf-workflow-selected flex flex-col gap-3 rounded-xl border border-slate-200 bg-white p-4 sm:flex-row sm:items-center sm:justify-between">
+        <section className="pdf-attached-file-card pdf-workflow-selected flex flex-col gap-3 rounded-xl border border-slate-200 bg-white p-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex min-w-0 items-center gap-3">
-            <FileText className="h-8 w-8 shrink-0 text-blue-600" aria-hidden="true" />
+            <AttachedFileIcon />
             <div className="min-w-0">
               <p className="truncate font-semibold text-slate-800">{file.name}</p>
               <p className="text-sm text-slate-500">{formatBytes(file.size)} · {pageCount} {pageCount === 1 ? 'page' : 'pages'}</p>
             </div>
           </div>
-          <button
-            type="button"
-            onClick={reset}
-            disabled={isProcessing}
-            className="inline-flex shrink-0 items-center justify-center gap-2 rounded-lg border border-slate-200 px-3 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
-          >
-            <Trash2 className="h-4 w-4" aria-hidden="true" />
-            Remove PDF
-          </button>
+          <AttachedFileActions
+            fileName={file.name}
+            onReplace={open}
+            onRemove={reset}
+            disabled={isValidating || isProcessing}
+          />
         </section>
       )}
 

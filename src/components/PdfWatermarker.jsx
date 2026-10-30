@@ -5,8 +5,6 @@ import { validateUnencryptedPdf } from '../lib/pdfValidation';
 import { motion } from 'framer-motion';
 import {
   Upload,
-  FileText,
-  Trash2,
   Download,
   Loader2,
   AlertCircle,
@@ -14,6 +12,7 @@ import {
   Stamp,
   Settings2
 } from 'lucide-react';
+import { AttachedFileActions, AttachedFileIcon } from './AttachedFileControls';
 
 const DEFAULT_SETTINGS = {
   watermarkEnabled: true,
@@ -145,8 +144,6 @@ const PdfWatermarker = () => {
 
     const requestId = fileRequestId.current + 1;
     fileRequestId.current = requestId;
-    setFile(null);
-    setPageCount(null);
     setIsLoadingPages(true);
     setOutputBytes(null);
     setSuccess(false);
@@ -385,9 +382,12 @@ const PdfWatermarker = () => {
 
   return (
     <div className="space-y-8">
-      <div className="mb-8 text-center">
-        <p className="text-slate-600">Add a custom text watermark to all pages or selected pages. Files are processed in your browser.</p>
-      </div>
+      <input {...getInputProps()} />
+      {!file && (
+        <div className="mb-8 text-center">
+          <p className="text-slate-600">Add a custom text watermark to all pages or selected pages. Files are processed in your browser.</p>
+        </div>
+      )}
 
       {!file ? (
         <div
@@ -399,7 +399,6 @@ const PdfWatermarker = () => {
             isDragActive ? 'border-cyan-500 bg-cyan-50' : 'border-slate-300 hover:border-cyan-400 hover:bg-slate-50'
           }`}
         >
-          <input {...getInputProps()} />
           <div className="merge-pdf-upload-content">
             <div className="pdf-upload-icon" aria-hidden="true">
               {isLoadingPages
@@ -424,11 +423,9 @@ const PdfWatermarker = () => {
           </div>
         </div>
       ) : (
-        <div className="flex items-center justify-between gap-4 bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+        <div className="pdf-attached-file-card flex items-center justify-between gap-4 bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
           <div className="flex items-center gap-4 min-w-0">
-            <div className="bg-cyan-100 p-2 rounded-lg">
-              <FileText className="w-6 h-6 text-cyan-600" />
-            </div>
+            <AttachedFileIcon />
             <div className="truncate min-w-0">
               <p className="text-sm font-medium text-slate-700 truncate">{file.name}</p>
               <p className="text-xs text-slate-400">
@@ -436,26 +433,12 @@ const PdfWatermarker = () => {
               </p>
             </div>
           </div>
-          <div className="flex flex-shrink-0 items-center gap-1">
-            <button
-              type="button"
-              onClick={open}
-              disabled={isProcessing}
-              className="pdf-upload-trigger rounded-lg border px-3 py-2 text-sm font-medium disabled:opacity-50"
-            >
-              Replace
-            </button>
-            <button
-              type="button"
-              onClick={removeFile}
-              disabled={isProcessing}
-              aria-label="Remove PDF"
-              title="Remove PDF"
-              className="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors disabled:opacity-50"
-            >
-              <Trash2 className="w-5 h-5" />
-            </button>
-          </div>
+          <AttachedFileActions
+            fileName={file.name}
+            onReplace={open}
+            onRemove={removeFile}
+            disabled={isLoadingPages || isProcessing}
+          />
         </div>
       )}
 

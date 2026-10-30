@@ -7,14 +7,13 @@ import { createWorker } from 'tesseract.js';
 import { motion } from 'framer-motion';
 import {
   Upload,
-  FileText,
-  Trash2,
   Download,
   Loader2,
   AlertCircle,
   CheckCircle2,
   Info
 } from 'lucide-react';
+import { AttachedFileActions, AttachedFileIcon } from './AttachedFileControls';
 
 const OCR_NOTICE =
   'No readable text was found in this PDF. It may be blank or too low quality to recognize.';
@@ -326,9 +325,12 @@ const PdfToWord = () => {
 
   return (
     <div className="space-y-8 max-w-3xl mx-auto">
-      <div className="text-center">
-        <p className="mt-2 text-slate-500">Convert text-based and scanned PDFs into editable Word documents.</p>
-      </div>
+      <input {...getInputProps()} />
+      {!file && (
+        <div className="text-center">
+          <p className="mt-2 text-slate-500">Convert text-based and scanned PDFs into editable Word documents.</p>
+        </div>
+      )}
 
       {/* Upload Zone */}
       {!file ? (
@@ -338,7 +340,6 @@ const PdfToWord = () => {
             ${isDragActive ? 'border-blue-500 bg-blue-50' : 'border-slate-300 hover:border-blue-400 hover:bg-slate-50'}
           `}
         >
-          <input {...getInputProps()} />
           <div className="merge-pdf-upload-content">
             <div className="pdf-upload-icon" aria-hidden="true">
               <Upload className="h-6 w-6 text-blue-600" />
@@ -361,24 +362,20 @@ const PdfToWord = () => {
         </div>
       ) : (
         <div className="space-y-6">
-          <div className="flex items-center justify-between bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+          <div className="pdf-attached-file-card flex items-center justify-between bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
             <div className="flex items-center gap-4">
-              <div className="bg-blue-100 p-2 rounded-lg">
-                <FileText className="w-6 h-6 text-blue-600" />
-              </div>
+              <AttachedFileIcon />
               <div className="truncate max-w-[200px] md:max-w-sm">
                 <p className="text-sm font-medium text-slate-700 truncate">{file.name}</p>
                 <p className="text-xs text-slate-400">{(file.size / 1024 / 1024).toFixed(2)} MB</p>
               </div>
             </div>
-            <button
-              type="button"
-              aria-label={`Remove ${file.name}`}
-              onClick={removeFile}
-              className="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
-            >
-              <Trash2 className="w-5 h-5" aria-hidden="true" />
-            </button>
+            <AttachedFileActions
+              fileName={file.name}
+              onReplace={open}
+              onRemove={removeFile}
+              disabled={isProcessing}
+            />
           </div>
 
           <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-6">

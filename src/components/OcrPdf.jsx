@@ -6,15 +6,14 @@ import {
   AlertCircle,
   CheckCircle2,
   Download,
-  FileText,
   Loader2,
   ScanText,
-  Trash2,
   Upload,
   X
 } from 'lucide-react';
 import { PASSWORD_PROTECTED_PDF_MESSAGE, validateUnencryptedPdf } from '../lib/pdfValidation';
 import pdfjsLib from '../lib/pdfjsClient';
+import { AttachedFileActions, AttachedFileIcon } from './AttachedFileControls';
 
 const MAX_PAGES = 50;
 const MAX_PAGE_PIXELS = 16_000_000;
@@ -577,30 +576,35 @@ const OcrPdf = () => {
     if (previewUrlRef.current) URL.revokeObjectURL(previewUrlRef.current);
   }, []);
 
+  const ocrNotice = (
+    <section className="rounded-2xl border border-blue-100 bg-blue-50 p-5 text-sm text-blue-900">
+      <h2 className="font-bold">English OCR · searchable PDF output</h2>
+      <p className="mt-1">
+        Existing text stays searchable. Pages without usable text are recognized from their images, and the original page appearance is retained.
+        Tesseract.js uses worker, core, and English language data bundled with this website. These supporting resources are separate from your PDF; recognition and PDF creation happen in this browser.
+        The PDF and its page images are not sent to a document conversion server.
+      </p>
+      <p className="mt-2 text-xs text-blue-800">
+        Supports unencrypted PDFs up to {MAX_PAGES} pages. Recognition works best on clear, upright printed English; handwriting, scan quality, and complex layouts can affect accuracy.
+      </p>
+    </section>
+  );
+
   return (
     <div className="mx-auto max-w-4xl space-y-6">
-      <section className="rounded-2xl border border-blue-100 bg-blue-50 p-5 text-sm text-blue-900">
-        <h2 className="font-bold">English OCR · searchable PDF output</h2>
-        <p className="mt-1">
-          Existing text stays searchable. Pages without usable text are recognized from their images, and the original page appearance is retained.
-          Tesseract.js uses worker, core, and English language data bundled with this website. These supporting resources are separate from your PDF; recognition and PDF creation happen in this browser.
-          The PDF and its page images are not sent to a document conversion server.
-        </p>
-        <p className="mt-2 text-xs text-blue-800">
-          Supports unencrypted PDFs up to {MAX_PAGES} pages. Recognition works best on clear, upright printed English; handwriting, scan quality, and complex layouts can affect accuracy.
-        </p>
-      </section>
+      <input {...getInputProps()} aria-label="Choose a PDF for OCR" />
+      {!file && ocrNotice}
 
+      {!file && (
       <section
         {...getRootProps({
           role: 'group',
-          'aria-label': file ? `Selected PDF ${file.name}` : 'Choose a PDF for OCR',
+          'aria-label': 'Choose a PDF for OCR',
           className: `pdf-upload-trigger pdf-workflow-upload pdf-upload-zone merge-pdf-upload-zone protect-extract-upload-zone cursor-pointer ${
             isDragActive ? 'border-blue-500 bg-blue-50' : 'border-slate-300 bg-white hover:border-blue-400 hover:bg-blue-50/50'
           } ${isValidating || isProcessing ? 'cursor-wait opacity-70' : ''}`
         })}
       >
-        <input {...getInputProps()} />
         <div className="merge-pdf-upload-content">
           <div className="pdf-upload-icon" aria-hidden="true">
             {isValidating
@@ -613,9 +617,7 @@ const OcrPdf = () => {
                 ? 'Checking PDF…'
                 : isDragActive
                   ? 'Drop the PDF here'
-                  : file
-                    ? 'Choose or drop a replacement PDF'
-                    : 'Choose or drop a PDF for OCR'}
+                  : 'Choose or drop a PDF for OCR'}
             </h3>
             <p>One unencrypted PDF · up to {MAX_PAGES} pages</p>
           </div>
@@ -633,12 +635,13 @@ const OcrPdf = () => {
         </div>
         {isValidating && <p className="sr-only" role="status">{validationStatus}</p>}
       </section>
+      )}
 
       {file && (
-        <section className="grid gap-4 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:grid-cols-[minmax(0,1fr)_auto] sm:items-start">
+        <section className="pdf-attached-file-card grid gap-4 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:grid-cols-[minmax(0,1fr)_auto] sm:items-start">
           <div className="min-w-0">
             <div className="flex items-start gap-3">
-              <FileText className="mt-0.5 h-8 w-8 shrink-0 text-blue-600" aria-hidden="true" />
+              <AttachedFileIcon />
               <div className="min-w-0">
                 <p className="break-all font-semibold text-slate-800">{file.name}</p>
                 <p className="text-sm text-slate-500">{formatBytes(file.size)} · {pageCount} {pageCount === 1 ? 'page' : 'pages'}</p>
@@ -655,24 +658,12 @@ const OcrPdf = () => {
               </figure>
             )}
           </div>
-          <div className="flex flex-col gap-2 sm:min-w-32">
-            <button
-              type="button"
-              onClick={open}
-              disabled={isValidating || isProcessing}
-              className="inline-flex items-center justify-center gap-2 rounded-lg border border-slate-200 px-3 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
-            >
-              <Upload className="h-4 w-4" aria-hidden="true" /> Replace
-            </button>
-            <button
-              type="button"
-              onClick={reset}
-              disabled={isValidating || isProcessing}
-              className="inline-flex items-center justify-center gap-2 rounded-lg border border-slate-200 px-3 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
-            >
-              <Trash2 className="h-4 w-4" aria-hidden="true" /> Delete
-            </button>
-          </div>
+          <AttachedFileActions
+            fileName={file.name}
+            onReplace={open}
+            onRemove={reset}
+            disabled={isValidating || isProcessing}
+          />
         </section>
       )}
 
@@ -746,6 +737,7 @@ const OcrPdf = () => {
           </button>
         </section>
       )}
+      {file && ocrNotice}
     </div>
   );
 };

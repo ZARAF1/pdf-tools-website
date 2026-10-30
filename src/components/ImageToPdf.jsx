@@ -10,9 +10,9 @@ import {
   Image as ImageIcon,
   Loader2,
   RefreshCw,
-  Trash2,
   Upload
 } from 'lucide-react';
+import { AttachedFileActions } from './AttachedFileControls';
 
 const formatBytes = (bytes) => {
   if (bytes < 1024) return `${bytes} B`;
@@ -45,6 +45,22 @@ const loadImage = async (file) => {
   }
 };
 
+const createImageEntry = async (file, id = `${Date.now()}-${Math.random().toString(16).slice(2)}`) => {
+  const decoded = await loadImage(file);
+  try {
+    return {
+      id,
+      file,
+      name: file.name,
+      preview: URL.createObjectURL(file),
+      width: decoded.width,
+      height: decoded.height
+    };
+  } finally {
+    decoded.close();
+  }
+};
+
 const makeImageBytes = (canvas, mimeType, quality) => new Promise((resolve, reject) => {
   canvas.toBlob(async (blob) => {
     if (!blob) {
@@ -61,6 +77,7 @@ const makeImageBytes = (canvas, mimeType, quality) => new Promise((resolve, reje
 
 const ImageToPdf = () => {
   const [images, setImages] = useState([]);
+  const replaceTargetRef = useRef(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const [error, setError] = useState('');
   const [outputBytes, setOutputBytes] = useState(null);
@@ -93,16 +110,7 @@ const ImageToPdf = () => {
 
     try {
       const newImages = await Promise.all(acceptedFiles.map(async (file) => {
-        const decoded = await loadImage(file);
-        const image = {
-          id: `${Date.now()}-${Math.random().toString(16).slice(2)}`,
-          file,
-          name: file.name,
-          preview: URL.createObjectURL(file),
-          width: decoded.width,
-          height: decoded.height
-        };
-        decoded.close();
+        const image = await createImageEntry(file);
         previewUrls.current.add(image.preview);
         return image;
       }));
@@ -112,6 +120,37 @@ const ImageToPdf = () => {
       setError(decodeError.message || 'One or more selected images could not be decoded.');
     }
   }, []);
+
+  const onReplaceDrop = useCallback(async (acceptedFiles, rejectedFiles) => {
+    const targetId = replaceTargetRef.current;
+    replaceTargetRef.current = null;
+    if (!acceptedFiles.length && !rejectedFiles.length) return;
+    if (rejectedFiles.length || acceptedFiles.length !== 1) {
+      setError('Choose one JPEG, PNG, or BMP image to replace the selected image.');
+      return;
+    }
+
+    const target = images.find((image) => image.id === targetId);
+    if (!target) {
+      setError('The selected image is no longer available to replace.');
+      return;
+    }
+
+    try {
+      const replacement = await createImageEntry(acceptedFiles[0], targetId);
+      previewUrls.current.add(replacement.preview);
+      setImages((current) => current.map((image) => (
+        image.id === targetId ? replacement : image
+      )));
+      URL.revokeObjectURL(target.preview);
+      previewUrls.current.delete(target.preview);
+      setError('');
+      clearOutput();
+    } catch (decodeError) {
+      console.error('Unable to decode replacement image:', decodeError);
+      setError(decodeError.message || 'The selected image could not be decoded.');
+    }
+  }, [images]);
 
   const { getRootProps, getInputProps, isDragActive, open } = useAccessibleDropzone({
     onDrop,
@@ -124,6 +163,29 @@ const ImageToPdf = () => {
     multiple: true,
     disabled: isProcessing
   });
+
+  const {
+    getInputProps: getReplaceInputProps,
+    open: openReplace
+  } = useAccessibleDropzone({
+    onDrop: onReplaceDrop,
+    accept: {
+      'image/jpeg': ['.jpeg', '.jpg'],
+      'image/png': ['.png'],
+      'image/bmp': ['.bmp', '.dib'],
+      'image/x-ms-bmp': ['.bmp', '.dib']
+    },
+    multiple: false,
+    maxFiles: 1,
+    disabled: isProcessing,
+    noClick: true,
+    noKeyboard: true
+  });
+
+  const replaceImage = (id) => {
+    replaceTargetRef.current = id;
+    openReplace();
+  };
 
   const removeImage = (id) => {
     setImages((current) => {
@@ -280,6 +342,30 @@ const ImageToPdf = () => {
   return (
     <div className="pdf-tool-workflow mx-auto max-w-4xl space-y-6">
       {images.length > 0 && (
+        <div className="pdf-workflow-selected space-y-3">
+          {images.map((image, index) => (
+            <div key={image.id} className="pdf-attached-file-card group flex items-center gap-3 rounded-xl border border-slate-200 bg-white p-4 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md motion-reduce:transform-none">
+              <img src={image.preview} alt="" className="h-16 w-16 shrink-0 rounded-lg bg-slate-100 object-contain" />
+              <div className="min-w-0 flex-1">
+                <p className="truncate text-sm font-semibold text-slate-800">{image.name}</p>
+                <p className="text-xs text-slate-500">{image.width} × {image.height} px · {formatBytes(image.file.size)}</p>
+              </div>
+              <div className="flex items-center gap-1">
+                <button type="button" onClick={() => moveImage(index, -1)} disabled={index === 0 || isProcessing} aria-label={`Move ${image.name} up`} className="rounded-lg p-2 text-slate-500 transition hover:bg-slate-100 disabled:opacity-30"><ChevronUp className="h-4 w-4" aria-hidden="true" /></button>
+                <button type="button" onClick={() => moveImage(index, 1)} disabled={index === images.length - 1 || isProcessing} aria-label={`Move ${image.name} down`} className="rounded-lg p-2 text-slate-500 transition hover:bg-slate-100 disabled:opacity-30"><ChevronDown className="h-4 w-4" aria-hidden="true" /></button>
+                <AttachedFileActions
+                  fileName={image.name}
+                  onReplace={() => replaceImage(image.id)}
+                  onRemove={() => removeImage(image.id)}
+                  disabled={isProcessing}
+                />
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {images.length > 0 && (
       <section className="pdf-workflow-controls grid grid-cols-1 gap-4 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm md:grid-cols-2 lg:grid-cols-3">
         <div className="space-y-2">
           <label htmlFor="image-page-size" className="text-sm font-semibold text-slate-700">Page size</label>
@@ -340,6 +426,7 @@ const ImageToPdf = () => {
         }`}
       >
         <input {...getInputProps()} />
+        <input {...getReplaceInputProps()} />
         <div className="merge-pdf-upload-content">
           <div className="pdf-upload-icon" aria-hidden="true">
             <Upload className="h-6 w-6 text-blue-600" />
@@ -364,24 +451,7 @@ const ImageToPdf = () => {
 
       {error && <div role="alert" className="flex items-start gap-3 rounded-xl border border-rose-200 bg-rose-50 p-4 text-rose-800"><AlertCircle className="h-5 w-5 shrink-0" aria-hidden="true" /><span className="text-sm">{error}</span></div>}
 
-      {images.length > 0 ? (
-        <>
-        <div className="pdf-workflow-selected space-y-3">
-          {images.map((image, index) => (
-            <div key={image.id} className="group flex items-center gap-3 rounded-xl border border-slate-200 bg-white p-3 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md motion-reduce:transform-none">
-              <img src={image.preview} alt="" className="h-16 w-16 shrink-0 rounded-lg bg-slate-100 object-contain" />
-              <div className="min-w-0 flex-1">
-                <p className="truncate text-sm font-semibold text-slate-800">{image.name}</p>
-                <p className="text-xs text-slate-500">{image.width} × {image.height} px · {formatBytes(image.file.size)}</p>
-              </div>
-              <div className="flex items-center gap-1">
-                <button type="button" onClick={() => moveImage(index, -1)} disabled={index === 0 || isProcessing} aria-label={`Move ${image.name} up`} className="rounded-lg p-2 text-slate-500 transition hover:bg-slate-100 disabled:opacity-30"><ChevronUp className="h-4 w-4" aria-hidden="true" /></button>
-                <button type="button" onClick={() => moveImage(index, 1)} disabled={index === images.length - 1 || isProcessing} aria-label={`Move ${image.name} down`} className="rounded-lg p-2 text-slate-500 transition hover:bg-slate-100 disabled:opacity-30"><ChevronDown className="h-4 w-4" aria-hidden="true" /></button>
-                <button type="button" onClick={() => removeImage(image.id)} disabled={isProcessing} aria-label={`Remove ${image.name}`} className="rounded-lg p-2 text-slate-500 transition hover:bg-rose-50 hover:text-rose-600 disabled:opacity-30"><Trash2 className="h-4 w-4" aria-hidden="true" /></button>
-              </div>
-            </div>
-          ))}
-        </div>
+      {images.length > 0 && (
           <div className="pdf-workflow-actions flex flex-col gap-3 pt-2 sm:flex-row">
             <button type="button" onClick={reset} disabled={isProcessing} className="inline-flex items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-5 py-3 font-semibold text-slate-700 transition hover:bg-slate-50 disabled:opacity-50">
               <RefreshCw className="h-4 w-4" aria-hidden="true" /> Reset
@@ -392,8 +462,7 @@ const ImageToPdf = () => {
               {isProcessing ? 'Creating PDF…' : `Create PDF (${images.length} ${images.length === 1 ? 'page' : 'pages'})`}
             </button>
           </div>
-        </>
-      ) : null}
+      )}
 
       {outputBytes && (
         <div role="status" className="flex flex-col gap-4 rounded-xl border border-emerald-200 bg-emerald-50 p-4 text-emerald-900 sm:flex-row sm:items-center sm:justify-between">
