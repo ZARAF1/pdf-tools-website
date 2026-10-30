@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import useAccessibleDropzone from '../lib/useAccessibleDropzone';
-import { PDFDocument, PageSizes } from 'pdf-lib';
+import { PDFDocument, PageSizes, rgb } from 'pdf-lib';
 import {
   AlertCircle,
   CheckCircle2,
@@ -9,10 +9,22 @@ import {
   Download,
   Image as ImageIcon,
   Loader2,
+  RotateCcw,
+  RotateCw,
   RefreshCw,
   Upload
 } from 'lucide-react';
 import { AttachedFileActions } from './AttachedFileControls';
+import { limitImageFiles } from '../lib/imageSelection.mjs';
+import {
+  calculateImagePlacement,
+  getCustomPageDimensions,
+  getHexColorComponents,
+  getOrientedPageDimensions,
+  getRotatedImageDimensions
+} from '../lib/imagePdfLayout.mjs';
+
+const MAX_IMAGES = 10;
 
 const formatBytes = (bytes) => {
   if (bytes < 1024) return `${bytes} B`;
@@ -54,7 +66,8 @@ const createImageEntry = async (file, id = `${Date.now()}-${Math.random().toStri
       name: file.name,
       preview: URL.createObjectURL(file),
       width: decoded.width,
-      height: decoded.height
+      height: decoded.height,
+      rotation: 0
     };
   } finally {
     decoded.close();
@@ -77,6 +90,8 @@ const makeImageBytes = (canvas, mimeType, quality) => new Promise((resolve, reje
 
 const ImageToPdf = () => {
   const [images, setImages] = useState([]);
+  const pendingImageCountRef = useRef(0);
+  const selectionGenerationRef = useRef(0);
   const replaceTargetRef = useRef(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const [error, setError] = useState('');
@@ -86,8 +101,14 @@ const ImageToPdf = () => {
 
   const [pageSize, setPageSize] = useState('A4');
   const [orientation, setOrientation] = useState('portrait');
+  const [autoOrient, setAutoOrient] = useState(false);
+  const [customWidthMm, setCustomWidthMm] = useState(210);
+  const [customHeightMm, setCustomHeightMm] = useState(297);
   const [margin, setMargin] = useState(24);
   const [fitMode, setFitMode] = useState('contain');
+  const [backgroundColor, setBackgroundColor] = useState('#ffffff');
+  const [horizontalAlignment, setHorizontalAlignment] = useState('center');
+  const [verticalAlignment, setVerticalAlignment] = useState('middle');
   const [maxWidth, setMaxWidth] = useState(2400);
   const [maxHeight, setMaxHeight] = useState(2400);
   const [scalePercent, setScalePercent] = useState(100);
@@ -108,18 +129,50 @@ const ImageToPdf = () => {
       return;
     }
 
+    const selection = limitImageFiles(
+      images.length,
+      pendingImageCountRef.current,
+      acceptedFiles,
+      MAX_IMAGES
+    );
+    if (selection.overflowCount) {
+      setError(`You can add up to ${MAX_IMAGES} images. ${selection.overflowCount} image${selection.overflowCount === 1 ? ' was' : 's were'} not added.`);
+    }
+    if (!selection.files.length) return;
+
+    pendingImageCountRef.current += selection.files.length;
+    const selectionGeneration = selectionGenerationRef.current;
     try {
-      const newImages = await Promise.all(acceptedFiles.map(async (file) => {
-        const image = await createImageEntry(file);
-        previewUrls.current.add(image.preview);
-        return image;
-      }));
-      setImages((current) => [...current, ...newImages]);
+      const results = await Promise.allSettled(selection.files.map((file) => createImageEntry(file)));
+      const newImages = results
+        .filter((result) => result.status === 'fulfilled')
+        .map((result) => result.value);
+      if (selectionGeneration !== selectionGenerationRef.current) {
+        newImages.forEach((image) => URL.revokeObjectURL(image.preview));
+        return;
+      }
+      newImages.forEach((image) => previewUrls.current.add(image.preview));
+      setImages((current) => [...current, ...newImages].slice(0, MAX_IMAGES));
+
+      const failedImages = results.filter((result) => result.status === 'rejected');
+      if (failedImages.length) {
+        failedImages.forEach((result) => console.error('Unable to decode selected image:', result.reason));
+        setError((current) => [
+          current,
+          `${failedImages.length} image${failedImages.length === 1 ? ' could' : 's could'} not be decoded and ${failedImages.length === 1 ? 'was' : 'were'} not added.`
+        ].filter(Boolean).join(' '));
+      }
     } catch (decodeError) {
       console.error('Unable to decode selected image:', decodeError);
-      setError(decodeError.message || 'One or more selected images could not be decoded.');
+      if (selectionGeneration === selectionGenerationRef.current) {
+        setError(decodeError.message || 'One or more selected images could not be decoded.');
+      }
+    } finally {
+      if (selectionGeneration === selectionGenerationRef.current) {
+        pendingImageCountRef.current -= selection.files.length;
+      }
     }
-  }, []);
+  }, [images.length]);
 
   const onReplaceDrop = useCallback(async (acceptedFiles, rejectedFiles) => {
     const targetId = replaceTargetRef.current;
@@ -161,7 +214,7 @@ const ImageToPdf = () => {
       'image/x-ms-bmp': ['.bmp', '.dib']
     },
     multiple: true,
-    disabled: isProcessing
+    disabled: isProcessing || images.length >= MAX_IMAGES
   });
 
   const {
@@ -211,6 +264,8 @@ const ImageToPdf = () => {
   };
 
   const reset = () => {
+    selectionGenerationRef.current += 1;
+    pendingImageCountRef.current = 0;
     previewUrls.current.forEach((url) => URL.revokeObjectURL(url));
     previewUrls.current.clear();
     setImages([]);
@@ -218,8 +273,14 @@ const ImageToPdf = () => {
     clearOutput();
     setPageSize('A4');
     setOrientation('portrait');
+    setAutoOrient(false);
+    setCustomWidthMm(210);
+    setCustomHeightMm(297);
     setMargin(24);
     setFitMode('contain');
+    setBackgroundColor('#ffffff');
+    setHorizontalAlignment('center');
+    setVerticalAlignment('middle');
     setMaxWidth(2400);
     setMaxHeight(2400);
     setScalePercent(100);
@@ -229,6 +290,15 @@ const ImageToPdf = () => {
 
   const updateSetting = (setter, value) => {
     setter(value);
+    clearOutput();
+  };
+
+  const rotateImage = (id, direction) => {
+    setImages((current) => current.map((image) => (
+      image.id === id
+        ? { ...image, rotation: (image.rotation + direction + 360) % 360 }
+        : image
+    )));
     clearOutput();
   };
 
@@ -253,6 +323,14 @@ const ImageToPdf = () => {
       setError('JPEG quality must be between 10% and 100%.');
       return;
     }
+    if (pageSize === 'custom' && (
+      !Number.isFinite(customWidthMm) || !Number.isFinite(customHeightMm)
+      || customWidthMm < 10 || customWidthMm > 2000
+      || customHeightMm < 10 || customHeightMm > 2000
+    )) {
+      setError('Custom page width and height must each be between 10 and 2000 millimeters.');
+      return;
+    }
 
     setIsProcessing(true);
     setError('');
@@ -262,15 +340,20 @@ const ImageToPdf = () => {
       for (const item of images) {
         const decoded = await loadImage(item.file);
         try {
+          const [rotatedSourceWidth, rotatedSourceHeight] = getRotatedImageDimensions(
+            decoded.width,
+            decoded.height,
+            item.rotation
+          );
           let outputWidth;
           let outputHeight;
           if (maintainAspect) {
-            const scale = Math.min(1, scalePercent / 100, maxWidth / decoded.width, maxHeight / decoded.height);
-            outputWidth = Math.max(1, Math.round(decoded.width * scale));
-            outputHeight = Math.max(1, Math.round(decoded.height * scale));
+            const scale = Math.min(1, scalePercent / 100, maxWidth / rotatedSourceWidth, maxHeight / rotatedSourceHeight);
+            outputWidth = Math.max(1, Math.round(rotatedSourceWidth * scale));
+            outputHeight = Math.max(1, Math.round(rotatedSourceHeight * scale));
           } else {
-            outputWidth = Math.max(1, Math.round(Math.min(decoded.width, maxWidth) * scalePercent / 100));
-            outputHeight = Math.max(1, Math.round(Math.min(decoded.height, maxHeight) * scalePercent / 100));
+            outputWidth = Math.max(1, Math.round(Math.min(rotatedSourceWidth, maxWidth) * scalePercent / 100));
+            outputHeight = Math.max(1, Math.round(Math.min(rotatedSourceHeight, maxHeight) * scalePercent / 100));
           }
 
           const canvas = window.document.createElement('canvas');
@@ -278,7 +361,17 @@ const ImageToPdf = () => {
           canvas.height = outputHeight;
           const context = canvas.getContext('2d');
           if (!context) throw new Error(`The browser could not resize ${item.name}.`);
-          context.drawImage(decoded.image, 0, 0, outputWidth, outputHeight);
+          context.translate(outputWidth / 2, outputHeight / 2);
+          context.rotate((item.rotation * Math.PI) / 180);
+          const sourceDrawWidth = item.rotation % 180 ? outputHeight : outputWidth;
+          const sourceDrawHeight = item.rotation % 180 ? outputWidth : outputHeight;
+          context.drawImage(
+            decoded.image,
+            -sourceDrawWidth / 2,
+            -sourceDrawHeight / 2,
+            sourceDrawWidth,
+            sourceDrawHeight
+          );
 
           const isJpeg = /\.(jpe?g)$/i.test(item.name) || item.file.type === 'image/jpeg';
           const mimeType = isJpeg ? 'image/jpeg' : 'image/png';
@@ -291,23 +384,41 @@ const ImageToPdf = () => {
             ? PageSizes.A4
             : pageSize === 'Letter'
               ? PageSizes.Letter
-              : [outputWidth * 0.75 + margin * 2, outputHeight * 0.75 + margin * 2];
-          if (pageSize !== 'fit' && orientation === 'landscape') [pageWidth, pageHeight] = [pageHeight, pageWidth];
+              : pageSize === 'custom'
+                ? getCustomPageDimensions(customWidthMm, customHeightMm)
+                : [outputWidth * 0.75 + margin * 2, outputHeight * 0.75 + margin * 2];
+          if (pageSize !== 'fit') {
+            [pageWidth, pageHeight] = getOrientedPageDimensions(pageWidth, pageHeight, {
+              autoOrient,
+              orientation,
+              imageWidth: outputWidth,
+              imageHeight: outputHeight
+            });
+          }
           const page = pdf.addPage([pageWidth, pageHeight]);
-          const availableWidth = Math.max(1, pageWidth - margin * 2);
-          const availableHeight = Math.max(1, pageHeight - margin * 2);
-          const scaleX = availableWidth / embedded.width;
-          const scaleY = availableHeight / embedded.height;
-          const imageScale = pageSize === 'fit'
-            ? 0.75
-            : fitMode === 'contain' ? Math.min(scaleX, scaleY) : Math.max(scaleX, scaleY);
-          const finalWidth = embedded.width * imageScale;
-          const finalHeight = embedded.height * imageScale;
+          const [red, green, blue] = getHexColorComponents(backgroundColor);
+          page.drawRectangle({
+            x: 0,
+            y: 0,
+            width: pageWidth,
+            height: pageHeight,
+            color: rgb(red, green, blue)
+          });
+          const placement = calculateImagePlacement({
+            imageWidth: embedded.width,
+            imageHeight: embedded.height,
+            pageWidth,
+            pageHeight,
+            margin,
+            fitMode: pageSize === 'fit' ? 'contain' : fitMode,
+            horizontalAlignment,
+            verticalAlignment
+          });
           page.drawImage(embedded, {
-            x: margin + (availableWidth - finalWidth) / 2,
-            y: margin + (availableHeight - finalHeight) / 2,
-            width: finalWidth,
-            height: finalHeight
+            x: placement.x,
+            y: placement.y,
+            width: placement.width,
+            height: placement.height
           });
         } finally {
           decoded.close();
@@ -340,19 +451,26 @@ const ImageToPdf = () => {
   };
 
   return (
-    <div className="pdf-tool-workflow mx-auto max-w-4xl space-y-6">
+    <div className="pdf-tool-workflow image-to-pdf-workflow mx-auto max-w-4xl space-y-6">
       {images.length > 0 && (
         <div className="pdf-workflow-selected space-y-3">
           {images.map((image, index) => (
             <div key={image.id} className="pdf-attached-file-card group flex items-center gap-3 rounded-xl border border-slate-200 bg-white p-4 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md motion-reduce:transform-none">
-              <img src={image.preview} alt="" className="h-16 w-16 shrink-0 rounded-lg bg-slate-100 object-contain" />
+              <img
+                src={image.preview}
+                alt=""
+                style={{ transform: `rotate(${image.rotation}deg)` }}
+                className="h-16 w-16 shrink-0 rounded-lg bg-slate-100 object-contain transition-transform"
+              />
               <div className="min-w-0 flex-1">
                 <p className="truncate text-sm font-semibold text-slate-800">{image.name}</p>
-                <p className="text-xs text-slate-500">{image.width} × {image.height} px · {formatBytes(image.file.size)}</p>
+                <p className="text-xs text-slate-500">{image.width} × {image.height} px · {formatBytes(image.file.size)} · {image.rotation}°</p>
               </div>
               <div className="flex items-center gap-1">
                 <button type="button" onClick={() => moveImage(index, -1)} disabled={index === 0 || isProcessing} aria-label={`Move ${image.name} up`} className="rounded-lg p-2 text-slate-500 transition hover:bg-slate-100 disabled:opacity-30"><ChevronUp className="h-4 w-4" aria-hidden="true" /></button>
                 <button type="button" onClick={() => moveImage(index, 1)} disabled={index === images.length - 1 || isProcessing} aria-label={`Move ${image.name} down`} className="rounded-lg p-2 text-slate-500 transition hover:bg-slate-100 disabled:opacity-30"><ChevronDown className="h-4 w-4" aria-hidden="true" /></button>
+                <button type="button" onClick={() => rotateImage(image.id, -90)} disabled={isProcessing} aria-label={`Rotate ${image.name} counterclockwise`} title="Rotate counterclockwise" className="rounded-lg p-2 text-slate-500 transition hover:bg-slate-100 disabled:opacity-30"><RotateCcw className="h-4 w-4" aria-hidden="true" /></button>
+                <button type="button" onClick={() => rotateImage(image.id, 90)} disabled={isProcessing} aria-label={`Rotate ${image.name} clockwise`} title="Rotate clockwise" className="rounded-lg p-2 text-slate-500 transition hover:bg-slate-100 disabled:opacity-30"><RotateCw className="h-4 w-4" aria-hidden="true" /></button>
                 <AttachedFileActions
                   fileName={image.name}
                   onReplace={() => replaceImage(image.id)}
@@ -373,15 +491,32 @@ const ImageToPdf = () => {
             <option value="A4">A4</option>
             <option value="Letter">Letter</option>
             <option value="fit">Fit image dimensions</option>
+            <option value="custom">Custom dimensions</option>
           </select>
         </div>
         <div className="space-y-2">
           <label htmlFor="image-orientation" className="text-sm font-semibold text-slate-700">Orientation</label>
-          <select id="image-orientation" value={orientation} onChange={(event) => updateSetting(setOrientation, event.target.value)} className="w-full rounded-lg border border-slate-200 px-3 py-2.5">
+          <select id="image-orientation" value={orientation} disabled={autoOrient || pageSize === 'fit'} onChange={(event) => updateSetting(setOrientation, event.target.value)} className="w-full rounded-lg border border-slate-200 px-3 py-2.5 disabled:cursor-not-allowed disabled:opacity-50">
             <option value="portrait">Portrait</option>
             <option value="landscape">Landscape</option>
           </select>
+          <label className="flex items-center gap-2 text-xs font-medium text-slate-600">
+            <input type="checkbox" checked={autoOrient} disabled={pageSize === 'fit'} onChange={(event) => updateSetting(setAutoOrient, event.target.checked)} className="h-4 w-4 accent-blue-600 disabled:opacity-50" />
+            Auto orient each page to its image
+          </label>
         </div>
+        {pageSize === 'custom' && (
+          <>
+            <div className="space-y-2">
+              <label htmlFor="image-custom-width" className="text-sm font-semibold text-slate-700">Custom width (mm)</label>
+              <input id="image-custom-width" type="number" min="10" max="2000" step="0.1" value={customWidthMm} onChange={(event) => updateSetting(setCustomWidthMm, Number(event.target.value))} className="w-full rounded-lg border border-slate-200 px-3 py-2.5" />
+            </div>
+            <div className="space-y-2">
+              <label htmlFor="image-custom-height" className="text-sm font-semibold text-slate-700">Custom height (mm)</label>
+              <input id="image-custom-height" type="number" min="10" max="2000" step="0.1" value={customHeightMm} onChange={(event) => updateSetting(setCustomHeightMm, Number(event.target.value))} className="w-full rounded-lg border border-slate-200 px-3 py-2.5" />
+            </div>
+          </>
+        )}
         <div className="space-y-2">
           <label htmlFor="image-fit" className="text-sm font-semibold text-slate-700">Image fit</label>
           <select id="image-fit" value={fitMode} onChange={(event) => updateSetting(setFitMode, event.target.value)} className="w-full rounded-lg border border-slate-200 px-3 py-2.5">
@@ -392,6 +527,22 @@ const ImageToPdf = () => {
         <div className="space-y-2">
           <label htmlFor="image-margin" className="text-sm font-semibold text-slate-700">Margin (points)</label>
           <input id="image-margin" type="number" min="0" max="300" value={margin} onChange={(event) => updateSetting(setMargin, Number(event.target.value))} className="w-full rounded-lg border border-slate-200 px-3 py-2.5" />
+        </div>
+        <div className="space-y-2">
+          <label htmlFor="image-horizontal-alignment" className="text-sm font-semibold text-slate-700">Horizontal alignment</label>
+          <select id="image-horizontal-alignment" value={horizontalAlignment} onChange={(event) => updateSetting(setHorizontalAlignment, event.target.value)} className="w-full rounded-lg border border-slate-200 px-3 py-2.5">
+            <option value="left">Left</option>
+            <option value="center">Center</option>
+            <option value="right">Right</option>
+          </select>
+        </div>
+        <div className="space-y-2">
+          <label htmlFor="image-vertical-alignment" className="text-sm font-semibold text-slate-700">Vertical alignment</label>
+          <select id="image-vertical-alignment" value={verticalAlignment} onChange={(event) => updateSetting(setVerticalAlignment, event.target.value)} className="w-full rounded-lg border border-slate-200 px-3 py-2.5">
+            <option value="top">Top</option>
+            <option value="middle">Middle</option>
+            <option value="bottom">Bottom</option>
+          </select>
         </div>
         <div className="space-y-2">
           <label htmlFor="image-max-width" className="text-sm font-semibold text-slate-700">Maximum width (px)</label>
@@ -406,10 +557,17 @@ const ImageToPdf = () => {
           <input id="image-scale" type="number" min="1" max="100" value={scalePercent} onChange={(event) => updateSetting(setScalePercent, Number(event.target.value))} className="w-full rounded-lg border border-slate-200 px-3 py-2.5" />
         </div>
         <div className="space-y-2">
+          <label htmlFor="image-background-color" className="text-sm font-semibold text-slate-700">Page background color</label>
+          <div className="flex items-center gap-3">
+            <input id="image-background-color" type="color" value={backgroundColor} onChange={(event) => updateSetting(setBackgroundColor, event.target.value)} className="h-10 w-14 cursor-pointer rounded border border-slate-200 p-1" />
+            <span className="text-sm text-slate-600">{backgroundColor.toUpperCase()}</span>
+          </div>
+        </div>
+        <div className="space-y-2">
           <label htmlFor="jpeg-quality" className="text-sm font-semibold text-slate-700">JPEG quality ({Math.round(jpegQuality * 100)}%)</label>
           <input id="jpeg-quality" type="range" min="0.1" max="1" step="0.05" value={jpegQuality} onChange={(event) => updateSetting(setJpegQuality, Number(event.target.value))} className="w-full accent-blue-600" />
         </div>
-        <label className="inline-flex items-center gap-2 self-end pb-2 text-sm font-medium text-slate-700">
+        <label className="inline-flex items-center justify-self-center self-center gap-2 text-sm font-medium text-slate-700">
           <input type="checkbox" checked={maintainAspect} onChange={(event) => updateSetting(setMaintainAspect, event.target.checked)} className="h-4 w-4 accent-blue-600" />
           Maintain aspect ratio
         </label>
@@ -420,43 +578,50 @@ const ImageToPdf = () => {
       )}
 
       <div
-        {...getRootProps({ role: 'group', 'aria-label': 'Choose images to convert to PDF' })}
-        className={`pdf-workflow-upload pdf-upload-zone merge-pdf-upload-zone rounded-2xl border-2 border-dashed transition-all duration-200 ${
-          isDragActive ? 'border-blue-500 bg-blue-50' : 'cursor-pointer border-slate-300 bg-white hover:border-blue-400 hover:bg-blue-50/50 hover:shadow-md'
-        }`}
+        {...getRootProps({
+          role: 'group',
+          'aria-label': images.length ? 'Add more images to convert to PDF' : 'Choose images to convert to PDF',
+          tabIndex: images.length ? -1 : undefined
+        })}
+        aria-hidden={images.length ? 'true' : undefined}
+        className={images.length
+          ? 'sr-only'
+          : `pdf-workflow-upload pdf-upload-zone merge-pdf-upload-zone rounded-2xl border-2 border-dashed transition-all duration-200 ${
+            isDragActive ? 'border-blue-500 bg-blue-50' : 'cursor-pointer border-slate-300 bg-white hover:border-blue-400 hover:bg-blue-50/50 hover:shadow-md'
+          }`}
       >
         <input {...getInputProps()} />
         <input {...getReplaceInputProps()} />
-        <div className="merge-pdf-upload-content">
-          <div className="pdf-upload-icon" aria-hidden="true">
-            <Upload className="h-6 w-6 text-blue-600" />
+        {images.length === 0 && (
+          <div className="merge-pdf-upload-content">
+            <div className="pdf-upload-icon" aria-hidden="true">
+              <Upload className="h-6 w-6 text-blue-600" />
+            </div>
+            <div className="merge-pdf-upload-copy">
+              <h3>{isDragActive ? 'Drop images to add them' : 'Choose or drop JPEG, PNG, or BMP images'}</h3>
+              <p>Up to {MAX_IMAGES} images · processed in your browser</p>
+            </div>
+            <button
+              type="button"
+              className="pdf-editor-primary-button merge-pdf-upload-button"
+              onClick={(event) => {
+                event.stopPropagation();
+                open();
+              }}
+              disabled={isProcessing}
+            >
+              Choose Images
+            </button>
           </div>
-          <div className="merge-pdf-upload-copy">
-            <h3>{isDragActive ? 'Drop images to add them' : 'Choose or drop JPEG, PNG, or BMP images'}</h3>
-            <p>Image files · processed in your browser</p>
-          </div>
-          <button
-            type="button"
-            className="pdf-editor-primary-button merge-pdf-upload-button"
-            onClick={(event) => {
-              event.stopPropagation();
-              open();
-            }}
-            disabled={isProcessing}
-          >
-            Choose Images
-          </button>
-        </div>
+        )}
       </div>
-
-      {error && <div role="alert" className="flex items-start gap-3 rounded-xl border border-rose-200 bg-rose-50 p-4 text-rose-800"><AlertCircle className="h-5 w-5 shrink-0" aria-hidden="true" /><span className="text-sm">{error}</span></div>}
 
       {images.length > 0 && (
           <div className="pdf-workflow-actions flex flex-col gap-3 pt-2 sm:flex-row">
             <button type="button" onClick={reset} disabled={isProcessing} className="inline-flex items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-5 py-3 font-semibold text-slate-700 transition hover:bg-slate-50 disabled:opacity-50">
               <RefreshCw className="h-4 w-4" aria-hidden="true" /> Reset
             </button>
-            <button type="button" onClick={open} disabled={isProcessing} className="pdf-upload-trigger rounded-xl border px-5 py-3 font-semibold transition disabled:opacity-50">Add more images</button>
+            <button type="button" onClick={open} disabled={isProcessing || images.length >= MAX_IMAGES} className="pdf-upload-trigger rounded-xl border px-5 py-3 font-semibold transition disabled:cursor-not-allowed disabled:opacity-50">Add more images ({images.length}/{MAX_IMAGES})</button>
             <button type="button" onClick={generatePdf} disabled={isProcessing} className="inline-flex flex-1 items-center justify-center gap-2 rounded-xl bg-blue-600 px-6 py-3 font-bold text-white shadow-md transition hover:bg-blue-700 active:scale-[0.99] disabled:cursor-not-allowed disabled:bg-slate-300">
               {isProcessing ? <Loader2 className="h-5 w-5 animate-spin" aria-hidden="true" /> : <ImageIcon className="h-5 w-5" aria-hidden="true" />}
               {isProcessing ? 'Creating PDF…' : `Create PDF (${images.length} ${images.length === 1 ? 'page' : 'pages'})`}
@@ -464,8 +629,10 @@ const ImageToPdf = () => {
           </div>
       )}
 
+      {error && <div role="alert" className="image-to-pdf-error flex items-start gap-3 rounded-xl border border-rose-200 bg-rose-50 p-4 text-rose-800"><AlertCircle className="h-5 w-5 shrink-0" aria-hidden="true" /><span className="text-sm">{error}</span></div>}
+
       {outputBytes && (
-        <div role="status" className="flex flex-col gap-4 rounded-xl border border-emerald-200 bg-emerald-50 p-4 text-emerald-900 sm:flex-row sm:items-center sm:justify-between">
+        <div role="status" className="image-to-pdf-result flex flex-col gap-4 rounded-xl border border-emerald-200 bg-emerald-50 p-4 text-emerald-900 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-center gap-3">
             <CheckCircle2 className="h-5 w-5 shrink-0" aria-hidden="true" />
             <span className="text-sm font-medium">Ready: {outputName} · {formatBytes(outputBytes.length)}</span>

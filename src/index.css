@@ -3400,6 +3400,30 @@ body {
   order: 4;
 }
 
+.image-to-pdf-workflow .pdf-workflow-selected {
+  order: 1;
+}
+
+.image-to-pdf-workflow .pdf-workflow-controls {
+  order: 2;
+}
+
+.image-to-pdf-workflow .pdf-workflow-upload {
+  order: 3;
+}
+
+.image-to-pdf-workflow .pdf-workflow-actions {
+  order: 4;
+}
+
+.image-to-pdf-workflow .image-to-pdf-error {
+  order: 5;
+}
+
+.image-to-pdf-workflow .image-to-pdf-result {
+  order: 6;
+}
+
 .pdf-tool-workflow .pdf-upload-zone,
 .tool-attachment-content .pdf-upload-zone,
 .tool-attachment-content .pdf-workflow-upload {

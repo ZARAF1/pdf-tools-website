@@ -98,14 +98,16 @@ const TOOL_CONTENT = {
   },
   image: {
     title: 'Image to PDF',
-    description: 'Resize and arrange supported images in a new PDF.',
-    intro: 'Turn supported pictures into a PDF you can view and share as one document. Choose JPEG, PNG, or BMP images, arrange them in the order you want, and review the list before continuing. Set the page size and orientation, then choose how each image should fit; depending on the selected options, an image may be resized or parts may be cropped. Each image is placed into the new PDF as a page. The conversion creates a separate document and does not replace your original pictures. When the PDF is ready, use the download button to save it. Image preparation and document creation happen in your browser. The image files you select are not uploaded to an external conversion server.',
-    mechanism: 'The browser decodes the selected images, creates resized working copies in a canvas, and embeds the resulting JPEG or PNG data into a new PDF with pdf-lib. BMP decoding depends on browser image support; source files are not changed.',
-    steps: ['Choose JPEG, PNG, or BMP images.', 'Arrange the images and configure output size, orientation, fit, margin, and resize options.', 'Generate the PDF and use the explicit download button.'],
+    description: 'Create a PDF from up to 10 images with custom pages, rotation, orientation, background, alignment, and resizing.',
+    intro: 'Turn up to 10 JPEG, PNG, or BMP images into a PDF, with one image per page. Arrange the pages and rotate individual images before creating the document. Choose A4, Letter, image-fit, or custom page dimensions in millimeters; use a fixed portrait or landscape orientation, or automatically orient each page to its image. Set the page background color, image fit, margins, and horizontal and vertical alignment. Resize bounds, scale, aspect ratio, and JPEG quality let you adjust image output; Fill can crop the image, while Contain keeps the full image visible. The page color shows through transparent areas in PNG and BMP images. The converter creates a separate PDF and leaves your original image files unchanged. Image decoding and PDF creation happen in your browser; selected images are not uploaded to an external conversion server.',
+    mechanism: 'The browser decodes each selected image, applies its requested quarter-turn rotation, creates a resized canvas copy, and embeds JPEG or PNG data into a new PDF with pdf-lib. Page dimensions, orientation, background, fit, and alignment are applied independently to each output page. PNG and BMP inputs are encoded as PNG; JPEG inputs use the selected JPEG quality. BMP decoding depends on browser image support; source files are not changed.',
+    steps: ['Choose up to 10 JPEG, PNG, or BMP images.', 'Arrange or rotate images and set page size, orientation, fit, alignment, background, and resize options.', 'Create and download your PDF.'],
     faqs: [
       ['Which image types are supported?', 'JPEG and PNG are embedded directly. BMP files are decoded by the browser and converted to PNG data before embedding. WebP is not supported.'],
-      ['Can I change the page order?', 'Yes. Use the move controls or drag the image list into the desired order.'],
+      ['Can I change page order and rotate images?', 'Yes. Use the move controls to arrange pages and each image card’s rotation buttons to turn that image by 90 degrees.'],
       ['What do Contain and Fill mean?', 'Contain keeps the entire image visible; Fill scales to fill the available area and may crop parts outside it.'],
+      ['Can I set custom page dimensions or orientation?', 'Yes. Choose Custom dimensions and enter a width and height in millimeters. You can apply one portrait or landscape orientation to all pages, or enable automatic orientation to match each page to its rotated image.'],
+      ['What is the page background color for?', 'The selected color fills each page behind the image and is visible through transparent areas in PNG or BMP images.'],
       ['Are image resizing settings destructive?', 'No. The converter creates temporary, resized copies for its output and leaves the original selected files unchanged.']
     ]
   },
