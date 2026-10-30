@@ -268,11 +268,39 @@ const ATTACHMENT_RULES = {
   },
   compress: {
     title: 'Attach PDFs Here',
-    rule: 'Up to 5 PDF files supported in one batch'
+    rule: 'Up to 5 unencrypted PDF files supported in one batch'
   },
   image: {
     title: 'Attach Images Here',
-    rule: 'JPEG, PNG, or BMP images'
+    rule: 'JPEG, PNG, or BMP images · processed locally in your browser'
+  },
+  edit: {
+    title: 'Attach PDF Here',
+    rule: 'One unencrypted PDF · processed in your browser'
+  },
+  watermark: {
+    title: 'Attach PDF Here',
+    rule: 'One unencrypted PDF · processed in your browser'
+  },
+  word: {
+    title: 'Attach PDF Here',
+    rule: 'One PDF file · processed in your browser'
+  },
+  protect: {
+    title: 'Attach PDF Here',
+    rule: 'One unencrypted PDF · processed in your browser'
+  },
+  unlock: {
+    title: 'Attach PDF Here',
+    rule: 'One password-protected PDF · processed in your browser'
+  },
+  split: {
+    title: 'Attach PDF Here',
+    rule: 'One unencrypted PDF · processed in your browser'
+  },
+  ocr: {
+    title: 'Attach PDF Here',
+    rule: 'One unencrypted PDF · up to 50 pages'
   },
   'organize-pages': {
     title: 'Attach PDF Here',
@@ -280,17 +308,13 @@ const ATTACHMENT_RULES = {
   },
   redact: {
     title: 'Attach PDF Here',
-    rule: 'One PDF file, up to 15 pages'
+    rule: 'One unencrypted PDF · up to 15 pages'
+  },
+  sign: {
+    title: 'Attach PDF Here',
+    rule: 'One unencrypted PDF · processed in your browser'
   },
   'pdf-images': {
-    title: 'Attach PDF Here',
-    rule: 'One PDF file, up to 50 pages'
-  },
-  ocr: {
-    title: 'Attach PDF Here',
-    rule: 'One PDF file, up to 50 pages'
-  },
-  split: {
     title: 'Attach PDF Here',
     rule: 'One PDF file, up to 50 pages'
   },

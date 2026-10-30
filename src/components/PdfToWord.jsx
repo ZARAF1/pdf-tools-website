@@ -93,7 +93,7 @@ const PdfToWord = () => {
     }
   }, []);
 
-  const { getRootProps, getInputProps, isDragActive } = useAccessibleDropzone({
+  const { getRootProps, getInputProps, isDragActive, open } = useAccessibleDropzone({
     onDrop,
     accept: { 'application/pdf': ['.pdf'] },
     multiple: false
@@ -333,21 +333,30 @@ const PdfToWord = () => {
       {/* Upload Zone */}
       {!file ? (
         <div
-          {...getRootProps()}
-          className={`
-            border-2 border-dashed rounded-2xl p-12 text-center cursor-pointer transition-all
+          {...getRootProps({ role: 'group', 'aria-label': 'Choose a PDF to convert to Word' })}
+          className={`pdf-workflow-upload merge-pdf-upload-zone cursor-pointer transition-all
             ${isDragActive ? 'border-blue-500 bg-blue-50' : 'border-slate-300 hover:border-blue-400 hover:bg-slate-50'}
           `}
         >
           <input {...getInputProps()} />
-          <div className="flex flex-col items-center">
-            <div className="bg-blue-100 p-4 rounded-full mb-4">
-              <Upload className="w-8 h-8 text-blue-600" />
+          <div className="merge-pdf-upload-content">
+            <div className="pdf-upload-icon" aria-hidden="true">
+              <Upload className="h-6 w-6 text-blue-600" />
             </div>
-            <h3 className="text-lg font-semibold text-slate-700">
-              {isDragActive ? 'Drop PDF here to upload' : 'Click or drag PDF here to upload'}
-            </h3>
-            <p className="text-slate-500 mt-1">Single PDF file</p>
+            <div className="merge-pdf-upload-copy">
+              <h3>{isDragActive ? 'Drop the PDF here' : 'Choose or drop a PDF to convert to Word'}</h3>
+              <p>One PDF file · processed in your browser</p>
+            </div>
+            <button
+              type="button"
+              className="pdf-editor-primary-button merge-pdf-upload-button"
+              onClick={(event) => {
+                event.stopPropagation();
+                open();
+              }}
+            >
+              Choose PDF
+            </button>
           </div>
         </div>
       ) : (

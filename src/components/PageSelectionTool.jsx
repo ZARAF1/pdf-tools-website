@@ -177,10 +177,10 @@ const PageSelectionTool = ({ mode }) => {
     <div className="space-y-6">
       <div
         {...getRootProps({
-          role: file ? 'group' : undefined,
+          role: 'group',
           'aria-label': file ? `Selected PDF ${file.name}` : 'Choose a PDF'
         })}
-        className={`rounded-2xl border-2 border-dashed p-8 text-center transition-all duration-200 ${
+        className={`pdf-workflow-upload merge-pdf-upload-zone rounded-2xl border-2 border-dashed cursor-pointer transition-all duration-200 ${
           file ? 'border-slate-200 bg-white' : isDragActive
             ? 'border-blue-500 bg-blue-50'
             : 'cursor-pointer border-slate-300 bg-white hover:border-blue-400 hover:bg-blue-50/50 hover:shadow-md'
@@ -204,13 +204,26 @@ const PageSelectionTool = ({ mode }) => {
             </span>
           </div>
         ) : (
-          <>
-            <span className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-blue-100 text-blue-700">
-              {isLoading ? <Loader2 className="h-6 w-6 animate-spin" /> : <Upload className="h-6 w-6" />}
-            </span>
-            <p className="font-semibold text-slate-800">{isLoading ? 'Checking PDF pages…' : 'Choose or drop one PDF here'}</p>
-            <p className="mt-1 text-sm text-slate-500">PDF files up to {MAX_PAGES} pages · processed in your browser</p>
-          </>
+          <div className="merge-pdf-upload-content">
+            <div className="pdf-upload-icon" aria-hidden="true">
+              {isLoading ? <Loader2 className="h-6 w-6 animate-spin text-blue-600" /> : <Upload className="h-6 w-6 text-blue-600" />}
+            </div>
+            <div className="merge-pdf-upload-copy">
+              <h3>{isLoading ? 'Checking PDF pages…' : isDragActive ? 'Drop the PDF here' : `Choose or drop a PDF to ${isRemoving ? 'remove pages' : 'extract pages'}`}</h3>
+              <p>One PDF, up to {MAX_PAGES} pages · processed in your browser</p>
+            </div>
+            <button
+              type="button"
+              className="pdf-editor-primary-button merge-pdf-upload-button"
+              onClick={(event) => {
+                event.stopPropagation();
+                open();
+              }}
+              disabled={isLoading || isProcessing}
+            >
+              Choose PDF
+            </button>
+          </div>
         )}
       </div>
 

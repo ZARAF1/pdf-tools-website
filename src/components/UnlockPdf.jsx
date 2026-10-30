@@ -79,7 +79,7 @@ const UnlockPdf = () => {
     }
   }, []);
 
-  const { getRootProps, getInputProps, isDragActive } = useAccessibleDropzone({
+  const { getRootProps, getInputProps, isDragActive, open } = useAccessibleDropzone({
     onDrop,
     accept: { 'application/pdf': ['.pdf'] },
     multiple: false,
@@ -167,20 +167,44 @@ const UnlockPdf = () => {
       {!file ? (
         <section
           {...getRootProps({
-            className: `pdf-upload-trigger w-full min-h-48 cursor-pointer rounded-2xl border-2 border-dashed p-8 text-center focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 ${
-              isDragActive ? 'border-blue-500 bg-blue-50' : 'border-slate-300'
+            role: 'group',
+            'aria-label': 'Choose a password-protected PDF',
+            className: `pdf-upload-trigger pdf-workflow-upload pdf-upload-zone merge-pdf-upload-zone protect-extract-upload-zone w-full cursor-pointer focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 ${
+              isDragActive
+                ? 'border-blue-500 bg-blue-50'
+                : 'border-slate-300 bg-white hover:border-blue-400 hover:bg-blue-50/50'
             } ${isValidating ? 'cursor-wait opacity-70' : ''}`
           })}
         >
           <input {...getInputProps()} />
-          <span className="tool-card-icon mx-auto mb-3 h-12 w-12">
-            {isValidating ? <Loader2 className="h-6 w-6 animate-spin" aria-hidden="true" /> : <Upload className="h-6 w-6" aria-hidden="true" />}
-          </span>
-          <p className="font-semibold text-slate-800">
-            {isDragActive ? 'Drop your PDF here' : 'Choose or drop one password-protected PDF'}
-          </p>
-          <p className="mt-1 text-sm text-slate-500">PDF files only · processed in your browser</p>
-          {isValidating && <p className="mt-2 text-sm text-blue-700" role="status">Checking the PDF encryption…</p>}
+          <div className="merge-pdf-upload-content">
+            <div className="pdf-upload-icon" aria-hidden="true">
+              {isValidating
+                ? <Loader2 className="h-6 w-6 animate-spin text-blue-600" />
+                : <Upload className="h-6 w-6 text-blue-600" />}
+            </div>
+            <div className="merge-pdf-upload-copy">
+              <h3 aria-live="polite">
+                {isValidating
+                  ? 'Checking PDF encryption…'
+                  : isDragActive
+                    ? 'Drop the password-protected PDF here'
+                    : 'Choose or drop a password-protected PDF'}
+              </h3>
+              <p>One password-protected PDF · processed in your browser</p>
+            </div>
+            <button
+              type="button"
+              className="pdf-editor-primary-button merge-pdf-upload-button"
+              onClick={(event) => {
+                event.stopPropagation();
+                open();
+              }}
+              disabled={isValidating || isProcessing}
+            >
+              Choose PDF
+            </button>
+          </div>
         </section>
       ) : (
         <section className="flex flex-col gap-3 rounded-xl border border-slate-200 bg-white p-4 sm:flex-row sm:items-center sm:justify-between">

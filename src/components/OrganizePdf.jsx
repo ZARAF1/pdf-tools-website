@@ -219,18 +219,13 @@ const OrganizePdf = () => {
   };
 
   return (
-    <div className="pdf-tool-workflow space-y-6 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-      <div>
-        <h2 className="mb-2 text-xl font-bold text-slate-800">Organize PDF pages</h2>
-        <p className="text-sm text-slate-600">Reorder pages, rotate them in 90° steps, or remove pages. Your original file is not changed.</p>
-      </div>
-
+    <div className="pdf-tool-workflow space-y-6">
       <div
         {...getRootProps({
-          role: file ? 'group' : undefined,
+          role: 'group',
           'aria-label': file ? `Selected PDF ${file.name}` : 'Choose a PDF to organize'
         })}
-        className={`pdf-workflow-selected pdf-workflow-upload pdf-upload-zone rounded-2xl border-2 border-dashed p-8 text-center transition-all ${
+        className={`pdf-workflow-selected pdf-workflow-upload pdf-upload-zone merge-pdf-upload-zone rounded-2xl border-2 border-dashed p-8 text-center transition-all ${
           isDragActive ? 'border-blue-500 bg-blue-50' : 'cursor-pointer border-slate-300 bg-white hover:border-blue-400 hover:bg-blue-50/50'
         }`}
       >
@@ -249,10 +244,25 @@ const OrganizePdf = () => {
             </button>
           </div>
         ) : (
-          <div className="flex flex-col items-center gap-3">
-            {isLoading ? <Loader2 className="h-9 w-9 animate-spin text-blue-600" aria-hidden="true" /> : <Upload className="h-9 w-9 text-blue-600" aria-hidden="true" />}
-            <p className="font-semibold text-slate-800" aria-live="polite">{isLoading ? 'Reading PDF…' : 'Drop a PDF here or click to choose'}</p>
-            <p className="text-sm text-slate-500">One PDF, up to {MAX_PAGES} pages</p>
+          <div className="merge-pdf-upload-content">
+            <div className="pdf-upload-icon" aria-hidden="true">
+              {isLoading ? <Loader2 className="h-6 w-6 animate-spin text-blue-600" aria-hidden="true" /> : <Upload className="h-6 w-6 text-blue-600" aria-hidden="true" />}
+            </div>
+            <div className="merge-pdf-upload-copy">
+              <h3 aria-live="polite">{isLoading ? 'Reading PDF…' : isDragActive ? 'Drop the PDF here' : 'Choose or drop a PDF to organize'}</h3>
+              <p>One PDF, up to {MAX_PAGES} pages · processed in your browser</p>
+            </div>
+            <button
+              type="button"
+              className="pdf-editor-primary-button merge-pdf-upload-button"
+              onClick={(event) => {
+                event.stopPropagation();
+                open();
+              }}
+              disabled={isLoading || isProcessing}
+            >
+              Choose PDF
+            </button>
           </div>
         )}
       </div>

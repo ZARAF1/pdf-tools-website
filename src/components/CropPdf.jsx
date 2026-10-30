@@ -526,18 +526,13 @@ const CropPdf = () => {
   });
 
   return (
-    <section className="crop-pdf-tool" aria-labelledby="crop-pdf-heading">
-      <header className="crop-pdf-header">
-        <h2 id="crop-pdf-heading">Crop PDF pages</h2>
-        <p>Drag the crop area to move it, or use its handles to resize it. The original PDF is never changed.</p>
-      </header>
-
+    <div className="crop-pdf-tool">
       <div
         {...getRootProps({
-          role: file ? 'group' : undefined,
+          role: 'group',
           'aria-label': file ? `Selected PDF ${file.name}` : 'Choose a PDF to crop'
         })}
-        className={`crop-pdf-upload ${isDragActive ? 'is-drag-active' : ''}`}
+        className={`crop-pdf-upload pdf-workflow-upload merge-pdf-upload-zone ${isDragActive ? 'is-drag-active' : ''}`}
       >
         <input {...getInputProps()} />
         {file ? (
@@ -556,10 +551,25 @@ const CropPdf = () => {
             </div>
           </div>
         ) : (
-          <div className="crop-pdf-upload-prompt">
-            <Upload aria-hidden="true" size={28} />
-            <strong>{isDragActive ? 'Drop your PDF here' : 'Choose or drop a PDF'}</strong>
-            <span>One unencrypted PDF; processed locally in your browser.</span>
+          <div className="merge-pdf-upload-content">
+            <div className="pdf-upload-icon" aria-hidden="true">
+              {isLoading ? <Loader2 className="h-6 w-6 animate-spin text-blue-600" /> : <Upload className="h-6 w-6 text-blue-600" />}
+            </div>
+            <div className="merge-pdf-upload-copy">
+              <h3>{isLoading ? 'Loading and validating PDF…' : isDragActive ? 'Drop the PDF here' : 'Choose or drop a PDF to crop'}</h3>
+              <p>One PDF file · processed in your browser</p>
+            </div>
+            <button
+              type="button"
+              className="pdf-editor-primary-button merge-pdf-upload-button"
+              onClick={(event) => {
+                event.stopPropagation();
+                open();
+              }}
+              disabled={isLoading || isProcessing}
+            >
+              Choose PDF
+            </button>
           </div>
         )}
       </div>
@@ -751,7 +761,7 @@ const CropPdf = () => {
           {status && <p className="crop-pdf-message crop-pdf-success" role="status">{status}</p>}
         </div>
       )}
-    </section>
+    </div>
   );
 };
 

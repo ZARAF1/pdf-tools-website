@@ -1032,7 +1032,7 @@ const EditPdf = () => {
           role: 'group',
           'aria-label': file ? `Selected PDF ${file.name}` : 'PDF upload area'
         })}
-        className={`pdf-editor-upload-zone ${isDragActive ? 'is-dragging' : ''} ${file ? 'has-file' : ''}`}
+        className={`pdf-editor-upload-zone merge-pdf-upload-zone edit-sign-upload-zone ${isDragActive ? 'is-dragging' : ''} ${file ? 'has-file' : ''}`}
       >
         {file ? (
           <div className="flex min-w-0 flex-1 items-center gap-3">
@@ -1043,13 +1043,15 @@ const EditPdf = () => {
             </div>
           </div>
         ) : (
-          <div className="flex min-w-0 flex-1 items-center gap-3">
-            {isLoading
-              ? <Loader2 className="h-8 w-8 shrink-0 animate-spin text-blue-600" aria-hidden="true" />
-              : <Upload className="h-8 w-8 shrink-0 text-blue-600" aria-hidden="true" />}
-            <div>
-              <p className="font-semibold pdf-editor-text">{isLoading ? 'Loading and validating PDF…' : isDragActive ? 'Drop the PDF to open it' : 'Choose or drop a PDF to edit'}</p>
-              <p className="text-sm pdf-editor-secondary">Unencrypted PDFs are processed in your browser.</p>
+          <div className="merge-pdf-upload-content">
+            <div className="pdf-upload-icon shrink-0" aria-hidden="true">
+              {isLoading
+                ? <Loader2 className="h-6 w-6 animate-spin text-blue-600" />
+                : <Upload className="h-6 w-6 text-blue-600" />}
+            </div>
+            <div className="merge-pdf-upload-copy">
+              <h3>{isLoading ? 'Loading and validating PDF…' : isDragActive ? 'Drop the PDF to open it' : 'Choose or drop a PDF to edit'}</h3>
+              <p>One unencrypted PDF · processed in your browser</p>
             </div>
             <button
               type="button"
@@ -1058,7 +1060,7 @@ const EditPdf = () => {
                 open();
               }}
               disabled={isLoading || isSaving}
-              className="pdf-editor-primary-button ml-auto"
+              className="pdf-editor-primary-button merge-pdf-upload-button"
             >
               Choose PDF
             </button>

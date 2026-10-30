@@ -334,17 +334,32 @@ const ImageToPdf = () => {
       )}
 
       <div
-        {...getRootProps()}
-        className={`pdf-workflow-upload pdf-upload-zone rounded-2xl border-2 border-dashed p-9 text-center transition-all duration-200 ${
+        {...getRootProps({ role: 'group', 'aria-label': 'Choose images to convert to PDF' })}
+        className={`pdf-workflow-upload pdf-upload-zone merge-pdf-upload-zone rounded-2xl border-2 border-dashed transition-all duration-200 ${
           isDragActive ? 'border-blue-500 bg-blue-50' : 'cursor-pointer border-slate-300 bg-white hover:border-blue-400 hover:bg-blue-50/50 hover:shadow-md'
         }`}
       >
         <input {...getInputProps()} />
-        <span className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-blue-100 text-blue-700">
-          <Upload className="h-6 w-6" aria-hidden="true" />
-        </span>
-        <p className="font-semibold text-slate-800">{isDragActive ? 'Drop images to add them' : 'Choose or drop JPEG, PNG, or BMP images'}</p>
-        <p className="mt-1 text-sm text-slate-500">The image files stay on your device.</p>
+        <div className="merge-pdf-upload-content">
+          <div className="pdf-upload-icon" aria-hidden="true">
+            <Upload className="h-6 w-6 text-blue-600" />
+          </div>
+          <div className="merge-pdf-upload-copy">
+            <h3>{isDragActive ? 'Drop images to add them' : 'Choose or drop JPEG, PNG, or BMP images'}</h3>
+            <p>Image files · processed in your browser</p>
+          </div>
+          <button
+            type="button"
+            className="pdf-editor-primary-button merge-pdf-upload-button"
+            onClick={(event) => {
+              event.stopPropagation();
+              open();
+            }}
+            disabled={isProcessing}
+          >
+            Choose Images
+          </button>
+        </div>
       </div>
 
       {error && <div role="alert" className="flex items-start gap-3 rounded-xl border border-rose-200 bg-rose-50 p-4 text-rose-800"><AlertCircle className="h-5 w-5 shrink-0" aria-hidden="true" /><span className="text-sm">{error}</span></div>}

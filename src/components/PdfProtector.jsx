@@ -45,10 +45,11 @@ const PdfProtector = () => {
     }
   }, []);
 
-  const { getRootProps, getInputProps, isDragActive } = useAccessibleDropzone({
+  const { getRootProps, getInputProps, isDragActive, open } = useAccessibleDropzone({
     onDrop,
     accept: { 'application/pdf': ['.pdf'] },
     multiple: false,
+    disabled: isProcessing
   });
 
   const removeFile = () => {
@@ -140,19 +141,36 @@ const PdfProtector = () => {
       {/* Upload Zone */}
       {!file ? (
         <div
-          {...getRootProps()}
-          className={`
-            border-2 border-dashed rounded-2xl p-12 text-center cursor-pointer transition-all
-            ${isDragActive ? 'border-blue-500 bg-blue-50' : 'border-slate-300 hover:border-blue-400 hover:bg-slate-50'}
-          `}
+          {...getRootProps({
+            role: 'group',
+            'aria-label': 'Choose a PDF to protect'
+          })}
+          className={`pdf-workflow-upload pdf-upload-zone merge-pdf-upload-zone protect-extract-upload-zone cursor-pointer transition-all ${
+            isDragActive
+              ? 'border-blue-500 bg-blue-50'
+              : 'border-slate-300 bg-white hover:border-blue-400 hover:bg-blue-50/50'
+          }`}
         >
           <input {...getInputProps()} />
-          <div className="flex flex-col items-center">
-            <div className="bg-red-100 p-4 rounded-full mb-4">
-              <Lock className="w-8 h-8 text-red-600" />
+          <div className="merge-pdf-upload-content">
+            <div className="pdf-upload-icon" aria-hidden="true">
+              <Upload className="h-6 w-6 text-blue-600" />
             </div>
-            <h3 className="text-lg font-semibold text-slate-700">Click or drag a PDF here to upload</h3>
-            <p className="text-slate-500 mt-1">Single PDF file</p>
+            <div className="merge-pdf-upload-copy">
+              <h3>{isDragActive ? 'Drop the PDF here' : 'Choose or drop a PDF to protect'}</h3>
+              <p>One unencrypted PDF · processed in your browser</p>
+            </div>
+            <button
+              type="button"
+              className="pdf-editor-primary-button merge-pdf-upload-button"
+              onClick={(event) => {
+                event.stopPropagation();
+                open();
+              }}
+              disabled={isProcessing}
+            >
+              Choose PDF
+            </button>
           </div>
         </div>
       ) : (

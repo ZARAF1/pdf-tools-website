@@ -593,24 +593,45 @@ const OcrPdf = () => {
 
       <section
         {...getRootProps({
-          role: 'button',
-          className: `pdf-upload-trigger cursor-pointer rounded-2xl border-2 border-dashed p-8 text-center ${
-            isDragActive ? 'border-blue-500 bg-blue-50' : 'border-slate-300'
+          role: 'group',
+          'aria-label': file ? `Selected PDF ${file.name}` : 'Choose a PDF for OCR',
+          className: `pdf-upload-trigger pdf-workflow-upload pdf-upload-zone merge-pdf-upload-zone protect-extract-upload-zone cursor-pointer ${
+            isDragActive ? 'border-blue-500 bg-blue-50' : 'border-slate-300 bg-white hover:border-blue-400 hover:bg-blue-50/50'
           } ${isValidating || isProcessing ? 'cursor-wait opacity-70' : ''}`
         })}
-        aria-label="PDF upload area"
       >
         <input {...getInputProps()} />
-        <span className="tool-card-icon mx-auto mb-3 h-12 w-12">
-          {isValidating
-            ? <Loader2 className="h-6 w-6 animate-spin" aria-hidden="true" />
-            : <Upload className="h-6 w-6" aria-hidden="true" />}
-        </span>
-        <p className="font-semibold text-slate-800">
-          {isDragActive ? 'Drop your PDF here' : file ? 'Drop a replacement PDF here' : 'Choose or drop one PDF'}
-        </p>
-        <p className="mt-1 text-sm text-slate-500">PDF files only · 1–{MAX_PAGES} pages · processed in your browser</p>
-        {isValidating && <p className="mt-3 text-sm text-blue-700" role="status">{validationStatus}</p>}
+        <div className="merge-pdf-upload-content">
+          <div className="pdf-upload-icon" aria-hidden="true">
+            {isValidating
+              ? <Loader2 className="h-6 w-6 animate-spin text-blue-600" />
+              : <Upload className="h-6 w-6 text-blue-600" />}
+          </div>
+          <div className="merge-pdf-upload-copy">
+            <h3 aria-live="polite">
+              {isValidating
+                ? 'Checking PDF…'
+                : isDragActive
+                  ? 'Drop the PDF here'
+                  : file
+                    ? 'Choose or drop a replacement PDF'
+                    : 'Choose or drop a PDF for OCR'}
+            </h3>
+            <p>One unencrypted PDF · up to {MAX_PAGES} pages</p>
+          </div>
+          <button
+            type="button"
+            className="pdf-editor-primary-button merge-pdf-upload-button"
+            onClick={(event) => {
+              event.stopPropagation();
+              open();
+            }}
+            disabled={isValidating || isProcessing}
+          >
+            Choose PDF
+          </button>
+        </div>
+        {isValidating && <p className="sr-only" role="status">{validationStatus}</p>}
       </section>
 
       {file && (

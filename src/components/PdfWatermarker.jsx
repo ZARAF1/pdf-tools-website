@@ -385,24 +385,42 @@ const PdfWatermarker = () => {
 
   return (
     <div className="space-y-8">
-      <input {...getInputProps()} />
       <div className="mb-8 text-center">
         <p className="text-slate-600">Add a custom text watermark to all pages or selected pages. Files are processed in your browser.</p>
       </div>
 
       {!file ? (
         <div
-          {...getRootProps()}
-          className={`border-2 border-dashed rounded-2xl p-12 text-center cursor-pointer transition-all ${
+          {...getRootProps({
+            role: 'group',
+            'aria-label': 'Choose a PDF to add a watermark'
+          })}
+          className={`pdf-workflow-upload pdf-upload-zone merge-pdf-upload-zone edit-sign-upload-zone cursor-pointer transition-all ${
             isDragActive ? 'border-cyan-500 bg-cyan-50' : 'border-slate-300 hover:border-cyan-400 hover:bg-slate-50'
           }`}
         >
-          <div className="flex flex-col items-center">
-            <div className="bg-cyan-100 p-4 rounded-full mb-4">
-              <Upload className="w-8 h-8 text-cyan-600" />
+          <input {...getInputProps()} />
+          <div className="merge-pdf-upload-content">
+            <div className="pdf-upload-icon" aria-hidden="true">
+              {isLoadingPages
+                ? <Loader2 className="h-6 w-6 animate-spin text-blue-600" />
+                : <Upload className="h-6 w-6 text-blue-600" />}
             </div>
-            <h3 className="text-lg font-semibold text-slate-700">Click or drag a PDF here to upload</h3>
-            <p className="text-slate-500 mt-1">Single PDF file · processed locally in your browser</p>
+            <div className="merge-pdf-upload-copy">
+              <h3>{isLoadingPages ? 'Checking PDF pages…' : isDragActive ? 'Drop the PDF here' : 'Choose or drop a PDF to watermark'}</h3>
+              <p>One unencrypted PDF · processed in your browser</p>
+            </div>
+            <button
+              type="button"
+              className="pdf-editor-primary-button merge-pdf-upload-button"
+              onClick={(event) => {
+                event.stopPropagation();
+                open();
+              }}
+              disabled={isLoadingPages || isProcessing}
+            >
+              Choose PDF
+            </button>
           </div>
         </div>
       ) : (

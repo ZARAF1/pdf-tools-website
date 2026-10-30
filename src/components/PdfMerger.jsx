@@ -191,7 +191,7 @@ const PdfMerger = () => {
       >
         <input {...getInputProps({ 'aria-label': 'Choose PDF files to merge' })} />
         <div className="merge-pdf-upload-content">
-          <div className="merge-pdf-upload-icon" aria-hidden="true">
+          <div className="pdf-upload-icon" aria-hidden="true">
             {isValidating
               ? <Loader2 className="w-6 h-6 animate-spin text-blue-600" />
               : <Upload className="w-6 h-6 text-blue-600" />}

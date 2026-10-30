@@ -218,11 +218,12 @@ const PdfCompressor = () => {
     else if (newEntries.length === 0) setError('Please upload a valid PDF file.');
   }, [files]);
 
-  const { getRootProps, getInputProps, isDragActive } = useAccessibleDropzone({
+  const { getRootProps, getInputProps, isDragActive, open } = useAccessibleDropzone({
     onDrop,
     accept: { 'application/pdf': ['.pdf'] },
     multiple: true,
-    maxFiles: MAX_FILES
+    maxFiles: MAX_FILES,
+    disabled: isProcessing || files.length >= MAX_FILES
   });
 
   const removeFile = (id) => {
@@ -405,20 +406,42 @@ const PdfCompressor = () => {
       )}
 
       <div
-        {...getRootProps()}
-        className={`border-2 border-dashed rounded-2xl p-12 text-center cursor-pointer transition-all ${
-          isDragActive ? 'border-violet-500 bg-violet-50' : 'border-slate-300 hover:border-violet-400 hover:bg-slate-50'
-        } ${files.length >= MAX_FILES ? 'pointer-events-none opacity-60' : ''}`}
+        {...getRootProps({
+          role: 'group',
+          'aria-label': 'Choose up to 5 PDFs to compress'
+        })}
+        className={`pdf-workflow-upload pdf-upload-zone merge-pdf-upload-zone protect-extract-upload-zone cursor-pointer transition-all ${
+          isDragActive
+            ? 'border-blue-500 bg-blue-50'
+            : 'border-slate-300 bg-white hover:border-blue-400 hover:bg-blue-50/50'
+        } ${files.length >= MAX_FILES ? 'cursor-not-allowed opacity-60' : ''}`}
       >
         <input {...getInputProps()} />
-        <div className="flex flex-col items-center">
-          <div className="bg-violet-100 p-4 rounded-full mb-4">
-            <Upload className="w-8 h-8 text-violet-600" />
+        <div className="merge-pdf-upload-content">
+          <div className="pdf-upload-icon" aria-hidden="true">
+            <Upload className="h-6 w-6 text-blue-600" />
           </div>
-          <h3 className="text-lg font-semibold text-slate-700">
-            {files.length >= MAX_FILES ? `Limit reached (max ${MAX_FILES})` : 'Click or drag PDFs here to upload'}
-          </h3>
-          <p className="text-slate-500 mt-1">Up to {MAX_FILES} PDFs supported in one batch</p>
+          <div className="merge-pdf-upload-copy">
+            <h3 aria-live="polite">
+              {files.length >= MAX_FILES
+                ? `Limit reached (max ${MAX_FILES})`
+                : isDragActive
+                  ? 'Drop the PDFs here'
+                  : 'Choose or drop PDFs to compress'}
+            </h3>
+            <p>Up to {MAX_FILES} unencrypted PDF files · processed in your browser</p>
+          </div>
+          <button
+            type="button"
+            className="pdf-editor-primary-button merge-pdf-upload-button"
+            onClick={(event) => {
+              event.stopPropagation();
+              open();
+            }}
+            disabled={isProcessing || files.length >= MAX_FILES}
+          >
+            Choose Up to 5 PDFs
+          </button>
         </div>
       </div>
 

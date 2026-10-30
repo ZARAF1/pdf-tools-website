@@ -1691,12 +1691,7 @@ body {
 .crop-pdf-tool {
   display: grid;
   gap: 1.25rem;
-  padding: clamp(1rem, 3vw, 1.75rem);
-  border: 1px solid var(--border-color);
-  border-radius: 1.25rem;
-  background: var(--surface-background);
   color: var(--text-primary);
-  box-shadow: 0 8px 24px rgb(15 23 42 / 0.06);
 }
 
 .crop-pdf-header h2 {
@@ -3050,6 +3045,11 @@ body {
     padding: 0.875rem 1rem;
   }
 
+  .tool-attachment-content .edit-sign-upload-zone:not(.has-file),
+  .tool-attachment-content .protect-extract-upload-zone {
+    min-height: 219px;
+  }
+
   .merge-pdf-upload-content {
     align-items: center;
     flex-wrap: wrap;
@@ -3270,7 +3270,7 @@ body {
   gap: 0.75rem;
 }
 
-.merge-pdf-upload-icon {
+.pdf-upload-icon {
   display: flex;
   width: 40px;
   height: 40px;
@@ -3307,7 +3307,7 @@ body {
   white-space: nowrap;
 }
 
-:root[data-theme='dark'] .merge-pdf-upload-icon {
+:root[data-theme='dark'] .pdf-upload-icon {
   background: rgb(30 64 175 / 0.36);
   color: #bfdbfe;
 }

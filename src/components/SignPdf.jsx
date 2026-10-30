@@ -270,30 +270,69 @@ const SignPdf = () => {
   };
 
   return (
-    <div className="space-y-6 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+    <div className="space-y-6">
       <div>
         <h2 className="mb-2 text-xl font-bold text-slate-800">Add a visible signature</h2>
         <p className="text-sm text-slate-600">Choose a typed, drawn, or image signature. This creates a visible mark, not a certificate-backed digital signature.</p>
       </div>
 
-      <div {...getRootProps({
-        role: file ? 'group' : undefined,
-        'aria-label': file ? `Selected PDF ${file.name}` : 'Choose a PDF to sign'
-      })} className={`pdf-upload-zone rounded-2xl border-2 border-dashed p-8 text-center transition-all ${isDragActive ? 'border-blue-500 bg-blue-50' : 'cursor-pointer border-slate-300 bg-white hover:border-blue-400 hover:bg-blue-50/50'}`}>
+      <div
+        {...getRootProps({
+          role: 'group',
+          'aria-label': file ? `Selected PDF ${file.name}` : 'Choose a PDF to sign'
+        })}
+        className={`pdf-workflow-upload pdf-upload-zone merge-pdf-upload-zone edit-sign-upload-zone ${file ? 'has-file' : ''} transition-all ${
+          isDragActive
+            ? 'border-blue-500 bg-blue-50'
+            : file
+              ? 'border-slate-300 bg-white'
+              : 'cursor-pointer border-slate-300 bg-white hover:border-blue-400 hover:bg-blue-50/50'
+        }`}
+      >
         <input {...getInputProps()} />
         {file ? (
-          <div className="flex flex-wrap items-center justify-between gap-4 text-left">
-            <div className="flex items-center gap-3">
-              <FileText className="h-8 w-8 text-blue-600" aria-hidden="true" />
-              <div><p className="font-semibold text-slate-800">{file.name}</p><p className="text-sm text-slate-500">{(file.size / 1024).toFixed(1)} KB · {pageCount} pages</p></div>
+          <div className="merge-pdf-upload-content">
+            <div className="pdf-upload-icon" aria-hidden="true">
+              <FileText className="h-5 w-5 text-blue-600" />
             </div>
-            <button type="button" onClick={open} className="pdf-upload-trigger rounded-lg border px-4 py-2 font-semibold">Replace PDF</button>
+            <div className="merge-pdf-upload-copy">
+              <h3 className="truncate">{file.name}</h3>
+              <p>{(file.size / 1024).toFixed(1)} KB · {pageCount} pages</p>
+            </div>
+            <button
+              type="button"
+              onClick={(event) => {
+                event.stopPropagation();
+                open();
+              }}
+              disabled={isLoading || isProcessing}
+              className="pdf-editor-primary-button merge-pdf-upload-button"
+            >
+              Replace PDF
+            </button>
           </div>
         ) : (
-          <div className="flex flex-col items-center gap-3">
-            {isLoading ? <Loader2 className="h-9 w-9 animate-spin text-blue-600" aria-hidden="true" /> : <Upload className="h-9 w-9 text-blue-600" aria-hidden="true" />}
-            <p className="font-semibold text-slate-800">{isLoading ? 'Reading PDF…' : 'Drop a PDF here or click to choose'}</p>
-            <p className="text-sm text-slate-500">One PDF</p>
+          <div className="merge-pdf-upload-content">
+            <div className="pdf-upload-icon" aria-hidden="true">
+              {isLoading
+                ? <Loader2 className="h-6 w-6 animate-spin text-blue-600" />
+                : <Upload className="h-6 w-6 text-blue-600" />}
+            </div>
+            <div className="merge-pdf-upload-copy">
+              <h3>{isLoading ? 'Checking PDF pages…' : isDragActive ? 'Drop the PDF here' : 'Choose or drop a PDF to sign'}</h3>
+              <p>One PDF · processed in your browser</p>
+            </div>
+            <button
+              type="button"
+              className="pdf-editor-primary-button merge-pdf-upload-button"
+              onClick={(event) => {
+                event.stopPropagation();
+                open();
+              }}
+              disabled={isLoading || isProcessing}
+            >
+              Choose PDF
+            </button>
           </div>
         )}
       </div>
