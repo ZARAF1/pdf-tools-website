@@ -66,6 +66,7 @@ This is the persistent evidence log. Update the observed result and evidence whe
 
 | Step | Expected result | Actual result / evidence | Status |
 |---|---|---|---|
+| Verify initial upload card spacing | Upload card has no unintended 32px top gap; selected-file spacing remains unchanged. | Removed the wrapper's vertical spacing utility while no file is selected, where the hidden input had caused a 2rem top margin. Build and whitespace checks pass; browser spacing measurement not performed. | IMPLEMENTED — NOT YET VERIFIED |
 | Open `/rotate`, upload a multipage PDF | Page settings and selection work. | Route/component exist; not browser tested. | IMPLEMENTED — NOT YET VERIFIED |
 | Rotate all pages and selected pages | Output page rotation matches configured angle; page order/count retained. | Not tested. | IMPLEMENTED — NOT YET VERIFIED |
 | Test invalid/empty/out-of-range page selections and zero rotation | Clear validation and no incorrect output. | Not tested. | IMPLEMENTED — NOT YET VERIFIED |

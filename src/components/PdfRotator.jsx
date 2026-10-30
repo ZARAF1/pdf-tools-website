@@ -149,7 +149,8 @@ const PdfRotator = () => {
   };
 
   return (
-    <div className="space-y-8">
+    <div className={file ? 'space-y-8' : ''}>
+      <input {...getInputProps()} />
       {!file ? (
         <div 
           {...getRootProps({ role: 'group', 'aria-label': 'Choose a PDF to rotate' })}
@@ -158,7 +159,6 @@ const PdfRotator = () => {
             ${isDragActive ? 'border-blue-500 bg-blue-50' : 'border-slate-300 hover:border-blue-400 hover:bg-slate-50'}
           `}
         >
-          <input {...getInputProps()} />
           <div className="merge-pdf-upload-content">
             <div className="pdf-upload-icon" aria-hidden="true">
               <Upload className="w-6 h-6 text-blue-600" />
