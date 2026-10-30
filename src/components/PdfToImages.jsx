@@ -365,7 +365,7 @@ const PdfToImages = () => {
   }, []);
 
   return (
-    <div className="pdf-tool-workflow mx-auto max-w-4xl space-y-6">
+    <div className="pdf-tool-workflow pdf-to-images-workflow mx-auto max-w-4xl space-y-6">
       <input {...getInputProps()} aria-label="Choose a PDF to convert to images" />
       {!file && (
       <section

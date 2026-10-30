@@ -3424,6 +3424,17 @@ body {
   order: 6;
 }
 
+.image-to-pdf-workflow .image-to-pdf-setting {
+  border: 1px solid var(--border-color);
+  border-radius: 0.75rem;
+  background: var(--surface-muted);
+  padding: 1rem;
+}
+
+.pdf-tool-workflow.pdf-to-images-workflow > .pdf-workflow-upload {
+  margin-top: 0;
+}
+
 .pdf-tool-workflow .pdf-upload-zone,
 .tool-attachment-content .pdf-upload-zone,
 .tool-attachment-content .pdf-workflow-upload {

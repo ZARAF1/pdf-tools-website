@@ -324,13 +324,8 @@ const PdfToWord = () => {
   };
 
   return (
-    <div className="space-y-8 max-w-3xl mx-auto">
+    <div className="max-w-3xl mx-auto">
       <input {...getInputProps()} />
-      {!file && (
-        <div className="text-center">
-          <p className="mt-2 text-slate-500">Convert text-based and scanned PDFs into editable Word documents.</p>
-        </div>
-      )}
 
       {/* Upload Zone */}
       {!file ? (
@@ -346,7 +341,7 @@ const PdfToWord = () => {
             </div>
             <div className="merge-pdf-upload-copy">
               <h3>{isDragActive ? 'Drop the PDF here' : 'Choose or drop a PDF to convert to Word'}</h3>
-              <p>One PDF file · processed in your browser</p>
+              <p>Convert text-based and scanned PDFs into editable Word documents.</p>
             </div>
             <button
               type="button"
@@ -361,7 +356,7 @@ const PdfToWord = () => {
           </div>
         </div>
       ) : (
-        <div className="space-y-6">
+        <div>
           <div className="pdf-attached-file-card flex items-center justify-between bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
             <div className="flex items-center gap-4">
               <AttachedFileIcon />

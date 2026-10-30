@@ -485,7 +485,7 @@ const ImageToPdf = () => {
 
       {images.length > 0 && (
       <section className="pdf-workflow-controls grid grid-cols-1 gap-4 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm md:grid-cols-2 lg:grid-cols-3">
-        <div className="space-y-2">
+        <div className="image-to-pdf-setting space-y-2">
           <label htmlFor="image-page-size" className="text-sm font-semibold text-slate-700">Page size</label>
           <select id="image-page-size" value={pageSize} onChange={(event) => updateSetting(setPageSize, event.target.value)} className="w-full rounded-lg border border-slate-200 px-3 py-2.5">
             <option value="A4">A4</option>
@@ -494,7 +494,7 @@ const ImageToPdf = () => {
             <option value="custom">Custom dimensions</option>
           </select>
         </div>
-        <div className="space-y-2">
+        <div className="image-to-pdf-setting space-y-2">
           <label htmlFor="image-orientation" className="text-sm font-semibold text-slate-700">Orientation</label>
           <select id="image-orientation" value={orientation} disabled={autoOrient || pageSize === 'fit'} onChange={(event) => updateSetting(setOrientation, event.target.value)} className="w-full rounded-lg border border-slate-200 px-3 py-2.5 disabled:cursor-not-allowed disabled:opacity-50">
             <option value="portrait">Portrait</option>
@@ -507,28 +507,28 @@ const ImageToPdf = () => {
         </div>
         {pageSize === 'custom' && (
           <>
-            <div className="space-y-2">
+            <div className="image-to-pdf-setting space-y-2">
               <label htmlFor="image-custom-width" className="text-sm font-semibold text-slate-700">Custom width (mm)</label>
               <input id="image-custom-width" type="number" min="10" max="2000" step="0.1" value={customWidthMm} onChange={(event) => updateSetting(setCustomWidthMm, Number(event.target.value))} className="w-full rounded-lg border border-slate-200 px-3 py-2.5" />
             </div>
-            <div className="space-y-2">
+            <div className="image-to-pdf-setting space-y-2">
               <label htmlFor="image-custom-height" className="text-sm font-semibold text-slate-700">Custom height (mm)</label>
               <input id="image-custom-height" type="number" min="10" max="2000" step="0.1" value={customHeightMm} onChange={(event) => updateSetting(setCustomHeightMm, Number(event.target.value))} className="w-full rounded-lg border border-slate-200 px-3 py-2.5" />
             </div>
           </>
         )}
-        <div className="space-y-2">
+        <div className="image-to-pdf-setting space-y-2">
           <label htmlFor="image-fit" className="text-sm font-semibold text-slate-700">Image fit</label>
           <select id="image-fit" value={fitMode} onChange={(event) => updateSetting(setFitMode, event.target.value)} className="w-full rounded-lg border border-slate-200 px-3 py-2.5">
             <option value="contain">Contain (show entire image)</option>
             <option value="fill">Fill page (may crop)</option>
           </select>
         </div>
-        <div className="space-y-2">
+        <div className="image-to-pdf-setting space-y-2">
           <label htmlFor="image-margin" className="text-sm font-semibold text-slate-700">Margin (points)</label>
           <input id="image-margin" type="number" min="0" max="300" value={margin} onChange={(event) => updateSetting(setMargin, Number(event.target.value))} className="w-full rounded-lg border border-slate-200 px-3 py-2.5" />
         </div>
-        <div className="space-y-2">
+        <div className="image-to-pdf-setting space-y-2">
           <label htmlFor="image-horizontal-alignment" className="text-sm font-semibold text-slate-700">Horizontal alignment</label>
           <select id="image-horizontal-alignment" value={horizontalAlignment} onChange={(event) => updateSetting(setHorizontalAlignment, event.target.value)} className="w-full rounded-lg border border-slate-200 px-3 py-2.5">
             <option value="left">Left</option>
@@ -536,7 +536,7 @@ const ImageToPdf = () => {
             <option value="right">Right</option>
           </select>
         </div>
-        <div className="space-y-2">
+        <div className="image-to-pdf-setting space-y-2">
           <label htmlFor="image-vertical-alignment" className="text-sm font-semibold text-slate-700">Vertical alignment</label>
           <select id="image-vertical-alignment" value={verticalAlignment} onChange={(event) => updateSetting(setVerticalAlignment, event.target.value)} className="w-full rounded-lg border border-slate-200 px-3 py-2.5">
             <option value="top">Top</option>
@@ -544,34 +544,34 @@ const ImageToPdf = () => {
             <option value="bottom">Bottom</option>
           </select>
         </div>
-        <div className="space-y-2">
+        <div className="image-to-pdf-setting space-y-2">
           <label htmlFor="image-max-width" className="text-sm font-semibold text-slate-700">Maximum width (px)</label>
           <input id="image-max-width" type="number" min="1" max="20000" value={maxWidth} onChange={(event) => updateSetting(setMaxWidth, Number(event.target.value))} className="w-full rounded-lg border border-slate-200 px-3 py-2.5" />
         </div>
-        <div className="space-y-2">
+        <div className="image-to-pdf-setting space-y-2">
           <label htmlFor="image-max-height" className="text-sm font-semibold text-slate-700">Maximum height (px)</label>
           <input id="image-max-height" type="number" min="1" max="20000" value={maxHeight} onChange={(event) => updateSetting(setMaxHeight, Number(event.target.value))} className="w-full rounded-lg border border-slate-200 px-3 py-2.5" />
         </div>
-        <div className="space-y-2">
+        <div className="image-to-pdf-setting space-y-2">
           <label htmlFor="image-scale" className="text-sm font-semibold text-slate-700">Scale (%)</label>
           <input id="image-scale" type="number" min="1" max="100" value={scalePercent} onChange={(event) => updateSetting(setScalePercent, Number(event.target.value))} className="w-full rounded-lg border border-slate-200 px-3 py-2.5" />
         </div>
-        <div className="space-y-2">
+        <div className="image-to-pdf-setting space-y-2">
           <label htmlFor="image-background-color" className="text-sm font-semibold text-slate-700">Page background color</label>
           <div className="flex items-center gap-3">
             <input id="image-background-color" type="color" value={backgroundColor} onChange={(event) => updateSetting(setBackgroundColor, event.target.value)} className="h-10 w-14 cursor-pointer rounded border border-slate-200 p-1" />
             <span className="text-sm text-slate-600">{backgroundColor.toUpperCase()}</span>
           </div>
         </div>
-        <div className="space-y-2">
+        <div className="image-to-pdf-setting space-y-2">
           <label htmlFor="jpeg-quality" className="text-sm font-semibold text-slate-700">JPEG quality ({Math.round(jpegQuality * 100)}%)</label>
           <input id="jpeg-quality" type="range" min="0.1" max="1" step="0.05" value={jpegQuality} onChange={(event) => updateSetting(setJpegQuality, Number(event.target.value))} className="w-full accent-blue-600" />
         </div>
-        <label className="inline-flex items-center justify-self-center self-center gap-2 text-sm font-medium text-slate-700">
+        <label className="image-to-pdf-setting inline-flex w-full items-center justify-center gap-2 text-sm font-medium text-slate-700">
           <input type="checkbox" checked={maintainAspect} onChange={(event) => updateSetting(setMaintainAspect, event.target.checked)} className="h-4 w-4 accent-blue-600" />
           Maintain aspect ratio
         </label>
-        <p className="text-xs leading-relaxed text-slate-500 md:col-span-2 lg:col-span-3">
+        <p className="image-to-pdf-setting text-xs leading-relaxed text-slate-500 md:col-span-2 lg:col-span-3">
           PNG and BMP inputs are encoded as PNG to retain decoded transparency; JPEG inputs are resized and re-encoded using the quality setting. All resizing uses temporary browser copies, not the originals.
         </p>
       </section>
