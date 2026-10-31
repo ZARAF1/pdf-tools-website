@@ -1,6 +1,9 @@
 import React, { useState, useCallback } from 'react';
+import { useToolExitGuard } from './ToolExitGuard';
 import useAccessibleDropzone from '../lib/useAccessibleDropzone';
 import { PDFDocument } from 'pdf-lib';
+import { recoverPdfPageTreeRoot } from '../lib/pdfPageTreeRecovery.mjs';
+import { FILE_DOWNLOAD_READY_MESSAGE } from '../lib/toolMessages.mjs';
 import { validateUnencryptedPdf } from '../lib/pdfValidation';
 import { motion } from 'framer-motion';
 import { 
@@ -16,6 +19,7 @@ import { AttachedFileActions, AttachedFileIcon } from './AttachedFileControls';
 
 const PdfSplitter = () => {
   const [file, setFile] = useState(null);
+  useToolExitGuard(Boolean(file));
   const [isProcessing, setIsProcessing] = useState(false);
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(false);
@@ -104,6 +108,7 @@ const PdfSplitter = () => {
     try {
       const arrayBuffer = await file.arrayBuffer();
       const srcDoc = await PDFDocument.load(arrayBuffer);
+      recoverPdfPageTreeRoot(srcDoc);
       const pageCount = srcDoc.getPageCount();
 
       if (mode === 'extract') {
@@ -188,24 +193,26 @@ const PdfSplitter = () => {
         </div>
       ) : (
         <div className="space-y-6">
-          <div className="pdf-attached-file-card flex items-center justify-between bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
-            <div className="flex items-center gap-4">
+          <div className="pdf-attached-file-card split-pdf-selected-file flex min-w-0 flex-col gap-3 bg-white p-3 rounded-xl border border-slate-200 shadow-sm sm:flex-row sm:items-center sm:justify-between sm:p-4">
+            <div className="split-pdf-file-details flex min-w-0 flex-1 items-center gap-3">
               <AttachedFileIcon />
-              <div className="truncate max-w-[200px] md:max-w-sm">
+              <div className="min-w-0 flex-1">
                 <p className="text-sm font-medium text-slate-700 truncate">{file.name}</p>
                 <p className="text-xs text-slate-400">{(file.size / 1024 / 1024).toFixed(2)} MB</p>
               </div>
             </div>
-            <AttachedFileActions
-              fileName={file.name}
-              onReplace={open}
-              onRemove={removeFile}
-              disabled={isProcessing}
-            />
+            <div className="split-pdf-file-actions self-end sm:self-auto">
+              <AttachedFileActions
+                fileName={file.name}
+                onReplace={open}
+                onRemove={removeFile}
+                disabled={isProcessing}
+              />
+            </div>
           </div>
 
           <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-6">
-            <div className="flex gap-4 border-b border-slate-100 pb-4" role="group" aria-label="Split action">
+            <div className="flex flex-wrap gap-4 border-b border-slate-100 pb-4" role="group" aria-label="Split action">
               <button
                 type="button"
                 aria-pressed={mode === 'extract'}
@@ -291,20 +298,22 @@ const PdfSplitter = () => {
           initial={{ opacity: 0, y: -10 }} 
           animate={{ opacity: 1, y: 0 }}
           role="status"
-          className="flex items-center gap-3 p-4 bg-green-50 text-green-700 rounded-xl border border-green-200"
+          className="split-pdf-result flex w-full min-w-0 flex-col gap-3 rounded-xl border border-green-200 bg-green-50 p-4 text-green-700"
         >
-          <CheckCircle2 className="w-5 h-5 flex-shrink-0" />
-          <div className="w-full space-y-3">
-            <p className="text-sm font-medium">{outputFiles.length} output PDF{outputFiles.length === 1 ? '' : 's'} ready. Choose which file to download.</p>
-            <div className="flex flex-col gap-2">
-              {outputFiles.map((output) => (
-                <div key={output.name} className="flex flex-col gap-2 rounded-lg border border-green-200 bg-white/70 p-3 sm:flex-row sm:items-center sm:justify-between">
-                  <span className="truncate text-sm font-medium">{output.name}</span>
-                  <button type="button" onClick={() => downloadOutput(output)} className="inline-flex shrink-0 items-center justify-center gap-2 rounded-lg bg-green-600 px-4 py-2 font-semibold text-white transition hover:bg-green-700">
-                    <Download className="h-4 w-4" aria-hidden="true" /> Download PDF
-                  </button>
-                </div>
-              ))}
+          <div className="split-pdf-result-content flex min-w-0 items-start gap-3">
+            <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0" />
+            <div className="min-w-0 flex-1 space-y-3">
+              <p className="text-sm font-medium">{FILE_DOWNLOAD_READY_MESSAGE}</p>
+              <div className="flex flex-col gap-2">
+                {outputFiles.map((output) => (
+                  <div key={output.name} className="split-pdf-output flex min-w-0 flex-col gap-2 rounded-lg border border-green-200 p-3 sm:flex-row sm:items-center sm:justify-between">
+                    <span className="split-pdf-output-name min-w-0 break-all text-sm font-medium">{output.name}</span>
+                    <button type="button" onClick={() => downloadOutput(output)} className="split-pdf-output-download inline-flex w-full shrink-0 items-center justify-center gap-2 rounded-lg bg-green-600 px-4 py-2 font-semibold text-white transition hover:bg-green-700 sm:w-auto">
+                      <Download className="h-4 w-4" aria-hidden="true" /> Download PDF
+                    </button>
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
         </motion.div>
