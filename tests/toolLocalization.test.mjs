@@ -26,6 +26,10 @@ const toolPageSource = await readFile(
   fileURLToPath(new URL('../src/components/ToolPage.jsx', import.meta.url)),
   'utf8'
 );
+const stylesheetSource = await readFile(
+  fileURLToPath(new URL('../src/index.css', import.meta.url)),
+  'utf8'
+);
 const relatedToolsSource = await readFile(
   fileURLToPath(new URL('../src/components/RelatedToolsCarousel.jsx', import.meta.url)),
   'utf8'
@@ -71,6 +75,21 @@ test('tool page title and metadata use the selected language', () => {
   assert.match(toolPageSource, /getLocalizedTool\(language, registeredTool\)/);
   assert.match(toolPageSource, /localizedTool\?\.name/);
   assert.match(toolPageSource, /localizedTool\?\.description/);
+});
+
+test('mobile tool introductions are summarized with an expandable full description', () => {
+  for (const { code } of SUPPORTED_LANGUAGES) {
+    for (const key of ['expandDescription', 'collapseDescription']) {
+      assert.notEqual(getMessage(code, key), key, `${code} is missing ${key}`);
+    }
+  }
+
+  assert.match(toolPageSource, /tool-detail-intro-copy/);
+  assert.match(toolPageSource, /aria-expanded=\{introExpanded\}/);
+  assert.match(toolPageSource, /translate\(introExpanded \? 'collapseDescription' : 'expandDescription'\)/);
+  assert.match(stylesheetSource, /@media \(max-width: 760px\)[\s\S]*?\.tool-detail-intro-copy[\s\S]*?-webkit-line-clamp: 4;/);
+  assert.match(stylesheetSource, /\.tool-detail-intro\.is-expanded \.tool-detail-intro-copy/);
+  assert.match(stylesheetSource, /\.tool-detail-intro-toggle[\s\S]*?text-align: start;/);
 });
 
 test('tool page shared guidance headings follow the selected language', () => {

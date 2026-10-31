@@ -1,5 +1,7 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { useToolExitGuard } from './ToolExitGuard';
 import { PDFDocument } from 'pdf-lib';
+import { FILE_DOWNLOAD_READY_MESSAGE } from '../lib/toolMessages.mjs';
 import { validateUnencryptedPdf } from '../lib/pdfValidation';
 import useAccessibleDropzone from '../lib/useAccessibleDropzone';
 import { ArrowLeft, ArrowRight, CheckCircle2, Download, Loader2, RotateCcw, Trash2, Upload } from 'lucide-react';
@@ -19,6 +21,7 @@ const canvasBlob = (canvas) => new Promise((resolve, reject) => {
 
 const RedactPdf = () => {
   const [file, setFile] = useState(null);
+  useToolExitGuard(Boolean(file));
   const [pageCount, setPageCount] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
   const [previews, setPreviews] = useState([]);
@@ -512,7 +515,7 @@ const RedactPdf = () => {
         </div>
       )}
       {isProcessing && <p className="sr-only" role="status">Creating the redacted PDF.</p>}
-      {output && <p className="text-sm text-emerald-700" role="status">Redacted PDF is ready to download.</p>}
+      {output && <p className="text-sm text-emerald-700" role="status">{FILE_DOWNLOAD_READY_MESSAGE}</p>}
     </div>
   );
 };

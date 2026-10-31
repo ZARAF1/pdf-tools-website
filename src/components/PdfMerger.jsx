@@ -1,6 +1,8 @@
 import React, { useState, useCallback, useEffect, useRef } from 'react';
+import { useToolExitGuard } from './ToolExitGuard';
 import useAccessibleDropzone from '../lib/useAccessibleDropzone';
 import { PDFDocument } from 'pdf-lib';
+import { FILE_DOWNLOAD_READY_MESSAGE } from '../lib/toolMessages.mjs';
 import { validateUnencryptedPdf } from '../lib/pdfValidation';
 import { motion, Reorder } from 'framer-motion';
 import { 
@@ -20,6 +22,7 @@ const MAX_FILES = 5;
 
 const PdfMerger = () => {
   const [files, setFiles] = useState([]);
+  useToolExitGuard(files.length > 0);
   const [isValidating, setIsValidating] = useState(false);
   const [isMerging, setIsMerging] = useState(false);
   const [error, setError] = useState(null);
@@ -436,7 +439,7 @@ const PdfMerger = () => {
           className="flex items-center gap-3 p-4 bg-green-50 text-green-700 rounded-xl border border-green-200"
         >
           <CheckCircle2 className="w-5 h-5 flex-shrink-0" />
-          <span className="text-sm font-medium">PDFs merged successfully. Your output is ready to download.</span>
+          <span className="text-sm font-medium">{FILE_DOWNLOAD_READY_MESSAGE}</span>
         </motion.div>
       )}
     </div>

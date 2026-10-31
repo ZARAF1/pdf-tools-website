@@ -1,6 +1,8 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { useToolExitGuard } from './ToolExitGuard';
 import useAccessibleDropzone from '../lib/useAccessibleDropzone';
 import { PDFDocument, PageSizes, rgb } from 'pdf-lib';
+import { FILE_DOWNLOAD_READY_MESSAGE } from '../lib/toolMessages.mjs';
 import {
   AlertCircle,
   CheckCircle2,
@@ -94,6 +96,8 @@ const ImageToPdf = () => {
   const { language } = useLanguage();
   const { imageToPdf: imageUi } = getLocalizedToolUi(language);
   const [images, setImages] = useState([]);
+  const [pendingImageCount, setPendingImageCount] = useState(0);
+  useToolExitGuard(images.length > 0 || pendingImageCount > 0);
   const pendingImageCountRef = useRef(0);
   const selectionGenerationRef = useRef(0);
   const replaceTargetRef = useRef(null);
@@ -145,6 +149,7 @@ const ImageToPdf = () => {
     if (!selection.files.length) return;
 
     pendingImageCountRef.current += selection.files.length;
+    setPendingImageCount(pendingImageCountRef.current);
     const selectionGeneration = selectionGenerationRef.current;
     try {
       const results = await Promise.allSettled(selection.files.map((file) => createImageEntry(file)));
@@ -174,6 +179,7 @@ const ImageToPdf = () => {
     } finally {
       if (selectionGeneration === selectionGenerationRef.current) {
         pendingImageCountRef.current -= selection.files.length;
+        setPendingImageCount(pendingImageCountRef.current);
       }
     }
   }, [images.length]);
@@ -270,6 +276,7 @@ const ImageToPdf = () => {
   const reset = () => {
     selectionGenerationRef.current += 1;
     pendingImageCountRef.current = 0;
+    setPendingImageCount(0);
     previewUrls.current.forEach((url) => URL.revokeObjectURL(url));
     previewUrls.current.clear();
     setImages([]);
@@ -644,7 +651,7 @@ const ImageToPdf = () => {
         <div role="status" className="image-to-pdf-result flex flex-col gap-4 rounded-xl border border-emerald-200 bg-emerald-50 p-4 text-emerald-900 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-center gap-3">
             <CheckCircle2 className="h-5 w-5 shrink-0" aria-hidden="true" />
-            <span className="text-sm font-medium">{formatToolUiMessage(imageUi.ready, { fileName: outputName, size: formatBytes(outputBytes.length) })}</span>
+            <span className="text-sm font-medium">{FILE_DOWNLOAD_READY_MESSAGE}</span>
           </div>
           <button type="button" onClick={downloadPdf} className="inline-flex items-center justify-center gap-2 rounded-lg bg-emerald-600 px-4 py-2 font-semibold text-white transition hover:bg-emerald-700">
             <Download className="h-4 w-4" aria-hidden="true" /> {imageUi.downloadPdf}

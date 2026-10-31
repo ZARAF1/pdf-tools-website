@@ -100,6 +100,29 @@ const extraTranslations = {
   'zh-CN': ['轻松使用 PDF 工具', '强大的 PDF 工具', '一站式完成。', '用于日常 PDF 任务的浏览器工具。每个工具页面都会说明处理方式和限制。', '浏览 PDF 工具', '浏览工具类别', 'PDF 工具类别', '所有 PDF 工具', '类别中的工具', '个工具可供选择', '浏览所有类别', '隐藏', '显示', '搜索 PDF 工具', '查找 PDF 工具', '清除搜索', '匹配的 PDF 工具', '没有匹配的工具']
 };
 
+const descriptionToggleTranslations = {
+  en: { expandDescription: 'Read full description', collapseDescription: 'Show less' },
+  es: { expandDescription: 'Leer descripción completa', collapseDescription: 'Mostrar menos' },
+  fr: { expandDescription: 'Lire la description complète', collapseDescription: 'Afficher moins' },
+  de: { expandDescription: 'Vollständige Beschreibung lesen', collapseDescription: 'Weniger anzeigen' },
+  pt: { expandDescription: 'Ler descrição completa', collapseDescription: 'Mostrar menos' },
+  it: { expandDescription: 'Leggi la descrizione completa', collapseDescription: 'Mostra meno' },
+  nl: { expandDescription: 'Volledige beschrijving lezen', collapseDescription: 'Minder weergeven' },
+  pl: { expandDescription: 'Przeczytaj pełny opis', collapseDescription: 'Pokaż mniej' },
+  sv: { expandDescription: 'Läs hela beskrivningen', collapseDescription: 'Visa mindre' },
+  fi: { expandDescription: 'Lue koko kuvaus', collapseDescription: 'Näytä vähemmän' },
+  da: { expandDescription: 'Læs hele beskrivelsen', collapseDescription: 'Vis mindre' },
+  nb: { expandDescription: 'Les hele beskrivelsen', collapseDescription: 'Vis mindre' },
+  tr: { expandDescription: 'Açıklamanın tamamını oku', collapseDescription: 'Daha az göster' },
+  ru: { expandDescription: 'Читать полное описание', collapseDescription: 'Показать меньше' },
+  uk: { expandDescription: 'Читати повний опис', collapseDescription: 'Показати менше' },
+  ar: { expandDescription: 'اقرأ الوصف الكامل', collapseDescription: 'عرض أقل' },
+  hi: { expandDescription: 'पूरा विवरण पढ़ें', collapseDescription: 'कम दिखाएँ' },
+  ja: { expandDescription: '説明全文を読む', collapseDescription: '折りたたむ' },
+  ko: { expandDescription: '전체 설명 읽기', collapseDescription: '간략히 보기' },
+  'zh-CN': { expandDescription: '阅读完整说明', collapseDescription: '收起' }
+};
+
 const workflowTranslations = {
   en: ['How to Use', 'How it works', 'Frequently Asked Questions', 'Upload to tool', 'Process document in browser', 'Download', 'Your selected files are processed in your browser and are not uploaded to a processing server. Learn more in our', 'Privacy Policy', 'Conversion status', 'Our Toolbox', 'Select a tool to get started', 'PDF tool workspace', 'Instructions and workflow', 'Attach PDF Here', 'Attach PDFs Here', 'Attach Images Here', 'Related tools'],
   es: ['Cómo usar', 'Cómo funciona', 'Preguntas frecuentes', 'Subir a la herramienta', 'Procesar el documento en el navegador', 'Descargar', 'Tus archivos se procesan en el navegador y no se envían a un servidor de procesamiento. Más información en nuestra', 'Política de privacidad', 'Estado de conversión', 'Nuestras herramientas', 'Selecciona una herramienta para comenzar', 'Espacio de trabajo PDF', 'Instrucciones y flujo de trabajo', 'Adjunta el PDF aquí', 'Adjunta los PDF aquí', 'Adjunta las imágenes aquí', 'Herramientas relacionadas'],
@@ -215,15 +238,40 @@ const routeErrorTranslations = {
   'zh-CN': { routeLoadFailed: '无法加载此页面。', reloadPage: '重新加载页面' }
 };
 
+const toolExitTranslations = {
+  en: { discardAttachedFiles: 'Leave this page?', discardAttachedFilesMessage: 'Your attached files will be removed if you leave this page.', stayOnPage: 'Stay on page', leavePage: 'Leave page' },
+  es: { discardAttachedFiles: '¿Salir de esta página?', discardAttachedFilesMessage: 'Si sales de esta página, se quitarán los archivos adjuntos.', stayOnPage: 'Permanecer en la página', leavePage: 'Salir de la página' },
+  fr: { discardAttachedFiles: 'Quitter cette page ?', discardAttachedFilesMessage: 'Vos fichiers joints seront supprimés si vous quittez cette page.', stayOnPage: 'Rester sur la page', leavePage: 'Quitter la page' },
+  de: { discardAttachedFiles: 'Diese Seite verlassen?', discardAttachedFilesMessage: 'Wenn Sie diese Seite verlassen, werden Ihre angehängten Dateien entfernt.', stayOnPage: 'Auf der Seite bleiben', leavePage: 'Seite verlassen' },
+  pt: { discardAttachedFiles: 'Sair desta página?', discardAttachedFilesMessage: 'Se sair desta página, seus arquivos anexados serão removidos.', stayOnPage: 'Permanecer na página', leavePage: 'Sair da página' },
+  it: { discardAttachedFiles: 'Vuoi lasciare questa pagina?', discardAttachedFilesMessage: 'Se lasci questa pagina, i file allegati verranno rimossi.', stayOnPage: 'Resta sulla pagina', leavePage: 'Lascia la pagina' },
+  nl: { discardAttachedFiles: 'Deze pagina verlaten?', discardAttachedFilesMessage: 'Als je deze pagina verlaat, worden je bijgevoegde bestanden verwijderd.', stayOnPage: 'Op de pagina blijven', leavePage: 'Pagina verlaten' },
+  pl: { discardAttachedFiles: 'Opuścić tę stronę?', discardAttachedFilesMessage: 'Dołączone pliki zostaną usunięte po opuszczeniu tej strony.', stayOnPage: 'Pozostań na stronie', leavePage: 'Opuść stronę' },
+  sv: { discardAttachedFiles: 'Lämna sidan?', discardAttachedFilesMessage: 'Dina bifogade filer tas bort om du lämnar sidan.', stayOnPage: 'Stanna kvar på sidan', leavePage: 'Lämna sidan' },
+  fi: { discardAttachedFiles: 'Poistutaanko tältä sivulta?', discardAttachedFilesMessage: 'Liitetyt tiedostosi poistetaan, jos poistut tältä sivulta.', stayOnPage: 'Pysy sivulla', leavePage: 'Poistu sivulta' },
+  da: { discardAttachedFiles: 'Forlad denne side?', discardAttachedFilesMessage: 'Dine vedhæftede filer fjernes, hvis du forlader denne side.', stayOnPage: 'Bliv på siden', leavePage: 'Forlad siden' },
+  nb: { discardAttachedFiles: 'Vil du forlate denne siden?', discardAttachedFilesMessage: 'De vedlagte filene fjernes hvis du forlater denne siden.', stayOnPage: 'Bli på siden', leavePage: 'Forlat siden' },
+  tr: { discardAttachedFiles: 'Bu sayfadan ayrılmak istiyor musunuz?', discardAttachedFilesMessage: 'Bu sayfadan ayrılırsanız ekli dosyalarınız kaldırılır.', stayOnPage: 'Sayfada kal', leavePage: 'Sayfadan ayrıl' },
+  ru: { discardAttachedFiles: 'Покинуть эту страницу?', discardAttachedFilesMessage: 'При уходе со страницы прикрепленные файлы будут удалены.', stayOnPage: 'Остаться на странице', leavePage: 'Покинуть страницу' },
+  uk: { discardAttachedFiles: 'Залишити цю сторінку?', discardAttachedFilesMessage: 'Якщо ви підете зі сторінки, прикріплені файли буде видалено.', stayOnPage: 'Залишитися на сторінці', leavePage: 'Залишити сторінку' },
+  ar: { discardAttachedFiles: 'هل تريد مغادرة هذه الصفحة؟', discardAttachedFilesMessage: 'ستتم إزالة الملفات المرفقة إذا غادرت هذه الصفحة.', stayOnPage: 'البقاء في الصفحة', leavePage: 'مغادرة الصفحة' },
+  hi: { discardAttachedFiles: 'क्या आप यह पेज छोड़ना चाहते हैं?', discardAttachedFilesMessage: 'पेज छोड़ने पर आपकी संलग्न फ़ाइलें हट जाएँगी।', stayOnPage: 'पेज पर रहें', leavePage: 'पेज छोड़ें' },
+  ja: { discardAttachedFiles: 'このページを離れますか？', discardAttachedFilesMessage: 'ページを離れると、添付ファイルは削除されます。', stayOnPage: 'ページにとどまる', leavePage: 'ページを離れる' },
+  ko: { discardAttachedFiles: '이 페이지를 나가시겠습니까?', discardAttachedFilesMessage: '페이지를 나가면 첨부한 파일이 제거됩니다.', stayOnPage: '페이지에 머무르기', leavePage: '페이지 나가기' },
+  'zh-CN': { discardAttachedFiles: '要离开此页面吗？', discardAttachedFilesMessage: '离开此页面后，已附加的文件将被移除。', stayOnPage: '留在此页面', leavePage: '离开页面' }
+};
+
 const messagesByLanguage = Object.fromEntries(
   SUPPORTED_LANGUAGES.map(({ code }) => [
     code,
     Object.fromEntries([
       ...keys.map((key, index) => [key, translations[code][index]]),
       ...extraKeys.map((key, index) => [key, extraTranslations[code][index]]),
+      ...Object.entries(descriptionToggleTranslations[code]),
       ...workflowKeys.map((key, index) => [key, workflowTranslations[code][index]]),
       ['loadingTool', routeLoadingTranslations[code]],
       ...Object.entries(routeErrorTranslations[code]),
+      ...Object.entries(toolExitTranslations[code]),
       ...Object.entries(sitePolicyTranslations[code]),
       ...Object.entries(navigationToggleTranslations[code])
     ])

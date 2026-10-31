@@ -1,5 +1,7 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { useToolExitGuard } from './ToolExitGuard';
 import { degrees, PDFDocument } from 'pdf-lib';
+import { FILE_DOWNLOAD_READY_MESSAGE } from '../lib/toolMessages.mjs';
 import { validateUnencryptedPdf } from '../lib/pdfValidation';
 import useAccessibleDropzone from '../lib/useAccessibleDropzone';
 import { ArrowDown, ArrowUp, CheckCircle2, Download, Loader2, RotateCw, Trash2, Upload } from 'lucide-react';
@@ -14,6 +16,7 @@ const formatBytes = (bytes) => (
 
 const OrganizePdf = () => {
   const [file, setFile] = useState(null);
+  useToolExitGuard(Boolean(file));
   const [pages, setPages] = useState([]);
   const [previews, setPreviews] = useState([]);
   const [previewSummaries, setPreviewSummaries] = useState([]);
@@ -360,7 +363,7 @@ const OrganizePdf = () => {
           </button>
         )}
       </div>
-      {output && <p className="text-sm text-emerald-700" role="status">Organized PDF is ready to download.</p>}
+      {output && <p className="text-sm text-emerald-700" role="status">{FILE_DOWNLOAD_READY_MESSAGE}</p>}
     </div>
   );
 };

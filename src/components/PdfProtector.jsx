@@ -1,6 +1,8 @@
 import React, { useState, useCallback } from 'react';
+import { useToolExitGuard } from './ToolExitGuard';
 import { validateUnencryptedPdf } from '../lib/pdfValidation';
 import { encryptPDF } from '@pdfsmaller/pdf-encrypt';
+import { FILE_DOWNLOAD_READY_MESSAGE } from '../lib/toolMessages.mjs';
 import useAccessibleDropzone from '../lib/useAccessibleDropzone';
 import { motion } from 'framer-motion';
 import {
@@ -14,6 +16,7 @@ import { AttachedFileActions, AttachedFileIcon } from './AttachedFileControls';
 
 const PdfProtector = () => {
   const [file, setFile] = useState(null);
+  useToolExitGuard(Boolean(file));
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [ownerPassword, setOwnerPassword] = useState('');
@@ -297,7 +300,7 @@ const PdfProtector = () => {
         >
           <CheckCircle2 className="w-5 h-5 flex-shrink-0" />
           <div className="flex w-full flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <span className="text-sm font-medium">{outputName} is ready. Click to download.</span>
+            <span className="text-sm font-medium">{FILE_DOWNLOAD_READY_MESSAGE}</span>
             <button type="button" onClick={downloadProtectedPdf} className="rounded-lg bg-green-600 px-4 py-2 font-semibold text-white transition hover:bg-green-700">
               Download Protected PDF
             </button>

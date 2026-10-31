@@ -1,6 +1,8 @@
 import React, { useCallback, useState } from 'react';
+import { useToolExitGuard } from './ToolExitGuard';
 import { decryptPDF, isEncrypted } from '@pdfsmaller/pdf-decrypt';
 import { PDFDocument } from 'pdf-lib';
+import { FILE_DOWNLOAD_READY_MESSAGE } from '../lib/toolMessages.mjs';
 import pdfjsLib from '../lib/pdfjsClient';
 import useAccessibleDropzone from '../lib/useAccessibleDropzone';
 import {
@@ -35,6 +37,7 @@ const getErrorMessage = (error) => {
 
 const UnlockPdf = () => {
   const [file, setFile] = useState(null);
+  useToolExitGuard(Boolean(file));
   const [pageCount, setPageCount] = useState(0);
   const [algorithm, setAlgorithm] = useState('');
   const [password, setPassword] = useState('');
@@ -274,7 +277,7 @@ const UnlockPdf = () => {
         <section className="site-surface flex flex-col gap-3 rounded-2xl border border-slate-200 p-5 sm:flex-row sm:items-center sm:justify-between">
           <p className="flex items-center gap-2 font-semibold text-slate-800" role="status">
             <CheckCircle2 className="h-5 w-5 text-green-600" aria-hidden="true" />
-            {outputName} is ready. Verified as an unencrypted {pageCount}-page PDF.
+            {FILE_DOWNLOAD_READY_MESSAGE}
           </p>
           <button
             type="button"

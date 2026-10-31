@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowRight, Download, FileText, Upload } from 'lucide-react';
 import AdSlot from './AdSlot';
@@ -397,6 +397,8 @@ const ATTACHMENT_RULES = {
 
 const ToolPage = ({ tool, children }) => {
   const { language, translate } = useLanguage();
+  const [expandedIntro, setExpandedIntro] = useState({ tool, isExpanded: false });
+  const introExpanded = expandedIntro.tool === tool && expandedIntro.isExpanded;
   const content = TOOL_CONTENT[tool];
   const registeredTool = TOOL_REGISTRY.find((item) => item.id === tool);
   const localizedTool = registeredTool ? getLocalizedTool(language, registeredTool) : null;
@@ -448,16 +450,27 @@ const ToolPage = ({ tool, children }) => {
   return (
     <article className="space-y-8">
       <header className="tool-detail-hero">
-        <div className="tool-detail-heading">
-          <span className="tool-detail-icon" aria-hidden="true">
-            <ToolIcon className="h-7 w-7" />
-          </span>
-          <p className="tool-detail-category">{categoryName}</p>
-          <h1 className="tool-detail-title">{pageTitleText}</h1>
-          <p className="tool-detail-description">{pageDescription}</p>
+        <div className="tool-detail-hero-main">
+          <div className="tool-detail-heading">
+            <span className="tool-detail-icon" aria-hidden="true">
+              <ToolIcon className="h-7 w-7" />
+            </span>
+            <p className="tool-detail-category">{categoryName}</p>
+            <h1 className="tool-detail-title">{pageTitleText}</h1>
+            <p className="tool-detail-description">{pageDescription}</p>
+          </div>
         </div>
-        <div className="tool-detail-intro">
-          <p>{localizedContent.intro}</p>
+        <div className={`tool-detail-intro${introExpanded ? ' is-expanded' : ''}`}>
+          <p id={`${tool}-intro`} className="tool-detail-intro-copy">{localizedContent.intro}</p>
+          <button
+            type="button"
+            className="tool-detail-intro-toggle"
+            aria-controls={`${tool}-intro`}
+            aria-expanded={introExpanded}
+            onClick={() => setExpandedIntro({ tool, isExpanded: !introExpanded })}
+          >
+            {translate(introExpanded ? 'collapseDescription' : 'expandDescription')}
+          </button>
         </div>
       </header>
 

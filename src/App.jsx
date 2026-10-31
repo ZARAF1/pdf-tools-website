@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route, Link, NavLink, useLocation, use
 import {
   BookOpenText,
   Check,
+  ChevronLeft,
   ChevronRight,
   CircleHelp,
   Grid2X2,
@@ -37,6 +38,7 @@ const SignPdf = lazy(() => import('./components/SignPdf'));
 const EditPdf = lazy(() => import('./components/EditPdf'));
 import OfficeConversionNotice from './components/OfficeConversionNotice';
 import ToolPage from './components/ToolPage';
+import { ToolExitGuardProvider } from './components/ToolExitGuard';
 import { NotFoundPage, SitePages } from './components/SitePages';
 import Footer from './components/Footer';
 import LanguagePicker from './components/LanguagePicker';
@@ -95,6 +97,29 @@ const RouteErrorBoundaryWithLocation = ({ children, fallback }) => {
     <RouteErrorBoundary key={pathname} fallback={fallback}>
       {children}
     </RouteErrorBoundary>
+  );
+};
+
+const NavigationCollapseButton = ({ isSidebarCollapsed, onToggleSidebar, className }) => {
+  const { translate } = useLanguage();
+
+  return (
+    <button
+      type="button"
+      className={className}
+      aria-label={translate(isSidebarCollapsed ? 'expandNavigation' : 'collapseNavigation')}
+      title={translate(isSidebarCollapsed ? 'expandNavigation' : 'collapseNavigation')}
+      aria-pressed={isSidebarCollapsed}
+      aria-controls="site-left-navigation"
+      onClick={onToggleSidebar}
+    >
+      {isSidebarCollapsed
+        ? <PanelLeftOpen className="site-left-collapse-panel-icon" aria-hidden="true" />
+        : <PanelLeftClose className="site-left-collapse-panel-icon" aria-hidden="true" />}
+      {isSidebarCollapsed
+        ? <ChevronRight className="site-left-collapse-arrow-icon" aria-hidden="true" />
+        : <ChevronLeft className="site-left-collapse-arrow-icon" aria-hidden="true" />}
+    </button>
   );
 };
 
@@ -169,6 +194,10 @@ const LeftNavigation = ({ theme, setTheme, isSidebarCollapsed, onToggleSidebar }
   useEffect(() => {
     setActiveMenu(null);
   }, [pathname]);
+
+  useEffect(() => {
+    setActiveMenu(null);
+  }, [isSidebarCollapsed]);
 
   useEffect(() => {
     if (!activeMenu) return undefined;
@@ -251,6 +280,7 @@ const LeftNavigation = ({ theme, setTheme, isSidebarCollapsed, onToggleSidebar }
 
   return (
     <aside
+      id="site-left-navigation"
       className={`site-left-navigation${isSidebarCollapsed ? ' is-collapsed' : ''}${activeMenu ? ' is-mega-menu-open' : ''}`}
       aria-label={translate('mainNavigation')}
       onKeyDown={(event) => {
@@ -342,21 +372,14 @@ const LeftNavigation = ({ theme, setTheme, isSidebarCollapsed, onToggleSidebar }
       </nav>
 
       <div className="site-left-collapse-control">
-        <button
-          type="button"
+        <NavigationCollapseButton
           className="site-left-collapse-button"
-          aria-label={translate(isSidebarCollapsed ? 'expandNavigation' : 'collapseNavigation')}
-          title={translate(isSidebarCollapsed ? 'expandNavigation' : 'collapseNavigation')}
-          aria-pressed={isSidebarCollapsed}
-          onClick={() => {
+          isSidebarCollapsed={isSidebarCollapsed}
+          onToggleSidebar={() => {
             setActiveMenu(null);
             onToggleSidebar();
           }}
-        >
-          {isSidebarCollapsed
-            ? <PanelLeftOpen aria-hidden="true" />
-            : <PanelLeftClose aria-hidden="true" />}
-        </button>
+        />
       </div>
 
       <div className="site-left-bottom">
@@ -584,6 +607,7 @@ function App() {
   return (
     <LanguageProvider>
     <Router>
+      <ToolExitGuardProvider>
       <div className={`site-app-shell${isSidebarCollapsed ? ' is-sidebar-collapsed' : ''}`}>
         <RouteFocusManager />
         <a className="skip-to-content" href="#main-content">Skip to main content</a>
@@ -650,6 +674,7 @@ function App() {
         <Footer />
         </div>
       </div>
+      </ToolExitGuardProvider>
     </Router>
     </LanguageProvider>
   );

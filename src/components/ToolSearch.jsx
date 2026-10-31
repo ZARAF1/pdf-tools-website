@@ -1,12 +1,13 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { Search, X } from 'lucide-react';
 import { TOOL_CATEGORIES, TOOL_REGISTRY } from './toolRegistry';
 import { useLanguage } from '../i18n/useLanguage';
+import { useToolExitControls } from './ToolExitGuard';
 import { getLocalizedTool } from '../i18n/toolTranslations.mjs';
 
 const ToolSearch = () => {
   const { language, translate } = useLanguage();
+  const { requestToolNavigation } = useToolExitControls();
   const [query, setQuery] = useState('');
   const [isOpen, setIsOpen] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
@@ -19,7 +20,6 @@ const ToolSearch = () => {
   const triggerRef = useRef(null);
   const closeTimerRef = useRef(null);
   const boundaryTimerRef = useRef(null);
-  const navigate = useNavigate();
 
   useEffect(() => () => {
     if (closeTimerRef.current) window.clearTimeout(closeTimerRef.current);
@@ -39,7 +39,7 @@ const ToolSearch = () => {
   }, [language, query, translate]);
 
   const openTool = (tool) => {
-    navigate(tool.path);
+    requestToolNavigation(tool.path, inputRef.current);
     closeSearch();
     inputRef.current?.blur();
   };
@@ -135,9 +135,6 @@ const ToolSearch = () => {
       onBlur={handleContainerBlur}
       onKeyDown={handleKeyDown}
       className={`tool-search-shell${isExpanded ? ' is-expanded' : ''}${isClosing ? ' is-closing' : ''}${isBoundaryEnding ? ' is-boundary-ending' : ''}`}
-      style={isExpanded && window.matchMedia('(max-width: 900px)').matches
-        ? { width: 'calc(100vw - 17rem)' }
-        : undefined}
     >
       <label htmlFor="tool-search" className="sr-only">{translate('searchPdfTools')}</label>
       <button

@@ -1,7 +1,9 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { useToolExitGuard } from './ToolExitGuard';
 import useAccessibleDropzone from '../lib/useAccessibleDropzone';
 import { ArrowLeft, ArrowRight, Download, Loader2, RotateCcw, Upload, ZoomIn, ZoomOut } from 'lucide-react';
 import { PDFDocument } from 'pdf-lib';
+import { FILE_DOWNLOAD_READY_MESSAGE } from '../lib/toolMessages.mjs';
 import pdfjsLib from '../lib/pdfjsClient';
 import { validateUnencryptedPdf } from '../lib/pdfValidation';
 import { AttachedFileActions, AttachedFileIcon } from './AttachedFileControls';
@@ -77,6 +79,7 @@ const rectanglesMatch = (actual, expected) => (
 
 const CropPdf = () => {
   const [file, setFile] = useState(null);
+  useToolExitGuard(Boolean(file));
   const [pdfjsDocument, setPdfjsDocument] = useState(null);
   const [pageCount, setPageCount] = useState(0);
   const [currentPage, setCurrentPage] = useState(0);
@@ -496,7 +499,7 @@ const CropPdf = () => {
       setOutput(new Blob([bytes], { type: 'application/pdf' }));
       setPageCrops(cropMap);
       setDraftCrops((current) => ({ ...current, ...cropMap }));
-      setStatus(`Crop applied to ${pageIndices.length === 1 ? `page ${pageIndices[0] + 1}` : `${pageIndices.length} pages`}. The validated PDF is ready to download.`);
+      setStatus(FILE_DOWNLOAD_READY_MESSAGE);
     } catch (processError) {
       console.error('Unable to crop PDF:', processError);
       setError(processError?.message || 'The PDF could not be cropped. Try another document.');

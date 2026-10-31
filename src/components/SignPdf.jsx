@@ -1,5 +1,7 @@
 import React, { useCallback, useRef, useState } from 'react';
+import { useToolExitGuard } from './ToolExitGuard';
 import { PDFDocument, StandardFonts } from 'pdf-lib';
+import { FILE_DOWNLOAD_READY_MESSAGE } from '../lib/toolMessages.mjs';
 import { validateUnencryptedPdf } from '../lib/pdfValidation';
 import useAccessibleDropzone from '../lib/useAccessibleDropzone';
 import { CheckCircle2, Download, Loader2, PenLine, Trash2, Upload } from 'lucide-react';
@@ -42,6 +44,7 @@ const SignPdf = () => {
   const [signatureText, setSignatureText] = useState('');
   const [signatureFont, setSignatureFont] = useState('HelveticaOblique');
   const [signatureImage, setSignatureImage] = useState(null);
+  useToolExitGuard(Boolean(file || signatureImage));
   const [signatureImageFormat, setSignatureImageFormat] = useState('');
   const [signatureImageName, setSignatureImageName] = useState('');
   const [selectionMode, setSelectionMode] = useState('all');
@@ -438,7 +441,7 @@ const SignPdf = () => {
           {output && <button type="button" onClick={downloadPdf} className="inline-flex items-center gap-2 rounded-lg bg-emerald-600 px-5 py-3 font-semibold text-white transition hover:bg-emerald-700"><Download className="h-5 w-5" aria-hidden="true" /> Download Signed PDF</button>}
         </div>
       )}
-      {output && <p className="text-sm text-emerald-700" role="status">Signed PDF is ready to download. This is a visible signature only, not a cryptographic signature.</p>}
+      {output && <p className="text-sm text-emerald-700" role="status">{FILE_DOWNLOAD_READY_MESSAGE}</p>}
       <p className="rounded-lg bg-amber-50 p-3 text-sm text-amber-900">A visible signature does not verify identity, create a certificate signature, or prevent later changes.</p>
     </div>
   );

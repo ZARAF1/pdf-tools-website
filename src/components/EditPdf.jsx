@@ -1,5 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useToolExitGuard } from './ToolExitGuard';
 import { PDFDocument, StandardFonts, rgb } from 'pdf-lib';
+import { FILE_DOWNLOAD_READY_MESSAGE } from '../lib/toolMessages.mjs';
 import useAccessibleDropzone from '../lib/useAccessibleDropzone';
 import {
   ArrowDown,
@@ -216,6 +218,7 @@ const EditorItem = ({ item, selected }) => {
 
 const EditPdf = () => {
   const [file, setFile] = useState(null);
+  useToolExitGuard(Boolean(file));
   const [sourceBytes, setSourceBytes] = useState(null);
   const [pageCount, setPageCount] = useState(0);
   const [pdfjsDocument, setPdfjsDocument] = useState(null);
@@ -984,7 +987,7 @@ const EditPdf = () => {
       }
       if (verified.isEncrypted) throw new Error('The saved PDF should not be password-protected.');
       setOutput(new Blob([bytes], { type: 'application/pdf' }));
-      setStatus(`Edited PDF is ready. Verified ${verified.getPageCount()} ${verified.getPageCount() === 1 ? 'page' : 'pages'}.`);
+      setStatus(FILE_DOWNLOAD_READY_MESSAGE);
     } catch (saveError) {
       console.error('Unable to save edited PDF:', saveError);
       setError(saveError?.message || 'The edited PDF could not be generated or validated.');
@@ -1352,7 +1355,7 @@ const EditPdf = () => {
 
           <div className="pdf-editor-save-row">
             <p className={`text-sm font-medium ${hasChanges && !output ? 'pdf-editor-unsaved' : 'pdf-editor-secondary'}`}>
-              {output ? 'Saved edits — ready to download' : hasChanges ? 'Unsaved edits' : 'No unsaved edits'}
+              {output ? FILE_DOWNLOAD_READY_MESSAGE : hasChanges ? 'Unsaved edits' : 'No unsaved edits'}
             </p>
             <div className="flex flex-wrap gap-2">
               <button type="button" onClick={clearWorkspace} disabled={isSaving || isLoading} className="pdf-editor-action-button">

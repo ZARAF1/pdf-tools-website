@@ -36,6 +36,8 @@ test('every supported language has localized navigation and category labels', ()
     'frequentlyAskedQuestions', 'uploadToTool', 'processDocumentInBrowser',
     'download', 'filesStayInBrowser', 'privacyPolicy', 'conversionStatus',
     'loadingTool', 'routeLoadFailed', 'reloadPage',
+    'discardAttachedFiles', 'discardAttachedFilesMessage',
+    'stayOnPage', 'leavePage',
     'toolbox', 'selectToolToGetStarted', 'toolWorkspace',
     'instructionsAndWorkflow', 'attachPdfHere', 'attachPdfsHere',
     'attachImagesHere', 'relatedTools'

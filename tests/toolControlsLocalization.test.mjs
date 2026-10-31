@@ -26,7 +26,7 @@ const imageControlKeys = [
   'margin', 'horizontalAlignment', 'left', 'center', 'right', 'verticalAlignment',
   'top', 'middle', 'bottom', 'maximumWidth', 'maximumHeight', 'scale',
   'pageBackgroundColor', 'jpegQuality', 'maintainAspectRatio', 'encodingNote',
-  'reset', 'addMoreImages', 'createPdf', 'creatingPdf', 'page', 'pages', 'ready',
+  'reset', 'addMoreImages', 'createPdf', 'creatingPdf', 'page', 'pages',
   'downloadPdf'
 ];
 
@@ -40,6 +40,7 @@ test('every bundled language has localized image attachment and control labels',
     for (const key of imageControlKeys) {
       assert.ok(localized.imageToPdf[key], `${code} is missing imageToPdf.${key}`);
     }
+    assert.ok(localized.imageToPdf.ready, `${code} is missing imageToPdf.ready`);
 
     if (code !== 'en') {
       for (const key of ['uploadPrompt', 'pageSize', 'createPdf', 'reset', 'downloadPdf']) {

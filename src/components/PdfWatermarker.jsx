@@ -1,6 +1,8 @@
 import React, { useCallback, useRef, useState } from 'react';
+import { useToolExitGuard } from './ToolExitGuard';
 import useAccessibleDropzone from '../lib/useAccessibleDropzone';
 import { PDFDocument, StandardFonts, degrees, rgb } from 'pdf-lib';
+import { FILE_DOWNLOAD_READY_MESSAGE } from '../lib/toolMessages.mjs';
 import { validateUnencryptedPdf } from '../lib/pdfValidation';
 import { motion } from 'framer-motion';
 import {
@@ -124,6 +126,7 @@ const downloadBlob = (bytes, filename) => {
 
 const PdfWatermarker = () => {
   const [file, setFile] = useState(null);
+  useToolExitGuard(Boolean(file));
   const [pageCount, setPageCount] = useState(null);
   const [isLoadingPages, setIsLoadingPages] = useState(false);
   const [settings, setSettings] = useState(DEFAULT_SETTINGS);
@@ -708,13 +711,7 @@ const PdfWatermarker = () => {
         >
           <div className="flex items-center gap-3">
             <CheckCircle2 className="w-5 h-5 flex-shrink-0" />
-            <span className="text-sm font-medium">
-              {settings.watermarkEnabled && settings.numberingEnabled
-                ? 'Watermarks and page numbers were added.'
-                : settings.watermarkEnabled
-                  ? `Watermark added to ${settings.pageMode === 'all' ? 'all pages' : 'the selected pages'}.`
-                  : 'Page numbers were added.'}
-            </span>
+            <span className="text-sm font-medium">{FILE_DOWNLOAD_READY_MESSAGE}</span>
           </div>
           <button
             type="button"

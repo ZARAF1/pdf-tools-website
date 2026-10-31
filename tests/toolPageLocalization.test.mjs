@@ -135,7 +135,7 @@ test('translated Unlock PDF limits retain the supported encryption algorithms', 
 
 test('tool page renders the localized introduction, attachment guidance, and guide steps', () => {
   assert.match(toolPageSource, /getLocalizedToolPage\(/);
-  assert.match(toolPageSource, /<p>\{localizedContent\.intro\}<\/p>/);
+  assert.match(toolPageSource, /className="tool-detail-intro-copy">\{localizedContent\.intro\}<\/p>/);
   assert.match(toolPageSource, /\{localizedContent\.attachment\.rule\}/);
   assert.match(toolPageSource, /\{localizedContent\.attachment\.info\}/);
   assert.match(toolPageSource, /localizedContent\.steps\.map/);

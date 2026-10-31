@@ -143,6 +143,10 @@ body {
   height: 1.75rem;
 }
 
+.site-left-collapse-arrow-icon {
+  display: none;
+}
+
 .site-left-primary-nav,
 .site-left-category-nav {
   display: flex;
@@ -418,6 +422,7 @@ body {
   justify-content: space-between;
   gap: 1rem;
   padding: 0.75rem clamp(1rem, 3vw, 2rem);
+  padding-right: calc(clamp(1rem, 3vw, 2rem) + 10.5rem);
   border-bottom: 1px solid var(--border-color);
   background: color-mix(in srgb, var(--surface-background) 94%, transparent);
   backdrop-filter: blur(14px);
@@ -461,6 +466,7 @@ body {
 
 .tool-search-shell.is-expanded {
   width: min(42rem, 55vw);
+  max-width: 100%;
 }
 
 .tool-search-trigger {
@@ -874,6 +880,77 @@ body {
   box-shadow: 0 18px 48px rgb(15 23 42 / 0.07);
 }
 
+.tool-detail-hero-main {
+  display: grid;
+  justify-items: start;
+  min-width: 0;
+}
+
+.tool-exit-dialog-backdrop {
+  position: fixed;
+  z-index: 9999;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 1.25rem;
+  background: rgb(15 23 42 / 0.64);
+  backdrop-filter: blur(0.2rem);
+}
+
+.tool-exit-dialog {
+  width: min(100%, 30rem);
+  padding: 1.5rem;
+  border: 1px solid #cbd5e1;
+  border-radius: 1.25rem;
+  background: #ffffff;
+  box-shadow: 0 24px 70px rgb(15 23 42 / 0.28);
+  color: #0f172a;
+}
+
+.tool-exit-dialog h2 {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 750;
+}
+
+.tool-exit-dialog p {
+  margin: 0.75rem 0 0;
+  color: #475569;
+  line-height: 1.6;
+}
+
+.tool-exit-dialog-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  margin-top: 1.5rem;
+}
+
+.tool-exit-dialog-actions button {
+  min-height: 2.75rem;
+  padding: 0.625rem 1rem;
+  border: 1px solid transparent;
+  border-radius: 0.75rem;
+  font-weight: 700;
+}
+
+.tool-exit-cancel-button {
+  border-color: #cbd5e1 !important;
+  background: #ffffff;
+  color: #1e293b;
+}
+
+.tool-exit-confirm-button {
+  background: #1d4ed8;
+  color: #ffffff;
+}
+
+.tool-exit-dialog-actions button:focus-visible {
+  outline: 3px solid #60a5fa;
+  outline-offset: 3px;
+}
+
 .tool-detail-heading {
   min-width: 0;
 }
@@ -927,13 +1004,17 @@ body {
   border-left: 1px solid #cbd5e1;
 }
 
-.tool-detail-intro p {
+.tool-detail-intro-copy {
   max-width: 68ch;
   margin: 0;
   color: #334155;
   font-size: clamp(1rem, 1.25vw, 1.125rem);
   line-height: 1.85;
   text-wrap: pretty;
+}
+
+.tool-detail-intro-toggle {
+  display: none;
 }
 
 .category-page {
@@ -1620,6 +1701,22 @@ body {
   box-shadow: 0 18px 48px rgb(0 0 0 / 0.22);
 }
 
+:root[data-theme='dark'] .tool-exit-dialog {
+  border-color: #475569;
+  background: #111c2e;
+  color: #f8fafc;
+}
+
+:root[data-theme='dark'] .tool-exit-dialog p {
+  color: #cbd5e1;
+}
+
+:root[data-theme='dark'] .tool-exit-cancel-button {
+  border-color: #475569 !important;
+  background: #172b45;
+  color: #e2e8f0;
+}
+
 :root[data-theme='dark'] .tool-detail-icon {
   border-color: #1e3a5f;
   background: #172b45;
@@ -1636,8 +1733,12 @@ body {
 }
 
 :root[data-theme='dark'] .tool-detail-description,
-:root[data-theme='dark'] .tool-detail-intro p {
+:root[data-theme='dark'] .tool-detail-intro-copy {
   color: #cbd5e1;
+}
+
+:root[data-theme='dark'] .tool-detail-intro-toggle {
+  color: #93c5fd;
 }
 
 :root[data-theme='dark'] .tool-detail-intro {
@@ -1831,6 +1932,43 @@ body {
     padding-left: 0;
     border-top: 1px solid #cbd5e1;
     border-left: 0;
+  }
+
+  .tool-detail-intro-copy {
+    display: -webkit-box;
+    overflow: hidden;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 4;
+    line-clamp: 4;
+  }
+
+  .tool-detail-intro.is-expanded .tool-detail-intro-copy {
+    display: block;
+    overflow: visible;
+    -webkit-line-clamp: unset;
+    line-clamp: unset;
+  }
+
+  .tool-detail-intro-toggle {
+    display: inline-flex;
+    margin-top: 0.75rem;
+    border: 0;
+    padding: 0;
+    background: transparent;
+    color: #1d4ed8;
+    font: inherit;
+    font-size: 0.875rem;
+    font-weight: 650;
+    text-align: start;
+    text-decoration: underline;
+    text-underline-offset: 0.15em;
+    cursor: pointer;
+  }
+
+  .tool-detail-intro-toggle:focus-visible {
+    border-radius: 0.2rem;
+    outline: 2px solid #2563eb;
+    outline-offset: 3px;
   }
 
   :root[data-theme='dark'] .tool-detail-intro {
@@ -3170,7 +3308,7 @@ body {
 
 .tool-attachment-section {
   position: relative;
-  overflow: hidden;
+  overflow: visible;
   border: 1px solid #bfdbfe;
   border-radius: 1.25rem;
   background:
@@ -3301,6 +3439,42 @@ body {
   box-shadow: 0 1px 2px rgb(15 23 42 / 0.08);
 }
 
+.split-pdf-selected-file {
+  min-width: 0;
+  max-width: 100%;
+}
+
+.split-pdf-file-details {
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+.split-pdf-file-actions {
+  flex: 0 0 auto;
+}
+
+.split-pdf-result-content {
+  width: 100%;
+  min-width: 0;
+}
+
+.split-pdf-output {
+  width: 100%;
+  min-width: 0;
+  border-color: var(--border-color);
+  background: var(--surface-background);
+}
+
+.split-pdf-output-name {
+  min-width: 0;
+  color: var(--text-primary);
+  overflow-wrap: anywhere;
+}
+
+.split-pdf-output-download {
+  max-width: 100%;
+}
+
 .edit-sign-upload-zone.has-file,
 .pdf-editor-upload-zone.has-file {
   border-style: solid;
@@ -3327,8 +3501,12 @@ body {
 
 .pdf-attached-file-actions {
   display: inline-flex;
-  flex: 0 0 auto;
+  min-width: 0;
+  max-width: 100%;
+  flex: 0 1 auto;
+  flex-wrap: wrap;
   align-items: center;
+  justify-content: flex-end;
   gap: 0.25rem;
 }
 
@@ -4229,6 +4407,10 @@ body {
     padding-inline: 0.15rem;
     font-size: 0.65rem;
   }
+
+  .pdf-attached-file-actions {
+    max-width: 2.25rem;
+  }
 }
 
 :root[data-theme='dark'] .site-left-navigation,
@@ -4291,18 +4473,92 @@ body {
     align-items: center;
   }
 
-  .site-left-brand-row {
-    justify-content: center;
+  .site-app-shell.is-sidebar-collapsed .site-left-navigation {
+    width: 0;
+    align-items: flex-start;
+    border-right: 0;
+    box-shadow: none;
+  }
+
+  .site-app-shell.is-sidebar-collapsed .site-left-navigation > :not(.site-left-collapse-control) {
+    visibility: hidden;
+  }
+
+  .site-app-shell.is-sidebar-collapsed .site-workspace {
+    margin-left: 0;
+  }
+
+  .site-left-collapse-control {
+    position: static;
+    display: flex;
     width: 100%;
+    justify-content: center;
+    margin-top: auto;
+    margin-bottom: 0.75rem;
     padding-inline: 0;
   }
 
   .site-left-collapse-button {
+    display: grid;
+    width: 2.75rem;
+    height: 2.75rem;
+    border: 0;
+    border-radius: 0.55rem;
+    background: transparent;
+    box-shadow: none;
+  }
+
+  .site-left-collapse-panel-icon {
+    display: block;
+  }
+
+  .site-left-collapse-arrow-icon {
     display: none;
   }
 
-  .site-left-collapse-control {
+  .site-app-shell.is-sidebar-collapsed .site-left-collapse-control {
+    position: fixed;
+    z-index: 81;
+    top: 50%;
+    left: 0;
+    bottom: auto;
+    width: auto;
+    margin: 0;
+    padding: 0;
+    transform: translateY(-50%);
+    transition: left 180ms ease, transform 180ms ease;
+    pointer-events: auto;
+  }
+
+  .site-app-shell.is-sidebar-collapsed .site-left-collapse-button {
+    border: 1px solid var(--border-color);
+    border-radius: 0 0.75rem 0.75rem 0;
+    background: var(--surface-background);
+    box-shadow: 0 4px 14px rgb(15 23 42 / 0.18);
+  }
+
+  .site-app-shell.is-sidebar-collapsed .site-left-collapse-panel-icon {
     display: none;
+  }
+
+  .site-app-shell.is-sidebar-collapsed .site-left-collapse-arrow-icon {
+    display: block;
+    width: 1.35rem;
+    height: 1.35rem;
+  }
+
+  .site-app-shell.is-sidebar-collapsed .site-left-navigation {
+    pointer-events: none;
+  }
+
+  .site-app-shell.is-sidebar-collapsed .site-left-collapse-button {
+    pointer-events: auto;
+  }
+
+  .site-left-brand-row {
+    justify-content: center;
+    width: 100%;
+    padding-inline: 0;
   }
 
   .site-left-brand {
@@ -4381,12 +4637,17 @@ body {
 
   .site-topbar {
     min-height: 4.5rem;
-    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-columns: minmax(0, 1fr);
     padding-inline: 0.75rem;
+    padding-right: 10.5rem;
   }
 
   .tool-search-shell.is-expanded {
-    width: calc(100vw - 17rem) !important;
+    width: 100% !important;
+  }
+
+  .tool-search-panel {
+    width: min(18rem, calc(100vw - 7.5rem));
   }
 
   .site-topbar-utility {
@@ -4430,6 +4691,7 @@ body {
 @media (max-width: 580px) {
   .site-topbar {
     grid-template-columns: minmax(0, 1fr);
+    padding-right: 10.5rem;
   }
 
   .site-topbar-utility {

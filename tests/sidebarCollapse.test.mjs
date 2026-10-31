@@ -16,7 +16,20 @@ test('main navigation has an accessible desktop collapse toggle and positions fl
   assert.match(app, /railWidth = isMobile \|\| isSidebarCollapsed \? 76 : 240/);
 });
 
-test('utility icons stay top-right and the collapse toggle occupies the lower rail edge', () => {
+test('mobile navigation uses the existing rail collapse control without taking search space', () => {
+  assert.match(app, /aria-controls="site-left-navigation"/);
+  assert.match(app, /id="site-left-navigation"/);
+  assert.match(app, /<NavigationCollapseButton\s+className="site-left-collapse-button"/);
+  assert.match(app, /const NavigationCollapseButton =/);
+  assert.doesNotMatch(app, /site-mobile-navigation-toggle/);
+  assert.match(styles, /@media \(max-width:\s*900px\)\s*\{[\s\S]*?\.site-left-collapse-control\s*\{[^}]*display:\s*flex;[^}]*width:\s*100%;[^}]*justify-content:\s*center;[^}]*margin-bottom:\s*0\.75rem/);
+  assert.match(styles, /@media \(max-width:\s*900px\)\s*\{[\s\S]*?\.site-app-shell\.is-sidebar-collapsed \.site-left-navigation\s*\{[^}]*width:\s*0/);
+  assert.match(styles, /@media \(max-width:\s*900px\)\s*\{[\s\S]*?\.site-app-shell\.is-sidebar-collapsed \.site-left-collapse-control\s*\{[^}]*position:\s*fixed;[^}]*top:\s*50%;[^}]*left:\s*0;[^}]*bottom:\s*auto/);
+  assert.match(styles, /@media \(max-width:\s*900px\)\s*\{[\s\S]*?\.site-app-shell\.is-sidebar-collapsed \.site-workspace\s*\{[^}]*margin-left:\s*0/);
+  assert.match(styles, /@media \(max-width:\s*900px\)\s*\{[\s\S]*?\.site-topbar\s*\{[^}]*grid-template-columns:\s*minmax\(0,\s*1fr\)/);
+});
+
+test('utility icons stay top-right and mobile collapse toggle becomes a vertical drawer handle', () => {
   const categoryNav = app.match(/<nav aria-label=\{translate\('categories'\)\} className="site-left-category-nav">([\s\S]*?)<\/nav>/);
   const collapseControl = app.match(/<div className="site-left-collapse-control">([\s\S]*?)<\/div>/);
   const bottomControls = app.match(/<div className="site-left-bottom">([\s\S]*?)<\/div>\s*\{activeMenu/);
@@ -47,7 +60,17 @@ test('utility icons stay top-right and the collapse toggle occupies the lower ra
   assert.match(styles, /\.site-left-collapse-button svg\s*\{[^}]*width:\s*1\.75rem;[^}]*height:\s*1\.75rem/);
   assert.match(styles, /\.site-left-navigation\.is-collapsed \.site-left-collapse-button\s*\{[^}]*width:\s*2\.75rem;[^}]*height:\s*2\.75rem/);
   assert.match(styles, /\.site-left-navigation\.is-collapsed \.site-left-collapse-button svg\s*\{[^}]*width:\s*1\.625rem;[^}]*height:\s*1\.625rem/);
-  assert.match(styles, /@media \(max-width:\s*900px\)\s*\{[\s\S]*?\.site-left-collapse-control\s*\{\s*display:\s*none/);
+  assert.match(app, /<PanelLeftOpen className="site-left-collapse-panel-icon" aria-hidden="true" \/>/);
+  assert.match(app, /<PanelLeftClose className="site-left-collapse-panel-icon" aria-hidden="true" \/>/);
+  assert.match(app, /<ChevronRight className="site-left-collapse-arrow-icon" aria-hidden="true" \/>/);
+  assert.match(app, /<ChevronLeft className="site-left-collapse-arrow-icon" aria-hidden="true" \/>/);
+  assert.match(styles, /\.site-left-collapse-arrow-icon\s*\{\s*display:\s*none/);
+  assert.match(styles, /@media \(max-width:\s*900px\)\s*\{[\s\S]*?\.site-left-collapse-panel-icon\s*\{\s*display:\s*block/);
+  assert.match(styles, /@media \(max-width:\s*900px\)\s*\{[\s\S]*?\.site-left-collapse-arrow-icon\s*\{\s*display:\s*none/);
+  assert.match(styles, /@media \(max-width:\s*900px\)\s*\{[\s\S]*?\.site-app-shell\.is-sidebar-collapsed \.site-left-collapse-panel-icon\s*\{\s*display:\s*none/);
+  assert.match(styles, /@media \(max-width:\s*900px\)\s*\{[\s\S]*?\.site-app-shell\.is-sidebar-collapsed \.site-left-collapse-arrow-icon\s*\{\s*display:\s*block/);
+  assert.match(styles, /@media \(max-width:\s*900px\)\s*\{[\s\S]*?\.site-app-shell\.is-sidebar-collapsed \.site-left-collapse-button\s*\{[^}]*border-radius:\s*0\s+0\.75rem\s+0\.75rem\s+0/);
+  assert.match(styles, /@media \(max-width:\s*900px\)\s*\{[\s\S]*?\.site-app-shell\.is-sidebar-collapsed \.site-left-collapse-control\s*\{[^}]*pointer-events:\s*auto/);
   assert.match(styles, /@media \(max-width:\s*900px\)\s*\{[\s\S]*?\.site-left-primary-nav \.language-picker-sidebar\s*\{\s*width:\s*3\.55rem;\s*\}/);
   assert.match(styles, /@media \(max-width:\s*900px\)\s*\{[\s\S]*?\.site-left-navigation \.language-picker-sidebar \.language-picker-trigger\s*\{\s*justify-content:\s*center;\s*padding-inline:\s*0;\s*\}/);
 });

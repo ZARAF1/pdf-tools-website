@@ -1,6 +1,8 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { useToolExitGuard } from './ToolExitGuard';
 import useAccessibleDropzone from '../lib/useAccessibleDropzone';
 import { PDFDocument, StandardFonts } from 'pdf-lib';
+import { FILE_DOWNLOAD_READY_MESSAGE } from '../lib/toolMessages.mjs';
 import { createWorker } from 'tesseract.js';
 import {
   AlertCircle,
@@ -155,6 +157,7 @@ const addInvisibleOcrText = (page, words, viewport, font) => {
 
 const OcrPdf = () => {
   const [file, setFile] = useState(null);
+  useToolExitGuard(Boolean(file));
   const [pageCount, setPageCount] = useState(0);
   const [previewUrl, setPreviewUrl] = useState('');
   const [isValidating, setIsValidating] = useState(false);
@@ -724,7 +727,7 @@ const OcrPdf = () => {
           <div className="flex items-start gap-3">
             <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0" aria-hidden="true" />
             <div>
-              <p className="font-semibold">{outputName} is ready. Verified as a searchable, unencrypted {pageCount}-page PDF.</p>
+              <p className="font-semibold">{FILE_DOWNLOAD_READY_MESSAGE}</p>
               <p className="mt-1 text-sm">{outputSummary}</p>
             </div>
           </div>

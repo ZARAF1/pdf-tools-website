@@ -1,6 +1,8 @@
 import React, { useCallback, useRef, useState } from 'react';
+import { useToolExitGuard } from './ToolExitGuard';
 import useAccessibleDropzone from '../lib/useAccessibleDropzone';
 import { PDFDocument } from 'pdf-lib';
+import { FILE_DOWNLOAD_READY_MESSAGE } from '../lib/toolMessages.mjs';
 import { validateUnencryptedPdf } from '../lib/pdfValidation';
 import pdfjsLib from '../lib/pdfjsClient';
 import { motion } from 'framer-motion';
@@ -128,6 +130,7 @@ const downloadBlob = (bytes, filename) => {
 
 const PdfCompressor = () => {
   const [files, setFiles] = useState([]);
+  useToolExitGuard(files.length > 0);
   const replaceTargetRef = useRef(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const [isValidatingReplacement, setIsValidatingReplacement] = useState(false);
@@ -585,10 +588,15 @@ const PdfCompressor = () => {
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
           role="status"
-          className="flex items-center gap-3 p-4 bg-green-50 text-green-700 rounded-xl border border-green-200"
+          className="flex items-start gap-3 p-4 bg-green-50 text-green-700 rounded-xl border border-green-200"
         >
           <CheckCircle2 className="w-5 h-5 flex-shrink-0" />
-          <span className="text-sm font-medium">{summary}</span>
+          <div className="space-y-1">
+            {fileResults.some((item) => item.reduced) && (
+              <p className="text-sm font-semibold">{FILE_DOWNLOAD_READY_MESSAGE}</p>
+            )}
+            <p className="text-sm font-medium">{summary}</p>
+          </div>
         </motion.div>
       )}
 
