@@ -33,7 +33,7 @@ test('every PDF tool upload card describes its task instead of file limits or pr
     if (fileName === 'PageSelectionTool.jsx') {
       assert.ok(allUploadCopy.includes("{isRemoving ? 'Remove selected pages from a PDF.' : 'Extract selected pages into a new PDF.'}"));
     } else if (fileName === 'ImageToPdf.jsx') {
-      assert.ok(allUploadCopy.includes('<p>Create a PDF from up to {MAX_IMAGES} JPEG, PNG, or BMP images.</p>'));
+      assert.ok(allUploadCopy.includes('formatToolUiMessage(imageUi.uploadDescription, { max: MAX_IMAGES })'));
     } else {
       assert.ok(allUploadCopy.includes(`<p>${description}</p>`), `${fileName} should show its tool-specific description`);
     }

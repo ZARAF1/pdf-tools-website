@@ -169,6 +169,52 @@ const sitePolicyTranslations = {
   'zh-CN': { security: '安全', cookiePolicy: 'Cookie 政策' }
 };
 
+const routeLoadingTranslations = {
+  en: 'Loading tool…',
+  es: 'Cargando la herramienta…',
+  fr: 'Chargement de l’outil…',
+  de: 'Tool wird geladen…',
+  pt: 'Carregando a ferramenta…',
+  it: 'Caricamento dello strumento…',
+  nl: 'Tool laden…',
+  pl: 'Wczytywanie narzędzia…',
+  sv: 'Laddar verktyget…',
+  fi: 'Ladataan työkalua…',
+  da: 'Indlæser værktøjet…',
+  nb: 'Laster inn verktøyet…',
+  tr: 'Araç yükleniyor…',
+  ru: 'Загрузка инструмента…',
+  uk: 'Завантаження інструмента…',
+  ar: 'جارٍ تحميل الأداة…',
+  hi: 'टूल लोड हो रहा है…',
+  ja: 'ツールを読み込んでいます…',
+  ko: '도구를 불러오는 중…',
+  'zh-CN': '正在加载工具…'
+};
+
+const routeErrorTranslations = {
+  en: { routeLoadFailed: 'This page could not be loaded.', reloadPage: 'Reload page' },
+  es: { routeLoadFailed: 'No se pudo cargar esta página.', reloadPage: 'Recargar la página' },
+  fr: { routeLoadFailed: 'Cette page n’a pas pu être chargée.', reloadPage: 'Recharger la page' },
+  de: { routeLoadFailed: 'Diese Seite konnte nicht geladen werden.', reloadPage: 'Seite neu laden' },
+  pt: { routeLoadFailed: 'Não foi possível carregar esta página.', reloadPage: 'Recarregar a página' },
+  it: { routeLoadFailed: 'Impossibile caricare questa pagina.', reloadPage: 'Ricarica la pagina' },
+  nl: { routeLoadFailed: 'Deze pagina kon niet worden geladen.', reloadPage: 'Pagina opnieuw laden' },
+  pl: { routeLoadFailed: 'Nie udało się wczytać tej strony.', reloadPage: 'Wczytaj stronę ponownie' },
+  sv: { routeLoadFailed: 'Det gick inte att läsa in sidan.', reloadPage: 'Ladda om sidan' },
+  fi: { routeLoadFailed: 'Sivun lataaminen epäonnistui.', reloadPage: 'Lataa sivu uudelleen' },
+  da: { routeLoadFailed: 'Siden kunne ikke indlæses.', reloadPage: 'Indlæs siden igen' },
+  nb: { routeLoadFailed: 'Siden kunne ikke lastes inn.', reloadPage: 'Last inn siden på nytt' },
+  tr: { routeLoadFailed: 'Bu sayfa yüklenemedi.', reloadPage: 'Sayfayı yeniden yükle' },
+  ru: { routeLoadFailed: 'Не удалось загрузить эту страницу.', reloadPage: 'Перезагрузить страницу' },
+  uk: { routeLoadFailed: 'Не вдалося завантажити цю сторінку.', reloadPage: 'Перезавантажити сторінку' },
+  ar: { routeLoadFailed: 'تعذر تحميل هذه الصفحة.', reloadPage: 'إعادة تحميل الصفحة' },
+  hi: { routeLoadFailed: 'यह पेज लोड नहीं हो सका।', reloadPage: 'पेज फिर से लोड करें' },
+  ja: { routeLoadFailed: 'このページを読み込めませんでした。', reloadPage: 'ページを再読み込み' },
+  ko: { routeLoadFailed: '이 페이지를 불러오지 못했습니다.', reloadPage: '페이지 새로고침' },
+  'zh-CN': { routeLoadFailed: '无法加载此页面。', reloadPage: '重新加载页面' }
+};
+
 const messagesByLanguage = Object.fromEntries(
   SUPPORTED_LANGUAGES.map(({ code }) => [
     code,
@@ -176,6 +222,8 @@ const messagesByLanguage = Object.fromEntries(
       ...keys.map((key, index) => [key, translations[code][index]]),
       ...extraKeys.map((key, index) => [key, extraTranslations[code][index]]),
       ...workflowKeys.map((key, index) => [key, workflowTranslations[code][index]]),
+      ['loadingTool', routeLoadingTranslations[code]],
+      ...Object.entries(routeErrorTranslations[code]),
       ...Object.entries(sitePolicyTranslations[code]),
       ...Object.entries(navigationToggleTranslations[code])
     ])

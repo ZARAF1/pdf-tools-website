@@ -16,6 +16,8 @@ import {
 } from 'lucide-react';
 import { AttachedFileActions } from './AttachedFileControls';
 import { limitImageFiles } from '../lib/imageSelection.mjs';
+import { formatToolUiMessage, getLocalizedToolUi } from '../i18n/toolUiLocalization.mjs';
+import { useLanguage } from '../i18n/useLanguage';
 import {
   calculateImagePlacement,
   getCustomPageDimensions,
@@ -89,6 +91,8 @@ const makeImageBytes = (canvas, mimeType, quality) => new Promise((resolve, reje
 });
 
 const ImageToPdf = () => {
+  const { language } = useLanguage();
+  const { imageToPdf: imageUi } = getLocalizedToolUi(language);
   const [images, setImages] = useState([]);
   const pendingImageCountRef = useRef(0);
   const selectionGenerationRef = useRef(0);
@@ -467,10 +471,10 @@ const ImageToPdf = () => {
                 <p className="text-xs text-slate-500">{image.width} × {image.height} px · {formatBytes(image.file.size)} · {image.rotation}°</p>
               </div>
               <div className="flex items-center gap-1">
-                <button type="button" onClick={() => moveImage(index, -1)} disabled={index === 0 || isProcessing} aria-label={`Move ${image.name} up`} className="rounded-lg p-2 text-slate-500 transition hover:bg-slate-100 disabled:opacity-30"><ChevronUp className="h-4 w-4" aria-hidden="true" /></button>
-                <button type="button" onClick={() => moveImage(index, 1)} disabled={index === images.length - 1 || isProcessing} aria-label={`Move ${image.name} down`} className="rounded-lg p-2 text-slate-500 transition hover:bg-slate-100 disabled:opacity-30"><ChevronDown className="h-4 w-4" aria-hidden="true" /></button>
-                <button type="button" onClick={() => rotateImage(image.id, -90)} disabled={isProcessing} aria-label={`Rotate ${image.name} counterclockwise`} title="Rotate counterclockwise" className="rounded-lg p-2 text-slate-500 transition hover:bg-slate-100 disabled:opacity-30"><RotateCcw className="h-4 w-4" aria-hidden="true" /></button>
-                <button type="button" onClick={() => rotateImage(image.id, 90)} disabled={isProcessing} aria-label={`Rotate ${image.name} clockwise`} title="Rotate clockwise" className="rounded-lg p-2 text-slate-500 transition hover:bg-slate-100 disabled:opacity-30"><RotateCw className="h-4 w-4" aria-hidden="true" /></button>
+                <button type="button" onClick={() => moveImage(index, -1)} disabled={index === 0 || isProcessing} aria-label={`${imageUi.moveUp}: ${image.name}`} className="rounded-lg p-2 text-slate-500 transition hover:bg-slate-100 disabled:opacity-30"><ChevronUp className="h-4 w-4" aria-hidden="true" /></button>
+                <button type="button" onClick={() => moveImage(index, 1)} disabled={index === images.length - 1 || isProcessing} aria-label={`${imageUi.moveDown}: ${image.name}`} className="rounded-lg p-2 text-slate-500 transition hover:bg-slate-100 disabled:opacity-30"><ChevronDown className="h-4 w-4" aria-hidden="true" /></button>
+                <button type="button" onClick={() => rotateImage(image.id, -90)} disabled={isProcessing} aria-label={`${imageUi.rotateCounterclockwise}: ${image.name}`} title={imageUi.rotateCounterclockwise} className="rounded-lg p-2 text-slate-500 transition hover:bg-slate-100 disabled:opacity-30"><RotateCcw className="h-4 w-4" aria-hidden="true" /></button>
+                <button type="button" onClick={() => rotateImage(image.id, 90)} disabled={isProcessing} aria-label={`${imageUi.rotateClockwise}: ${image.name}`} title={imageUi.rotateClockwise} className="rounded-lg p-2 text-slate-500 transition hover:bg-slate-100 disabled:opacity-30"><RotateCw className="h-4 w-4" aria-hidden="true" /></button>
                 <AttachedFileActions
                   fileName={image.name}
                   onReplace={() => replaceImage(image.id)}
@@ -486,93 +490,93 @@ const ImageToPdf = () => {
       {images.length > 0 && (
       <section className="pdf-workflow-controls grid grid-cols-1 gap-4 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm md:grid-cols-2 lg:grid-cols-3">
         <div className="image-to-pdf-setting space-y-2">
-          <label htmlFor="image-page-size" className="text-sm font-semibold text-slate-700">Page size</label>
+          <label htmlFor="image-page-size" className="text-sm font-semibold text-slate-700">{imageUi.pageSize}</label>
           <select id="image-page-size" value={pageSize} onChange={(event) => updateSetting(setPageSize, event.target.value)} className="w-full rounded-lg border border-slate-200 px-3 py-2.5">
             <option value="A4">A4</option>
             <option value="Letter">Letter</option>
-            <option value="fit">Fit image dimensions</option>
-            <option value="custom">Custom dimensions</option>
+            <option value="fit">{imageUi.fitImageDimensions}</option>
+            <option value="custom">{imageUi.customDimensions}</option>
           </select>
         </div>
         <div className="image-to-pdf-setting space-y-2">
-          <label htmlFor="image-orientation" className="text-sm font-semibold text-slate-700">Orientation</label>
+          <label htmlFor="image-orientation" className="text-sm font-semibold text-slate-700">{imageUi.orientation}</label>
           <select id="image-orientation" value={orientation} disabled={autoOrient || pageSize === 'fit'} onChange={(event) => updateSetting(setOrientation, event.target.value)} className="w-full rounded-lg border border-slate-200 px-3 py-2.5 disabled:cursor-not-allowed disabled:opacity-50">
-            <option value="portrait">Portrait</option>
-            <option value="landscape">Landscape</option>
+            <option value="portrait">{imageUi.portrait}</option>
+            <option value="landscape">{imageUi.landscape}</option>
           </select>
           <label className="flex items-center gap-2 text-xs font-medium text-slate-600">
             <input type="checkbox" checked={autoOrient} disabled={pageSize === 'fit'} onChange={(event) => updateSetting(setAutoOrient, event.target.checked)} className="h-4 w-4 accent-blue-600 disabled:opacity-50" />
-            Auto orient each page to its image
+            {imageUi.autoOrient}
           </label>
         </div>
         {pageSize === 'custom' && (
           <>
             <div className="image-to-pdf-setting space-y-2">
-              <label htmlFor="image-custom-width" className="text-sm font-semibold text-slate-700">Custom width (mm)</label>
+              <label htmlFor="image-custom-width" className="text-sm font-semibold text-slate-700">{imageUi.customWidth}</label>
               <input id="image-custom-width" type="number" min="10" max="2000" step="0.1" value={customWidthMm} onChange={(event) => updateSetting(setCustomWidthMm, Number(event.target.value))} className="w-full rounded-lg border border-slate-200 px-3 py-2.5" />
             </div>
             <div className="image-to-pdf-setting space-y-2">
-              <label htmlFor="image-custom-height" className="text-sm font-semibold text-slate-700">Custom height (mm)</label>
+              <label htmlFor="image-custom-height" className="text-sm font-semibold text-slate-700">{imageUi.customHeight}</label>
               <input id="image-custom-height" type="number" min="10" max="2000" step="0.1" value={customHeightMm} onChange={(event) => updateSetting(setCustomHeightMm, Number(event.target.value))} className="w-full rounded-lg border border-slate-200 px-3 py-2.5" />
             </div>
           </>
         )}
         <div className="image-to-pdf-setting space-y-2">
-          <label htmlFor="image-fit" className="text-sm font-semibold text-slate-700">Image fit</label>
+          <label htmlFor="image-fit" className="text-sm font-semibold text-slate-700">{imageUi.imageFit}</label>
           <select id="image-fit" value={fitMode} onChange={(event) => updateSetting(setFitMode, event.target.value)} className="w-full rounded-lg border border-slate-200 px-3 py-2.5">
-            <option value="contain">Contain (show entire image)</option>
-            <option value="fill">Fill page (may crop)</option>
+            <option value="contain">{imageUi.contain}</option>
+            <option value="fill">{imageUi.fill}</option>
           </select>
         </div>
         <div className="image-to-pdf-setting space-y-2">
-          <label htmlFor="image-margin" className="text-sm font-semibold text-slate-700">Margin (points)</label>
+          <label htmlFor="image-margin" className="text-sm font-semibold text-slate-700">{imageUi.margin}</label>
           <input id="image-margin" type="number" min="0" max="300" value={margin} onChange={(event) => updateSetting(setMargin, Number(event.target.value))} className="w-full rounded-lg border border-slate-200 px-3 py-2.5" />
         </div>
         <div className="image-to-pdf-setting space-y-2">
-          <label htmlFor="image-horizontal-alignment" className="text-sm font-semibold text-slate-700">Horizontal alignment</label>
+          <label htmlFor="image-horizontal-alignment" className="text-sm font-semibold text-slate-700">{imageUi.horizontalAlignment}</label>
           <select id="image-horizontal-alignment" value={horizontalAlignment} onChange={(event) => updateSetting(setHorizontalAlignment, event.target.value)} className="w-full rounded-lg border border-slate-200 px-3 py-2.5">
-            <option value="left">Left</option>
-            <option value="center">Center</option>
-            <option value="right">Right</option>
+            <option value="left">{imageUi.left}</option>
+            <option value="center">{imageUi.center}</option>
+            <option value="right">{imageUi.right}</option>
           </select>
         </div>
         <div className="image-to-pdf-setting space-y-2">
-          <label htmlFor="image-vertical-alignment" className="text-sm font-semibold text-slate-700">Vertical alignment</label>
+          <label htmlFor="image-vertical-alignment" className="text-sm font-semibold text-slate-700">{imageUi.verticalAlignment}</label>
           <select id="image-vertical-alignment" value={verticalAlignment} onChange={(event) => updateSetting(setVerticalAlignment, event.target.value)} className="w-full rounded-lg border border-slate-200 px-3 py-2.5">
-            <option value="top">Top</option>
-            <option value="middle">Middle</option>
-            <option value="bottom">Bottom</option>
+            <option value="top">{imageUi.top}</option>
+            <option value="middle">{imageUi.middle}</option>
+            <option value="bottom">{imageUi.bottom}</option>
           </select>
         </div>
         <div className="image-to-pdf-setting space-y-2">
-          <label htmlFor="image-max-width" className="text-sm font-semibold text-slate-700">Maximum width (px)</label>
+          <label htmlFor="image-max-width" className="text-sm font-semibold text-slate-700">{imageUi.maximumWidth}</label>
           <input id="image-max-width" type="number" min="1" max="20000" value={maxWidth} onChange={(event) => updateSetting(setMaxWidth, Number(event.target.value))} className="w-full rounded-lg border border-slate-200 px-3 py-2.5" />
         </div>
         <div className="image-to-pdf-setting space-y-2">
-          <label htmlFor="image-max-height" className="text-sm font-semibold text-slate-700">Maximum height (px)</label>
+          <label htmlFor="image-max-height" className="text-sm font-semibold text-slate-700">{imageUi.maximumHeight}</label>
           <input id="image-max-height" type="number" min="1" max="20000" value={maxHeight} onChange={(event) => updateSetting(setMaxHeight, Number(event.target.value))} className="w-full rounded-lg border border-slate-200 px-3 py-2.5" />
         </div>
         <div className="image-to-pdf-setting space-y-2">
-          <label htmlFor="image-scale" className="text-sm font-semibold text-slate-700">Scale (%)</label>
+          <label htmlFor="image-scale" className="text-sm font-semibold text-slate-700">{imageUi.scale}</label>
           <input id="image-scale" type="number" min="1" max="100" value={scalePercent} onChange={(event) => updateSetting(setScalePercent, Number(event.target.value))} className="w-full rounded-lg border border-slate-200 px-3 py-2.5" />
         </div>
         <div className="image-to-pdf-setting space-y-2">
-          <label htmlFor="image-background-color" className="text-sm font-semibold text-slate-700">Page background color</label>
+          <label htmlFor="image-background-color" className="text-sm font-semibold text-slate-700">{imageUi.pageBackgroundColor}</label>
           <div className="flex items-center gap-3">
             <input id="image-background-color" type="color" value={backgroundColor} onChange={(event) => updateSetting(setBackgroundColor, event.target.value)} className="h-10 w-14 cursor-pointer rounded border border-slate-200 p-1" />
             <span className="text-sm text-slate-600">{backgroundColor.toUpperCase()}</span>
           </div>
         </div>
         <div className="image-to-pdf-setting space-y-2">
-          <label htmlFor="jpeg-quality" className="text-sm font-semibold text-slate-700">JPEG quality ({Math.round(jpegQuality * 100)}%)</label>
+          <label htmlFor="jpeg-quality" className="text-sm font-semibold text-slate-700">{formatToolUiMessage(imageUi.jpegQuality, { quality: Math.round(jpegQuality * 100) })}</label>
           <input id="jpeg-quality" type="range" min="0.1" max="1" step="0.05" value={jpegQuality} onChange={(event) => updateSetting(setJpegQuality, Number(event.target.value))} className="w-full accent-blue-600" />
         </div>
         <label className="image-to-pdf-setting inline-flex w-full items-center justify-center gap-2 text-sm font-medium text-slate-700">
           <input type="checkbox" checked={maintainAspect} onChange={(event) => updateSetting(setMaintainAspect, event.target.checked)} className="h-4 w-4 accent-blue-600" />
-          Maintain aspect ratio
+          {imageUi.maintainAspectRatio}
         </label>
         <p className="image-to-pdf-setting text-xs leading-relaxed text-slate-500 md:col-span-2 lg:col-span-3">
-          PNG and BMP inputs are encoded as PNG to retain decoded transparency; JPEG inputs are resized and re-encoded using the quality setting. All resizing uses temporary browser copies, not the originals.
+          {imageUi.encodingNote}
         </p>
       </section>
       )}
@@ -580,7 +584,7 @@ const ImageToPdf = () => {
       <div
         {...getRootProps({
           role: 'group',
-          'aria-label': images.length ? 'Add more images to convert to PDF' : 'Choose images to convert to PDF',
+          'aria-label': imageUi.uploadLabel,
           tabIndex: images.length ? -1 : undefined
         })}
         aria-hidden={images.length ? 'true' : undefined}
@@ -598,8 +602,8 @@ const ImageToPdf = () => {
               <Upload className="h-6 w-6 text-blue-600" />
             </div>
             <div className="merge-pdf-upload-copy">
-              <h3>{isDragActive ? 'Drop images to add them' : 'Choose or drop JPEG, PNG, or BMP images'}</h3>
-              <p>Create a PDF from up to {MAX_IMAGES} JPEG, PNG, or BMP images.</p>
+              <h3>{isDragActive ? imageUi.dropPrompt : imageUi.uploadPrompt}</h3>
+              <p>{formatToolUiMessage(imageUi.uploadDescription, { max: MAX_IMAGES })}</p>
             </div>
             <button
               type="button"
@@ -610,7 +614,7 @@ const ImageToPdf = () => {
               }}
               disabled={isProcessing}
             >
-              Choose Images
+              {imageUi.chooseImages}
             </button>
           </div>
         )}
@@ -619,12 +623,17 @@ const ImageToPdf = () => {
       {images.length > 0 && (
           <div className="pdf-workflow-actions flex flex-col gap-3 pt-2 sm:flex-row">
             <button type="button" onClick={reset} disabled={isProcessing} className="inline-flex items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-5 py-3 font-semibold text-slate-700 transition hover:bg-slate-50 disabled:opacity-50">
-              <RefreshCw className="h-4 w-4" aria-hidden="true" /> Reset
+              <RefreshCw className="h-4 w-4" aria-hidden="true" /> {imageUi.reset}
             </button>
-            <button type="button" onClick={open} disabled={isProcessing || images.length >= MAX_IMAGES} className="pdf-upload-trigger rounded-xl border px-5 py-3 font-semibold transition disabled:cursor-not-allowed disabled:opacity-50">Add more images ({images.length}/{MAX_IMAGES})</button>
+            <button type="button" onClick={open} disabled={isProcessing || images.length >= MAX_IMAGES} className="pdf-upload-trigger rounded-xl border px-5 py-3 font-semibold transition disabled:cursor-not-allowed disabled:opacity-50">{formatToolUiMessage(imageUi.addMoreImages, { count: images.length, max: MAX_IMAGES })}</button>
             <button type="button" onClick={generatePdf} disabled={isProcessing} className="inline-flex flex-1 items-center justify-center gap-2 rounded-xl bg-blue-600 px-6 py-3 font-bold text-white shadow-md transition hover:bg-blue-700 active:scale-[0.99] disabled:cursor-not-allowed disabled:bg-slate-300">
               {isProcessing ? <Loader2 className="h-5 w-5 animate-spin" aria-hidden="true" /> : <ImageIcon className="h-5 w-5" aria-hidden="true" />}
-              {isProcessing ? 'Creating PDF…' : `Create PDF (${images.length} ${images.length === 1 ? 'page' : 'pages'})`}
+              {isProcessing
+                ? imageUi.creatingPdf
+                : formatToolUiMessage(imageUi.createPdf, {
+                  count: images.length,
+                  pageUnit: images.length === 1 ? imageUi.page : imageUi.pages
+                })}
             </button>
           </div>
       )}
@@ -635,10 +644,10 @@ const ImageToPdf = () => {
         <div role="status" className="image-to-pdf-result flex flex-col gap-4 rounded-xl border border-emerald-200 bg-emerald-50 p-4 text-emerald-900 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-center gap-3">
             <CheckCircle2 className="h-5 w-5 shrink-0" aria-hidden="true" />
-            <span className="text-sm font-medium">Ready: {outputName} · {formatBytes(outputBytes.length)}</span>
+            <span className="text-sm font-medium">{formatToolUiMessage(imageUi.ready, { fileName: outputName, size: formatBytes(outputBytes.length) })}</span>
           </div>
           <button type="button" onClick={downloadPdf} className="inline-flex items-center justify-center gap-2 rounded-lg bg-emerald-600 px-4 py-2 font-semibold text-white transition hover:bg-emerald-700">
-            <Download className="h-4 w-4" aria-hidden="true" /> Download PDF
+            <Download className="h-4 w-4" aria-hidden="true" /> {imageUi.downloadPdf}
           </button>
         </div>
       )}

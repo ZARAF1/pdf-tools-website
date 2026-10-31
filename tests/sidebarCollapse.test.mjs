@@ -16,26 +16,40 @@ test('main navigation has an accessible desktop collapse toggle and positions fl
   assert.match(app, /railWidth = isMobile \|\| isSidebarCollapsed \? 76 : 240/);
 });
 
-test('collapse toggle is above the theme control in the lower desktop sidebar', () => {
+test('utility icons stay top-right and the collapse toggle occupies the lower rail edge', () => {
+  const categoryNav = app.match(/<nav aria-label=\{translate\('categories'\)\} className="site-left-category-nav">([\s\S]*?)<\/nav>/);
+  const collapseControl = app.match(/<div className="site-left-collapse-control">([\s\S]*?)<\/div>/);
   const bottomControls = app.match(/<div className="site-left-bottom">([\s\S]*?)<\/div>\s*\{activeMenu/);
-  assert.ok(bottomControls, 'The sidebar bottom controls must exist');
-  assert.match(bottomControls[1], /site-left-mode-controls/);
+  assert.ok(categoryNav, 'The category navigation must exist');
+  assert.ok(collapseControl, 'The sidebar collapse control must exist');
+  assert.ok(bottomControls, 'The top-right utility controls must exist');
+  assert.match(bottomControls[1], /site-left-privacy/);
+  assert.match(bottomControls[1], /site-left-contact/);
+  assert.match(bottomControls[1], /site-left-about/);
+  assert.match(bottomControls[1], /site-left-theme-button/);
+  assert.doesNotMatch(bottomControls[1], /site-left-collapse-button/);
   assert.ok(
-    bottomControls[1].indexOf('site-left-collapse-button') < bottomControls[1].indexOf('site-left-theme-button'),
-    'The collapse control must precede the theme control'
+    app.indexOf(collapseControl[0]) > app.indexOf(categoryNav[0]),
+    'The collapse control must follow the category navigation'
   );
   const brandRow = app.match(/<div className="site-left-brand-row">([\s\S]*?)<\/div>/);
   assert.ok(brandRow);
   assert.doesNotMatch(brandRow[1], /site-left-collapse-button/);
 
-  assert.match(styles, /\.site-left-bottom\s*\{[^}]*position:\s*relative/);
-  assert.match(styles, /\.site-left-bottom \.site-left-mode-controls\s*\{[^}]*display:\s*contents/);
-  assert.match(styles, /\.site-left-bottom \.site-left-collapse-button\s*\{[^}]*position:\s*absolute;[^}]*top:\s*-4\.375rem;[^}]*right:\s*0\.875rem/);
+  assert.match(styles, /\.site-left-bottom\s*\{[^}]*position:\s*fixed;[^}]*top:\s*0\.75rem;[^}]*right:\s*0\.75rem/);
+  assert.match(styles, /\.site-left-bottom\s*\{[^}]*grid-template-columns:\s*repeat\(4,\s*2rem\)/);
+  assert.match(styles, /\.site-left-collapse-control\s*\{[^}]*display:\s*flex/);
+  assert.match(styles, /\.site-left-collapse-control\s*\{[^}]*margin-top:\s*auto/);
+  assert.match(styles, /\.site-left-navigation\.is-collapsed \.site-left-collapse-control\s*\{[^}]*justify-content:\s*center/);
+  assert.match(styles, /\.site-left-collapse-control\s*\{[^}]*margin-bottom:\s*0\.75rem/);
+  assert.match(styles, /\.site-left-category-nav\s*\{[^}]*flex:\s*1 1 auto;[^}]*overflow-y:\s*auto/);
   assert.match(styles, /\.site-left-collapse-button\s*\{[^}]*width:\s*3rem;[^}]*height:\s*3rem/);
   assert.match(styles, /\.site-left-collapse-button svg\s*\{[^}]*width:\s*1\.75rem;[^}]*height:\s*1\.75rem/);
-  assert.match(styles, /\.site-left-navigation\.is-collapsed \.site-left-bottom \.site-left-collapse-button\s*\{[^}]*right:\s*-0\.3125rem/);
   assert.match(styles, /\.site-left-navigation\.is-collapsed \.site-left-collapse-button\s*\{[^}]*width:\s*2\.75rem;[^}]*height:\s*2\.75rem/);
   assert.match(styles, /\.site-left-navigation\.is-collapsed \.site-left-collapse-button svg\s*\{[^}]*width:\s*1\.625rem;[^}]*height:\s*1\.625rem/);
+  assert.match(styles, /@media \(max-width:\s*900px\)\s*\{[\s\S]*?\.site-left-collapse-control\s*\{\s*display:\s*none/);
+  assert.match(styles, /@media \(max-width:\s*900px\)\s*\{[\s\S]*?\.site-left-primary-nav \.language-picker-sidebar\s*\{\s*width:\s*3\.55rem;\s*\}/);
+  assert.match(styles, /@media \(max-width:\s*900px\)\s*\{[\s\S]*?\.site-left-navigation \.language-picker-sidebar \.language-picker-trigger\s*\{\s*justify-content:\s*center;\s*padding-inline:\s*0;\s*\}/);
 });
 
 test('collapsed navigation hides labels while keeping the workspace aligned to the rail', () => {

@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { lazy, Suspense, useEffect, useRef, useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, Link, NavLink, useLocation, useParams } from 'react-router-dom';
 import {
   BookOpenText,
@@ -17,24 +17,24 @@ import {
 } from 'lucide-react';
 import Home from './components/Home';
 import CategoryPage from './components/CategoryPage';
-import PdfMerger from './components/PdfMerger';
-import PdfSplitter from './components/PdfSplitter';
-import PdfRotator from './components/PdfRotator';
-import ImageToPdf from './components/ImageToPdf';
-import PdfToImages from './components/PdfToImages';
-import PdfProtector from './components/PdfProtector';
-import UnlockPdf from './components/UnlockPdf';
-import PdfToWord from './components/PdfToWord';
-import OcrPdf from './components/OcrPdf';
-import PdfCompressor from './components/PdfCompressor';
-import PdfWatermarker from './components/PdfWatermarker';
-import RemovePdfPages from './components/RemovePdfPages';
-import ExtractPdfPages from './components/ExtractPdfPages';
-import OrganizePdf from './components/OrganizePdf';
-import CropPdf from './components/CropPdf';
-import RedactPdf from './components/RedactPdf';
-import SignPdf from './components/SignPdf';
-import EditPdf from './components/EditPdf';
+const PdfMerger = lazy(() => import('./components/PdfMerger'));
+const PdfSplitter = lazy(() => import('./components/PdfSplitter'));
+const PdfRotator = lazy(() => import('./components/PdfRotator'));
+const PdfProtector = lazy(() => import('./components/PdfProtector'));
+const ImageToPdf = lazy(() => import('./components/ImageToPdf'));
+const PdfToImages = lazy(() => import('./components/PdfToImages'));
+const UnlockPdf = lazy(() => import('./components/UnlockPdf'));
+const PdfToWord = lazy(() => import('./components/PdfToWord'));
+const OcrPdf = lazy(() => import('./components/OcrPdf'));
+const PdfCompressor = lazy(() => import('./components/PdfCompressor'));
+const PdfWatermarker = lazy(() => import('./components/PdfWatermarker'));
+const RemovePdfPages = lazy(() => import('./components/RemovePdfPages'));
+const ExtractPdfPages = lazy(() => import('./components/ExtractPdfPages'));
+const OrganizePdf = lazy(() => import('./components/OrganizePdf'));
+const CropPdf = lazy(() => import('./components/CropPdf'));
+const RedactPdf = lazy(() => import('./components/RedactPdf'));
+const SignPdf = lazy(() => import('./components/SignPdf'));
+const EditPdf = lazy(() => import('./components/EditPdf'));
 import OfficeConversionNotice from './components/OfficeConversionNotice';
 import ToolPage from './components/ToolPage';
 import { NotFoundPage, SitePages } from './components/SitePages';
@@ -50,6 +50,52 @@ import { getLocalizedTool } from './i18n/toolTranslations.mjs';
 const ResourceArticleRoute = () => {
   const { articleSlug } = useParams();
   return <SitePages page="resources" article={articleSlug} />;
+};
+
+const RouteLoadingFallback = () => {
+  const { translate } = useLanguage();
+  return <p className="route-loading-status" role="status">{translate('loadingTool')}</p>;
+};
+
+const RouteErrorFallback = () => {
+  const { translate } = useLanguage();
+  return (
+    <section className="route-loading-status" role="alert">
+      <h1>{translate('routeLoadFailed')}</h1>
+      <button
+        type="button"
+        className="pdf-editor-primary-button"
+        onClick={() => window.location.reload()}
+      >
+        {translate('reloadPage')}
+      </button>
+    </section>
+  );
+};
+
+class RouteErrorBoundary extends React.Component {
+  state = { hasError: false };
+
+  static getDerivedStateFromError() {
+    return { hasError: true };
+  }
+
+  componentDidCatch(error, errorInfo) {
+    console.error('Unable to render the requested route.', error, errorInfo);
+  }
+
+  render() {
+    return this.state.hasError ? this.props.fallback : this.props.children;
+  }
+}
+
+const RouteErrorBoundaryWithLocation = ({ children, fallback }) => {
+  const { pathname } = useLocation();
+  return (
+    <RouteErrorBoundary key={pathname} fallback={fallback}>
+      {children}
+    </RouteErrorBoundary>
+  );
 };
 
 const LeftNavigation = ({ theme, setTheme, isSidebarCollapsed, onToggleSidebar }) => {
@@ -295,6 +341,24 @@ const LeftNavigation = ({ theme, setTheme, isSidebarCollapsed, onToggleSidebar }
         })}
       </nav>
 
+      <div className="site-left-collapse-control">
+        <button
+          type="button"
+          className="site-left-collapse-button"
+          aria-label={translate(isSidebarCollapsed ? 'expandNavigation' : 'collapseNavigation')}
+          title={translate(isSidebarCollapsed ? 'expandNavigation' : 'collapseNavigation')}
+          aria-pressed={isSidebarCollapsed}
+          onClick={() => {
+            setActiveMenu(null);
+            onToggleSidebar();
+          }}
+        >
+          {isSidebarCollapsed
+            ? <PanelLeftOpen aria-hidden="true" />
+            : <PanelLeftClose aria-hidden="true" />}
+        </button>
+      </div>
+
       <div className="site-left-bottom">
         <NavLink to="/privacy" className="site-left-link site-left-privacy" aria-label={translate('privacy')} title={translate('privacy')}>
           <ShieldCheck className="site-left-link-icon" aria-hidden="true" />
@@ -308,35 +372,18 @@ const LeftNavigation = ({ theme, setTheme, isSidebarCollapsed, onToggleSidebar }
           <Info className="site-left-link-icon" aria-hidden="true" />
           <span>{translate('about')}</span>
         </NavLink>
-        <div className="site-left-mode-controls">
-          <button
-            type="button"
-            className="site-left-collapse-button"
-            aria-label={translate(isSidebarCollapsed ? 'expandNavigation' : 'collapseNavigation')}
-            title={translate(isSidebarCollapsed ? 'expandNavigation' : 'collapseNavigation')}
-            aria-pressed={isSidebarCollapsed}
-            onClick={() => {
-              setActiveMenu(null);
-              onToggleSidebar();
-            }}
-          >
-            {isSidebarCollapsed
-              ? <PanelLeftOpen aria-hidden="true" />
-              : <PanelLeftClose aria-hidden="true" />}
-          </button>
-          <button
-            type="button"
-            className="site-left-theme-button"
-            onClick={() => setTheme((current) => (current === 'dark' ? 'light' : 'dark'))}
-            aria-label={translate(theme === 'dark' ? 'switchToLightMode' : 'switchToDarkMode')}
-            title={translate(theme === 'dark' ? 'switchToLightMode' : 'switchToDarkMode')}
-          >
-            {theme === 'dark'
-              ? <Sun className="site-left-link-icon" aria-hidden="true" />
-              : <Moon className="site-left-link-icon" aria-hidden="true" />}
-            <span>{translate(theme === 'dark' ? 'lightMode' : 'darkMode')}</span>
-          </button>
-        </div>
+        <button
+          type="button"
+          className="site-left-theme-button"
+          onClick={() => setTheme((current) => (current === 'dark' ? 'light' : 'dark'))}
+          aria-label={translate(theme === 'dark' ? 'switchToLightMode' : 'switchToDarkMode')}
+          title={translate(theme === 'dark' ? 'switchToLightMode' : 'switchToDarkMode')}
+        >
+          {theme === 'dark'
+            ? <Sun className="site-left-link-icon" aria-hidden="true" />
+            : <Moon className="site-left-link-icon" aria-hidden="true" />}
+          <span>{translate(theme === 'dark' ? 'lightMode' : 'darkMode')}</span>
+        </button>
       </div>
 
       {activeMenu && (
@@ -500,10 +547,24 @@ const RouteFocusManager = () => {
 
     if (document.activeElement?.closest('nav')) return;
 
-    const heading = document.querySelector('#main-content h1');
-    if (!heading) return;
-    heading.tabIndex = -1;
-    heading.focus();
+    const mainContent = document.querySelector('#main-content');
+    if (!mainContent) return;
+
+    const focusHeading = () => {
+      const heading = mainContent.querySelector('h1');
+      if (!heading) return false;
+      heading.tabIndex = -1;
+      heading.focus();
+      return true;
+    };
+
+    if (focusHeading()) return;
+
+    const observer = new MutationObserver(() => {
+      if (focusHeading()) observer.disconnect();
+    });
+    observer.observe(mainContent, { childList: true, subtree: true });
+    return () => observer.disconnect();
   }, [pathname]);
 
   return null;
@@ -540,46 +601,50 @@ function App() {
           </header>
 
           <main id="main-content" tabIndex={-1} className="site-main-content">
-          <Routes>
-            <Route path="/" element={<Home />} />
-            {TOOL_CATEGORIES.map((category) => (
-              <Route
-                key={category.id}
-                path={category.path}
-                element={<CategoryPage category={category} />}
-              />
-            ))}
-            <Route path="/merge" element={<ToolPage tool="merge"><PdfMerger /></ToolPage>} />
-            <Route path="/split" element={<ToolPage tool="split"><PdfSplitter /></ToolPage>} />
-            <Route path="/rotate" element={<ToolPage tool="rotate"><PdfRotator /></ToolPage>} />
-            <Route path="/protect" element={<ToolPage tool="protect"><PdfProtector /></ToolPage>} />
-            <Route path="/unlock" element={<ToolPage tool="unlock"><UnlockPdf /></ToolPage>} />
-            <Route path="/image-to-pdf" element={<ToolPage tool="image"><ImageToPdf /></ToolPage>} />
-            <Route path="/pdf-to-images" element={<ToolPage tool="pdf-images"><PdfToImages /></ToolPage>} />
-            <Route path="/pdf-to-word" element={<ToolPage tool="word"><PdfToWord /></ToolPage>} />
-            <Route path="/ocr-pdf" element={<ToolPage tool="ocr"><OcrPdf /></ToolPage>} />
-            <Route path="/compress" element={<ToolPage tool="compress"><PdfCompressor /></ToolPage>} />
-            <Route path="/watermark" element={<ToolPage tool="watermark"><PdfWatermarker /></ToolPage>} />
-            <Route path="/remove-pages" element={<ToolPage tool="remove"><RemovePdfPages /></ToolPage>} />
-            <Route path="/extract-pages" element={<ToolPage tool="extract"><ExtractPdfPages /></ToolPage>} />
-            <Route path="/organize" element={<ToolPage tool="organize-pages"><OrganizePdf /></ToolPage>} />
-            <Route path="/crop-pdf" element={<ToolPage tool="crop"><CropPdf /></ToolPage>} />
-            <Route path="/redact" element={<ToolPage tool="redact"><RedactPdf /></ToolPage>} />
-            <Route path="/sign" element={<ToolPage tool="sign"><SignPdf /></ToolPage>} />
-            <Route path="/edit-pdf" element={<ToolPage tool="edit"><EditPdf /></ToolPage>} />
-            <Route path="/excel-to-pdf" element={<ToolPage tool="excel"><OfficeConversionNotice format="Excel" /></ToolPage>} />
-            <Route path="/powerpoint-to-pdf" element={<ToolPage tool="powerpoint"><OfficeConversionNotice format="PowerPoint" /></ToolPage>} />
-            <Route path="/faq" element={<SitePages page="faq" />} />
-            <Route path="/resources" element={<SitePages page="resources" />} />
-            <Route path="/resources/:articleSlug" element={<ResourceArticleRoute />} />
-            <Route path="/privacy" element={<SitePages page="privacy" />} />
-            <Route path="/security" element={<SitePages page="security" />} />
-            <Route path="/terms" element={<SitePages page="terms" />} />
-            <Route path="/cookies" element={<SitePages page="cookies" />} />
-            <Route path="/about" element={<SitePages page="about" />} />
-            <Route path="/contact" element={<SitePages page="contact" />} />
-            <Route path="*" element={<NotFoundPage />} />
-          </Routes>
+          <RouteErrorBoundaryWithLocation fallback={<RouteErrorFallback />}>
+            <Suspense fallback={<RouteLoadingFallback />}>
+              <Routes>
+                <Route path="/" element={<Home />} />
+                {TOOL_CATEGORIES.map((category) => (
+                  <Route
+                    key={category.id}
+                    path={category.path}
+                    element={<CategoryPage category={category} />}
+                  />
+                ))}
+                <Route path="/merge" element={<ToolPage tool="merge"><PdfMerger /></ToolPage>} />
+                <Route path="/split" element={<ToolPage tool="split"><PdfSplitter /></ToolPage>} />
+                <Route path="/rotate" element={<ToolPage tool="rotate"><PdfRotator /></ToolPage>} />
+                <Route path="/protect" element={<ToolPage tool="protect"><PdfProtector /></ToolPage>} />
+                <Route path="/unlock" element={<ToolPage tool="unlock"><UnlockPdf /></ToolPage>} />
+                <Route path="/image-to-pdf" element={<ToolPage tool="image"><ImageToPdf /></ToolPage>} />
+                <Route path="/pdf-to-images" element={<ToolPage tool="pdf-images"><PdfToImages /></ToolPage>} />
+                <Route path="/pdf-to-word" element={<ToolPage tool="word"><PdfToWord /></ToolPage>} />
+                <Route path="/ocr-pdf" element={<ToolPage tool="ocr"><OcrPdf /></ToolPage>} />
+                <Route path="/compress" element={<ToolPage tool="compress"><PdfCompressor /></ToolPage>} />
+                <Route path="/watermark" element={<ToolPage tool="watermark"><PdfWatermarker /></ToolPage>} />
+                <Route path="/remove-pages" element={<ToolPage tool="remove"><RemovePdfPages /></ToolPage>} />
+                <Route path="/extract-pages" element={<ToolPage tool="extract"><ExtractPdfPages /></ToolPage>} />
+                <Route path="/organize" element={<ToolPage tool="organize-pages"><OrganizePdf /></ToolPage>} />
+                <Route path="/crop-pdf" element={<ToolPage tool="crop"><CropPdf /></ToolPage>} />
+                <Route path="/redact" element={<ToolPage tool="redact"><RedactPdf /></ToolPage>} />
+                <Route path="/sign" element={<ToolPage tool="sign"><SignPdf /></ToolPage>} />
+                <Route path="/edit-pdf" element={<ToolPage tool="edit"><EditPdf /></ToolPage>} />
+                <Route path="/excel-to-pdf" element={<ToolPage tool="excel"><OfficeConversionNotice format="Excel" /></ToolPage>} />
+                <Route path="/powerpoint-to-pdf" element={<ToolPage tool="powerpoint"><OfficeConversionNotice format="PowerPoint" /></ToolPage>} />
+                <Route path="/faq" element={<SitePages page="faq" />} />
+                <Route path="/resources" element={<SitePages page="resources" />} />
+                <Route path="/resources/:articleSlug" element={<ResourceArticleRoute />} />
+                <Route path="/privacy" element={<SitePages page="privacy" />} />
+                <Route path="/security" element={<SitePages page="security" />} />
+                <Route path="/terms" element={<SitePages page="terms" />} />
+                <Route path="/cookies" element={<SitePages page="cookies" />} />
+                <Route path="/about" element={<SitePages page="about" />} />
+                <Route path="/contact" element={<SitePages page="contact" />} />
+                <Route path="*" element={<NotFoundPage />} />
+              </Routes>
+            </Suspense>
+          </RouteErrorBoundaryWithLocation>
         </main>
 
         <Footer />
