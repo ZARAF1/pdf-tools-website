@@ -30,6 +30,12 @@ test('Split PDF attachment glow is not clipped by the attachment shell', () => {
   assert.doesNotMatch(attachmentRule[1], /overflow:\s*hidden/);
 });
 
+test('attachment section keeps its glow without a horizontal top accent', () => {
+  assert.doesNotMatch(styles, /\.tool-attachment-section::before\s*\{/);
+  assert.match(styles, /animation:\s*tool-attachment-border-pulse 2\.8s ease-in-out infinite/);
+  assert.match(styles, /@keyframes tool-attachment-border-pulse/);
+});
+
 test('Split PDF mode buttons wrap on the narrow workspace', () => {
   assert.match(splitter, /className="flex flex-wrap gap-4 border-b border-slate-100 pb-4"/);
 });

@@ -3320,16 +3320,6 @@ body {
     0 0 28px rgb(147 197 253 / 0.26);
 }
 
-.tool-attachment-section::before {
-  position: absolute;
-  top: 0;
-  right: 0;
-  left: 0;
-  height: 3px;
-  content: '';
-  background: linear-gradient(90deg, #60a5fa, #2563eb 48%, #93c5fd);
-}
-
 .tool-attachment-section {
   border-color: #60a5fa;
   animation: tool-attachment-border-pulse 2.8s ease-in-out infinite;
