@@ -284,6 +284,29 @@ const documentUploadTitles = {
   'zh-CN': '在此处添加 PDF 或 Word 文件'
 };
 
+const powerpointUploadTitles = {
+  en: 'Attach a PDF or PowerPoint file here',
+  es: 'Adjunta aquí un PDF o archivo de PowerPoint',
+  fr: 'Ajoutez ici un PDF ou un fichier PowerPoint',
+  de: 'PDF- oder PowerPoint-Datei hier anhängen',
+  pt: 'Anexe um PDF ou arquivo do PowerPoint aqui',
+  it: 'Allega qui un PDF o un file PowerPoint',
+  nl: 'Voeg hier een PDF- of PowerPoint-bestand toe',
+  pl: 'Dodaj tutaj plik PDF lub PowerPoint',
+  sv: 'Bifoga en PDF- eller PowerPoint-fil här',
+  fi: 'Liitä PDF- tai PowerPoint-tiedosto tähän',
+  da: 'Vedhæft en PDF- eller PowerPoint-fil her',
+  nb: 'Legg ved en PDF- eller PowerPoint-fil her',
+  tr: 'Buraya PDF veya PowerPoint dosyası ekleyin',
+  ru: 'Добавьте сюда файл PDF или PowerPoint',
+  uk: 'Додайте сюди файл PDF або PowerPoint',
+  ar: 'أرفق ملف PDF أو PowerPoint هنا',
+  hi: 'यहाँ PDF या PowerPoint फ़ाइल जोड़ें',
+  ja: 'PDF または PowerPoint ファイルをここに添付',
+  ko: '여기에 PDF 또는 PowerPoint 파일 첨부',
+  'zh-CN': '在此处添加 PDF 或 PowerPoint 文件'
+};
+
 const messagesByLanguage = Object.fromEntries(
   SUPPORTED_LANGUAGES.map(({ code }) => [
     code,
@@ -293,6 +316,7 @@ const messagesByLanguage = Object.fromEntries(
       ...Object.entries(descriptionToggleTranslations[code]),
       ...workflowKeys.map((key, index) => [key, workflowTranslations[code][index]]),
       ['attachDocumentHere', documentUploadTitles[code]],
+      ['attachPdfOrPowerPointHere', powerpointUploadTitles[code]],
       ['loadingTool', routeLoadingTranslations[code]],
       ...Object.entries(routeErrorTranslations[code]),
       ...Object.entries(toolExitTranslations[code]),

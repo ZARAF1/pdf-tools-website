@@ -26,6 +26,7 @@ const ImageToPdf = lazy(() => import('./components/ImageToPdf'));
 const PdfToImages = lazy(() => import('./components/PdfToImages'));
 const UnlockPdf = lazy(() => import('./components/UnlockPdf'));
 const PdfToWord = lazy(() => import('./components/PdfToWord'));
+const PdfPowerPoint = lazy(() => import('./components/PdfPowerPoint'));
 const OcrPdf = lazy(() => import('./components/OcrPdf'));
 const PdfCompressor = lazy(() => import('./components/PdfCompressor'));
 const PdfWatermarker = lazy(() => import('./components/PdfWatermarker'));
@@ -643,6 +644,7 @@ function App() {
                 <Route path="/image-to-pdf" element={<ToolPage tool="image"><ImageToPdf /></ToolPage>} />
                 <Route path="/pdf-to-images" element={<ToolPage tool="pdf-images"><PdfToImages /></ToolPage>} />
                 <Route path="/pdf-to-word" element={<ToolPage tool="word"><PdfToWord /></ToolPage>} />
+                <Route path="/pdf-to-powerpoint" element={<ToolPage tool="powerpoint"><PdfPowerPoint /></ToolPage>} />
                 <Route path="/ocr-pdf" element={<ToolPage tool="ocr"><OcrPdf /></ToolPage>} />
                 <Route path="/compress" element={<ToolPage tool="compress"><PdfCompressor /></ToolPage>} />
                 <Route path="/watermark" element={<ToolPage tool="watermark"><PdfWatermarker /></ToolPage>} />
@@ -654,7 +656,7 @@ function App() {
                 <Route path="/sign" element={<ToolPage tool="sign"><SignPdf /></ToolPage>} />
                 <Route path="/edit-pdf" element={<ToolPage tool="edit"><EditPdf /></ToolPage>} />
                 <Route path="/excel-to-pdf" element={<ToolPage tool="excel"><OfficeConversionNotice format="Excel" /></ToolPage>} />
-                <Route path="/powerpoint-to-pdf" element={<ToolPage tool="powerpoint"><OfficeConversionNotice format="PowerPoint" /></ToolPage>} />
+                <Route path="/powerpoint-to-pdf" element={<Navigate to="/pdf-to-powerpoint" replace />} />
                 <Route path="/faq" element={<SitePages page="faq" />} />
                 <Route path="/resources" element={<SitePages page="resources" />} />
                 <Route path="/resources/:articleSlug" element={<ResourceArticleRoute />} />

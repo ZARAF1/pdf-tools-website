@@ -17,6 +17,7 @@ const toolComponents = [
   'PdfToImages',
   'UnlockPdf',
   'PdfToWord',
+  'PdfPowerPoint',
   'OcrPdf',
   'PdfCompressor',
   'PdfWatermarker',

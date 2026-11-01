@@ -200,6 +200,7 @@ const INFO_PAGES = {
         title: 'PDF processing in the browser',
         content: <>
           <p>The inspected PDF tools read selected documents in the browser and create their outputs there; the app does not upload documents to an application conversion server. The app code does not deliberately store document contents or tool passwords in its persistent browser preferences. This is local processing, not a promise that the website itself works offline: opening a page requests the site and its assets from its hosting provider.</p>
+          <p>The PDF ↔ PowerPoint tool uses a browser renderer that may request substitute font resources from Google Fonts when converting presentations. Font-family names used by the slides may be included in those requests; the presentation file, slide text, and images are not sent. See the <Link className="underline hover:text-blue-700" to="/pdf-to-powerpoint">PDF ↔ PowerPoint tool</Link> for its conversion limitations.</p>
           <p>PDF to Word and OCR PDF use Tesseract.js and bundled English OCR resources when a page has no readable text. Those supporting resources are part of the site; recognition runs in the browser. The selected document is not sent to a translation or OCR service.</p>
         </>
       },

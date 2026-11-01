@@ -29,7 +29,7 @@ export const TOOL_CATEGORIES = [
     id: 'convert',
     name: 'Convert',
     path: '/categories/convert',
-    description: 'Create PDFs from JPG, PNG, or BMP images, export PDF pages as image files, and convert between PDFs and Word documents. PDF-to-Word can use OCR; Word-to-PDF accepts DOCX and creates image-based pages.'
+    description: 'Create PDFs from JPG, PNG, or BMP images, export PDF pages as image files, and convert between PDFs, Word documents, and PowerPoint presentations. Office conversions create image-based output.'
   },
   {
     id: 'edit-sign',
@@ -131,6 +131,16 @@ export const TOOL_REGISTRY = [
     keywords: 'docx convert text OCR word to pdf pdf to word',
     icon: FileType,
     color: 'bg-indigo-500'
+  },
+  {
+    id: 'powerpoint',
+    name: 'PDF ↔ PowerPoint',
+    path: '/pdf-to-powerpoint',
+    category: 'convert',
+    description: 'Convert selected PDF pages into image-based PowerPoint slides or render selected PowerPoint slides as an image-based PDF.',
+    keywords: 'pptx powerpoint presentation slides pdf to powerpoint powerpoint to pdf',
+    icon: FileType,
+    color: 'bg-orange-500'
   },
   {
     id: 'compress',

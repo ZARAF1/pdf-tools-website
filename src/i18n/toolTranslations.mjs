@@ -211,6 +211,33 @@ export const TOOL_TRANSLATIONS = Object.fromEntries(
   ])
 );
 
+const powerpointToolTranslations = {
+  en: ['PDF ↔ PowerPoint', 'convert selected PDF pages into image-based PowerPoint slides, or selected PowerPoint slides into a PDF'],
+  es: ['PDF ↔ PowerPoint', 'convertir páginas PDF seleccionadas en diapositivas de PowerPoint como imágenes, o diapositivas seleccionadas de PowerPoint en PDF'],
+  fr: ['PDF ↔ PowerPoint', 'convertir des pages PDF choisies en diapositives PowerPoint sous forme d’images, ou des diapositives choisies en PDF'],
+  de: ['PDF ↔ PowerPoint', 'ausgewählte PDF-Seiten in bildbasierte PowerPoint-Folien oder ausgewählte Folien in ein PDF umwandeln'],
+  pt: ['PDF ↔ PowerPoint', 'converter páginas PDF selecionadas em slides do PowerPoint como imagens ou slides selecionados em PDF'],
+  it: ['PDF ↔ PowerPoint', 'convertire le pagine PDF selezionate in diapositive PowerPoint come immagini o le diapositive selezionate in PDF'],
+  nl: ['PDF ↔ PowerPoint', 'geselecteerde PDF-pagina’s omzetten naar PowerPoint-dia’s als afbeeldingen of geselecteerde dia’s naar PDF'],
+  pl: ['PDF ↔ PowerPoint', 'konwertować wybrane strony PDF na slajdy PowerPoint jako obrazy lub wybrane slajdy do PDF'],
+  sv: ['PDF ↔ PowerPoint', 'konvertera valda PDF-sidor till PowerPoint-bilder eller valda bilder till PDF'],
+  fi: ['PDF ↔ PowerPoint', 'muuntaa valitut PDF-sivut PowerPoint-dioiksi kuvina tai valitut diat PDF-tiedostoksi'],
+  da: ['PDF ↔ PowerPoint', 'konvertere valgte PDF-sider til PowerPoint-slides som billeder eller valgte slides til PDF'],
+  nb: ['PDF ↔ PowerPoint', 'konvertere valgte PDF-sider til PowerPoint-lysbilder som bilder eller valgte lysbilder til PDF'],
+  tr: ['PDF ↔ PowerPoint', 'seçilen PDF sayfalarını resim tabanlı PowerPoint slaytlarına veya seçilen slaytları PDF’ye dönüştürme'],
+  ru: ['PDF ↔ PowerPoint', 'преобразовать выбранные страницы PDF в слайды PowerPoint-изображения или выбранные слайды в PDF'],
+  uk: ['PDF ↔ PowerPoint', 'перетворити вибрані сторінки PDF на слайди PowerPoint-зображення або вибрані слайди на PDF'],
+  ar: ['PDF ↔ PowerPoint', 'تحويل صفحات PDF المحددة إلى شرائح PowerPoint كصور أو تحويل الشرائح المحددة إلى PDF'],
+  hi: ['PDF ↔ PowerPoint', 'चुने हुए PDF पेज को इमेज-आधारित PowerPoint स्लाइड या चुनी हुई स्लाइड को PDF में बदलें'],
+  ja: ['PDF ↔ PowerPoint', '選択した PDF ページを画像形式の PowerPoint スライドに、選択したスライドを PDF に変換'],
+  ko: ['PDF ↔ PowerPoint', '선택한 PDF 페이지를 이미지 기반 PowerPoint 슬라이드로, 선택한 슬라이드를 PDF로 변환'],
+  'zh-CN': ['PDF ↔ PowerPoint', '将选定的 PDF 页面转换为图片型 PowerPoint 幻灯片，或将选定的幻灯片转换为 PDF']
+};
+
+for (const [language, [name, description]] of Object.entries(powerpointToolTranslations)) {
+  TOOL_TRANSLATIONS[language].powerpoint = { name, description };
+}
+
 export const getLocalizedTool = (language, tool) => {
   const translation = TOOL_TRANSLATIONS[language]?.[tool.id];
   return translation ? { ...tool, ...translation } : tool;

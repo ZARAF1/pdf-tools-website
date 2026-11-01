@@ -7,7 +7,7 @@ import { fileURLToPath } from 'node:url';
 
 const toolIds = [
   'merge', 'split', 'rotate', 'protect', 'unlock', 'image', 'pdf-images',
-  'word', 'compress', 'edit', 'watermark', 'remove', 'ocr',
+  'word', 'powerpoint', 'compress', 'edit', 'watermark', 'remove', 'ocr',
   'crop', 'organize-pages', 'redact', 'sign'
 ];
 const toolCardSource = await readFile(
@@ -93,7 +93,7 @@ test('mobile tool introductions are summarized with an expandable full descripti
 });
 
 test('tool page shared guidance headings follow the selected language', () => {
-  const keys = ['howToUse', 'howItWorks', 'frequentlyAskedQuestions', 'attachPdfHere', 'attachDocumentHere', 'toolWorkspace'];
+  const keys = ['howToUse', 'howItWorks', 'frequentlyAskedQuestions', 'attachPdfHere', 'attachDocumentHere', 'attachPdfOrPowerPointHere', 'toolWorkspace'];
   for (const { code } of SUPPORTED_LANGUAGES) {
     for (const key of keys) {
       assert.notEqual(getMessage(code, key), key, `${code} is missing ${key}`);

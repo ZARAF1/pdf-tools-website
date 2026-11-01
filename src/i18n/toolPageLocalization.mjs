@@ -1,4 +1,5 @@
 import { SUPPORTED_LANGUAGES } from './languageCatalog.mjs';
+import { TOOL_UI_TRANSLATIONS } from './toolUiLocalization.mjs';
 
 const translations = {
   en: {
@@ -548,6 +549,57 @@ const docxPdfRuleTranslations = {
 
 for (const [language, rule] of Object.entries(docxPdfRuleTranslations)) {
   translations[language].rules.docxPdfOne = rule;
+}
+
+const powerpointPdfRuleTranslations = {
+  en: 'One unencrypted PDF or unprotected .pptx file · page count depends on available browser memory',
+  es: 'Un PDF sin contraseña o archivo .pptx sin protección · el límite de páginas depende de la memoria disponible del navegador',
+  fr: 'Un PDF non chiffré ou fichier .pptx non protégé · le nombre de pages dépend de la mémoire disponible du navigateur',
+  de: 'Eine unverschlüsselte PDF- oder ungeschützte .pptx-Datei · die Seitenzahl hängt vom verfügbaren Browserspeicher ab',
+  pt: 'Um PDF sem senha ou arquivo .pptx desprotegido · o limite de páginas depende da memória disponível no navegador',
+  it: 'Un PDF non crittografato o un file .pptx non protetto · il limite di pagine dipende dalla memoria disponibile nel browser',
+  nl: 'Eén onversleuteld PDF- of onbeveiligd .pptx-bestand · het aantal pagina’s hangt af van het beschikbare browsergeheugen',
+  pl: 'Jeden niezaszyfrowany PDF lub niezabezpieczony plik .pptx · liczba stron zależy od pamięci przeglądarki',
+  sv: 'En okrypterad PDF eller oskyddad .pptx-fil · sidantalet beror på tillgängligt webbläsarminne',
+  fi: 'Yksi salaamaton PDF tai suojaamaton .pptx-tiedosto · sivumäärä riippuu selaimen käytettävissä olevasta muistista',
+  da: 'Én ukrypteret PDF eller ubeskyttet .pptx-fil · antal sider afhænger af browserens tilgængelige hukommelse',
+  nb: 'Én ukryptert PDF eller ubeskyttet .pptx-fil · antall sider avhenger av tilgjengelig nettleserminne',
+  tr: 'Bir şifresiz PDF veya korumasız .pptx dosyası · sayfa sayısı tarayıcı belleğine bağlıdır',
+  ru: 'Один PDF без шифрования или незащищённый файл .pptx · число страниц зависит от доступной памяти браузера',
+  uk: 'Один незашифрований PDF або незахищений файл .pptx · кількість сторінок залежить від доступної пам’яті браузера',
+  ar: 'ملف PDF واحد غير مشفر أو ملف .pptx غير محمي · يعتمد عدد الصفحات على ذاكرة المتصفح المتاحة',
+  hi: 'एक अनएन्क्रिप्टेड PDF या असुरक्षित .pptx फ़ाइल · पेजों की संख्या ब्राउज़र की उपलब्ध मेमोरी पर निर्भर करती है',
+  ja: '暗号化されていない PDF または保護されていない .pptx ファイル 1 件・ページ数はブラウザーの空きメモリによる',
+  ko: '암호화되지 않은 PDF 또는 보호되지 않은 .pptx 파일 1개 · 페이지 수는 브라우저 메모리 여유에 따라 달라집니다',
+  'zh-CN': '1 个未加密 PDF 或未受保护的 .pptx 文件 · 页面数量取决于浏览器可用内存'
+};
+
+const powerpointCautions = {
+  en: 'Output pages are images, so text is not editable or searchable. PPTX rendering may request substitute fonts from Google Fonts; the presentation itself stays in your browser.',
+  es: 'Las páginas de salida son imágenes y el texto no se puede editar ni buscar. La conversión de PPTX puede solicitar fuentes sustitutas a Google Fonts; la presentación permanece en el navegador.',
+  fr: 'Les pages de sortie sont des images, le texte n’est donc ni modifiable ni consultable. Le rendu PPTX peut demander des polices de remplacement à Google Fonts ; la présentation reste dans votre navigateur.',
+  de: 'Die Ausgabeseiten sind Bilder; Text ist daher nicht bearbeitbar oder durchsuchbar. Beim PPTX-Rendern können Ersatzschriften von Google Fonts angefordert werden; die Präsentation bleibt im Browser.',
+  pt: 'As páginas de saída são imagens, portanto o texto não pode ser editado nem pesquisado. A renderização de PPTX pode solicitar fontes substitutas do Google Fonts; a apresentação permanece no navegador.',
+  it: 'Le pagine di output sono immagini, quindi il testo non è modificabile né ricercabile. Il rendering PPTX può richiedere font sostitutivi da Google Fonts; la presentazione resta nel browser.',
+  nl: 'Uitvoerpagina’s zijn afbeeldingen, dus tekst is niet bewerkbaar of doorzoekbaar. PPTX-rendering kan vervangende lettertypen van Google Fonts aanvragen; de presentatie blijft in de browser.',
+  pl: 'Strony wynikowe są obrazami, więc tekstu nie można edytować ani wyszukiwać. Renderowanie PPTX może pobierać czcionki zastępcze z Google Fonts; prezentacja pozostaje w przeglądarce.',
+  sv: 'Utdata består av bilder, så texten kan inte redigeras eller sökas. PPTX-rendering kan begära ersättningsteckensnitt från Google Fonts; presentationen stannar i webbläsaren.',
+  fi: 'Tulossivut ovat kuvia, joten tekstiä ei voi muokata eikä hakea. PPTX-renderöinti voi pyytää korvaavia fontteja Google Fontsista; esitys pysyy selaimessa.',
+  da: 'Outputtet består af billeder, så teksten kan ikke redigeres eller søges. PPTX-gengivelse kan hente erstatningsskrifttyper fra Google Fonts; præsentationen bliver i browseren.',
+  nb: 'Resultatet består av bilder, så teksten kan ikke redigeres eller søkes. PPTX-gjengivelse kan be om erstatningsfonter fra Google Fonts; presentasjonen forblir i nettleseren.',
+  tr: 'Çıktı sayfaları resimdir; metin düzenlenemez veya aranamaz. PPTX görüntüleme, Google Fonts’tan yedek yazı tipleri isteyebilir; sunum tarayıcınızda kalır.',
+  ru: 'Страницы результата — изображения, поэтому текст нельзя редактировать или искать. При отображении PPTX могут запрашиваться заменяющие шрифты Google Fonts; презентация остаётся в браузере.',
+  uk: 'Сторінки результату є зображеннями, тому текст не можна редагувати чи шукати. Для відтворення PPTX можуть запитуватися шрифти-замінники Google Fonts; презентація залишається в браузері.',
+  ar: 'صفحات الإخراج صور، لذا لا يمكن تحرير النص أو البحث فيه. قد يطلب عرض PPTX خطوطًا بديلة من Google Fonts؛ وتبقى العروض التقديمية في المتصفح.',
+  hi: 'आउटपुट पेज इमेज हैं, इसलिए टेक्स्ट संपादित या खोजा नहीं जा सकता। PPTX रेंडरिंग Google Fonts से वैकल्पिक फ़ॉन्ट मांग सकती है; प्रस्तुति ब्राउज़र में ही रहती है।',
+  ja: '出力ページは画像のため、テキストの編集や検索はできません。PPTX の描画時に Google Fonts へ代替フォントを要求する場合がありますが、プレゼンテーション自体はブラウザー内に留まります。',
+  ko: '출력 페이지는 이미지이므로 텍스트를 편집하거나 검색할 수 없습니다. PPTX 렌더링 중 Google Fonts에 대체 글꼴을 요청할 수 있지만 프레젠테이션 자체는 브라우저에 남습니다.',
+  'zh-CN': '输出页面为图片，无法编辑或搜索文本。渲染 PPTX 时可能会向 Google Fonts 请求替代字体；演示文稿本身始终留在浏览器中。'
+};
+
+for (const { code } of SUPPORTED_LANGUAGES) {
+  translations[code].rules.powerpointPdfOne = powerpointPdfRuleTranslations[code];
+  translations[code].cautions.powerpoint = `${powerpointCautions[code]} ${TOOL_UI_TRANSLATIONS[code].powerpoint.fontNameDisclosure}`;
 }
 
 const faqTranslations = {

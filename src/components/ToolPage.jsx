@@ -252,15 +252,17 @@ const TOOL_CONTENT = {
     ]
   },
   powerpoint: {
-    title: 'PowerPoint to PDF',
-    description: 'PowerPoint conversion is not available in this browser-only build.',
-    intro: 'PowerPoint-to-PDF conversion is not available on this page yet. Converting slides reliably requires preserving their layout, fonts, images, shapes, transitions where relevant, and page dimensions; this site does not currently provide a presentation renderer. The page does not accept or process presentation files and will not produce a renamed copy or claim a conversion took place. Keep your original presentation on your device. To create a PDF now, open it in presentation software you trust and choose its export or save-as-PDF option. Review the resulting pages for missing fonts, shifted objects, or clipped content before sending them to others. A browser-based option may be considered later if a suitable converter is reviewed. No presentation is sent to this site or to an external conversion service from this page.',
-    mechanism: 'The installed dependencies do not render PowerPoint slide visuals. No presentation is accepted, converted, uploaded, or renamed. A future implementation needs a compatible local renderer or an explicitly approved service.',
-    steps: ['No conversion workflow is available yet.', 'Keep your original presentation unchanged.', 'Use a trusted presentation application’s export-to-PDF feature in the meantime.'],
+    title: 'PDF ↔ PowerPoint',
+    description: 'Convert selected PDF pages into image-based PowerPoint slides, or selected PowerPoint slides into an image-based PDF.',
+    intro: 'Convert selected PDF pages into PowerPoint slides, or selected slides from a .pptx file into a PDF. Choose page or slide ranges, output name, image quality, slide size, and PDF page size. Both directions create image-based output, so text is not editable or searchable. Files are processed in your browser and are not uploaded. When rendering PowerPoint, font-family names used by the presentation may be sent to Google Fonts to request substitutes; the file and slide content are not sent. Standard quality uses fewer pixels for smaller image assets, while Higher quality adds detail and can increase output size. Matching the original dimensions keeps page or slide proportions; A4, Letter, or widescreen sizing may add margins rather than reflow content. Only unencrypted PDFs and unprotected .pptx files are supported; legacy .ppt and password-protected presentations are not. Very large documents may exceed available browser memory.',
+    mechanism: 'PDF.js renders selected PDF pages to images and PptxGenJS packages those images into a .pptx file. For the reverse direction, pptx-browser renders selected slides in the browser and pdf-lib places the images into a PDF. The conversion is image-based and cannot preserve editable text, animations, or every presentation effect. Font substitutions may request font assets from Google Fonts; font-family names may be included in those requests, but the presentation file and slide content remain in the browser.',
+    steps: ['Choose PDF → PowerPoint or PowerPoint → PDF.', 'Select one unencrypted PDF or unprotected .pptx file and enter page or slide ranges, or leave the selection blank to include all.', 'Set the output filename, image quality, and available page or slide size.', 'Convert, review the image-based output, and download it.'],
     faqs: [
-      ['Can I upload a .pptx or .ppt file here?', 'No. This page does not accept or process presentation files.'],
-      ['Why is conversion unavailable?', 'Correct slide rendering requires support for layout, fonts, graphics, tables, backgrounds and page dimensions not provided by the current dependencies.'],
-      ['Will the site send my presentation to another service?', 'No. There is no upload or third-party conversion flow.']
+      ['Can I edit or search the converted text?', 'No. Each selected page or slide is saved as an image. The output preserves appearance rather than editable text.'],
+      ['Can I convert only certain pages or slides?', 'Yes. Enter one-based page numbers and inclusive ranges such as 1-3,5. Leave the field blank to include every page or slide.'],
+      ['Are my files uploaded?', 'No. Document files are processed in your browser. Rendering PowerPoint may send font-family names to Google Fonts to request substitute fonts, but the presentation file and slide content are not sent.'],
+      ['Which PowerPoint files are supported?', 'Only unprotected .pptx files are supported. Legacy .ppt files and password-protected files are not.'],
+      ['Will higher image quality make a smaller file?', 'No. Higher quality increases render resolution and can increase output size. Choose standard quality for smaller files.']
     ]
   }
 };
@@ -307,6 +309,13 @@ const ATTACHMENT_RULES = {
     rule: 'One unencrypted PDF or unprotected .docx file · no fixed page cap',
     infoTitle: 'Convert PDF ↔ Word',
     info: 'Create editable DOCX text from PDFs, or image-based PDFs from DOCX. Reverse-conversion text is not searchable; .doc files are unsupported.'
+  },
+  powerpoint: {
+    title: 'Attach PDF or PowerPoint Here',
+    ruleKey: 'powerpointPdfOne',
+    rule: 'One unencrypted PDF or unprotected .pptx file · page count depends on available browser memory',
+    infoTitle: 'Convert PDF ↔ PowerPoint',
+    info: 'Select pages or slides, name the output, and choose image quality and page or slide sizing. Results are image-based and may not be editable.'
   },
   protect: {
     title: 'Attach PDF Here',
@@ -400,7 +409,9 @@ const ToolPage = ({ tool, children }) => {
   const ToolIcon = ProcessingIcon || FileText;
   const category = TOOL_CATEGORIES.find((item) => item.id === registeredTool?.category);
   const categoryName = category ? translate(`category.${category.id}`) : translate('conversionStatus');
-  const attachmentTitleKey = tool === 'word'
+  const attachmentTitleKey = tool === 'powerpoint'
+    ? 'attachPdfOrPowerPointHere'
+    : tool === 'word'
     ? 'attachDocumentHere'
     : tool === 'image'
       ? 'attachImagesHere'
