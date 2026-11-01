@@ -12,10 +12,10 @@ import {
   ChevronDown, 
   Download, 
   Loader2, 
-  AlertCircle,
-  CheckCircle2
+  AlertCircle
 } from 'lucide-react';
 import { AttachedFileIcon } from './AttachedFileControls';
+import DownloadReadyCard from './DownloadReadyCard';
 
 const MAX_FILES = 5;
 
@@ -408,12 +408,12 @@ const PdfMerger = () => {
             </button>
             {isMerging && <p className="sr-only" role="status">Merging the selected PDFs.</p>}
             {success && outputBytes && (
-              <div role="group" aria-label="Merged PDF download" className="mt-4 flex flex-col gap-3 rounded-xl border border-green-200 bg-green-50 p-4 text-green-800 sm:flex-row sm:items-center sm:justify-between">
-                <span className="flex items-center gap-2 text-sm font-medium"><CheckCircle2 className="h-5 w-5" aria-hidden="true" /> merged_document.pdf is ready ({(outputBytes.length / 1024).toFixed(1)} KB)</span>
-                <button type="button" onClick={downloadMergedPdf} className="inline-flex items-center justify-center gap-2 rounded-lg bg-green-600 px-4 py-2 font-semibold text-white transition hover:bg-green-700">
-                  <Download className="h-4 w-4" aria-hidden="true" /> Download PDF
-                </button>
-              </div>
+              <DownloadReadyCard
+                fileName="merged_document.pdf"
+                sizeBytes={outputBytes.length}
+                onDownload={downloadMergedPdf}
+                downloadLabel="Download PDF"
+              />
             )}
           </div>
         </>

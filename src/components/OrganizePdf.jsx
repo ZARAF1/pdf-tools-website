@@ -3,9 +3,10 @@ import { useToolExitGuard } from './ToolExitGuard';
 import { degrees, PDFDocument } from 'pdf-lib';
 import { validateUnencryptedPdf } from '../lib/pdfValidation';
 import useAccessibleDropzone from '../lib/useAccessibleDropzone';
-import { ArrowDown, ArrowUp, CheckCircle2, Download, Loader2, RotateCw, Trash2, Upload } from 'lucide-react';
+import { ArrowDown, ArrowUp, CheckCircle2, Loader2, RotateCw, Trash2, Upload } from 'lucide-react';
 import pdfjsLib from '../lib/pdfjsClient';
 import { AttachedFileActions, AttachedFileIcon } from './AttachedFileControls';
+import DownloadReadyCard from './DownloadReadyCard';
 
 const MAX_PAGES = 30;
 
@@ -356,13 +357,14 @@ const OrganizePdf = () => {
             </button>
           </>
         )}
-        {output && (
-          <button type="button" onClick={downloadPdf} className="inline-flex items-center gap-2 rounded-lg bg-emerald-600 px-5 py-3 font-semibold text-white transition hover:bg-emerald-700">
-            <Download className="h-5 w-5" aria-hidden="true" />
-            Download Organized PDF
-          </button>
-        )}
       </div>
+      {output && file && (
+        <DownloadReadyCard
+          fileName={`${file.name.replace(/\.pdf$/i, '')}_organized.pdf`}
+          sizeBytes={output.size}
+          onDownload={downloadPdf}
+        />
+      )}
     </div>
   );
 };

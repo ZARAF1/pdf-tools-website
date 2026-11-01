@@ -11,6 +11,7 @@ import {
   AlertCircle,
 } from 'lucide-react';
 import { AttachedFileActions, AttachedFileIcon } from './AttachedFileControls';
+import DownloadReadyCard from './DownloadReadyCard';
 
 const PdfProtector = () => {
   const [file, setFile] = useState(null);
@@ -290,18 +291,13 @@ const PdfProtector = () => {
         </motion.div>
       )}
 
-      {success && (
-        <motion.div
-          initial={{ opacity: 0, y: -10 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="flex items-center gap-3 p-4 bg-green-50 text-green-700 rounded-xl border border-green-200"
-        >
-          <div className="flex w-full flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <button type="button" onClick={downloadProtectedPdf} className="rounded-lg bg-green-600 px-4 py-2 font-semibold text-white transition hover:bg-green-700">
-              Download Protected PDF
-            </button>
-          </div>
-        </motion.div>
+      {success && outputBytes && (
+        <DownloadReadyCard
+          fileName={outputName}
+          sizeBytes={outputBytes.length}
+          onDownload={downloadProtectedPdf}
+          downloadLabel="Download Protected PDF"
+        />
       )}
     </div>
   );

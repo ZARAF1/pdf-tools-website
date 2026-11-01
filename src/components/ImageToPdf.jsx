@@ -6,7 +6,6 @@ import {
   AlertCircle,
   ChevronDown,
   ChevronUp,
-  Download,
   Image as ImageIcon,
   Loader2,
   RotateCcw,
@@ -15,6 +14,7 @@ import {
   Upload
 } from 'lucide-react';
 import { AttachedFileActions } from './AttachedFileControls';
+import DownloadReadyCard from './DownloadReadyCard';
 import { limitImageFiles } from '../lib/imageSelection.mjs';
 import { formatToolUiMessage, getLocalizedToolUi } from '../i18n/toolUiLocalization.mjs';
 import { useLanguage } from '../i18n/useLanguage';
@@ -650,11 +650,12 @@ const ImageToPdf = () => {
       {error && <div role="alert" className="image-to-pdf-error flex items-start gap-3 rounded-xl border border-rose-200 bg-rose-50 p-4 text-rose-800"><AlertCircle className="h-5 w-5 shrink-0" aria-hidden="true" /><span className="text-sm">{error}</span></div>}
 
       {outputBytes && (
-        <div className="image-to-pdf-result flex flex-col gap-4 rounded-xl border border-emerald-200 bg-emerald-50 p-4 text-emerald-900 sm:flex-row sm:items-center sm:justify-between">
-          <button type="button" onClick={downloadPdf} className="inline-flex items-center justify-center gap-2 rounded-lg bg-emerald-600 px-4 py-2 font-semibold text-white transition hover:bg-emerald-700">
-            <Download className="h-4 w-4" aria-hidden="true" /> {imageUi.downloadPdf}
-          </button>
-        </div>
+        <DownloadReadyCard
+          fileName={outputName}
+          sizeBytes={outputBytes.length}
+          onDownload={downloadPdf}
+          downloadLabel={imageUi.downloadPdf}
+        />
       )}
     </div>
   );

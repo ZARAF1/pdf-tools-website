@@ -5,8 +5,6 @@ import { PDFDocument, StandardFonts } from 'pdf-lib';
 import { createWorker } from 'tesseract.js';
 import {
   AlertCircle,
-  CheckCircle2,
-  Download,
   Loader2,
   ScanText,
   Upload,
@@ -15,6 +13,7 @@ import {
 import { PASSWORD_PROTECTED_PDF_MESSAGE, validateUnencryptedPdf } from '../lib/pdfValidation';
 import pdfjsLib from '../lib/pdfjsClient';
 import { AttachedFileActions, AttachedFileIcon } from './AttachedFileControls';
+import DownloadReadyCard from './DownloadReadyCard';
 
 const MAX_PAGES = 50;
 const MAX_PAGE_PIXELS = 16_000_000;
@@ -723,21 +722,13 @@ const OcrPdf = () => {
       )}
 
       {outputBlob && (
-        <section className="flex flex-col gap-3 rounded-xl border border-green-200 bg-green-50 p-4 text-green-900 sm:flex-row sm:items-center sm:justify-between" role="status">
-          <div className="flex items-start gap-3">
-            <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0" aria-hidden="true" />
-            <div>
-              <p className="mt-1 text-sm">{outputSummary}</p>
-            </div>
-          </div>
-          <button
-            type="button"
-            onClick={downloadOutput}
-            className="inline-flex shrink-0 items-center justify-center gap-2 rounded-lg bg-green-700 px-4 py-2 font-semibold text-white transition hover:bg-green-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-green-800"
-          >
-            <Download className="h-4 w-4" aria-hidden="true" /> Download searchable PDF
-          </button>
-        </section>
+        <DownloadReadyCard
+          fileName={outputName}
+          sizeBytes={outputBlob.size}
+          onDownload={downloadOutput}
+          downloadLabel="Download searchable PDF"
+          details={outputSummary}
+        />
       )}
       {file && ocrNotice}
     </div>

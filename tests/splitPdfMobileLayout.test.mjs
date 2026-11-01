@@ -40,12 +40,10 @@ test('Split PDF mode buttons wrap on the narrow workspace', () => {
   assert.match(splitter, /className="flex flex-wrap gap-4 border-b border-slate-100 pb-4"/);
 });
 
-test('Split PDF results wrap filenames and downloads inside a high-contrast card', () => {
-  assert.match(splitter, /className="[^"]*split-pdf-result[^"]*"/);
+test('Split PDF results use a shared responsive download card for every generated file', () => {
   assert.match(splitter, /className="[^"]*split-pdf-result-content[^"]*min-w-0[^"]*"/);
-  assert.match(splitter, /className="[^"]*split-pdf-output-name[^"]*"/);
-  assert.match(splitter, /className="[^"]*split-pdf-output-download[^"]*w-full[^"]*"/);
+  assert.match(splitter, /<DownloadReadyCard[\s\S]*?fileName=\{output\.name\}[\s\S]*?sizeBytes=\{output\.bytes\.length\}[\s\S]*?onDownload=\{\(\) => downloadOutput\(output\)\}/);
   assert.match(styles, /\.split-pdf-result-content\s*\{[^}]*min-width:\s*0/);
-  assert.match(styles, /\.split-pdf-output\s*\{[^}]*background:\s*var\(--surface-background\)/);
-  assert.match(styles, /\.split-pdf-output-name\s*\{[^}]*color:\s*var\(--text-primary\)/);
+  assert.match(styles, /\.download-ready-card\s*\{[^}]*flex-direction:\s*column/);
+  assert.match(styles, /\.download-ready-card-copy\s*\{[^}]*overflow-wrap:\s*anywhere/);
 });

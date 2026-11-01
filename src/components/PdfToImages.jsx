@@ -3,7 +3,6 @@ import { useToolExitGuard } from './ToolExitGuard';
 import useAccessibleDropzone from '../lib/useAccessibleDropzone';
 import {
   AlertCircle,
-  Download,
   FileImage,
   Loader2,
   RefreshCw,
@@ -13,6 +12,7 @@ import { PASSWORD_PROTECTED_PDF_MESSAGE, validateUnencryptedPdf } from '../lib/p
 import pdfjsLib from '../lib/pdfjsClient';
 import { createZipBlob, encodeBmp } from '../lib/imageArchive';
 import { AttachedFileActions, AttachedFileIcon } from './AttachedFileControls';
+import DownloadReadyCard from './DownloadReadyCard';
 
 const MAX_PAGES = 50;
 const MAX_PAGE_PIXELS = 16_000_000;
@@ -59,6 +59,7 @@ const PdfToImages = () => {
   const [error, setError] = useState('');
   const [zipUrl, setZipUrl] = useState('');
   const [zipName, setZipName] = useState('');
+  const [zipSizeBytes, setZipSizeBytes] = useState(0);
   const markOutputDownloaded = useToolExitGuard(Boolean(file), zipUrl);
 
   const generationRef = useRef(0);
@@ -75,6 +76,7 @@ const PdfToImages = () => {
     zipUrlRef.current = '';
     setZipUrl('');
     setZipName('');
+    setZipSizeBytes(0);
   }, []);
 
   const stopPdfLoading = useCallback(() => {
@@ -155,6 +157,7 @@ const PdfToImages = () => {
     zipUrlRef.current = url;
     setZipUrl(url);
     setZipName(`${baseName}-images-${selectedFormat.extension}.zip`);
+    setZipSizeBytes(blob.size);
     generatedFilesRef.current = null;
     generatedFormatRef.current = null;
     setProgress(`ZIP ready with ${images.length} ${imageLabel}.`);
@@ -594,17 +597,13 @@ const PdfToImages = () => {
         </button>
       )}
       {zipUrl && (
-        <section className="flex flex-col gap-3 rounded-2xl border border-green-200 bg-green-50 p-5 sm:flex-row sm:items-center sm:justify-between">
-          <a
-            href={zipUrl}
-            download={zipName}
-            onClick={markOutputDownloaded}
-            className="inline-flex items-center justify-center gap-2 rounded-xl bg-green-700 px-5 py-3 font-semibold text-white transition hover:bg-green-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-green-700"
-          >
-            <Download className="h-5 w-5" aria-hidden="true" />
-            Download ZIP
-          </a>
-        </section>
+        <DownloadReadyCard
+          fileName={zipName}
+          sizeBytes={zipSizeBytes}
+          href={zipUrl}
+          onDownload={markOutputDownloaded}
+          downloadLabel="Download ZIP"
+        />
       )}
     </div>
   );

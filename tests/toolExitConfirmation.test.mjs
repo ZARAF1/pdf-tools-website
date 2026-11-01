@@ -81,7 +81,7 @@ test('every PDF tool reports ready outputs and acknowledges initiated downloads'
     ['PdfRotator.jsx', /useToolExitGuard\(Boolean\(file\),\s*outputBytes\)/, /markOutputDownloaded\(\)/],
     ['PdfProtector.jsx', /useToolExitGuard\(Boolean\(file\),\s*outputBytes\)/, /markOutputDownloaded\(\)/],
     ['ImageToPdf.jsx', /useToolExitGuard\([\s\S]*?outputBytes\)/, /markOutputDownloaded\(\)/],
-    ['PdfToImages.jsx', /useToolExitGuard\(Boolean\(file\),\s*zipUrl\)/, /onClick=\{\s*markOutputDownloaded\s*\}/],
+    ['PdfToImages.jsx', /useToolExitGuard\(Boolean\(file\),\s*zipUrl\)/, /<DownloadReadyCard[\s\S]*?href=\{zipUrl\}[\s\S]*?onDownload=\{markOutputDownloaded\}/],
     ['UnlockPdf.jsx', /useToolExitGuard\(Boolean\(file\),\s*outputBytes\)/, /markOutputDownloaded\(\)/],
     ['PdfToWord.jsx', /useToolExitGuard\(Boolean\(file\),\s*outputBlob\)/, /markOutputDownloaded\(\)/],
     ['OcrPdf.jsx', /useToolExitGuard\(Boolean\(file\),\s*outputBlob\)/, /markOutputDownloaded\(\)/],

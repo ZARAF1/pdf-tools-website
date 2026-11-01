@@ -7,7 +7,6 @@ import pdfjsLib from '../lib/pdfjsClient';
 import { motion } from 'framer-motion';
 import {
   Upload,
-  Download,
   Loader2,
   AlertCircle,
   CheckCircle2,
@@ -15,6 +14,7 @@ import {
   Info
 } from 'lucide-react';
 import { AttachedFileActions, AttachedFileIcon } from './AttachedFileControls';
+import DownloadReadyCard from './DownloadReadyCard';
 
 const MAX_FILES = 5;
 const MAX_PAGE_PIXELS = 16000000;
@@ -629,7 +629,16 @@ const PdfCompressor = () => {
 
       {fileResults.length > 0 && (
         <div className="space-y-3">
-          {fileResults.map((item) => (
+          {fileResults.map((item) => item.reduced ? (
+            <DownloadReadyCard
+              key={item.id}
+              fileName={item.outputName}
+              sizeBytes={item.outputBytes.length}
+              details={`Original: ${formatBytes(item.size)} · ${item.summary}`}
+              onDownload={() => downloadResult(item)}
+              downloadLabel="Download"
+            />
+          ) : (
             <div key={item.id} className="flex flex-col gap-3 rounded-xl border border-slate-200 bg-white p-4 shadow-sm sm:flex-row sm:items-center sm:justify-between">
               <div className="space-y-1 text-sm text-slate-700">
                 <p className="font-semibold">{item.name}</p>
@@ -639,16 +648,6 @@ const PdfCompressor = () => {
                   {item.summary}
                 </p>
               </div>
-              {item.reduced && (
-                <button
-                  type="button"
-                  onClick={() => downloadResult(item)}
-                  className="inline-flex shrink-0 items-center justify-center gap-2 rounded-lg bg-violet-600 px-3 py-2 font-medium text-white transition-colors hover:bg-violet-700"
-                >
-                  <Download className="w-4 h-4" />
-                  Download
-                </button>
-              )}
             </div>
           ))}
         </div>

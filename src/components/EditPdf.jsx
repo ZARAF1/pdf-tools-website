@@ -8,7 +8,6 @@ import {
   Check,
   ChevronLeft,
   ChevronRight,
-  Download,
   FileImage,
   Highlighter,
   ImagePlus,
@@ -28,6 +27,7 @@ import {
 import pdfjsLib from '../lib/pdfjsClient';
 import { validateUnencryptedPdf } from '../lib/pdfValidation';
 import { AttachedFileActions, AttachedFileIcon } from './AttachedFileControls';
+import DownloadReadyCard from './DownloadReadyCard';
 
 const TOOL_OPTIONS = [
   { id: 'select', label: 'Select / move', icon: MousePointer2 },
@@ -1366,13 +1366,15 @@ const EditPdf = () => {
                 {isSaving ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" /> : <Save className="h-4 w-4" aria-hidden="true" />}
                 {isSaving ? 'Validating edited PDF…' : 'Save PDF'}
               </button>
-              {output && (
-                <button type="button" onClick={downloadPdf} className="pdf-editor-download-button">
-                  <Download className="h-4 w-4" aria-hidden="true" /> Download edited PDF
-                </button>
-              )}
             </div>
           </div>
+          {output && file && (
+            <DownloadReadyCard
+              fileName={`${file.name.replace(/\.pdf$/i, '')}_edited.pdf`}
+              sizeBytes={output.size}
+              onDownload={downloadPdf}
+            />
+          )}
         </>
       )}
 

@@ -1,11 +1,12 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useToolExitGuard } from './ToolExitGuard';
 import useAccessibleDropzone from '../lib/useAccessibleDropzone';
-import { ArrowLeft, ArrowRight, Download, Loader2, RotateCcw, Upload, ZoomIn, ZoomOut } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Loader2, RotateCcw, Upload, ZoomIn, ZoomOut } from 'lucide-react';
 import { PDFDocument } from 'pdf-lib';
 import pdfjsLib from '../lib/pdfjsClient';
 import { validateUnencryptedPdf } from '../lib/pdfValidation';
 import { AttachedFileActions, AttachedFileIcon } from './AttachedFileControls';
+import DownloadReadyCard from './DownloadReadyCard';
 
 const MIN_CROP_SIZE = 0.05;
 const clamp = (value, min, max) => Math.min(max, Math.max(min, value));
@@ -747,12 +748,14 @@ const CropPdf = () => {
               {isProcessing ? <Loader2 className="crop-pdf-spinner" aria-hidden="true" size={17} /> : null}
               {isProcessing ? 'Applying crop...' : 'Apply crop'}
             </button>
-            {output && (
-              <button type="button" className="crop-pdf-button crop-pdf-button-download" onClick={downloadPdf}>
-                <Download aria-hidden="true" size={17} /> Download cropped PDF
-              </button>
-            )}
           </div>
+          {output && file && (
+            <DownloadReadyCard
+              fileName={`${file.name.replace(/\.pdf$/i, '') || 'document'}_cropped.pdf`}
+              sizeBytes={output.size}
+              onDownload={downloadPdf}
+            />
+          )}
           <p className="crop-pdf-disclosure">
             Cropping changes each page&apos;s visible CropBox boundary; it does not erase content outside that boundary. Hidden content may be recovered by changing the PDF page box. Your original file is left untouched.
           </p>

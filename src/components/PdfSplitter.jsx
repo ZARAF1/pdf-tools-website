@@ -7,13 +7,14 @@ import { validateUnencryptedPdf } from '../lib/pdfValidation';
 import { motion } from 'framer-motion';
 import { 
   Upload, 
-  Download, 
+  Download,
   Loader2, 
   AlertCircle,
   Scissors,
   Layers
 } from 'lucide-react';
 import { AttachedFileActions, AttachedFileIcon } from './AttachedFileControls';
+import DownloadReadyCard from './DownloadReadyCard';
 
 const PdfSplitter = () => {
   const [file, setFile] = useState(null);
@@ -292,23 +293,21 @@ const PdfSplitter = () => {
         </motion.div>
       )}
 
-      {success && (
-        <motion.div 
-          initial={{ opacity: 0, y: -10 }} 
+      {success && outputFiles.length > 0 && (
+        <motion.div
+          initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
-          role="status"
-          className="split-pdf-result flex w-full min-w-0 flex-col gap-3 rounded-xl border border-green-200 bg-green-50 p-4 text-green-700"
+          className="split-pdf-result-content min-w-0 space-y-3"
         >
-          <div className="split-pdf-result-content flex min-w-0 flex-col gap-2">
-            {outputFiles.map((output) => (
-              <div key={output.name} className="split-pdf-output flex min-w-0 flex-col gap-2 rounded-lg border border-green-200 p-3 sm:flex-row sm:items-center sm:justify-between">
-                <span className="split-pdf-output-name min-w-0 break-all text-sm font-medium">{output.name}</span>
-                <button type="button" onClick={() => downloadOutput(output)} className="split-pdf-output-download inline-flex w-full shrink-0 items-center justify-center gap-2 rounded-lg bg-green-600 px-4 py-2 font-semibold text-white transition hover:bg-green-700 sm:w-auto">
-                  <Download className="h-4 w-4" aria-hidden="true" /> Download PDF
-                </button>
-              </div>
-            ))}
-          </div>
+          {outputFiles.map((output) => (
+            <DownloadReadyCard
+              key={output.name}
+              fileName={output.name}
+              sizeBytes={output.bytes.length}
+              onDownload={() => downloadOutput(output)}
+              downloadLabel="Download PDF"
+            />
+          ))}
         </motion.div>
       )}
     </div>

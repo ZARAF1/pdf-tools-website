@@ -6,12 +6,12 @@ import pdfjsLib from '../lib/pdfjsClient';
 import useAccessibleDropzone from '../lib/useAccessibleDropzone';
 import {
   AlertCircle,
-  Download,
   Loader2,
   Unlock,
   Upload
 } from 'lucide-react';
 import { AttachedFileActions, AttachedFileIcon } from './AttachedFileControls';
+import DownloadReadyCard from './DownloadReadyCard';
 
 const formatBytes = (bytes) => {
   if (bytes < 1024) return `${bytes} B`;
@@ -273,16 +273,12 @@ const UnlockPdf = () => {
         </p>
       )}
       {outputBytes && (
-        <section className="site-surface flex flex-col gap-3 rounded-2xl border border-slate-200 p-5 sm:flex-row sm:items-center sm:justify-between">
-          <button
-            type="button"
-            onClick={downloadOutput}
-            className="inline-flex items-center justify-center gap-2 rounded-xl bg-green-700 px-5 py-3 font-semibold text-white transition hover:bg-green-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-green-700"
-          >
-            <Download className="h-5 w-5" aria-hidden="true" />
-            Download unlocked PDF
-          </button>
-        </section>
+        <DownloadReadyCard
+          fileName={outputName}
+          sizeBytes={outputBytes.length}
+          onDownload={downloadOutput}
+          downloadLabel="Download unlocked PDF"
+        />
       )}
     </div>
   );

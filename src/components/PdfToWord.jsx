@@ -8,12 +8,13 @@ import { createWorker } from 'tesseract.js';
 import { motion } from 'framer-motion';
 import {
   Upload,
-  Download,
   Loader2,
   AlertCircle,
+  Download,
   Info
 } from 'lucide-react';
 import { AttachedFileActions, AttachedFileIcon } from './AttachedFileControls';
+import DownloadReadyCard from './DownloadReadyCard';
 
 const OCR_NOTICE =
   'No readable text was found in this PDF. It may be blank or too low quality to recognize.';
@@ -445,17 +446,14 @@ const PdfToWord = () => {
       )}
 
       {success && (
-        <motion.div
-          initial={{ opacity: 0, y: -10 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="flex items-center gap-3 p-4 bg-green-50 text-green-700 rounded-xl border border-green-200"
-        >
-          <div className="flex w-full flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <button type="button" onClick={downloadWordDocument} disabled={!outputBlob} className="inline-flex items-center justify-center gap-2 rounded-lg bg-green-600 px-4 py-2 font-semibold text-white transition hover:bg-green-700 disabled:opacity-50">
-              <Download className="h-4 w-4" aria-hidden="true" /> Download Word file
-            </button>
-          </div>
-        </motion.div>
+        outputBlob && (
+          <DownloadReadyCard
+            fileName="document_converted.docx"
+            sizeBytes={outputBlob.size}
+            onDownload={downloadWordDocument}
+            downloadLabel="Download Word file"
+          />
+        )
       )}
     </div>
   );

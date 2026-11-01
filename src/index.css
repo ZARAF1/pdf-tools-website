@@ -2837,6 +2837,110 @@ body {
   background-color: var(--surface-background);
 }
 
+.download-ready-card {
+  display: flex;
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+  flex-direction: column;
+  gap: 0.75rem;
+  border: 1px solid #a7f3d0;
+  border-radius: 0.875rem;
+  background: #ecfdf5;
+  padding: 1rem;
+  color: #065f46;
+}
+
+.download-ready-card-message {
+  display: flex;
+  min-width: 0;
+  align-items: flex-start;
+  gap: 0.75rem;
+}
+
+.download-ready-card-icon {
+  flex: 0 0 auto;
+  width: 1.25rem;
+  height: 1.25rem;
+  margin-top: 0.125rem;
+  color: #059669;
+}
+
+.download-ready-card-copy {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.download-ready-card-title {
+  margin: 0;
+  font-size: 0.875rem;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+.download-ready-card-details {
+  margin: 0.25rem 0 0;
+  font-size: 0.8125rem;
+  line-height: 1.4;
+}
+
+.download-ready-card-action {
+  display: inline-flex;
+  width: 100%;
+  min-height: 2.5rem;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  border: 0;
+  border-radius: 0.5rem;
+  background: #059669;
+  padding: 0.625rem 1rem;
+  color: #fff;
+  font: inherit;
+  font-size: 0.875rem;
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.download-ready-card-action:hover {
+  background: #047857;
+}
+
+.download-ready-card-action:focus-visible {
+  outline: 3px solid #34d399;
+  outline-offset: 2px;
+}
+
+.download-ready-card-action svg {
+  width: 1rem;
+  height: 1rem;
+}
+
+:root[data-theme='dark'] .download-ready-card {
+  border-color: #166534;
+  background: color-mix(in srgb, #16a34a 16%, var(--surface-background));
+  color: #bbf7d0;
+}
+
+:root[data-theme='dark'] .download-ready-card-icon {
+  color: #4ade80;
+}
+
+@media (min-width: 640px) {
+  .download-ready-card {
+    align-items: center;
+    flex-direction: row;
+    justify-content: space-between;
+  }
+
+  .download-ready-card-action {
+    width: auto;
+    flex: 0 0 auto;
+  }
+}
+
 :root[data-theme='dark'] .bg-slate-50,
 :root[data-theme='dark'] .bg-gray-50 {
   background-color: var(--page-background);
@@ -3446,23 +3550,6 @@ body {
 .split-pdf-result-content {
   width: 100%;
   min-width: 0;
-}
-
-.split-pdf-output {
-  width: 100%;
-  min-width: 0;
-  border-color: var(--border-color);
-  background: var(--surface-background);
-}
-
-.split-pdf-output-name {
-  min-width: 0;
-  color: var(--text-primary);
-  overflow-wrap: anywhere;
-}
-
-.split-pdf-output-download {
-  max-width: 100%;
 }
 
 .edit-sign-upload-zone.has-file,

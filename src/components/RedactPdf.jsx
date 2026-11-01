@@ -3,9 +3,10 @@ import { useToolExitGuard } from './ToolExitGuard';
 import { PDFDocument } from 'pdf-lib';
 import { validateUnencryptedPdf } from '../lib/pdfValidation';
 import useAccessibleDropzone from '../lib/useAccessibleDropzone';
-import { ArrowLeft, ArrowRight, CheckCircle2, Download, Loader2, RotateCcw, Trash2, Upload } from 'lucide-react';
+import { ArrowLeft, ArrowRight, CheckCircle2, Loader2, RotateCcw, Trash2, Upload } from 'lucide-react';
 import pdfjsLib from '../lib/pdfjsClient';
 import { AttachedFileActions, AttachedFileIcon } from './AttachedFileControls';
+import DownloadReadyCard from './DownloadReadyCard';
 
 const MAX_PAGES = 15;
 
@@ -507,12 +508,15 @@ const RedactPdf = () => {
             {isProcessing ? 'Redacting PDF…' : 'Create Redacted PDF'}
           </button>
           <button type="button" onClick={clearFile} disabled={isProcessing} className="rounded-lg border border-slate-200 px-5 py-3 font-semibold text-slate-700 transition hover:bg-slate-50 disabled:opacity-50">Reset</button>
-          {output && (
-            <button type="button" onClick={downloadPdf} className="inline-flex items-center gap-2 rounded-lg bg-emerald-600 px-5 py-3 font-semibold text-white transition hover:bg-emerald-700">
-              <Download className="h-5 w-5" aria-hidden="true" /> Download Redacted PDF
-            </button>
-          )}
         </div>
+      )}
+      {output && file && (
+        <DownloadReadyCard
+          fileName={`${file.name.replace(/\.pdf$/i, '')}_redacted.pdf`}
+          sizeBytes={output.size}
+          onDownload={downloadPdf}
+          downloadLabel="Download Redacted PDF"
+        />
       )}
       {isProcessing && <p className="sr-only" role="status">Creating the redacted PDF.</p>}
     </div>

@@ -3,8 +3,9 @@ import { useToolExitGuard } from './ToolExitGuard';
 import { PDFDocument, StandardFonts } from 'pdf-lib';
 import { validateUnencryptedPdf } from '../lib/pdfValidation';
 import useAccessibleDropzone from '../lib/useAccessibleDropzone';
-import { CheckCircle2, Download, Loader2, PenLine, Trash2, Upload } from 'lucide-react';
+import { CheckCircle2, Loader2, PenLine, Trash2, Upload } from 'lucide-react';
 import { AttachedFileActions, AttachedFileIcon } from './AttachedFileControls';
+import DownloadReadyCard from './DownloadReadyCard';
 
 const parsePages = (input, pageCount) => {
   const value = input.trim();
@@ -438,8 +439,15 @@ const SignPdf = () => {
             {isProcessing ? 'Signing PDF…' : 'Sign PDF'}
           </button>
           <button type="button" onClick={reset} disabled={isProcessing} className="rounded-lg border border-slate-200 px-5 py-3 font-semibold text-slate-700 transition hover:bg-slate-50 disabled:opacity-50">Reset</button>
-          {output && <button type="button" onClick={downloadPdf} className="inline-flex items-center gap-2 rounded-lg bg-emerald-600 px-5 py-3 font-semibold text-white transition hover:bg-emerald-700"><Download className="h-5 w-5" aria-hidden="true" /> Download Signed PDF</button>}
         </div>
+      )}
+      {output && file && (
+        <DownloadReadyCard
+          fileName={`${file.name.replace(/\.pdf$/i, '')}_signed.pdf`}
+          sizeBytes={output.size}
+          onDownload={downloadPdf}
+          downloadLabel="Download Signed PDF"
+        />
       )}
       <p className="rounded-lg bg-amber-50 p-3 text-sm text-amber-900">A visible signature does not verify identity, create a certificate signature, or prevent later changes.</p>
     </div>

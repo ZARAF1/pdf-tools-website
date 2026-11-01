@@ -3,9 +3,10 @@ import { useToolExitGuard } from './ToolExitGuard';
 import useAccessibleDropzone from '../lib/useAccessibleDropzone';
 import { PDFDocument } from 'pdf-lib';
 import { validateUnencryptedPdf } from '../lib/pdfValidation';
-import { AlertCircle, Download, Loader2, Upload } from 'lucide-react';
+import { AlertCircle, Loader2, Upload } from 'lucide-react';
 import PdfPageGrid from './PdfPageGrid';
 import { AttachedFileActions, AttachedFileIcon } from './AttachedFileControls';
+import DownloadReadyCard from './DownloadReadyCard';
 
 const MAX_PAGES = 50;
 
@@ -296,12 +297,11 @@ const PageSelectionTool = ({ mode }) => {
       )}
 
       {outputBytes && (
-        <div className="flex flex-col gap-4 rounded-xl border border-emerald-200 bg-emerald-50 p-4 text-emerald-900 sm:flex-row sm:items-center sm:justify-between">
-          <button type="button" onClick={downloadOutput} className="inline-flex items-center justify-center gap-2 rounded-lg bg-emerald-600 px-4 py-2 font-semibold text-white transition hover:bg-emerald-700">
-            <Download className="h-4 w-4" aria-hidden="true" />
-            {isRemoving ? 'Download PDF' : 'Download Extracted PDF'}
-          </button>
-        </div>
+        <DownloadReadyCard
+          fileName={outputName}
+          sizeBytes={outputBytes.length}
+          onDownload={downloadOutput}
+        />
       )}
     </div>
   );
