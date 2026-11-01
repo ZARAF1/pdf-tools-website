@@ -3,7 +3,6 @@ import { useToolExitGuard } from './ToolExitGuard';
 import useAccessibleDropzone from '../lib/useAccessibleDropzone';
 import { PDFDocument } from 'pdf-lib';
 import { recoverPdfPageTreeRoot } from '../lib/pdfPageTreeRecovery.mjs';
-import { FILE_DOWNLOAD_READY_MESSAGE } from '../lib/toolMessages.mjs';
 import { validateUnencryptedPdf } from '../lib/pdfValidation';
 import { motion } from 'framer-motion';
 import { 
@@ -11,7 +10,6 @@ import {
   Download, 
   Loader2, 
   AlertCircle,
-  CheckCircle2,
   Scissors,
   Layers
 } from 'lucide-react';
@@ -301,21 +299,15 @@ const PdfSplitter = () => {
           role="status"
           className="split-pdf-result flex w-full min-w-0 flex-col gap-3 rounded-xl border border-green-200 bg-green-50 p-4 text-green-700"
         >
-          <div className="split-pdf-result-content flex min-w-0 items-start gap-3">
-            <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0" />
-            <div className="min-w-0 flex-1 space-y-3">
-              <p className="text-sm font-medium">{FILE_DOWNLOAD_READY_MESSAGE}</p>
-              <div className="flex flex-col gap-2">
-                {outputFiles.map((output) => (
-                  <div key={output.name} className="split-pdf-output flex min-w-0 flex-col gap-2 rounded-lg border border-green-200 p-3 sm:flex-row sm:items-center sm:justify-between">
-                    <span className="split-pdf-output-name min-w-0 break-all text-sm font-medium">{output.name}</span>
-                    <button type="button" onClick={() => downloadOutput(output)} className="split-pdf-output-download inline-flex w-full shrink-0 items-center justify-center gap-2 rounded-lg bg-green-600 px-4 py-2 font-semibold text-white transition hover:bg-green-700 sm:w-auto">
-                      <Download className="h-4 w-4" aria-hidden="true" /> Download PDF
-                    </button>
-                  </div>
-                ))}
+          <div className="split-pdf-result-content flex min-w-0 flex-col gap-2">
+            {outputFiles.map((output) => (
+              <div key={output.name} className="split-pdf-output flex min-w-0 flex-col gap-2 rounded-lg border border-green-200 p-3 sm:flex-row sm:items-center sm:justify-between">
+                <span className="split-pdf-output-name min-w-0 break-all text-sm font-medium">{output.name}</span>
+                <button type="button" onClick={() => downloadOutput(output)} className="split-pdf-output-download inline-flex w-full shrink-0 items-center justify-center gap-2 rounded-lg bg-green-600 px-4 py-2 font-semibold text-white transition hover:bg-green-700 sm:w-auto">
+                  <Download className="h-4 w-4" aria-hidden="true" /> Download PDF
+                </button>
               </div>
-            </div>
+            ))}
           </div>
         </motion.div>
       )}

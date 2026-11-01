@@ -2,9 +2,8 @@ import React, { useCallback, useRef, useState } from 'react';
 import { useToolExitGuard } from './ToolExitGuard';
 import useAccessibleDropzone from '../lib/useAccessibleDropzone';
 import { PDFDocument } from 'pdf-lib';
-import { FILE_DOWNLOAD_READY_MESSAGE } from '../lib/toolMessages.mjs';
 import { validateUnencryptedPdf } from '../lib/pdfValidation';
-import { AlertCircle, CheckCircle2, Download, Loader2, Upload } from 'lucide-react';
+import { AlertCircle, Download, Loader2, Upload } from 'lucide-react';
 import PdfPageGrid from './PdfPageGrid';
 import { AttachedFileActions, AttachedFileIcon } from './AttachedFileControls';
 
@@ -297,11 +296,7 @@ const PageSelectionTool = ({ mode }) => {
       )}
 
       {outputBytes && (
-        <div role="status" className="flex flex-col gap-4 rounded-xl border border-emerald-200 bg-emerald-50 p-4 text-emerald-900 sm:flex-row sm:items-center sm:justify-between">
-          <div className="flex items-center gap-3">
-            <CheckCircle2 className="h-5 w-5 shrink-0" aria-hidden="true" />
-            <span className="text-sm font-medium">{FILE_DOWNLOAD_READY_MESSAGE}</span>
-          </div>
+        <div className="flex flex-col gap-4 rounded-xl border border-emerald-200 bg-emerald-50 p-4 text-emerald-900 sm:flex-row sm:items-center sm:justify-between">
           <button type="button" onClick={downloadOutput} className="inline-flex items-center justify-center gap-2 rounded-lg bg-emerald-600 px-4 py-2 font-semibold text-white transition hover:bg-emerald-700">
             <Download className="h-4 w-4" aria-hidden="true" />
             {isRemoving ? 'Download PDF' : 'Download Extracted PDF'}

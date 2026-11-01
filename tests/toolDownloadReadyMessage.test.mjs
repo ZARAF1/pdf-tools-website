@@ -22,16 +22,10 @@ const toolComponents = [
   'UnlockPdf.jsx',
 ];
 
-test('every successful tool workflow uses the shared download-ready message', async () => {
-  const { FILE_DOWNLOAD_READY_MESSAGE } = await import('../src/lib/toolMessages.mjs');
-  assert.equal(FILE_DOWNLOAD_READY_MESSAGE, 'File download ready.');
-
+test('tool workflows do not show the generic download-ready notification', async () => {
   for (const component of toolComponents) {
     const source = await readFile(new URL(`../src/components/${component}`, import.meta.url), 'utf8');
-    assert.match(
-      source,
-      /FILE_DOWNLOAD_READY_MESSAGE/,
-      `${component} should show the shared download-ready message on success`
-    );
+    assert.doesNotMatch(source, /FILE_DOWNLOAD_READY_MESSAGE|File download ready\./, component);
+    assert.match(source, /download/i, `${component} should retain its output download action`);
   }
 });

@@ -2,7 +2,6 @@ import React, { useCallback, useRef, useState } from 'react';
 import { useToolExitGuard } from './ToolExitGuard';
 import useAccessibleDropzone from '../lib/useAccessibleDropzone';
 import { PDFDocument, StandardFonts, degrees, rgb } from 'pdf-lib';
-import { FILE_DOWNLOAD_READY_MESSAGE } from '../lib/toolMessages.mjs';
 import { validateUnencryptedPdf } from '../lib/pdfValidation';
 import { motion } from 'framer-motion';
 import {
@@ -10,7 +9,6 @@ import {
   Download,
   Loader2,
   AlertCircle,
-  CheckCircle2,
   Stamp,
   Settings2
 } from 'lucide-react';
@@ -706,13 +704,8 @@ const PdfWatermarker = () => {
         <motion.div
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
-          role="status"
           className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 bg-green-50 text-green-700 rounded-xl border border-green-200"
         >
-          <div className="flex items-center gap-3">
-            <CheckCircle2 className="w-5 h-5 flex-shrink-0" />
-            <span className="text-sm font-medium">{FILE_DOWNLOAD_READY_MESSAGE}</span>
-          </div>
           <button
             type="button"
             onClick={() => {

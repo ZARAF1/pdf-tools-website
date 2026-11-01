@@ -2,12 +2,10 @@ import React, { useCallback, useState } from 'react';
 import { useToolExitGuard } from './ToolExitGuard';
 import { decryptPDF, isEncrypted } from '@pdfsmaller/pdf-decrypt';
 import { PDFDocument } from 'pdf-lib';
-import { FILE_DOWNLOAD_READY_MESSAGE } from '../lib/toolMessages.mjs';
 import pdfjsLib from '../lib/pdfjsClient';
 import useAccessibleDropzone from '../lib/useAccessibleDropzone';
 import {
   AlertCircle,
-  CheckCircle2,
   Download,
   Loader2,
   Unlock,
@@ -276,10 +274,6 @@ const UnlockPdf = () => {
       )}
       {outputBytes && (
         <section className="site-surface flex flex-col gap-3 rounded-2xl border border-slate-200 p-5 sm:flex-row sm:items-center sm:justify-between">
-          <p className="flex items-center gap-2 font-semibold text-slate-800" role="status">
-            <CheckCircle2 className="h-5 w-5 text-green-600" aria-hidden="true" />
-            {FILE_DOWNLOAD_READY_MESSAGE}
-          </p>
           <button
             type="button"
             onClick={downloadOutput}

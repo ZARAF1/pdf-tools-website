@@ -3,7 +3,6 @@ import { useToolExitGuard } from './ToolExitGuard';
 import useAccessibleDropzone from '../lib/useAccessibleDropzone';
 import {
   AlertCircle,
-  CheckCircle2,
   Download,
   FileImage,
   Loader2,
@@ -11,7 +10,6 @@ import {
   Upload
 } from 'lucide-react';
 import { PASSWORD_PROTECTED_PDF_MESSAGE, validateUnencryptedPdf } from '../lib/pdfValidation';
-import { FILE_DOWNLOAD_READY_MESSAGE } from '../lib/toolMessages.mjs';
 import pdfjsLib from '../lib/pdfjsClient';
 import { createZipBlob, encodeBmp } from '../lib/imageArchive';
 import { AttachedFileActions, AttachedFileIcon } from './AttachedFileControls';
@@ -597,10 +595,6 @@ const PdfToImages = () => {
       )}
       {zipUrl && (
         <section className="flex flex-col gap-3 rounded-2xl border border-green-200 bg-green-50 p-5 sm:flex-row sm:items-center sm:justify-between">
-          <p className="flex items-center gap-2 font-semibold text-green-800" role="status">
-            <CheckCircle2 className="h-5 w-5" aria-hidden="true" />
-            {FILE_DOWNLOAD_READY_MESSAGE}
-          </p>
           <a
             href={zipUrl}
             download={zipName}

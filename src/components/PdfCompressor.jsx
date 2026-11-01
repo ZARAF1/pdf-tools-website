@@ -2,7 +2,6 @@ import React, { useCallback, useRef, useState } from 'react';
 import { useToolExitGuard } from './ToolExitGuard';
 import useAccessibleDropzone from '../lib/useAccessibleDropzone';
 import { PDFDocument } from 'pdf-lib';
-import { FILE_DOWNLOAD_READY_MESSAGE } from '../lib/toolMessages.mjs';
 import { validateUnencryptedPdf } from '../lib/pdfValidation';
 import pdfjsLib from '../lib/pdfjsClient';
 import { motion } from 'framer-motion';
@@ -597,9 +596,6 @@ const PdfCompressor = () => {
         >
           <CheckCircle2 className="w-5 h-5 flex-shrink-0" />
           <div className="space-y-1">
-            {fileResults.some((item) => item.reduced) && (
-              <p className="text-sm font-semibold">{FILE_DOWNLOAD_READY_MESSAGE}</p>
-            )}
             <p className="text-sm font-medium">{summary}</p>
           </div>
         </motion.div>

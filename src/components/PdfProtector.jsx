@@ -2,7 +2,6 @@ import React, { useState, useCallback } from 'react';
 import { useToolExitGuard } from './ToolExitGuard';
 import { validateUnencryptedPdf } from '../lib/pdfValidation';
 import { encryptPDF } from '@pdfsmaller/pdf-encrypt';
-import { FILE_DOWNLOAD_READY_MESSAGE } from '../lib/toolMessages.mjs';
 import useAccessibleDropzone from '../lib/useAccessibleDropzone';
 import { motion } from 'framer-motion';
 import {
@@ -10,7 +9,6 @@ import {
   Lock,
   Loader2,
   AlertCircle,
-  CheckCircle2,
 } from 'lucide-react';
 import { AttachedFileActions, AttachedFileIcon } from './AttachedFileControls';
 
@@ -296,12 +294,9 @@ const PdfProtector = () => {
         <motion.div
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
-          role="status"
           className="flex items-center gap-3 p-4 bg-green-50 text-green-700 rounded-xl border border-green-200"
         >
-          <CheckCircle2 className="w-5 h-5 flex-shrink-0" />
           <div className="flex w-full flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <span className="text-sm font-medium">{FILE_DOWNLOAD_READY_MESSAGE}</span>
             <button type="button" onClick={downloadProtectedPdf} className="rounded-lg bg-green-600 px-4 py-2 font-semibold text-white transition hover:bg-green-700">
               Download Protected PDF
             </button>

@@ -1,7 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useToolExitGuard } from './ToolExitGuard';
 import { PDFDocument, StandardFonts, rgb } from 'pdf-lib';
-import { FILE_DOWNLOAD_READY_MESSAGE } from '../lib/toolMessages.mjs';
 import useAccessibleDropzone from '../lib/useAccessibleDropzone';
 import {
   ArrowDown,
@@ -987,7 +986,6 @@ const EditPdf = () => {
       }
       if (verified.isEncrypted) throw new Error('The saved PDF should not be password-protected.');
       setOutput(new Blob([bytes], { type: 'application/pdf' }));
-      setStatus(FILE_DOWNLOAD_READY_MESSAGE);
     } catch (saveError) {
       console.error('Unable to save edited PDF:', saveError);
       setError(saveError?.message || 'The edited PDF could not be generated or validated.');
@@ -1355,9 +1353,11 @@ const EditPdf = () => {
           </div>
 
           <div className="pdf-editor-save-row">
-            <p className={`text-sm font-medium ${hasChanges && !output ? 'pdf-editor-unsaved' : 'pdf-editor-secondary'}`}>
-              {output ? FILE_DOWNLOAD_READY_MESSAGE : hasChanges ? 'Unsaved edits' : 'No unsaved edits'}
-            </p>
+            {!output && (
+              <p className={`text-sm font-medium ${hasChanges ? 'pdf-editor-unsaved' : 'pdf-editor-secondary'}`}>
+                {hasChanges ? 'Unsaved edits' : 'No unsaved edits'}
+              </p>
+            )}
             <div className="flex flex-wrap gap-2">
               <button type="button" onClick={clearWorkspace} disabled={isSaving || isLoading} className="pdf-editor-action-button">
                 <RotateCcw className="h-4 w-4" aria-hidden="true" /> Discard and start over

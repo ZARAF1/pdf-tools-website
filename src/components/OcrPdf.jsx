@@ -2,7 +2,6 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useToolExitGuard } from './ToolExitGuard';
 import useAccessibleDropzone from '../lib/useAccessibleDropzone';
 import { PDFDocument, StandardFonts } from 'pdf-lib';
-import { FILE_DOWNLOAD_READY_MESSAGE } from '../lib/toolMessages.mjs';
 import { createWorker } from 'tesseract.js';
 import {
   AlertCircle,
@@ -728,7 +727,6 @@ const OcrPdf = () => {
           <div className="flex items-start gap-3">
             <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0" aria-hidden="true" />
             <div>
-              <p className="font-semibold">{FILE_DOWNLOAD_READY_MESSAGE}</p>
               <p className="mt-1 text-sm">{outputSummary}</p>
             </div>
           </div>

@@ -2,10 +2,8 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useToolExitGuard } from './ToolExitGuard';
 import useAccessibleDropzone from '../lib/useAccessibleDropzone';
 import { PDFDocument, PageSizes, rgb } from 'pdf-lib';
-import { FILE_DOWNLOAD_READY_MESSAGE } from '../lib/toolMessages.mjs';
 import {
   AlertCircle,
-  CheckCircle2,
   ChevronDown,
   ChevronUp,
   Download,
@@ -652,11 +650,7 @@ const ImageToPdf = () => {
       {error && <div role="alert" className="image-to-pdf-error flex items-start gap-3 rounded-xl border border-rose-200 bg-rose-50 p-4 text-rose-800"><AlertCircle className="h-5 w-5 shrink-0" aria-hidden="true" /><span className="text-sm">{error}</span></div>}
 
       {outputBytes && (
-        <div role="status" className="image-to-pdf-result flex flex-col gap-4 rounded-xl border border-emerald-200 bg-emerald-50 p-4 text-emerald-900 sm:flex-row sm:items-center sm:justify-between">
-          <div className="flex items-center gap-3">
-            <CheckCircle2 className="h-5 w-5 shrink-0" aria-hidden="true" />
-            <span className="text-sm font-medium">{FILE_DOWNLOAD_READY_MESSAGE}</span>
-          </div>
+        <div className="image-to-pdf-result flex flex-col gap-4 rounded-xl border border-emerald-200 bg-emerald-50 p-4 text-emerald-900 sm:flex-row sm:items-center sm:justify-between">
           <button type="button" onClick={downloadPdf} className="inline-flex items-center justify-center gap-2 rounded-lg bg-emerald-600 px-4 py-2 font-semibold text-white transition hover:bg-emerald-700">
             <Download className="h-4 w-4" aria-hidden="true" /> {imageUi.downloadPdf}
           </button>

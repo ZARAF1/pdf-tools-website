@@ -3,7 +3,6 @@ import { useToolExitGuard } from './ToolExitGuard';
 import useAccessibleDropzone from '../lib/useAccessibleDropzone';
 import { ArrowLeft, ArrowRight, Download, Loader2, RotateCcw, Upload, ZoomIn, ZoomOut } from 'lucide-react';
 import { PDFDocument } from 'pdf-lib';
-import { FILE_DOWNLOAD_READY_MESSAGE } from '../lib/toolMessages.mjs';
 import pdfjsLib from '../lib/pdfjsClient';
 import { validateUnencryptedPdf } from '../lib/pdfValidation';
 import { AttachedFileActions, AttachedFileIcon } from './AttachedFileControls';
@@ -97,7 +96,6 @@ const CropPdf = () => {
   const [isRendering, setIsRendering] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const [error, setError] = useState('');
-  const [status, setStatus] = useState('');
   const [previewMessage, setPreviewMessage] = useState('');
   const requestId = useRef(0);
   const loadingTaskRef = useRef(null);
@@ -109,7 +107,6 @@ const CropPdf = () => {
 
   const clearOutput = useCallback(() => {
     setOutput(null);
-    setStatus('');
   }, []);
 
   useEffect(() => {
@@ -141,7 +138,6 @@ const CropPdf = () => {
   const onDrop = useCallback(async (acceptedFiles, rejections) => {
     if (rejections.length) {
       setError('Choose one valid, unencrypted PDF file.');
-      setStatus('');
       return;
     }
 
@@ -151,7 +147,6 @@ const CropPdf = () => {
     requestId.current = request;
     setIsLoading(true);
     setError('');
-    setStatus('');
     setPreviewMessage('');
 
     let loadingTask;
@@ -419,7 +414,6 @@ const CropPdf = () => {
     setCrop(pageCrops[currentPage] || fullPage);
     setCropBoundDrafts({});
     setOutput(null);
-    setStatus('');
   };
 
   const applyCrop = async () => {
@@ -434,7 +428,6 @@ const CropPdf = () => {
 
     setIsProcessing(true);
     setError('');
-    setStatus('');
     clearOutput();
     try {
       const source = await PDFDocument.load(await file.arrayBuffer(), {
@@ -499,7 +492,6 @@ const CropPdf = () => {
       setOutput(new Blob([bytes], { type: 'application/pdf' }));
       setPageCrops(cropMap);
       setDraftCrops((current) => ({ ...current, ...cropMap }));
-      setStatus(FILE_DOWNLOAD_READY_MESSAGE);
     } catch (processError) {
       console.error('Unable to crop PDF:', processError);
       setError(processError?.message || 'The PDF could not be cropped. Try another document.');
@@ -764,7 +756,6 @@ const CropPdf = () => {
           <p className="crop-pdf-disclosure">
             Cropping changes each page&apos;s visible CropBox boundary; it does not erase content outside that boundary. Hidden content may be recovered by changing the PDF page box. Your original file is left untouched.
           </p>
-          {status && <p className="crop-pdf-message crop-pdf-success" role="status">{status}</p>}
         </div>
       )}
     </div>

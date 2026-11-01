@@ -2,7 +2,6 @@ import React, { useState, useCallback } from 'react';
 import { useToolExitGuard } from './ToolExitGuard';
 import useAccessibleDropzone from '../lib/useAccessibleDropzone';
 import { validateUnencryptedPdf } from '../lib/pdfValidation';
-import { FILE_DOWNLOAD_READY_MESSAGE } from '../lib/toolMessages.mjs';
 import pdfjsLib from '../lib/pdfjsClient';
 import { Document, Packer, Paragraph, Table, TableCell, TableRow, TextRun, WidthType } from 'docx';
 import { createWorker } from 'tesseract.js';
@@ -12,7 +11,6 @@ import {
   Download,
   Loader2,
   AlertCircle,
-  CheckCircle2,
   Info
 } from 'lucide-react';
 import { AttachedFileActions, AttachedFileIcon } from './AttachedFileControls';
@@ -450,12 +448,9 @@ const PdfToWord = () => {
         <motion.div
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
-          role="status"
           className="flex items-center gap-3 p-4 bg-green-50 text-green-700 rounded-xl border border-green-200"
         >
-          <CheckCircle2 className="w-5 h-5 flex-shrink-0" />
           <div className="flex w-full flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <span className="text-sm font-medium">{FILE_DOWNLOAD_READY_MESSAGE}</span>
             <button type="button" onClick={downloadWordDocument} disabled={!outputBlob} className="inline-flex items-center justify-center gap-2 rounded-lg bg-green-600 px-4 py-2 font-semibold text-white transition hover:bg-green-700 disabled:opacity-50">
               <Download className="h-4 w-4" aria-hidden="true" /> Download Word file
             </button>
