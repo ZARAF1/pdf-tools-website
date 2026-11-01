@@ -57,8 +57,8 @@ const TOOL_CONTENT = {
     ]
   },
   split: {
-    title: 'Split PDF',
-    description: 'Choose pages visually, split every page, or divide a PDF into percentage-based sections.',
+    title: 'Split / Extract PDF',
+    description: 'Extract selected pages into one PDF, split every page, or divide pages into balanced sections.',
     intro: 'Use one workspace to extract selected pages, split every page, or divide a PDF into balanced sections. Choose a PDF and review its visual page previews. In Extract selected pages mode, click thumbnails or enter page numbers and ranges such as 1-3, 5; the chosen pages are combined in document order into one PDF. Split every page creates one single-page PDF for each page. Split by percentage uses a slider to divide pages into 2–10 consecutive sections. Since pages cannot be divided, section percentages may differ slightly when the page count does not divide evenly. Part labels show each section boundary in the previews. When either split mode creates more than three PDFs, they are packaged into one ZIP; three or fewer are offered individually. Your original stays unchanged, and PDF handling and ZIP creation occur in your browser.',
     mechanism: 'PDF.js renders a navigable set of page previews. pdf-lib copies selected pages or creates each split section as a separate PDF; the browser ZIP writer packages more than three split outputs locally. The source file is not overwritten.',
     steps: ['Choose one unencrypted PDF.', 'Select Extract selected pages, Split every page, or Split by percentage.', 'Use page thumbnails or page ranges to choose extraction pages, or adjust the number-of-parts slider.', 'Review the page previews and section labels.', 'Create the output and download the PDF file or ZIP.'],
@@ -136,14 +136,18 @@ const TOOL_CONTENT = {
     ]
   },
   word: {
-    title: 'PDF to Word',
-    description: 'Extract text and create an editable Word document.',
-    intro: 'Create an editable Word document from text in a PDF. Select one PDF and start conversion; pages with selectable text are read and laid out as editable text in a DOCX file. The result is a practical starting point, not an exact reproduction of every original page. Complex columns, tables, unusual fonts, headers, and images may need adjustments in Word. For scanned pages without readable text, the tool can attempt English optical character recognition using locally bundled Tesseract assets, but accuracy depends on scan quality and the final text should be checked. Your PDF is processed in the browser rather than uploaded to a conversion server. Download and review the DOCX before relying on it.',
-    mechanism: 'PDF.js extracts text and page positions in the browser; Tesseract.js performs English OCR for pages without readable text using locally bundled worker, core, and English language assets; docx builds the output file. Complex layouts are reconstructed approximately.',
-    steps: ['Choose one PDF.', 'Start conversion and wait while pages are read; scanned pages may require OCR setup and recognition.', 'Download the DOCX and review its formatting and text.'],
+    title: 'PDF ↔ Word',
+    description: 'Convert PDF text to Word or render Word documents as PDFs.',
+    intro: 'Convert between PDF and Word in one browser workspace. To create an editable Word document, select a PDF; pages with selectable text are reconstructed as DOCX text, and scanned pages can use English OCR. For the reverse direction, select a DOCX file to render its pages and create a PDF. Word-to-PDF output is image-based, so its text is not searchable or selectable; rendering can differ from Microsoft Word, especially for complex layouts, fonts, tables, and floating objects. Legacy .doc files are not supported. PDF-to-Word layout is also approximate, and OCR accuracy depends on scan quality. Your files are processed in this browser and are not uploaded to a conversion server. Review either output before relying on it; the original file stays unchanged.',
+    mechanism: 'For PDF-to-Word, PDF.js extracts text and page positions; Tesseract.js performs English OCR on pages without readable text using locally bundled worker, core, and language assets; docx creates the DOCX output. For Word-to-PDF, docx-preview renders DOCX pages to browser HTML, html2canvas captures each page as an image, and pdf-lib creates a PDF containing those images. The reverse output is image-based and has no selectable text.',
+    steps: ['Choose PDF → Word or Word → PDF.', 'Select one unencrypted PDF or one supported DOCX file.', 'Start conversion and review progress; scanned PDFs may require English OCR.', 'Download and inspect the output. Word-to-PDF pages are images, so text cannot be searched or selected.'],
     faqs: [
-      ['Does this preserve the exact PDF layout?', 'No. Text positions and simple aligned rows are reconstructed; complex columns, tables, forms, and typography may need manual cleanup.'],
-      ['Can scanned pages be converted?', 'The tool attempts English OCR for pages without readable text. Recognition quality depends on scan clarity and OCR resources being available.'],
+      ['Can I convert both ways?', 'Yes. Choose PDF → Word to create an editable DOCX, or Word → PDF to create a PDF from a DOCX file.'],
+      ['Will Word-to-PDF text be searchable?', 'No. DOCX pages are rendered as images in the PDF, so the resulting text is not searchable or selectable.'],
+      ['Which Word files are supported?', 'The reverse converter accepts .docx files only. Legacy .doc files are not supported.'],
+      ['Does conversion preserve the exact layout?', 'Not guaranteed. The DOCX renderer and browser can differ from Microsoft Word; complex layouts, fonts, tables, and floating objects may change. PDF-to-Word reconstruction is also approximate.'],
+      ['Can scanned PDFs be converted to Word?', 'The tool attempts English OCR for pages without readable text. Recognition quality depends on scan clarity and OCR resources being available.'],
+      ['Are my files uploaded?', 'Both directions run in this browser. OCR support resources for scanned PDF pages are bundled with the site; ordinary website requests and hosting logs are separate.'],
     ]
   },
   ocr: {
@@ -299,10 +303,10 @@ const ATTACHMENT_RULES = {
   },
   word: {
     title: 'Attach PDF Here',
-    ruleKey: 'pdfOne',
-    rule: 'One unencrypted PDF · no fixed page cap',
-    infoTitle: 'Convert PDF content to Word',
-    info: 'Text-based pages become editable text; scanned pages can use English OCR and complex layouts may need cleanup.'
+    ruleKey: 'docxPdfOne',
+    rule: 'One unencrypted PDF or unprotected .docx file · no fixed page cap',
+    infoTitle: 'Convert PDF ↔ Word',
+    info: 'Create editable DOCX text from PDFs, or image-based PDFs from DOCX. Reverse-conversion text is not searchable; .doc files are unsupported.'
   },
   protect: {
     title: 'Attach PDF Here',
@@ -322,7 +326,7 @@ const ATTACHMENT_RULES = {
     title: 'Attach PDF Here',
     ruleKey: 'pdfOne',
     rule: 'One unencrypted PDF · no fixed page cap',
-    infoTitle: 'Split or extract PDF pages',
+    infoTitle: 'Split / Extract PDF',
     info: 'Select pages visually, split every page, or divide the PDF into percentage-based sections.'
   },
   ocr: {
@@ -396,11 +400,13 @@ const ToolPage = ({ tool, children }) => {
   const ToolIcon = ProcessingIcon || FileText;
   const category = TOOL_CATEGORIES.find((item) => item.id === registeredTool?.category);
   const categoryName = category ? translate(`category.${category.id}`) : translate('conversionStatus');
-  const attachmentTitleKey = tool === 'image'
-    ? 'attachImagesHere'
-    : tool === 'merge' || tool === 'compress'
-      ? 'attachPdfsHere'
-      : 'attachPdfHere';
+  const attachmentTitleKey = tool === 'word'
+    ? 'attachDocumentHere'
+    : tool === 'image'
+      ? 'attachImagesHere'
+      : tool === 'merge' || tool === 'compress'
+        ? 'attachPdfsHere'
+        : 'attachPdfHere';
   const attachmentRule = ATTACHMENT_RULES[tool] || (
     tool === 'excel' || tool === 'powerpoint'
       ? null

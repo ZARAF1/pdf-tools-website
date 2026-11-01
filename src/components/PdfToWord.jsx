@@ -11,10 +11,12 @@ import {
   Loader2,
   AlertCircle,
   Download,
-  Info
+  Info,
+  ArrowLeftRight
 } from 'lucide-react';
 import { AttachedFileActions, AttachedFileIcon } from './AttachedFileControls';
 import DownloadReadyCard from './DownloadReadyCard';
+import { createPdfFromRenderedPages, validateDocxFile } from '../lib/docxToPdf.mjs';
 
 const OCR_NOTICE =
   'No readable text was found in this PDF. It may be blank or too low quality to recognize.';
@@ -61,6 +63,7 @@ const groupItemsIntoLines = (items) => {
 };
 
 const PdfToWord = () => {
+  const [direction, setDirection] = useState('pdf-to-word');
   const [file, setFile] = useState(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const [error, setError] = useState(null);
@@ -68,15 +71,19 @@ const PdfToWord = () => {
   const [progress, setProgress] = useState(0);
   const [status, setStatus] = useState('');
   const [outputBlob, setOutputBlob] = useState(null);
+  const [outputFileName, setOutputFileName] = useState('');
   const markOutputDownloaded = useToolExitGuard(Boolean(file), outputBlob);
 
   const onDrop = useCallback(async (acceptedFiles, fileRejections) => {
     setError(null);
     setSuccess(false);
     setOutputBlob(null);
+    setOutputFileName('');
 
     if (fileRejections.length > 0) {
-      setError('Please choose a valid PDF file.');
+      setError(direction === 'pdf-to-word'
+        ? 'Please choose a valid PDF file.'
+        : 'Please choose a valid Word .docx file. Legacy .doc files are not supported.');
       return;
     }
 
@@ -84,19 +91,25 @@ const PdfToWord = () => {
     if (!selectedFile) return;
 
     try {
-      await validateUnencryptedPdf(selectedFile);
+      if (direction === 'pdf-to-word') {
+        await validateUnencryptedPdf(selectedFile);
+      } else {
+        validateDocxFile(selectedFile);
+      }
       setFile(selectedFile);
       setProgress(0);
       setStatus('');
     } catch (validationError) {
-      console.error('Unable to validate PDF for Word conversion:', validationError);
-      setError(validationError.message || 'This PDF is invalid or could not be opened.');
+      console.error('Unable to validate file for conversion:', validationError);
+      setError(validationError.message || 'This file is invalid or could not be opened.');
     }
-  }, []);
+  }, [direction]);
 
   const { getRootProps, getInputProps, isDragActive, open } = useAccessibleDropzone({
     onDrop,
-    accept: { 'application/pdf': ['.pdf'] },
+    accept: direction === 'pdf-to-word'
+      ? { 'application/pdf': ['.pdf'] }
+      : { 'application/vnd.openxmlformats-officedocument.wordprocessingml.document': ['.docx'] },
     multiple: false
   });
 
@@ -105,8 +118,15 @@ const PdfToWord = () => {
     setError(null);
     setSuccess(false);
     setOutputBlob(null);
+    setOutputFileName('');
     setProgress(0);
     setStatus('');
+  };
+
+  const changeDirection = (nextDirection) => {
+    if (nextDirection === direction) return;
+    setDirection(nextDirection);
+    removeFile();
   };
 
   const extractTextFromPdf = async (arrayBuffer, onProgress, onStatus) => {
@@ -280,9 +300,72 @@ const PdfToWord = () => {
     return Packer.toBlob(doc);
   };
 
+  const convertWordToPdf = async (arrayBuffer) => {
+    const renderContainer = document.createElement('div');
+    const styleContainer = document.createElement('div');
+    renderContainer.style.position = 'fixed';
+    renderContainer.style.left = '-100000px';
+    renderContainer.style.top = '0';
+    renderContainer.style.zIndex = '-1';
+    document.body.append(styleContainer, renderContainer);
+
+    try {
+      setStatus('Loading Word page renderer...');
+      setProgress(5);
+      const [{ renderAsync }, { default: html2canvas }] = await Promise.all([
+        import('docx-preview'),
+        import('html2canvas')
+      ]);
+      await renderAsync(arrayBuffer, renderContainer, styleContainer, {
+        inWrapper: true,
+        useBase64URL: true,
+        ignoreLastRenderedPageBreak: false
+      });
+      await document.fonts?.ready;
+
+      const pageElements = [...renderContainer.querySelectorAll('section.docx')];
+      if (!pageElements.length) {
+        throw new Error('No pages could be rendered from this Word document.');
+      }
+
+      const renderedPages = [];
+      for (let index = 0; index < pageElements.length; index += 1) {
+        const pageElement = pageElements[index];
+        setStatus(`Rendering Word page ${index + 1} of ${pageElements.length}...`);
+        const bounds = pageElement.getBoundingClientRect();
+        const canvas = await html2canvas(pageElement, {
+          backgroundColor: '#ffffff',
+          scale: 2,
+          logging: false,
+          useCORS: false
+        });
+        const imageBlob = await new Promise((resolve) => canvas.toBlob(resolve, 'image/png'));
+        if (!imageBlob) {
+          throw new Error(`Word page ${index + 1} could not be captured as an image.`);
+        }
+        renderedPages.push({
+          pngBytes: new Uint8Array(await imageBlob.arrayBuffer()),
+          pageWidth: bounds.width * 0.75,
+          pageHeight: bounds.height * 0.75
+        });
+        canvas.width = 0;
+        canvas.height = 0;
+        setProgress(5 + Math.round(((index + 1) / pageElements.length) * 90));
+      }
+
+      setStatus('Building PDF...');
+      return await createPdfFromRenderedPages(renderedPages);
+    } finally {
+      renderContainer.remove();
+      styleContainer.remove();
+    }
+  };
+
   const handleConvert = async () => {
     if (!file) {
-      setError('Please upload a PDF file first.');
+      setError(direction === 'pdf-to-word'
+        ? 'Please upload a PDF file first.'
+        : 'Please upload a Word .docx file first.');
       return;
     }
 
@@ -290,16 +373,27 @@ const PdfToWord = () => {
     setError(null);
     setSuccess(false);
     setOutputBlob(null);
+    setOutputFileName('');
     setProgress(0);
-    setStatus('Reading PDF pages...');
+    setStatus(direction === 'pdf-to-word' ? 'Reading PDF pages...' : 'Preparing Word document...');
 
     try {
       const arrayBuffer = await file.arrayBuffer();
-      const pages = await extractTextFromPdf(arrayBuffer, setProgress, setStatus);
-      setStatus('Building Word document...');
-      setProgress(95);
-      const result = await buildDocx(pages);
+      let result;
+      let outputName;
+      if (direction === 'pdf-to-word') {
+        const pages = await extractTextFromPdf(arrayBuffer, setProgress, setStatus);
+        setStatus('Building Word document...');
+        setProgress(95);
+        result = await buildDocx(pages);
+        outputName = 'document_converted.docx';
+      } else {
+        const pdfBytes = await convertWordToPdf(arrayBuffer);
+        result = new Blob([pdfBytes], { type: 'application/pdf' });
+        outputName = `${file.name.replace(/\.docx$/i, '')}_converted.pdf`;
+      }
       setOutputBlob(result);
+      setOutputFileName(outputName);
       setProgress(100);
       setSuccess(true);
       setStatus('');
@@ -307,6 +401,8 @@ const PdfToWord = () => {
       console.error(err);
       if (err?.message === OCR_NOTICE) {
         setError(err.message);
+      } else if (direction === 'word-to-pdf') {
+        setError(err.message || 'This Word document could not be rendered. Check that it is an unprotected .docx file and try again.');
       } else {
         setError(err.message || 'This PDF could not be converted. Check your connection for the OCR language download and try again.');
       }
@@ -320,7 +416,7 @@ const PdfToWord = () => {
     const url = URL.createObjectURL(outputBlob);
     const link = document.createElement('a');
     link.href = url;
-    link.download = 'document_converted.docx';
+    link.download = outputFileName;
     link.click();
     markOutputDownloaded();
     setTimeout(() => URL.revokeObjectURL(url), 10000);
@@ -330,21 +426,63 @@ const PdfToWord = () => {
     <div className="max-w-3xl mx-auto">
       <input {...getInputProps()} />
 
+      <div className="mb-5 flex flex-wrap gap-2" role="group" aria-label="Choose conversion direction">
+        <button
+          type="button"
+          disabled={isProcessing}
+          aria-pressed={direction === 'pdf-to-word'}
+          onClick={() => changeDirection('pdf-to-word')}
+          className={`flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-50 ${
+            direction === 'pdf-to-word' ? 'bg-blue-50 text-blue-700' : 'text-slate-600 hover:bg-slate-50'
+          }`}
+        >
+          PDF <ArrowLeftRight className="h-4 w-4" aria-hidden="true" /> Word
+        </button>
+        <button
+          type="button"
+          disabled={isProcessing}
+          aria-pressed={direction === 'word-to-pdf'}
+          onClick={() => changeDirection('word-to-pdf')}
+          className={`flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-50 ${
+            direction === 'word-to-pdf' ? 'bg-blue-50 text-blue-700' : 'text-slate-600 hover:bg-slate-50'
+          }`}
+        >
+          Word <ArrowLeftRight className="h-4 w-4" aria-hidden="true" /> PDF
+        </button>
+      </div>
+
       {/* Upload Zone */}
       {!file ? (
         <div
-          {...getRootProps({ role: 'group', 'aria-label': 'Choose a PDF to convert to Word' })}
+          {...getRootProps({
+            role: 'group',
+            'aria-label': direction === 'pdf-to-word'
+              ? 'Choose a PDF to convert to Word'
+              : 'Choose a Word DOCX file to convert to PDF'
+          })}
           className={`pdf-workflow-upload merge-pdf-upload-zone cursor-pointer transition-all
             ${isDragActive ? 'border-blue-500 bg-blue-50' : 'border-slate-300 hover:border-blue-400 hover:bg-slate-50'}
           `}
         >
           <div className="merge-pdf-upload-content">
             <div className="pdf-upload-icon" aria-hidden="true">
-              <Upload className="h-6 w-6 text-blue-600" />
+              {direction === 'pdf-to-word'
+                ? <Upload className="h-6 w-6 text-blue-600" />
+                : <ArrowLeftRight className="h-6 w-6 text-blue-600" />}
             </div>
             <div className="merge-pdf-upload-copy">
-              <h3>{isDragActive ? 'Drop the PDF here' : 'Choose or drop a PDF to convert to Word'}</h3>
-              <p>Convert text-based and scanned PDFs into editable Word documents.</p>
+              <h3>
+                {isDragActive
+                  ? direction === 'pdf-to-word' ? 'Drop the PDF here' : 'Drop the DOCX file here'
+                  : direction === 'pdf-to-word'
+                    ? 'Choose or drop a PDF to convert to Word'
+                    : 'Choose or drop a Word .docx file to convert to PDF'}
+              </h3>
+              <p>
+                {direction === 'pdf-to-word'
+                  ? 'Convert text-based and scanned PDFs into editable Word documents.'
+                  : 'Render DOCX pages as images in a PDF; the output text will not be searchable or selectable.'}
+              </p>
             </div>
             <button
               type="button"
@@ -354,7 +492,7 @@ const PdfToWord = () => {
                 open();
               }}
             >
-              Choose PDF
+              {direction === 'pdf-to-word' ? 'Choose PDF' : 'Choose Word file'}
             </button>
           </div>
         </div>
@@ -380,13 +518,13 @@ const PdfToWord = () => {
             {isProcessing && (
               <div className="space-y-2">
                 <div className="flex justify-between text-sm text-slate-500">
-                  <span role="status" aria-atomic="true">{status || 'Converting PDF...'}</span>
+                  <span role="status" aria-atomic="true">{status || 'Converting document...'}</span>
                   <span>{progress}%</span>
                 </div>
                 <div
                   className="w-full h-2 bg-slate-100 rounded-full overflow-hidden"
                   role="progressbar"
-                  aria-label="PDF to Word conversion progress"
+                  aria-label={`${direction === 'pdf-to-word' ? 'PDF to Word' : 'Word to PDF'} conversion progress`}
                   aria-valuemin={0}
                   aria-valuemax={100}
                   aria-valuenow={progress}
@@ -402,10 +540,21 @@ const PdfToWord = () => {
             <div className="flex items-start gap-3 p-4 bg-amber-50 rounded-xl border border-amber-100 text-amber-800 text-sm">
               <Info className="w-5 h-5 flex-shrink-0 mt-0.5" />
               <div>
-                <p className="font-semibold">Best text-based results</p>
-                <p className="text-amber-700 text-xs mt-1">
-                  Scanned pages use English OCR in your browser. The first scan downloads OCR engine and language data; your PDF stays on this device. Simple aligned rows are reconstructed as Word tables, but complex columns, tables, and forms may need manual cleanup.
-                </p>
+                {direction === 'pdf-to-word' ? (
+                  <>
+                    <p className="font-semibold">Best text-based results</p>
+                    <p className="text-amber-700 text-xs mt-1">
+                      Scanned pages use English OCR in your browser. Simple aligned rows may become Word tables, but complex layouts can need manual cleanup.
+                    </p>
+                  </>
+                ) : (
+                  <>
+                    <p className="font-semibold">DOCX only · image-based PDF output</p>
+                    <p className="text-amber-700 text-xs mt-1">
+                      Pages are rendered in this browser and saved as images in the PDF, so text cannot be searched or selected. Layout may differ from Word; legacy .doc files are not supported.
+                    </p>
+                  </>
+                )}
               </div>
             </div>
 
@@ -425,7 +574,7 @@ const PdfToWord = () => {
               ) : (
                 <>
                   <Download className="w-5 h-5" />
-                  Convert to Word
+                  {direction === 'pdf-to-word' ? 'Convert to Word' : 'Convert to PDF'}
                 </>
               )}
             </button>
@@ -448,10 +597,10 @@ const PdfToWord = () => {
       {success && (
         outputBlob && (
           <DownloadReadyCard
-            fileName="document_converted.docx"
+            fileName={outputFileName}
             sizeBytes={outputBlob.size}
             onDownload={downloadWordDocument}
-            downloadLabel="Download Word file"
+            downloadLabel={direction === 'pdf-to-word' ? 'Download Word file' : 'Download PDF'}
           />
         )
       )}

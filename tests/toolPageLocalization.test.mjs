@@ -32,7 +32,7 @@ const imageAttachment = {
   rule: 'Up to 10 JPEG, PNG, or BMP images',
   info: 'Arrange images and adjust the page settings.'
 };
-const ruleKeys = ['pdfOne', 'pdf15', 'pdf30', 'pdf50', 'pdfUpTo5', 'pdf2To5', 'images10', 'passwordPdf'];
+const ruleKeys = ['pdfOne', 'docxPdfOne', 'pdf15', 'pdf30', 'pdf50', 'pdfUpTo5', 'pdf2To5', 'images10', 'passwordPdf'];
 
 test('tool page intro, attachment details, and guide update to the selected language', () => {
   const localizedTool = getLocalizedTool('es', imageTool);

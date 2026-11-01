@@ -93,7 +93,7 @@ test('mobile tool introductions are summarized with an expandable full descripti
 });
 
 test('tool page shared guidance headings follow the selected language', () => {
-  const keys = ['howToUse', 'howItWorks', 'frequentlyAskedQuestions', 'attachPdfHere', 'toolWorkspace'];
+  const keys = ['howToUse', 'howItWorks', 'frequentlyAskedQuestions', 'attachPdfHere', 'attachDocumentHere', 'toolWorkspace'];
   for (const { code } of SUPPORTED_LANGUAGES) {
     for (const key of keys) {
       assert.notEqual(getMessage(code, key), key, `${code} is missing ${key}`);

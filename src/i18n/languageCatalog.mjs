@@ -261,6 +261,29 @@ const toolExitTranslations = {
   'zh-CN': { discardAttachedFiles: '要离开此页面吗？', discardAttachedFilesMessage: '离开此页面后，已附加的文件将被移除。', discardReadyFileMessage: '处理后的文件已可下载。离开页面后，该文件和已附加的文件都将被丢弃。', discardReadyFilesMessage: '处理后的 {count} 个文件已可下载。离开页面后，这些文件和已附加的文件都将被丢弃。', stayOnPage: '留在此页面', leavePage: '离开页面' }
 };
 
+const documentUploadTitles = {
+  en: 'Attach a PDF or Word file here',
+  es: 'Adjunta aquí un PDF o archivo de Word',
+  fr: 'Ajoutez ici un PDF ou un fichier Word',
+  de: 'PDF- oder Word-Datei hier anhängen',
+  pt: 'Anexe um PDF ou arquivo do Word aqui',
+  it: 'Allega qui un PDF o un file Word',
+  nl: 'Voeg hier een PDF- of Word-bestand toe',
+  pl: 'Dodaj tutaj plik PDF lub Word',
+  sv: 'Bifoga en PDF- eller Word-fil här',
+  fi: 'Liitä PDF- tai Word-tiedosto tähän',
+  da: 'Vedhæft en PDF- eller Word-fil her',
+  nb: 'Legg ved en PDF- eller Word-fil her',
+  tr: 'Buraya PDF veya Word dosyası ekleyin',
+  ru: 'Добавьте сюда файл PDF или Word',
+  uk: 'Додайте сюди файл PDF або Word',
+  ar: 'أرفق ملف PDF أو Word هنا',
+  hi: 'यहाँ PDF या Word फ़ाइल जोड़ें',
+  ja: 'PDF または Word ファイルをここに添付',
+  ko: '여기에 PDF 또는 Word 파일 첨부',
+  'zh-CN': '在此处添加 PDF 或 Word 文件'
+};
+
 const messagesByLanguage = Object.fromEntries(
   SUPPORTED_LANGUAGES.map(({ code }) => [
     code,
@@ -269,6 +292,7 @@ const messagesByLanguage = Object.fromEntries(
       ...extraKeys.map((key, index) => [key, extraTranslations[code][index]]),
       ...Object.entries(descriptionToggleTranslations[code]),
       ...workflowKeys.map((key, index) => [key, workflowTranslations[code][index]]),
+      ['attachDocumentHere', documentUploadTitles[code]],
       ['loadingTool', routeLoadingTranslations[code]],
       ...Object.entries(routeErrorTranslations[code]),
       ...Object.entries(toolExitTranslations[code]),

@@ -29,7 +29,7 @@ export const TOOL_CATEGORIES = [
     id: 'convert',
     name: 'Convert',
     path: '/categories/convert',
-    description: 'Create PDFs from JPG, PNG, or BMP images, export PDF pages as PNG, JPG, or BMP images, or turn PDF text into an editable Word document. PDF-to-Word can use OCR for scanned pages and explains its layout limitations.'
+    description: 'Create PDFs from JPG, PNG, or BMP images, export PDF pages as image files, and convert between PDFs and Word documents. PDF-to-Word can use OCR; Word-to-PDF accepts DOCX and creates image-based pages.'
   },
   {
     id: 'edit-sign',
@@ -64,11 +64,11 @@ export const TOOL_REGISTRY = [
   },
   {
     id: 'split',
-    name: 'Split PDF',
+    name: 'Split / Extract PDF',
     path: '/split',
     category: 'extract-analyze',
-    description: 'Select pages visually, split every page, or create balanced percentage-based sections.',
-    keywords: 'divide separate pages select thumbnails percentage parts',
+    description: 'Extract selected pages into one PDF, split every page, or divide pages into balanced sections.',
+    keywords: 'extract divide separate pages select thumbnails percentage parts',
     icon: Scissors,
     color: 'bg-purple-500'
   },
@@ -124,11 +124,11 @@ export const TOOL_REGISTRY = [
   },
   {
     id: 'word',
-    name: 'PDF to Word',
+    name: 'PDF ↔ Word',
     path: '/pdf-to-word',
     category: 'convert',
-    description: 'Extract PDF text into an editable Word document.',
-    keywords: 'docx convert text OCR',
+    description: 'Convert PDF text to Word or render Word documents as PDFs.',
+    keywords: 'docx convert text OCR word to pdf pdf to word',
     icon: FileType,
     color: 'bg-indigo-500'
   },

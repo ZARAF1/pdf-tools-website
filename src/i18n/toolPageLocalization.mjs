@@ -523,6 +523,33 @@ const translations = {
   }
 };
 
+const docxPdfRuleTranslations = {
+  en: 'One unencrypted PDF or unprotected DOCX file · no fixed page limit',
+  es: 'Un PDF sin contraseña o archivo DOCX sin protección · sin límite fijo de páginas',
+  fr: 'Un PDF non chiffré ou fichier DOCX non protégé · aucune limite fixe de pages',
+  de: 'Eine unverschlüsselte PDF- oder ungeschützte DOCX-Datei · keine feste Seitenbegrenzung',
+  pt: 'Um PDF sem senha ou DOCX sem proteção · sem limite fixo de páginas',
+  it: 'Un PDF non crittografato o DOCX non protetto · nessun limite fisso di pagine',
+  nl: 'Eén onversleutelde PDF of onbeschermd DOCX-bestand · geen vaste paginalimiet',
+  pl: 'Jeden niezaszyfrowany PDF lub niezabezpieczony plik DOCX · bez stałego limitu stron',
+  sv: 'En okrypterad PDF eller oskyddad DOCX-fil · ingen fast sidgräns',
+  fi: 'Yksi salaamaton PDF tai suojaamaton DOCX-tiedosto · ei kiinteää sivurajaa',
+  da: 'Én ukrypteret PDF eller ubeskyttet DOCX-fil · ingen fast sidegrænse',
+  nb: 'Én ukryptert PDF eller ubeskyttet DOCX-fil · ingen fast sidegrense',
+  tr: 'Bir şifresiz PDF veya korumasız DOCX dosyası · sabit sayfa sınırı yok',
+  ru: 'Один PDF без шифрования или незапароленный DOCX-файл · без фиксированного лимита страниц',
+  uk: 'Один незашифрований PDF або незахищений DOCX-файл · без фіксованого обмеження сторінок',
+  ar: 'ملف PDF واحد غير مشفر أو DOCX غير محمي · لا يوجد حد ثابت للصفحات',
+  hi: 'एक अनएन्क्रिप्टेड PDF या असुरक्षित DOCX फ़ाइल · पेजों की कोई निश्चित सीमा नहीं',
+  ja: '暗号化されていない PDF または保護されていない DOCX 1 件・ページ数の固定上限なし',
+  ko: '암호화되지 않은 PDF 또는 보호되지 않은 DOCX 파일 1개 · 페이지 수 고정 제한 없음',
+  'zh-CN': '1 个未加密 PDF 或未受保护的 DOCX 文件 · 页数无固定上限'
+};
+
+for (const [language, rule] of Object.entries(docxPdfRuleTranslations)) {
+  translations[language].rules.docxPdfOne = rule;
+}
+
 const faqTranslations = {
   es: ['¿Qué hace esta herramienta?', '¿Qué archivos puedo usar?', '¿Se modifica el archivo original?', '¿Se suben mis archivos?', '¿Qué debo tener en cuenta?', 'No. La herramienta crea un archivo nuevo y conserva el original sin cambios.', 'No. El archivo se procesa en tu navegador y no se envía a un servidor de procesamiento. El sitio y el proveedor de alojamiento pueden recibir solicitudes normales y mantener registros.'],
   fr: ['Que fait cet outil ?', 'Quels fichiers puis-je utiliser ?', 'Le fichier d’origine est-il modifié ?', 'Mes fichiers sont-ils envoyés ?', 'Que dois-je savoir avant de commencer ?', 'Non. L’outil crée un nouveau fichier et ne modifie pas l’original.', 'Non. Le fichier est traité dans votre navigateur et n’est pas envoyé à un serveur de traitement. Le site et l’hébergeur peuvent recevoir des requêtes ordinaires et conserver des journaux.'],

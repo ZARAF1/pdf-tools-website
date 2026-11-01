@@ -89,6 +89,89 @@ const translations = {
   ]
 };
 
+const toolCopyOverrides = {
+  en: {
+    split: { name: 'Split / Extract PDF', action: 'extract selected pages into one PDF, split every page, or divide pages into balanced sections' },
+    word: { name: 'PDF ↔ Word', action: 'convert PDF text to editable Word documents or render DOCX files as image-based PDFs' }
+  },
+  es: {
+    split: { name: 'Dividir / extraer PDF', action: 'extraer páginas seleccionadas en un PDF, dividir cada página o agrupar páginas en secciones equilibradas' },
+    word: { name: 'PDF ↔ Word', action: 'convertir texto PDF en documentos Word editables o crear PDF basados en imágenes desde archivos DOCX' }
+  },
+  fr: {
+    split: { name: 'Diviser / extraire PDF', action: 'extraire des pages choisies dans un PDF, séparer chaque page ou répartir les pages en sections équilibrées' },
+    word: { name: 'PDF ↔ Word', action: 'convertir le texte PDF en documents Word modifiables ou créer des PDF image à partir de fichiers DOCX' }
+  },
+  de: {
+    split: { name: 'PDF teilen / extrahieren', action: 'ausgewählte Seiten in ein PDF extrahieren, jede Seite einzeln teilen oder Seiten gleichmäßig gruppieren' },
+    word: { name: 'PDF ↔ Word', action: 'PDF-Text in bearbeitbare Word-Dokumente umwandeln oder aus DOCX-Dateien bildbasierte PDFs erstellen' }
+  },
+  pt: {
+    split: { name: 'Dividir / extrair PDF', action: 'extrair páginas selecionadas para um PDF, separar cada página ou agrupar páginas em partes equilibradas' },
+    word: { name: 'PDF ↔ Word', action: 'converter texto de PDF em documentos Word editáveis ou criar PDFs em imagem a partir de arquivos DOCX' }
+  },
+  it: {
+    split: { name: 'Dividi / estrai PDF', action: 'estrarre le pagine selezionate in un PDF, separare ogni pagina o dividere le pagine in sezioni bilanciate' },
+    word: { name: 'PDF ↔ Word', action: 'convertire il testo PDF in documenti Word modificabili o creare PDF immagine da file DOCX' }
+  },
+  nl: {
+    split: { name: 'PDF splitsen / extraheren', action: 'geselecteerde pagina’s in één PDF extraheren, elke pagina splitsen of pagina’s in evenwichtige delen verdelen' },
+    word: { name: 'PDF ↔ Word', action: 'PDF-tekst omzetten naar bewerkbare Word-documenten of afbeeldings-PDF’s maken van DOCX-bestanden' }
+  },
+  pl: {
+    split: { name: 'Podziel / wyodrębnij PDF', action: 'wyodrębnić wybrane strony do jednego pliku PDF, podzielić każdą stronę lub utworzyć równe części' },
+    word: { name: 'PDF ↔ Word', action: 'konwertować tekst PDF na edytowalne dokumenty Word lub tworzyć obrazowe pliki PDF z DOCX' }
+  },
+  sv: {
+    split: { name: 'Dela / extrahera PDF', action: 'extrahera valda sidor till en PDF, dela varje sida eller dela upp sidor i jämna avsnitt' },
+    word: { name: 'PDF ↔ Word', action: 'konvertera PDF-text till redigerbara Word-dokument eller skapa bildbaserade PDF-filer från DOCX' }
+  },
+  fi: {
+    split: { name: 'Jaa / poimi PDF-sivuja', action: 'poimia valitut sivut yhteen PDF-tiedostoon, jakaa jokainen sivu tai jakaa sivut tasaisiin osiin' },
+    word: { name: 'PDF ↔ Word', action: 'muuntaa PDF-teksti muokattaviksi Word-asiakirjoiksi tai luoda kuvapohjaisia PDF-tiedostoja DOCX-tiedostoista' }
+  },
+  da: {
+    split: { name: 'Opdel / udtræk PDF', action: 'udtrække valgte sider til én PDF, opdele hver side eller dele siderne i jævne sektioner' },
+    word: { name: 'PDF ↔ Word', action: 'konvertere PDF-tekst til redigerbare Word-dokumenter eller oprette billedbaserede PDF’er fra DOCX-filer' }
+  },
+  nb: {
+    split: { name: 'Del / trekk ut PDF', action: 'trekke valgte sider ut i én PDF, dele hver side eller fordele sidene i jevne deler' },
+    word: { name: 'PDF ↔ Word', action: 'konvertere PDF-tekst til redigerbare Word-dokumenter eller lage bildebassert PDF fra DOCX-filer' }
+  },
+  tr: {
+    split: { name: 'PDF böl / çıkar', action: 'seçili sayfaları tek PDF’de çıkarmak, her sayfayı ayrı bölmek veya sayfaları dengeli bölümlere ayırmak' },
+    word: { name: 'PDF ↔ Word', action: 'PDF metnini düzenlenebilir Word belgelerine dönüştürmek veya DOCX dosyalarından görüntü tabanlı PDF oluşturmak' }
+  },
+  ru: {
+    split: { name: 'Разделить / извлечь PDF', action: 'извлечь выбранные страницы в один PDF, разделить каждую страницу или распределить страницы по равным частям' },
+    word: { name: 'PDF ↔ Word', action: 'преобразовать текст PDF в редактируемые документы Word или создать PDF из изображений страниц DOCX' }
+  },
+  uk: {
+    split: { name: 'Розділити / витягти PDF', action: 'витягти вибрані сторінки в один PDF, розділити кожну сторінку або згрупувати сторінки в рівні частини' },
+    word: { name: 'PDF ↔ Word', action: 'перетворити текст PDF на редаговані документи Word або створити PDF із зображень сторінок DOCX' }
+  },
+  ar: {
+    split: { name: 'تقسيم / استخراج PDF', action: 'استخراج الصفحات المحددة في ملف PDF واحد أو تقسيم كل صفحة أو توزيع الصفحات على أقسام متوازنة' },
+    word: { name: 'PDF ↔ Word', action: 'تحويل نص PDF إلى مستندات Word قابلة للتحرير أو إنشاء ملفات PDF مصورة من ملفات DOCX' }
+  },
+  hi: {
+    split: { name: 'PDF विभाजित / पृष्ठ निकालें', action: 'चुने हुए पृष्ठों को एक PDF में निकालें, हर पृष्ठ अलग करें या पृष्ठों को संतुलित भागों में बाँटें' },
+    word: { name: 'PDF ↔ Word', action: 'PDF पाठ को संपादन योग्य Word दस्तावेज़ों में बदलें या DOCX से चित्र-आधारित PDF बनाएँ' }
+  },
+  ja: {
+    split: { name: 'PDF の分割 / 抽出', action: '選択したページを 1 つの PDF に抽出する、各ページを個別に分割する、またはページを均等なセクションに分ける' },
+    word: { name: 'PDF ↔ Word', action: 'PDF のテキストを編集可能な Word 文書に変換する、または DOCX から画像ベースの PDF を作成する' }
+  },
+  ko: {
+    split: { name: 'PDF 분할 / 추출', action: '선택한 페이지를 하나의 PDF로 추출하거나 각 페이지를 분할하거나 페이지를 균형 잡힌 구간으로 나누기' },
+    word: { name: 'PDF ↔ Word', action: 'PDF 텍스트를 편집 가능한 Word 문서로 변환하거나 DOCX에서 이미지 기반 PDF 만들기' }
+  },
+  'zh-CN': {
+    split: { name: '拆分 / 提取 PDF', action: '将选定页面提取为一个 PDF、逐页拆分，或将页面均衡分组' },
+    word: { name: 'PDF ↔ Word', action: '将 PDF 文本转换为可编辑的 Word 文档，或将 DOCX 页面渲染为图片并创建 PDF' }
+  }
+};
+
 const descriptionPrefixes = {
   en: 'Use this tool to ',
   es: 'Usa esta herramienta para ',
@@ -115,13 +198,16 @@ const descriptionPrefixes = {
 export const TOOL_TRANSLATIONS = Object.fromEntries(
   Object.entries(translations).map(([language, [names, actions]]) => [
     language,
-    Object.fromEntries(toolIds.map((id, index) => [
-      id,
-      {
-        name: names[index],
-        description: `${descriptionPrefixes[language]}${actions[index]}${language === 'ja' || language === 'zh-CN' ? '' : language === 'ar' ? '' : '.'}`
-      }
-    ]))
+    Object.fromEntries(toolIds.map((id, index) => {
+      const override = toolCopyOverrides[language]?.[id];
+      return [
+        id,
+        {
+          name: override?.name || names[index],
+          description: `${descriptionPrefixes[language]}${override?.action || actions[index]}${language === 'ja' || language === 'zh-CN' ? '' : language === 'ar' ? '' : '.'}`
+        }
+      ];
+    }))
   ])
 );
 

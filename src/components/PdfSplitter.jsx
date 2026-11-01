@@ -253,7 +253,7 @@ const PdfSplitter = () => {
               <Upload className="h-6 w-6 text-blue-600" />
             </div>
             <div className="merge-pdf-upload-copy">
-              <h3>{isDragActive ? 'Drop the PDF here' : 'Choose or drop a PDF to split'}</h3>
+              <h3>{isDragActive ? 'Drop the PDF here' : 'Choose or drop a PDF to split or extract'}</h3>
               <p>Extract selected pages, split every page, or divide the PDF into percentage-based sections.</p>
             </div>
             <button

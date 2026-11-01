@@ -34,6 +34,9 @@ test('every PDF tool upload card describes its task instead of file limits or pr
       assert.ok(allUploadCopy.includes("{isRemoving ? 'Remove selected pages from a PDF.' : 'Extract selected pages into a new PDF.'}"));
     } else if (fileName === 'ImageToPdf.jsx') {
       assert.ok(allUploadCopy.includes('formatToolUiMessage(imageUi.uploadDescription, { max: MAX_IMAGES })'));
+    } else if (fileName === 'PdfToWord.jsx') {
+      assert.match(allUploadCopy, /Convert text-based and scanned PDFs into editable Word documents/);
+      assert.match(allUploadCopy, /Render DOCX pages as images in a PDF/);
     } else {
       assert.ok(allUploadCopy.includes(`<p>${description}</p>`), `${fileName} should show its tool-specific description`);
     }

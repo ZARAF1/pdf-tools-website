@@ -13,10 +13,10 @@ The current application uses React 19, Vite, React Router, Tailwind CSS, Lucide 
 The active tool registry lists 17 browser-side tools across five categories, ordered as follows:
 
 - **Organize PDF:** Merge, Rotate, Remove Pages, Organize PDF, and Crop PDF.
-- **Convert Files:** Image to PDF, PDF to Images, and PDF to Word.
+- **Convert Files:** Image to PDF, PDF to Images, and PDF ↔ Word (editable DOCX from PDFs or image-based PDFs from DOCX).
 - **Edit & Sign:** Edit PDF, Watermark PDF, Redact PDF, and Sign PDF. Redaction rasterizes every page and removes selectable text and interactive features; Sign PDF adds a visible mark, not a cryptographic signature.
 - **Protect & Repair:** Protect PDF, Unlock PDF, and Compress PDF.
-- **Extract:** Split PDF combines visual page extraction, per-page splitting, and percentage-based sections; OCR PDF recognizes scanned text.
+- **Extract:** Split / Extract PDF combines visual page extraction, per-page splitting, and percentage-based sections; OCR PDF recognizes scanned text.
 
 PDF to Images is available at `/pdf-to-images`; it converts pages to PNG, JPG, or BMP images and provides them in one ZIP. Image to PDF and PDF to Images belong under Convert Files. `/excel-to-pdf` and `/powerpoint-to-pdf` explain that local conversion is unavailable. See `.github/project-status.md` for current verification and limitations.
 
