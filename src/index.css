@@ -969,16 +969,6 @@ body {
   box-shadow: 0 8px 20px rgb(37 99 235 / 0.12);
 }
 
-.tool-detail-category {
-  margin: 0 0 0.5rem;
-  color: #1d4ed8;
-  font-size: 0.75rem;
-  font-weight: 750;
-  letter-spacing: 0.12em;
-  line-height: 1.4;
-  text-transform: uppercase;
-}
-
 .tool-detail-title {
   margin: 0;
   color: #0f172a;
@@ -1744,10 +1734,6 @@ body {
   background: #172b45;
   color: #bfdbfe;
   box-shadow: none;
-}
-
-:root[data-theme='dark'] .tool-detail-category {
-  color: #93c5fd;
 }
 
 :root[data-theme='dark'] .tool-detail-title {

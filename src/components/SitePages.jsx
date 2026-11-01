@@ -221,7 +221,6 @@ export const ToolGuidePage = ({ toolId }) => {
   const tool = [...TOOL_REGISTRY, ...GUIDE_ONLY_TOOLS].find((item) => item.id === toolId);
   const guide = TOOL_GUIDES[toolId];
   const localizedTool = tool ? getLocalizedTool(language, tool) : null;
-  const category = TOOL_CATEGORIES.find((item) => item.id === tool?.category);
   const headings = TOOL_DETAIL_POINT_HEADINGS[language] || TOOL_DETAIL_POINT_HEADINGS.en;
   const description = guide?.what || 'The requested tool guide could not be found.';
   usePageMeta(
@@ -251,9 +250,6 @@ export const ToolGuidePage = ({ toolId }) => {
       intro={localizedTool.description}
       icon={localizedTool.icon || BookOpenText}
     >
-      <p className="mb-6 text-sm font-medium text-blue-700">
-        {category ? translate(`category.${category.id}`) : resources.topicGuides}
-      </p>
       <div className="flex flex-col gap-6">
         {sections.map(([heading, text]) => (
           <section key={heading} className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">

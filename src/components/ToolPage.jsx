@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { ArrowRight, Download, FileText, Upload } from 'lucide-react';
 import AdSlot from './AdSlot';
 import RelatedToolsCarousel from './RelatedToolsCarousel';
-import { TOOL_CATEGORIES, TOOL_REGISTRY } from './toolRegistry';
+import { TOOL_REGISTRY } from './toolRegistry';
 import FaqAccordion from './FaqAccordion';
 import { getLocalizedTool } from '../i18n/toolTranslations.mjs';
 import { getLocalizedResourceLabels } from '../i18n/resourceLocalization.mjs';
@@ -528,8 +528,6 @@ const ToolPage = ({ tool, children }) => {
   const pageDescription = localizedTool?.description || content.description;
   const ProcessingIcon = localizedTool?.icon;
   const ToolIcon = ProcessingIcon || FileText;
-  const category = TOOL_CATEGORIES.find((item) => item.id === registeredTool?.category);
-  const categoryName = category ? translate(`category.${category.id}`) : translate('conversionStatus');
   const attachmentTitleKey = tool === 'powerpoint'
     ? 'attachPdfOrPowerPointHere'
     : tool === 'word'
@@ -581,7 +579,6 @@ const ToolPage = ({ tool, children }) => {
             <span className="tool-detail-icon" aria-hidden="true">
               <ToolIcon className="h-7 w-7" />
             </span>
-            <p className="tool-detail-category">{categoryName}</p>
             <h1 className="tool-detail-title">{pageTitleText}</h1>
             <p className="tool-detail-description">{pageDescription}</p>
           </div>
@@ -625,12 +622,6 @@ const ToolPage = ({ tool, children }) => {
             <aside className="tool-attachment-guidance" aria-labelledby={attachmentGuidanceHeadingId}>
               <h3 id={attachmentGuidanceHeadingId}>{localizedTool?.name || localizedContent.attachment.infoTitle}</h3>
               <p>{localizedContent.attachment.info}</p>
-              <Link
-                className="mt-3 inline-flex font-semibold text-blue-700 underline hover:text-blue-800"
-                to={`/resources/tools/${tool}`}
-              >
-                {localizedResources.readMore}
-              </Link>
             </aside>
             <div className="tool-attachment-content">{children}</div>
           </div>

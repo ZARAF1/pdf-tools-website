@@ -11,6 +11,7 @@ const readSource = (path) => readFile(
 );
 
 const content = await readSource('../src/components/ToolPage.jsx');
+const sitePages = await readSource('../src/components/SitePages.jsx');
 const expectedTools = [
   'crop', 'edit', 'merge', 'split', 'rotate', 'protect', 'unlock', 'image',
   'pdf-images', 'word', 'ocr', 'compress', 'watermark', 'remove',
@@ -37,11 +38,26 @@ test('tool pages render each point with its matching tool icon', () => {
   assert.match(content, /<ToolIcon className="tool-detail-point-icon" aria-hidden="true" \/>/);
 });
 
+test('tool detail and individual guide pages omit category labels', () => {
+  assert.doesNotMatch(content, /<p className="tool-detail-category">/);
+  const toolGuidePage = sitePages.match(/export const ToolGuidePage = \(\{ toolId \}\) => \{([\s\S]*?)\n\};/)?.[1];
+  assert.ok(toolGuidePage, 'individual tool guide page should be defined');
+  assert.doesNotMatch(toolGuidePage, /category\? translate\(`category\.\$\{category\.id\}`\)/);
+});
+
 test('tool guide link appears under the What you get point', () => {
   assert.match(
     content,
     /key === 'result' && \([\s\S]*?to=\{`\/resources\/tools\/\$\{tool\}`\}[\s\S]*?localizedResources\.readMore[\s\S]*?\)\}/
   );
+});
+
+test('attachment guidance does not repeat the tool guide link', () => {
+  const attachmentGuidance = content.match(
+    /<aside className="tool-attachment-guidance"[\s\S]*?<\/aside>/
+  )?.[0];
+  assert.ok(attachmentGuidance, 'tool attachment guidance should render');
+  assert.doesNotMatch(attachmentGuidance, /resources\/tools|readMore/i);
 });
 
 test('every locale localizes the three point labels and retains tool-page specificity', async () => {
