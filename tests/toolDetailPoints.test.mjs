@@ -37,6 +37,13 @@ test('tool pages render each point with its matching tool icon', () => {
   assert.match(content, /<ToolIcon className="tool-detail-point-icon" aria-hidden="true" \/>/);
 });
 
+test('tool guide link appears under the What you get point', () => {
+  assert.match(
+    content,
+    /key === 'result' && \([\s\S]*?to=\{`\/resources\/tools\/\$\{tool\}`\}[\s\S]*?localizedResources\.readMore[\s\S]*?\)\}/
+  );
+});
+
 test('every locale localizes the three point labels and retains tool-page specificity', async () => {
   const image = {
     detailPoints: {

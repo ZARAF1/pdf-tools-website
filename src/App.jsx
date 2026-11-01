@@ -40,7 +40,7 @@ const EditPdf = lazy(() => import('./components/EditPdf'));
 import OfficeConversionNotice from './components/OfficeConversionNotice';
 import ToolPage from './components/ToolPage';
 import { ToolExitGuardProvider } from './components/ToolExitGuard';
-import { NotFoundPage, SitePages } from './components/SitePages';
+import { NotFoundPage, SitePages, ToolGuidePage } from './components/SitePages';
 import Footer from './components/Footer';
 import LanguagePicker from './components/LanguagePicker';
 import ToolSearch from './components/ToolSearch';
@@ -53,6 +53,11 @@ import { getLocalizedTool } from './i18n/toolTranslations.mjs';
 const ResourceArticleRoute = () => {
   const { articleSlug } = useParams();
   return <SitePages page="resources" article={articleSlug} />;
+};
+
+const ToolGuideRoute = () => {
+  const { toolId } = useParams();
+  return <ToolGuidePage toolId={toolId} />;
 };
 
 const RouteLoadingFallback = () => {
@@ -661,6 +666,7 @@ function App() {
                 <Route path="/powerpoint-to-pdf" element={<Navigate to="/pdf-to-powerpoint" replace />} />
                 <Route path="/faq" element={<SitePages page="faq" />} />
                 <Route path="/resources" element={<SitePages page="resources" />} />
+                <Route path="/resources/tools/:toolId" element={<ToolGuideRoute />} />
                 <Route path="/resources/:articleSlug" element={<ResourceArticleRoute />} />
                 <Route path="/privacy" element={<SitePages page="privacy" />} />
                 <Route path="/security" element={<SitePages page="security" />} />

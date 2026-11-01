@@ -22,6 +22,29 @@ const localizedUi = {
   'zh-CN': ['PDF 指南与资源', '简要实用地介绍 PDF 工作流程、输出质量和浏览器处理。', '阅读指南', '返回所有资源']
 };
 
+const resourceSectionLabels = {
+  en: { readMore: 'Read more', applications: 'Practical applications', topicGuides: 'More PDF guides' },
+  es: { readMore: 'Leer más', applications: 'Aplicaciones prácticas', topicGuides: 'Más guías de PDF' },
+  fr: { readMore: 'En savoir plus', applications: 'Applications pratiques', topicGuides: 'Autres guides PDF' },
+  de: { readMore: 'Mehr erfahren', applications: 'Praktische Anwendungen', topicGuides: 'Weitere PDF-Anleitungen' },
+  pt: { readMore: 'Saiba mais', applications: 'Aplicações práticas', topicGuides: 'Mais guias de PDF' },
+  it: { readMore: 'Scopri di più', applications: 'Applicazioni pratiche', topicGuides: 'Altre guide PDF' },
+  nl: { readMore: 'Lees meer', applications: 'Praktische toepassingen', topicGuides: 'Meer PDF-gidsen' },
+  pl: { readMore: 'Dowiedz się więcej', applications: 'Praktyczne zastosowania', topicGuides: 'Więcej poradników PDF' },
+  sv: { readMore: 'Läs mer', applications: 'Praktiska användningsområden', topicGuides: 'Fler PDF-guider' },
+  fi: { readMore: 'Lue lisää', applications: 'Käytännön käyttökohteet', topicGuides: 'Lisää PDF-oppaita' },
+  da: { readMore: 'Læs mere', applications: 'Praktiske anvendelser', topicGuides: 'Flere PDF-vejledninger' },
+  nb: { readMore: 'Les mer', applications: 'Praktiske bruksområder', topicGuides: 'Flere PDF-veiledninger' },
+  tr: { readMore: 'Daha fazla bilgi', applications: 'Pratik kullanım alanları', topicGuides: 'Diğer PDF kılavuzları' },
+  ru: { readMore: 'Подробнее', applications: 'Практическое применение', topicGuides: 'Другие руководства по PDF' },
+  uk: { readMore: 'Докладніше', applications: 'Практичне застосування', topicGuides: 'Інші посібники PDF' },
+  ar: { readMore: 'اقرأ المزيد', applications: 'تطبيقات عملية', topicGuides: 'المزيد من أدلة PDF' },
+  hi: { readMore: 'और पढ़ें', applications: 'व्यावहारिक उपयोग', topicGuides: 'PDF की और मार्गदर्शिकाएँ' },
+  ja: { readMore: '続きを読む', applications: '活用例', topicGuides: 'その他の PDF ガイド' },
+  ko: { readMore: '자세히 보기', applications: '실용적인 활용 사례', topicGuides: '다른 PDF 가이드' },
+  'zh-CN': { readMore: '了解更多', applications: '实际应用', topicGuides: '更多 PDF 指南' }
+};
+
 const articleTranslations = {
   es: [
     ['Qué puede y qué no puede hacer la compresión PDF', 'Conoce la compresión de PDF, los archivos con muchas imágenes y las diferencias de calidad.', [
@@ -349,15 +372,23 @@ const articleTranslations = {
 };
 
 const resourceArticleIds = ['pdf-compression', 'local-pdf-processing', 'scanned-pdf-to-word'];
+const requiredSectionLabelKeys = ['readMore', 'applications', 'topicGuides'];
 
 for (const { code } of SUPPORTED_LANGUAGES) {
   if (code === 'en') continue;
   if (!localizedUi[code] || !articleTranslations[code] || articleTranslations[code].length !== resourceArticleIds.length) {
     throw new Error(`Resource guide translations are incomplete for "${code}".`);
   }
+  if (!resourceSectionLabels[code] || requiredSectionLabelKeys.some((key) => !resourceSectionLabels[code][key])) {
+    throw new Error(`Resource guide section labels are incomplete for "${code}".`);
+  }
 }
 
 export const RESOURCE_TRANSLATIONS = articleTranslations;
+
+export const getLocalizedResourceLabels = (language) => (
+  resourceSectionLabels[language] || resourceSectionLabels.en
+);
 
 export const getLocalizedResources = (language, articles) => {
   if (language === 'en' || !localizedUi[language]) {
@@ -366,6 +397,7 @@ export const getLocalizedResources = (language, articles) => {
       intro: 'Short, practical explanations of PDF workflows, output quality, and browser processing.',
       readGuide: 'Read guide',
       backToResources: 'Back to all resources',
+      ...getLocalizedResourceLabels(language),
       articles
     };
   }
@@ -384,5 +416,12 @@ export const getLocalizedResources = (language, articles) => {
     })
   );
 
-  return { title, intro, readGuide, backToResources, articles: localizedArticles };
+  return {
+    title,
+    intro,
+    readGuide,
+    backToResources,
+    ...getLocalizedResourceLabels(language),
+    articles: localizedArticles
+  };
 };

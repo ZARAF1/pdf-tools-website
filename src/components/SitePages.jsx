@@ -4,6 +4,11 @@ import { ArrowRight, BookOpenText, CircleHelp, Info, Mail, ShieldCheck } from 'l
 import FaqAccordion from './FaqAccordion';
 import { getLocalizedFaq } from '../i18n/faqLocalization.mjs';
 import { getLocalizedResources } from '../i18n/resourceLocalization.mjs';
+import { getLocalizedTool } from '../i18n/toolTranslations.mjs';
+import { TOOL_DETAIL_POINT_HEADINGS } from '../i18n/toolPageLocalization.mjs';
+import { TOOL_CATEGORIES, TOOL_REGISTRY } from './toolRegistry';
+import { GUIDE_ONLY_TOOLS, TOOL_GUIDES } from './toolGuides.mjs';
+import ToolCard from './ToolCard';
 import { useLanguage } from '../i18n/useLanguage';
 
 const ARTICLES = {
@@ -156,25 +161,118 @@ const ResourcePage = ({ article }) => {
 };
 
 const ResourcesPage = () => {
-  const { language } = useLanguage();
+  const { language, translate } = useLanguage();
   const resources = getLocalizedResources(language, ARTICLES);
   usePageMeta(`${resources.title} | PDF Merge Pro`, resources.intro);
+  const guideTools = [...TOOL_REGISTRY, ...GUIDE_ONLY_TOOLS];
   return (
     <PageLayout title={resources.title} intro={resources.intro} icon={BookOpenText}>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-        {Object.entries(resources.articles).map(([slug, article]) => (
-          <Link key={slug} to={`/resources/${slug}`} className="tool-card group resource-card">
-            <span className="tool-card-icon resource-card-icon" aria-hidden="true">
-              <BookOpenText className="h-5 w-5" />
-            </span>
-            <span className="resource-card-content">
-              <span className="resource-card-title">{article.title}</span>
-              <span className="resource-card-description">{article.description}</span>
-              <span className="resource-card-read">{resources.readGuide}</span>
-            </span>
-            <ArrowRight className="tool-card-arrow h-4 w-4 shrink-0" aria-hidden="true" />
-          </Link>
+      <div className="space-y-10">
+        {TOOL_CATEGORIES.map((category) => {
+          const categoryTools = guideTools.filter((tool) => tool.category === category.id);
+          if (categoryTools.length === 0) return null;
+          return (
+            <section key={category.id} aria-labelledby={`guides-${category.id}`}>
+              <h2 id={`guides-${category.id}`} className="mb-4 text-2xl font-bold text-slate-800">
+                {translate(`category.${category.id}`)}
+              </h2>
+              <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
+                {categoryTools.map((tool) => (
+                  <ToolCard
+                    key={tool.id}
+                    tool={tool}
+                    to={`/resources/tools/${tool.id}`}
+                    actionLabel={resources.readMore}
+                    className="resource-card"
+                  />
+                ))}
+              </div>
+            </section>
+          );
+        })}
+        <section aria-labelledby="resource-topic-guides">
+          <h2 id="resource-topic-guides" className="mb-4 text-2xl font-bold text-slate-800">
+            {resources.topicGuides}
+          </h2>
+          <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
+            {Object.entries(resources.articles).map(([slug, article]) => (
+              <Link key={slug} to={`/resources/${slug}`} className="tool-card group resource-card">
+                <span className="tool-card-icon resource-card-icon" aria-hidden="true">
+                  <BookOpenText className="h-5 w-5" />
+                </span>
+                <span className="resource-card-content">
+                  <span className="resource-card-title">{article.title}</span>
+                  <span className="resource-card-description">{article.description}</span>
+                  <span className="resource-card-read">{resources.readGuide}</span>
+                </span>
+                <ArrowRight className="tool-card-arrow h-4 w-4 shrink-0" aria-hidden="true" />
+              </Link>
+            ))}
+          </div>
+        </section>
+      </div>
+    </PageLayout>
+  );
+};
+
+export const ToolGuidePage = ({ toolId }) => {
+  const { language, translate } = useLanguage();
+  const resources = getLocalizedResources(language, ARTICLES);
+  const tool = [...TOOL_REGISTRY, ...GUIDE_ONLY_TOOLS].find((item) => item.id === toolId);
+  const guide = TOOL_GUIDES[toolId];
+  const localizedTool = tool ? getLocalizedTool(language, tool) : null;
+  const category = TOOL_CATEGORIES.find((item) => item.id === tool?.category);
+  const headings = TOOL_DETAIL_POINT_HEADINGS[language] || TOOL_DETAIL_POINT_HEADINGS.en;
+  const description = guide?.what || 'The requested tool guide could not be found.';
+  usePageMeta(
+    `${localizedTool?.name || 'Page Not Found'} Guide | PDF Merge Pro`,
+    description
+  );
+  if (!tool || !guide || !localizedTool) {
+    return (
+      <PageLayout title="Page not found" intro="That guide may have moved or the address may be incorrect.">
+        <Link to="/" className="inline-flex rounded-lg bg-blue-600 px-4 py-3 font-semibold text-white hover:bg-blue-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600">
+          Browse PDF tools
+        </Link>
+      </PageLayout>
+    );
+  }
+
+  const sections = [
+    [headings.what, guide.what],
+    [headings.how, guide.how],
+    [headings.result, guide.result],
+    [resources.applications, guide.applications]
+  ];
+
+  return (
+    <PageLayout
+      title={localizedTool.name}
+      intro={localizedTool.description}
+      icon={localizedTool.icon || BookOpenText}
+    >
+      <p className="mb-6 text-sm font-medium text-blue-700">
+        {category ? translate(`category.${category.id}`) : resources.topicGuides}
+      </p>
+      <div className="flex flex-col gap-6">
+        {sections.map(([heading, text]) => (
+          <section key={heading} className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
+            <h2 className="text-xl font-bold text-slate-800 mb-3">{heading}</h2>
+            <p className="text-slate-600 leading-relaxed">{text}</p>
+          </section>
         ))}
+      </div>
+      <div className="mt-6 flex flex-wrap items-center gap-4">
+        <Link
+          to={localizedTool.path}
+          className="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-3 font-semibold text-white hover:bg-blue-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
+        >
+          {localizedTool.name}
+          <ArrowRight className="h-4 w-4" aria-hidden="true" />
+        </Link>
+        <Link to="/resources" className="text-blue-700 font-medium hover:underline">
+          {resources.backToResources}
+        </Link>
       </div>
     </PageLayout>
   );

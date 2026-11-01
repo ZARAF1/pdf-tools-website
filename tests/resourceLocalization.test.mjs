@@ -38,6 +38,9 @@ test('resource index and guide articles localize for every supported language', 
     assert.ok(localized.title, `${code} is missing the guide index title`);
     assert.ok(localized.intro, `${code} is missing the guide index introduction`);
     assert.ok(localized.readGuide, `${code} is missing the read-guide label`);
+    assert.ok(localized.readMore, `${code} is missing the read-more label`);
+    assert.ok(localized.applications, `${code} is missing the applications heading`);
+    assert.ok(localized.topicGuides, `${code} is missing the topic-guides heading`);
     assert.ok(localized.backToResources, `${code} is missing the back link`);
     if (code !== 'en') {
       assert.notEqual(localized.title, 'PDF Guides and Resources', `${code} index title is still English`);

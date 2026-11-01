@@ -679,6 +679,8 @@ const detailPointHeadings = {
   }]))
 };
 
+export const TOOL_DETAIL_POINT_HEADINGS = detailPointHeadings;
+
 const requiredRuleKeys = Object.keys(translations.en.rules);
 const requiredCautionKeys = Object.keys(translations.en.cautions);
 for (const { code } of SUPPORTED_LANGUAGES) {
