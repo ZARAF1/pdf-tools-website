@@ -242,7 +242,7 @@ const OrganizePdf = () => {
   };
 
   return (
-    <div className="pdf-tool-workflow space-y-6">
+    <div className="pdf-tool-workflow organize-pdf-workflow space-y-6">
       <div
         {...getRootProps({
           role: 'group',
@@ -298,7 +298,7 @@ const OrganizePdf = () => {
 
       {pages.length > 0 && (
         <div className="pdf-workflow-controls space-y-4">
-          <p className="text-sm text-slate-500">Drag page cards to reorder, or use the controls on each page. At least one page must remain. Screen readers can hear extracted page text where available.</p>
+          <p className="pdf-preview-instructions">Drag page cards to reorder, or use the controls on each page.</p>
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
             {pages.map((page, index) => (
               <article

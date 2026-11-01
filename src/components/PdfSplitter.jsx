@@ -357,7 +357,7 @@ const PdfSplitter = () => {
                   value={rangeInput}
                   onChange={(event) => updateRanges(event.target.value)}
                 />
-                <p id="split-page-ranges-help" className="text-xs text-slate-500">Click page previews below or enter comma-separated pages and ranges. Output follows document order.</p>
+                <p id="split-page-ranges-help" className="pdf-preview-instructions">Click page previews below or enter comma-separated pages and ranges. Output follows document order.</p>
               </div>
             )}
 
@@ -404,7 +404,7 @@ const PdfSplitter = () => {
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <div>
                   <h3 id="split-page-preview-heading" className="text-base font-semibold text-slate-800">Page previews</h3>
-                  <p className="text-sm text-slate-500">
+                  <p className="pdf-preview-instructions">
                     {mode === 'extract-selected'
                       ? 'Select thumbnails to choose pages for one PDF.'
                       : mode === 'split-percentage'

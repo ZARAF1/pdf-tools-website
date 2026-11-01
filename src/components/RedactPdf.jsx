@@ -463,7 +463,8 @@ const RedactPdf = () => {
           <p id={`redact-page-${currentPage}-description`} className="sr-only">
             {pageSummaries[currentPage - 1] || 'No selectable text was found on this page; its preview is visual-only.'}
           </p>
-          <p className="text-center text-sm text-slate-500">Drag across the page to add an opaque black redaction. You can also enter coordinates below using the keyboard. {pageMarks.length} mark{pageMarks.length === 1 ? '' : 's'} on this page.</p>
+          <p className="pdf-preview-instructions">Drag across the page to add an opaque black redaction. You can also enter coordinates below using the keyboard.</p>
+          <p className="text-center text-sm text-slate-500">{pageMarks.length} mark{pageMarks.length === 1 ? '' : 's'} on this page.</p>
           <fieldset className="space-y-3 rounded-xl border border-slate-200 p-4">
             <legend className="px-1 text-sm font-semibold text-slate-700">Add redaction by coordinates (percent from top left)</legend>
             <div className="grid gap-3 sm:grid-cols-4">

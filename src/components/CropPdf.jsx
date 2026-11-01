@@ -624,7 +624,7 @@ const CropPdf = () => {
 
           <fieldset className="crop-pdf-bounds" disabled={isProcessing || isRendering}>
             <legend>Crop area bounds</legend>
-            <p id="crop-pdf-bounds-help">
+            <p id="crop-pdf-bounds-help" className="pdf-preview-instructions">
               Set the crop using the keyboard. Values are percentages measured from the page&apos;s top-left corner; the crop stays within the page.
             </p>
             <div className="crop-pdf-bounds-grid">
@@ -655,6 +655,9 @@ const CropPdf = () => {
                   />
                 </div>
               ))}
+              <button type="button" className="crop-pdf-button crop-pdf-button-secondary" onClick={resetCrop} disabled={isProcessing || isRendering}>
+                <RotateCcw aria-hidden="true" size={16} /> Reset crop
+              </button>
             </div>
           </fieldset>
 
@@ -741,9 +744,6 @@ const CropPdf = () => {
                 Adjust current page crop
               </button>
             )}
-            <button type="button" className="crop-pdf-button crop-pdf-button-secondary" onClick={resetCrop} disabled={isProcessing || isRendering}>
-              <RotateCcw aria-hidden="true" size={16} /> Reset crop
-            </button>
             <button type="button" className="crop-pdf-button crop-pdf-button-primary" onClick={applyCrop} disabled={isProcessing || isRendering || isLoading}>
               {isProcessing ? <Loader2 className="crop-pdf-spinner" aria-hidden="true" size={17} /> : null}
               {isProcessing ? 'Applying crop...' : 'Apply crop'}

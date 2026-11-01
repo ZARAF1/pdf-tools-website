@@ -518,111 +518,6 @@ const PdfMerger = () => {
             </button>
           </div>
 
-          {mergeMode === 'select' && (
-            <div className="merge-page-selection-workspace">
-              <div className="merge-section-heading">
-                <div>
-                  <h3>Select pages</h3>
-                  <p>Click pages to add them to the live output in that order. New selections start empty.</p>
-                </div>
-                <p className="merge-page-count-summary" aria-live="polite">
-                  {selectedPages.length} pages selected
-                </p>
-              </div>
-              <div className="merge-source-page-pickers">
-                {files.map((fileEntry) => (
-                  <PdfMergePagePicker
-                    key={fileEntry.id}
-                    fileEntry={fileEntry}
-                    selectedPages={selectedPages}
-                    onTogglePage={togglePageSelection}
-                    onSelectVisible={selectVisiblePages}
-                    onClear={clearFilePageSelection}
-                    onPreviewsReady={handlePreviewsReady}
-                    disabled={isMerging}
-                  />
-                ))}
-              </div>
-
-              <section className="merge-live-output" aria-labelledby="merge-live-output-heading">
-                <div className="merge-section-heading">
-                  <div>
-                    <h3 id="merge-live-output-heading">Live output preview</h3>
-                    <p>Pages are shown in the order they will appear. Drag to reorder, or use the move buttons.</p>
-                  </div>
-                  <p className="merge-page-count-summary">
-                    {selectedPages.length + blankPageCount} output pages
-                  </p>
-                </div>
-                {selectedPages.length === 0 ? (
-                  <p className="merge-live-output-empty">Select a page above to start building the output.</p>
-                ) : (
-                  <Reorder.Group
-                    axis="x"
-                    values={selectedPages}
-                    onReorder={reorderSelectedPages}
-                    className="merge-live-output-list"
-                    aria-label="Pages in merged output order"
-                  >
-                    {liveOutputItems.map((item, index) => (
-                      <Reorder.Item
-                        key={item.key}
-                        value={selectedPages[index]}
-                        dragListener={!isMerging}
-                        className="merge-live-output-item"
-                      >
-                        <div className={`merge-live-blank-slot${addBlankPages ? ' is-enabled' : ''}`}>
-                          {item.blankBefore && (
-                            <span className="merge-live-blank-before" aria-label="A blank page will be inserted before this page">
-                              Blank page
-                            </span>
-                          )}
-                        </div>
-                        <div className="merge-live-output-page">
-                          <div className="merge-live-output-page-number">Output page {item.outputPageNumber}</div>
-                          <div className="merge-live-output-image" style={getOutputPageStyle(item.preview)}>
-                            {item.preview
-                              ? <img src={item.preview.preview} alt="" draggable={false} />
-                              : <span>Rendering preview…</span>}
-                          </div>
-                          <p className="merge-live-output-source" title={`${item.fileEntry?.name || 'PDF'}, page ${item.pageIndex + 1}`}>
-                            {item.fileEntry?.name || 'PDF'} · Page {item.pageIndex + 1}
-                          </p>
-                          <div className="merge-live-output-actions">
-                            <button
-                              type="button"
-                              aria-label={`Move output page ${index + 1} up`}
-                              onClick={() => moveSelectedPage(index, -1)}
-                              disabled={isMerging || index === 0}
-                            >
-                              <ChevronUp className="h-4 w-4" aria-hidden="true" />
-                            </button>
-                            <button
-                              type="button"
-                              aria-label={`Move output page ${index + 1} down`}
-                              onClick={() => moveSelectedPage(index, 1)}
-                              disabled={isMerging || index === selectedPages.length - 1}
-                            >
-                              <ChevronDown className="h-4 w-4" aria-hidden="true" />
-                            </button>
-                            <button
-                              type="button"
-                              aria-label={`Remove page ${item.pageIndex + 1} from ${item.fileEntry?.name || 'PDF'} output`}
-                              onClick={() => item.fileEntry && togglePageSelection(item.fileEntry, item.pageIndex)}
-                              disabled={isMerging}
-                            >
-                              <Trash2 className="h-4 w-4" aria-hidden="true" />
-                            </button>
-                          </div>
-                        </div>
-                      </Reorder.Item>
-                    ))}
-                  </Reorder.Group>
-                )}
-              </section>
-            </div>
-          )}
-
           <div className="merge-output-settings">
             <div className="merge-option-field">
               <label htmlFor="merge-output-filename">Output filename</label>
@@ -692,6 +587,112 @@ const PdfMerger = () => {
               </span>
             </label>
           </div>
+
+          {mergeMode === 'select' && (
+            <div className="merge-page-selection-workspace">
+              <div className="merge-section-heading">
+                <div>
+                  <h3>Select pages</h3>
+                  <p className="pdf-preview-instructions">Click page previews to add them to the live output in that order. New selections start empty.</p>
+                </div>
+                <p className="merge-page-count-summary" aria-live="polite">
+                  {selectedPages.length} pages selected
+                </p>
+              </div>
+              <div className="merge-source-page-pickers">
+                {files.map((fileEntry) => (
+                  <PdfMergePagePicker
+                    key={fileEntry.id}
+                    fileEntry={fileEntry}
+                    selectedPages={selectedPages}
+                    onTogglePage={togglePageSelection}
+                    onSelectVisible={selectVisiblePages}
+                    onClear={clearFilePageSelection}
+                    onPreviewsReady={handlePreviewsReady}
+                    disabled={isMerging}
+                  />
+                ))}
+              </div>
+
+              <section className="merge-live-output" aria-labelledby="merge-live-output-heading">
+                <div className="merge-section-heading">
+                  <div>
+                    <h3 id="merge-live-output-heading">Live output preview</h3>
+                    <p className="pdf-preview-instructions">Pages are shown in the order they will appear. Drag to reorder, or use the move buttons.</p>
+                  </div>
+                  <p className="merge-page-count-summary">
+                    {selectedPages.length + blankPageCount} output pages
+                  </p>
+                </div>
+                {selectedPages.length === 0 ? (
+                  <p className="merge-live-output-empty pdf-preview-instructions">Select a page above to start building the output.</p>
+                ) : (
+                  <Reorder.Group
+                    axis="x"
+                    values={selectedPages}
+                    onReorder={reorderSelectedPages}
+                    className="merge-live-output-list"
+                    aria-label="Pages in merged output order"
+                  >
+                    {liveOutputItems.map((item, index) => (
+                      <Reorder.Item
+                        key={item.key}
+                        value={selectedPages[index]}
+                        dragListener={!isMerging}
+                        className="merge-live-output-item"
+                      >
+                        <div className={`merge-live-blank-slot${addBlankPages ? ' is-enabled' : ''}`}>
+                          {item.blankBefore && (
+                            <span className="merge-live-blank-before" aria-label="A blank page will be inserted before this page">
+                              Blank page
+                            </span>
+                          )}
+                        </div>
+                        <div className="merge-live-output-page">
+                          <div className="merge-live-output-page-number">Output page {item.outputPageNumber}</div>
+                          <div className="merge-live-output-image" style={getOutputPageStyle(item.preview)}>
+                            {item.preview
+                              ? <img src={item.preview.preview} alt="" draggable={false} />
+                              : <span>Rendering preview…</span>}
+                          </div>
+                          <p className="merge-live-output-source" title={`${item.fileEntry?.name || 'PDF'}, page ${item.pageIndex + 1}`}>
+                            {item.fileEntry?.name || 'PDF'} · Page {item.pageIndex + 1}
+                          </p>
+                          <div className="merge-live-output-actions">
+                            <button
+                              type="button"
+                              aria-label={`Move output page ${index + 1} up`}
+                              onClick={() => moveSelectedPage(index, -1)}
+                              disabled={isMerging || index === 0}
+                            >
+                              <ChevronUp className="h-4 w-4" aria-hidden="true" />
+                            </button>
+                            <button
+                              type="button"
+                              aria-label={`Move output page ${index + 1} down`}
+                              onClick={() => moveSelectedPage(index, 1)}
+                              disabled={isMerging || index === selectedPages.length - 1}
+                            >
+                              <ChevronDown className="h-4 w-4" aria-hidden="true" />
+                            </button>
+                            <button
+                              type="button"
+                              aria-label={`Remove page ${item.pageIndex + 1} from ${item.fileEntry?.name || 'PDF'} output`}
+                              onClick={() => item.fileEntry && togglePageSelection(item.fileEntry, item.pageIndex)}
+                              disabled={isMerging}
+                            >
+                              <Trash2 className="h-4 w-4" aria-hidden="true" />
+                            </button>
+                          </div>
+                        </div>
+                      </Reorder.Item>
+                    ))}
+                  </Reorder.Group>
+                )}
+              </section>
+            </div>
+          )}
+
         </section>
 
         <div className="pdf-workflow-actions pt-4">

@@ -1323,7 +1323,9 @@ const EditPdf = () => {
               </div>
 
               <div className="pdf-editor-page-footer">
-                <p className="pdf-editor-secondary text-xs">
+                <p className={activeTool === 'image' && !pendingImage
+                  ? 'pdf-editor-secondary text-xs'
+                  : 'pdf-preview-instructions'}>
                   {activeTool === 'text' && 'Click to place text, or focus the preview, use the arrow keys to position, and press Enter.'}
                   {activeTool === 'image' && (pendingImage ? 'Click to place the image, or focus the preview, use the arrow keys, and press Enter.' : 'Choose a PNG or JPEG image first.')}
                   {activeTool === 'draw' && 'Drag on the page to draw freehand.'}

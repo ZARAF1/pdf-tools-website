@@ -467,6 +467,7 @@ const ImageToPdf = () => {
     <div className="pdf-tool-workflow image-to-pdf-workflow mx-auto max-w-4xl space-y-6">
       {images.length > 0 && (
         <div className="pdf-workflow-selected space-y-3">
+          <p className="pdf-preview-instructions">Review the image previews and use the controls to set their order and orientation in the PDF.</p>
           {images.map((image, index) => (
             <div key={image.id} className="pdf-attached-file-card group flex items-center gap-3 rounded-xl border border-slate-200 bg-white p-4 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md motion-reduce:transform-none">
               <img

@@ -16,6 +16,16 @@ test('Merge PDF keeps merge-all as the default and offers selective page mode', 
   assert.match(picker, /Larger preview/);
 });
 
+test('Merge PDF output settings appear between the mode buttons and page selection', () => {
+  const modeSwitchIndex = merger.indexOf('className="merge-mode-switch"');
+  const outputSettingsIndex = merger.indexOf('className="merge-output-settings"');
+  const pageSelectionIndex = merger.indexOf('className="merge-page-selection-workspace"');
+
+  assert.ok(modeSwitchIndex >= 0, 'merge mode buttons are present');
+  assert.ok(outputSettingsIndex > modeSwitchIndex, 'output settings follow the mode buttons');
+  assert.ok(pageSelectionIndex > outputSettingsIndex, 'page selection follows the output settings');
+});
+
 test('Merge PDF settings do not show standalone horizontal divider lines', () => {
   const modeSwitch = styles.match(/\.merge-mode-switch\s*\{([^}]*)\}/)?.[1];
   const outputSettings = styles.match(/\.merge-output-settings\s*\{([^}]*)\}/)?.[1];

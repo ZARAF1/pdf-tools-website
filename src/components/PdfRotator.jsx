@@ -388,7 +388,7 @@ const PdfRotator = () => {
                     Reset
                   </button>
               </div>
-              <p className="text-xs text-slate-500">
+              <p className="pdf-preview-instructions">
                 Angle buttons update the page previews immediately. In Selected Pages mode, they apply only to selected pages; use each page&apos;s rotate button for an individual adjustment.
               </p>
             </fieldset>
@@ -444,7 +444,7 @@ const PdfRotator = () => {
                     value={rangeInput}
                     onChange={(event) => handleRangeChange(event.target.value)}
                   />
-                  <p id="rotate-page-ranges-help" className="text-xs text-slate-500">
+                  <p id="rotate-page-ranges-help" className="pdf-preview-instructions">
                     Select tiles or type page numbers and ranges. Separate entries with commas.
                   </p>
                   {rangeInput.trim() && parsePageRangesWhileTyping(rangeInput, pageCount) === null && (

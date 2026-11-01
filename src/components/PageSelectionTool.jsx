@@ -247,6 +247,7 @@ const PageSelectionTool = ({ mode }) => {
             </div>
           </div>
 
+          <p className="pdf-preview-instructions">Click page previews to select or deselect pages.</p>
           <PdfPageGrid
             file={file}
             pageCount={pageCount}
