@@ -16,13 +16,13 @@ const formatBytes = (bytes) => (
 
 const OrganizePdf = () => {
   const [file, setFile] = useState(null);
-  useToolExitGuard(Boolean(file));
   const [pages, setPages] = useState([]);
   const [previews, setPreviews] = useState([]);
   const [previewSummaries, setPreviewSummaries] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const [output, setOutput] = useState(null);
+  const markOutputDownloaded = useToolExitGuard(Boolean(file), output);
   const [error, setError] = useState('');
   const [previewError, setPreviewError] = useState('');
   const [draggedPage, setDraggedPage] = useState(null);
@@ -236,6 +236,7 @@ const OrganizePdf = () => {
     anchor.style.display = 'none';
     window.document.body.appendChild(anchor);
     anchor.click();
+    markOutputDownloaded();
     anchor.remove();
     window.setTimeout(() => URL.revokeObjectURL(url), 10000);
   };

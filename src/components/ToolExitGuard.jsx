@@ -9,6 +9,7 @@ import React, {
 } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useLanguage } from '../i18n/useLanguage';
+import { createDownloadStateTracker } from '../lib/toolExitDownloadState.mjs';
 
 const ToolExitContext = createContext(null);
 let popStateGuard = null;
@@ -23,7 +24,7 @@ export const installToolExitHistoryListener = () => {
   historyListenerInstalled = true;
 };
 
-export const useToolExitGuard = (hasAttachedFiles) => {
+export const useToolExitGuard = (hasAttachedFiles, downloadableOutputs = null) => {
   const context = useContext(ToolExitContext);
 
   if (!context) {
@@ -31,9 +32,14 @@ export const useToolExitGuard = (hasAttachedFiles) => {
   }
 
   useLayoutEffect(() => {
-    context.setAttachedFiles(hasAttachedFiles);
-    return () => context.setAttachedFiles(false);
-  }, [context.setAttachedFiles, hasAttachedFiles]);
+    context.setToolState(Boolean(hasAttachedFiles), downloadableOutputs);
+  }, [context.setToolState, hasAttachedFiles, downloadableOutputs]);
+
+  useLayoutEffect(() => (
+    () => context.setToolState(false, null)
+  ), [context.setToolState]);
+
+  return context.markOutputDownloaded;
 };
 
 export const useToolExitControls = () => {
@@ -52,6 +58,7 @@ export const ToolExitGuardProvider = ({ children }) => {
   const { translate } = useLanguage();
   const [pendingNavigation, setPendingNavigation] = useState(null);
   const attachedFilesRef = useRef(false);
+  const downloadTrackerRef = useRef(createDownloadStateTracker());
   const historyIndexRef = useRef(window.history.state?.idx ?? 0);
   const historyRestoreRef = useRef(false);
   const popDeltaRef = useRef(-1);
@@ -61,18 +68,32 @@ export const ToolExitGuardProvider = ({ children }) => {
   const locationRef = useRef(location);
   locationRef.current = location;
 
-  const reportAttachedFiles = useCallback((attached) => {
+  const reportToolState = useCallback((attached, outputs) => {
     attachedFilesRef.current = attached;
+    downloadTrackerRef.current.update(outputs);
   }, []);
 
+  const markOutputDownloaded = useCallback((outputId) => {
+    downloadTrackerRef.current.markDownloaded(outputId);
+  }, []);
+
+  const hasPendingChanges = () => (
+    attachedFilesRef.current || downloadTrackerRef.current.getPendingCount() > 0
+  );
+
+  const createPendingNavigation = (action) => ({
+    action,
+    undownloadedOutputCount: downloadTrackerRef.current.getPendingCount()
+  });
+
   const requestNavigation = useCallback((action, focusTarget = document.activeElement) => {
-    if (!attachedFilesRef.current) {
+    if (!hasPendingChanges()) {
       action();
       return;
     }
 
     focusReturnRef.current = focusTarget;
-    setPendingNavigation({ action });
+    setPendingNavigation(createPendingNavigation(action));
   }, []);
 
   const requestToolNavigation = useCallback((path, focusTarget) => {
@@ -136,16 +157,16 @@ export const ToolExitGuardProvider = ({ children }) => {
         event.stopImmediatePropagation();
         const delta = popDeltaRef.current;
         focusReturnRef.current = document.activeElement;
-        setPendingNavigation({
-          action: () => {
+        setPendingNavigation(createPendingNavigation(
+          () => {
             allowNextPopRef.current = true;
             window.history.go(delta);
           }
-        });
+        ));
         return;
       }
 
-      if (!attachedFilesRef.current) {
+      if (!hasPendingChanges()) {
         historyIndexRef.current = window.history.state?.idx ?? historyIndexRef.current;
         return;
       }
@@ -165,7 +186,7 @@ export const ToolExitGuardProvider = ({ children }) => {
     };
 
     const handleBeforeUnload = (event) => {
-      if (!attachedFilesRef.current) return;
+      if (!hasPendingChanges()) return;
       event.preventDefault();
       event.returnValue = '';
     };
@@ -216,7 +237,8 @@ export const ToolExitGuardProvider = ({ children }) => {
   return (
     <ToolExitContext.Provider
       value={{
-        setAttachedFiles: reportAttachedFiles,
+        setToolState: reportToolState,
+        markOutputDownloaded,
         requestToolNavigation
       }}
     >
@@ -232,7 +254,15 @@ export const ToolExitGuardProvider = ({ children }) => {
             role="alertdialog"
           >
             <h2 id="tool-exit-dialog-title">{translate('discardAttachedFiles')}</h2>
-            <p id="tool-exit-dialog-description">{translate('discardAttachedFilesMessage')}</p>
+            <p id="tool-exit-dialog-description">
+              {pendingNavigation.undownloadedOutputCount > 0
+                ? translate(
+                  pendingNavigation.undownloadedOutputCount === 1
+                    ? 'discardReadyFileMessage'
+                    : 'discardReadyFilesMessage'
+                ).replace('{count}', String(pendingNavigation.undownloadedOutputCount))
+                : translate('discardAttachedFilesMessage')}
+            </p>
             <div className="tool-exit-dialog-actions">
               <button
                 ref={cancelButtonRef}

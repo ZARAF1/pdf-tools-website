@@ -20,10 +20,10 @@ const PageSelectionTool = ({ mode }) => {
   const isRemoving = mode === 'remove';
   const actionLabel = isRemoving ? 'for removal' : 'for extraction';
   const [file, setFile] = useState(null);
-  useToolExitGuard(Boolean(file));
   const [pageCount, setPageCount] = useState(0);
   const [selectedPages, setSelectedPages] = useState(new Set());
   const [outputBytes, setOutputBytes] = useState(null);
+  const markOutputDownloaded = useToolExitGuard(Boolean(file), outputBytes);
   const [outputName, setOutputName] = useState('');
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -170,6 +170,7 @@ const PageSelectionTool = ({ mode }) => {
     link.href = url;
     link.download = outputName;
     link.click();
+    markOutputDownloaded();
     window.setTimeout(() => URL.revokeObjectURL(url), 10000);
   };
 

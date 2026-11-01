@@ -16,7 +16,6 @@ import { AttachedFileActions, AttachedFileIcon } from './AttachedFileControls';
 
 const PdfProtector = () => {
   const [file, setFile] = useState(null);
-  useToolExitGuard(Boolean(file));
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [ownerPassword, setOwnerPassword] = useState('');
@@ -24,6 +23,7 @@ const PdfProtector = () => {
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(false);
   const [outputBytes, setOutputBytes] = useState(null);
+  const markOutputDownloaded = useToolExitGuard(Boolean(file), outputBytes);
 
   const onDrop = useCallback(async (acceptedFiles, fileRejections) => {
     setError(null);
@@ -135,6 +135,7 @@ const PdfProtector = () => {
     link.href = url;
     link.download = outputName;
     link.click();
+    markOutputDownloaded();
     setTimeout(() => URL.revokeObjectURL(url), 10000);
   };
 

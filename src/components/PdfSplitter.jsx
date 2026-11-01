@@ -19,13 +19,13 @@ import { AttachedFileActions, AttachedFileIcon } from './AttachedFileControls';
 
 const PdfSplitter = () => {
   const [file, setFile] = useState(null);
-  useToolExitGuard(Boolean(file));
   const [isProcessing, setIsProcessing] = useState(false);
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(false);
   const [mode, setMode] = useState('extract'); // 'extract' or 'split-all'
   const [rangeInput, setRangeInput] = useState('');
   const [outputFiles, setOutputFiles] = useState([]);
+  const markOutputDownloaded = useToolExitGuard(Boolean(file), outputFiles);
 
   const onDrop = useCallback(async (acceptedFiles, fileRejections) => {
     setError(null);
@@ -152,6 +152,7 @@ const PdfSplitter = () => {
     link.href = url;
     link.download = output.name;
     link.click();
+    markOutputDownloaded(output.name);
     setTimeout(() => URL.revokeObjectURL(url), 10000);
   };
 

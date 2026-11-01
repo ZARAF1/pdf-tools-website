@@ -157,7 +157,6 @@ const addInvisibleOcrText = (page, words, viewport, font) => {
 
 const OcrPdf = () => {
   const [file, setFile] = useState(null);
-  useToolExitGuard(Boolean(file));
   const [pageCount, setPageCount] = useState(0);
   const [previewUrl, setPreviewUrl] = useState('');
   const [isValidating, setIsValidating] = useState(false);
@@ -166,6 +165,7 @@ const OcrPdf = () => {
   const [progress, setProgress] = useState({ message: '', value: 0 });
   const [error, setError] = useState('');
   const [outputBlob, setOutputBlob] = useState(null);
+  const markOutputDownloaded = useToolExitGuard(Boolean(file), outputBlob);
   const [outputName, setOutputName] = useState('');
   const [outputSummary, setOutputSummary] = useState('');
 
@@ -313,6 +313,7 @@ const OcrPdf = () => {
     link.href = url;
     link.download = outputName;
     link.click();
+    markOutputDownloaded();
     window.setTimeout(() => URL.revokeObjectURL(url), 10000);
   };
 

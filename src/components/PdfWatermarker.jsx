@@ -126,7 +126,6 @@ const downloadBlob = (bytes, filename) => {
 
 const PdfWatermarker = () => {
   const [file, setFile] = useState(null);
-  useToolExitGuard(Boolean(file));
   const [pageCount, setPageCount] = useState(null);
   const [isLoadingPages, setIsLoadingPages] = useState(false);
   const [settings, setSettings] = useState(DEFAULT_SETTINGS);
@@ -134,6 +133,7 @@ const PdfWatermarker = () => {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
   const [outputBytes, setOutputBytes] = useState(null);
+  const markOutputDownloaded = useToolExitGuard(Boolean(file), outputBytes);
   const fileRequestId = useRef(0);
 
   const onDrop = useCallback(async (acceptedFiles, fileRejections) => {
@@ -715,7 +715,10 @@ const PdfWatermarker = () => {
           </div>
           <button
             type="button"
-            onClick={() => downloadBlob(outputBytes, outputName)}
+            onClick={() => {
+              downloadBlob(outputBytes, outputName);
+              markOutputDownloaded();
+            }}
             className="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-lg bg-green-600 text-white font-medium hover:bg-green-700 transition-colors"
           >
             <Download className="w-4 h-4" />

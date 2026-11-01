@@ -79,7 +79,6 @@ const rectanglesMatch = (actual, expected) => (
 
 const CropPdf = () => {
   const [file, setFile] = useState(null);
-  useToolExitGuard(Boolean(file));
   const [pdfjsDocument, setPdfjsDocument] = useState(null);
   const [pageCount, setPageCount] = useState(0);
   const [currentPage, setCurrentPage] = useState(0);
@@ -93,6 +92,7 @@ const CropPdf = () => {
   const [renderInfo, setRenderInfo] = useState(null);
   const [pageTextSummary, setPageTextSummary] = useState('');
   const [output, setOutput] = useState(null);
+  const markOutputDownloaded = useToolExitGuard(Boolean(file), output);
   const [isLoading, setIsLoading] = useState(false);
   const [isRendering, setIsRendering] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
@@ -517,6 +517,7 @@ const CropPdf = () => {
     anchor.style.display = 'none';
     window.document.body.appendChild(anchor);
     anchor.click();
+    markOutputDownloaded();
     anchor.remove();
     window.setTimeout(() => URL.revokeObjectURL(url), 10000);
   };

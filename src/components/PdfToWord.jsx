@@ -63,13 +63,13 @@ const groupItemsIntoLines = (items) => {
 
 const PdfToWord = () => {
   const [file, setFile] = useState(null);
-  useToolExitGuard(Boolean(file));
   const [isProcessing, setIsProcessing] = useState(false);
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(false);
   const [progress, setProgress] = useState(0);
   const [status, setStatus] = useState('');
   const [outputBlob, setOutputBlob] = useState(null);
+  const markOutputDownloaded = useToolExitGuard(Boolean(file), outputBlob);
 
   const onDrop = useCallback(async (acceptedFiles, fileRejections) => {
     setError(null);
@@ -323,6 +323,7 @@ const PdfToWord = () => {
     link.href = url;
     link.download = 'document_converted.docx';
     link.click();
+    markOutputDownloaded();
     setTimeout(() => URL.revokeObjectURL(url), 10000);
   };
 

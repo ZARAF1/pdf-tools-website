@@ -21,7 +21,6 @@ import { AttachedFileActions, AttachedFileIcon } from './AttachedFileControls';
 
 const PdfRotator = () => {
   const [file, setFile] = useState(null);
-  useToolExitGuard(Boolean(file));
   const [pageCount, setPageCount] = useState(0);
   const [pagePreviews, setPagePreviews] = useState([]);
   const [pdfJsDocument, setPdfJsDocument] = useState(null);
@@ -34,6 +33,7 @@ const PdfRotator = () => {
   const [rangeInput, setRangeInput] = useState('');
   const [selectedPages, setSelectedPages] = useState(new Set());
   const [outputBytes, setOutputBytes] = useState(null);
+  const markOutputDownloaded = useToolExitGuard(Boolean(file), outputBytes);
   const renderedRotationsRef = useRef([]);
   const previewRenderTaskRef = useRef(null);
 
@@ -297,6 +297,7 @@ const PdfRotator = () => {
     link.href = url;
     link.download = outputName;
     link.click();
+    markOutputDownloaded();
     setTimeout(() => URL.revokeObjectURL(url), 10000);
   };
 

@@ -44,7 +44,6 @@ const SignPdf = () => {
   const [signatureText, setSignatureText] = useState('');
   const [signatureFont, setSignatureFont] = useState('HelveticaOblique');
   const [signatureImage, setSignatureImage] = useState(null);
-  useToolExitGuard(Boolean(file || signatureImage));
   const [signatureImageFormat, setSignatureImageFormat] = useState('');
   const [signatureImageName, setSignatureImageName] = useState('');
   const [selectionMode, setSelectionMode] = useState('all');
@@ -54,6 +53,7 @@ const SignPdf = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const [output, setOutput] = useState(null);
+  const markOutputDownloaded = useToolExitGuard(Boolean(file || signatureImage), output);
   const [error, setError] = useState('');
   const canvasRef = useRef(null);
   const drawing = useRef(false);
@@ -276,6 +276,7 @@ const SignPdf = () => {
     anchor.style.display = 'none';
     window.document.body.appendChild(anchor);
     anchor.click();
+    markOutputDownloaded();
     anchor.remove();
     window.setTimeout(() => URL.revokeObjectURL(url), 10000);
   };

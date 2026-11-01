@@ -218,7 +218,6 @@ const EditorItem = ({ item, selected }) => {
 
 const EditPdf = () => {
   const [file, setFile] = useState(null);
-  useToolExitGuard(Boolean(file));
   const [sourceBytes, setSourceBytes] = useState(null);
   const [pageCount, setPageCount] = useState(0);
   const [pdfjsDocument, setPdfjsDocument] = useState(null);
@@ -245,6 +244,7 @@ const EditPdf = () => {
   const [isRendering, setIsRendering] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [output, setOutput] = useState(null);
+  const markOutputDownloaded = useToolExitGuard(Boolean(file), output);
   const [error, setError] = useState('');
   const [status, setStatus] = useState('');
   const [deletePageConfirmation, setDeletePageConfirmation] = useState(false);
@@ -1005,6 +1005,7 @@ const EditPdf = () => {
     anchor.style.display = 'none';
     window.document.body.appendChild(anchor);
     anchor.click();
+    markOutputDownloaded();
     anchor.remove();
     window.setTimeout(() => URL.revokeObjectURL(url), 10000);
   };

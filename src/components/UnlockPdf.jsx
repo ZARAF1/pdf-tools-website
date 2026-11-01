@@ -37,11 +37,11 @@ const getErrorMessage = (error) => {
 
 const UnlockPdf = () => {
   const [file, setFile] = useState(null);
-  useToolExitGuard(Boolean(file));
   const [pageCount, setPageCount] = useState(0);
   const [algorithm, setAlgorithm] = useState('');
   const [password, setPassword] = useState('');
   const [outputBytes, setOutputBytes] = useState(null);
+  const markOutputDownloaded = useToolExitGuard(Boolean(file), outputBytes);
   const [outputName, setOutputName] = useState('');
   const [error, setError] = useState('');
   const [isValidating, setIsValidating] = useState(false);
@@ -159,6 +159,7 @@ const UnlockPdf = () => {
     link.href = url;
     link.download = outputName;
     link.click();
+    markOutputDownloaded();
     window.setTimeout(() => URL.revokeObjectURL(url), 10000);
   };
 

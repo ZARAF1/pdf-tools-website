@@ -130,7 +130,6 @@ const downloadBlob = (bytes, filename) => {
 
 const PdfCompressor = () => {
   const [files, setFiles] = useState([]);
-  useToolExitGuard(files.length > 0);
   const replaceTargetRef = useRef(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const [isValidatingReplacement, setIsValidatingReplacement] = useState(false);
@@ -428,6 +427,12 @@ const PdfCompressor = () => {
   };
 
   const fileResults = files.filter((item) => item.status === 'success' && item.outputBytes);
+  const downloadableResults = fileResults.filter((item) => item.reduced);
+  const markOutputDownloaded = useToolExitGuard(files.length > 0, downloadableResults);
+  const downloadResult = (item) => {
+    downloadBlob(item.outputBytes, item.outputName);
+    markOutputDownloaded(item.id);
+  };
   const hasReadyFiles = files.some((item) => item.status === 'ready' || item.status === 'processing');
   const selectedFileCards = files.length > 0 ? (
     <div className="space-y-4">
@@ -641,7 +646,7 @@ const PdfCompressor = () => {
               {item.reduced && (
                 <button
                   type="button"
-                  onClick={() => downloadBlob(item.outputBytes, item.outputName)}
+                  onClick={() => downloadResult(item)}
                   className="inline-flex shrink-0 items-center justify-center gap-2 rounded-lg bg-violet-600 px-3 py-2 font-medium text-white transition-colors hover:bg-violet-700"
                 >
                   <Download className="w-4 h-4" />

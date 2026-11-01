@@ -22,12 +22,12 @@ const MAX_FILES = 5;
 
 const PdfMerger = () => {
   const [files, setFiles] = useState([]);
-  useToolExitGuard(files.length > 0);
   const [isValidating, setIsValidating] = useState(false);
   const [isMerging, setIsMerging] = useState(false);
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(false);
   const [outputBytes, setOutputBytes] = useState(null);
+  const markOutputDownloaded = useToolExitGuard(files.length > 0, outputBytes);
   const [announcement, setAnnouncement] = useState('');
   const isValidatingRef = useRef(false);
   const pendingFocusRef = useRef(null);
@@ -249,6 +249,7 @@ const PdfMerger = () => {
     link.href = url;
     link.download = 'merged_document.pdf';
     link.click();
+    markOutputDownloaded();
     setTimeout(() => URL.revokeObjectURL(url), 10000);
   };
 

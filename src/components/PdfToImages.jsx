@@ -51,7 +51,6 @@ const canvasToBlob = (canvas, format, quality) => new Promise((resolve, reject) 
 
 const PdfToImages = () => {
   const [file, setFile] = useState(null);
-  useToolExitGuard(Boolean(file));
   const [pageCount, setPageCount] = useState(0);
   const [format, setFormat] = useState('png');
   const [quality, setQuality] = useState('standard');
@@ -62,6 +61,7 @@ const PdfToImages = () => {
   const [error, setError] = useState('');
   const [zipUrl, setZipUrl] = useState('');
   const [zipName, setZipName] = useState('');
+  const markOutputDownloaded = useToolExitGuard(Boolean(file), zipUrl);
 
   const generationRef = useRef(0);
   const validationRef = useRef(0);
@@ -604,6 +604,7 @@ const PdfToImages = () => {
           <a
             href={zipUrl}
             download={zipName}
+            onClick={markOutputDownloaded}
             className="inline-flex items-center justify-center gap-2 rounded-xl bg-green-700 px-5 py-3 font-semibold text-white transition hover:bg-green-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-green-700"
           >
             <Download className="h-5 w-5" aria-hidden="true" />

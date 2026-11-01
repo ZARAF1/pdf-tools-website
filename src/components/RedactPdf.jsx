@@ -21,7 +21,6 @@ const canvasBlob = (canvas) => new Promise((resolve, reject) => {
 
 const RedactPdf = () => {
   const [file, setFile] = useState(null);
-  useToolExitGuard(Boolean(file));
   const [pageCount, setPageCount] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
   const [previews, setPreviews] = useState([]);
@@ -32,6 +31,7 @@ const RedactPdf = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const [output, setOutput] = useState(null);
+  const markOutputDownloaded = useToolExitGuard(Boolean(file), output);
   const [error, setError] = useState('');
   const [previewError, setPreviewError] = useState('');
   const requestId = useRef(0);
@@ -343,6 +343,7 @@ const RedactPdf = () => {
     anchor.style.display = 'none';
     window.document.body.appendChild(anchor);
     anchor.click();
+    markOutputDownloaded();
     anchor.remove();
     window.setTimeout(() => URL.revokeObjectURL(url), 10000);
   };

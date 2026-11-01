@@ -97,13 +97,16 @@ const ImageToPdf = () => {
   const { imageToPdf: imageUi } = getLocalizedToolUi(language);
   const [images, setImages] = useState([]);
   const [pendingImageCount, setPendingImageCount] = useState(0);
-  useToolExitGuard(images.length > 0 || pendingImageCount > 0);
   const pendingImageCountRef = useRef(0);
   const selectionGenerationRef = useRef(0);
   const replaceTargetRef = useRef(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const [error, setError] = useState('');
   const [outputBytes, setOutputBytes] = useState(null);
+  const markOutputDownloaded = useToolExitGuard(
+    images.length > 0 || pendingImageCount > 0,
+    outputBytes
+  );
   const [outputName, setOutputName] = useState('images_to_pdf.pdf');
   const previewUrls = useRef(new Set());
 
@@ -458,6 +461,7 @@ const ImageToPdf = () => {
     link.href = url;
     link.download = outputName;
     link.click();
+    markOutputDownloaded();
     window.setTimeout(() => URL.revokeObjectURL(url), 10000);
   };
 
