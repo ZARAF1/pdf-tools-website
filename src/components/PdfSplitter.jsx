@@ -197,21 +197,21 @@ const PdfSplitter = () => {
     }
   };
 
-  const downloadOutput = (output) => {
+  const downloadOutput = (output, downloadFileName) => {
     const url = URL.createObjectURL(new Blob([output.bytes], { type: 'application/pdf' }));
     const link = document.createElement('a');
     link.href = url;
-    link.download = output.name;
+    link.download = downloadFileName || output.name;
     link.click();
     markOutputDownloaded(output.name);
     setTimeout(() => URL.revokeObjectURL(url), 10000);
   };
 
-  const downloadArchive = () => {
+  const downloadArchive = (downloadFileName) => {
     const url = URL.createObjectURL(new Blob([archiveOutput.blob], { type: 'application/zip' }));
     const link = document.createElement('a');
     link.href = url;
-    link.download = archiveOutput.name;
+    link.download = downloadFileName || archiveOutput.name;
     link.click();
     markOutputDownloaded(archiveOutput.name);
     setTimeout(() => URL.revokeObjectURL(url), 10000);
@@ -514,7 +514,7 @@ const PdfSplitter = () => {
               key={output.name}
               fileName={output.name}
               sizeBytes={output.bytes.length}
-              onDownload={() => downloadOutput(output)}
+              onDownload={(downloadFileName) => downloadOutput(output, downloadFileName)}
               downloadLabel="Download PDF"
             />
           ))}

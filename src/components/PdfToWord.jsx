@@ -411,12 +411,12 @@ const PdfToWord = () => {
     }
   };
 
-  const downloadWordDocument = () => {
+  const downloadWordDocument = (downloadFileName) => {
     if (!outputBlob) return;
     const url = URL.createObjectURL(outputBlob);
     const link = document.createElement('a');
     link.href = url;
-    link.download = outputFileName;
+    link.download = downloadFileName || outputFileName;
     link.click();
     markOutputDownloaded();
     setTimeout(() => URL.revokeObjectURL(url), 10000);

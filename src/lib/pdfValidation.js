@@ -1,7 +1,7 @@
 import { PDFDocument } from 'pdf-lib';
+import { PDF_ENCRYPTION_RESTRICTION_MESSAGE } from './pdfEncryptionMessage.mjs';
 
-export const PASSWORD_PROTECTED_PDF_MESSAGE =
-  'Password-protected PDFs cannot be used with this tool. Remove the password first and select the PDF again.';
+export const PASSWORD_PROTECTED_PDF_MESSAGE = PDF_ENCRYPTION_RESTRICTION_MESSAGE;
 
 export const validateUnencryptedPdf = async (file) => {
   try {

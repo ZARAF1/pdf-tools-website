@@ -704,8 +704,8 @@ const PdfWatermarker = () => {
         <DownloadReadyCard
           fileName={outputName}
           sizeBytes={outputBytes.length}
-          onDownload={() => {
-            downloadBlob(outputBytes, outputName);
+          onDownload={(downloadFileName) => {
+            downloadBlob(outputBytes, downloadFileName || outputName);
             markOutputDownloaded();
           }}
         />

@@ -428,8 +428,8 @@ const PdfCompressor = () => {
   const fileResults = files.filter((item) => item.status === 'success' && item.outputBytes);
   const downloadableResults = fileResults.filter((item) => item.reduced);
   const markOutputDownloaded = useToolExitGuard(files.length > 0, downloadableResults);
-  const downloadResult = (item) => {
-    downloadBlob(item.outputBytes, item.outputName);
+  const downloadResult = (item, downloadFileName) => {
+    downloadBlob(item.outputBytes, downloadFileName || item.outputName);
     markOutputDownloaded(item.id);
   };
   const hasReadyFiles = files.some((item) => item.status === 'ready' || item.status === 'processing');
@@ -635,7 +635,7 @@ const PdfCompressor = () => {
               fileName={item.outputName}
               sizeBytes={item.outputBytes.length}
               details={`Original: ${formatBytes(item.size)} · ${item.summary}`}
-              onDownload={() => downloadResult(item)}
+              onDownload={(downloadFileName) => downloadResult(item, downloadFileName)}
               downloadLabel="Download"
             />
           ) : (

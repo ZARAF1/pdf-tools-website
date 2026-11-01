@@ -1,15 +1,18 @@
 import { degrees, PDFDocument, PDFHexString, PDFName } from 'pdf-lib';
 import { recoverPdfPageTreeRoot } from './pdfPageTreeRecovery.mjs';
 import { getFitPageDimensions } from './pdfMergeOptions.mjs';
+import { PDF_ENCRYPTION_RESTRICTION_MESSAGE } from './pdfEncryptionMessage.mjs';
 
 const loadSourcePdf = async (file) => {
   try {
     const document = await PDFDocument.load(await file.arrayBuffer(), { updateMetadata: false });
-    if (document.isEncrypted) throw new Error('Password-protected PDFs cannot be used with this tool.');
+    if (document.isEncrypted) {
+      throw new Error(PDF_ENCRYPTION_RESTRICTION_MESSAGE);
+    }
     return document;
   } catch (error) {
     if (error?.message?.toLowerCase().includes('is encrypted')) {
-      throw new Error('Password-protected PDFs cannot be used with this tool.');
+      throw new Error(PDF_ENCRYPTION_RESTRICTION_MESSAGE);
     }
     throw error;
   }

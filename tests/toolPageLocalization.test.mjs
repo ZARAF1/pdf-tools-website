@@ -23,6 +23,11 @@ const imageTool = {
 
 const imageContent = {
   intro: 'Turn images into a PDF with multiple options.',
+  detailPoints: {
+    what: 'Create a PDF from images.',
+    how: 'Arrange images and adjust page settings.',
+    result: 'A separate PDF with one image per page.'
+  },
   steps: ['Choose images.', 'Configure options.', 'Create the PDF.'],
   faqs: [['Does this tool upload my PDF?', 'No. The file is processed in your browser.']]
 };
@@ -133,9 +138,10 @@ test('translated Unlock PDF limits retain the supported encryption algorithms', 
   }
 });
 
-test('tool page renders the localized introduction, attachment guidance, and guide steps', () => {
+test('tool page renders the three detail points, attachment guidance, and guide steps', () => {
   assert.match(toolPageSource, /getLocalizedToolPage\(/);
-  assert.match(toolPageSource, /className="tool-detail-intro-copy">\{localizedContent\.intro\}<\/p>/);
+  assert.match(toolPageSource, /localizedContent\.detailPoints\.map/);
+  assert.match(toolPageSource, /localizedContent\.detailPointHeadings\[key\]/);
   assert.match(toolPageSource, /\{localizedContent\.attachment\.rule\}/);
   assert.match(toolPageSource, /\{localizedContent\.attachment\.info\}/);
   assert.match(toolPageSource, /localizedContent\.steps\.map/);

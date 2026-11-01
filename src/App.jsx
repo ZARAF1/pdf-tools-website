@@ -27,6 +27,7 @@ const PdfToImages = lazy(() => import('./components/PdfToImages'));
 const UnlockPdf = lazy(() => import('./components/UnlockPdf'));
 const PdfToWord = lazy(() => import('./components/PdfToWord'));
 const PdfPowerPoint = lazy(() => import('./components/PdfPowerPoint'));
+const PdfMarkdown = lazy(() => import('./components/PdfMarkdown'));
 const OcrPdf = lazy(() => import('./components/OcrPdf'));
 const PdfCompressor = lazy(() => import('./components/PdfCompressor'));
 const PdfWatermarker = lazy(() => import('./components/PdfWatermarker'));
@@ -645,6 +646,7 @@ function App() {
                 <Route path="/pdf-to-images" element={<ToolPage tool="pdf-images"><PdfToImages /></ToolPage>} />
                 <Route path="/pdf-to-word" element={<ToolPage tool="word"><PdfToWord /></ToolPage>} />
                 <Route path="/pdf-to-powerpoint" element={<ToolPage tool="powerpoint"><PdfPowerPoint /></ToolPage>} />
+                <Route path="/pdf-to-markdown" element={<ToolPage tool="markdown"><PdfMarkdown /></ToolPage>} />
                 <Route path="/ocr-pdf" element={<ToolPage tool="ocr"><OcrPdf /></ToolPage>} />
                 <Route path="/compress" element={<ToolPage tool="compress"><PdfCompressor /></ToolPage>} />
                 <Route path="/watermark" element={<ToolPage tool="watermark"><PdfWatermarker /></ToolPage>} />

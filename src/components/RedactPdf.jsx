@@ -334,12 +334,12 @@ const RedactPdf = () => {
     }
   };
 
-  const downloadPdf = () => {
+  const downloadPdf = (downloadFileName) => {
     if (!output || !file) return;
     const url = URL.createObjectURL(output);
     const anchor = window.document.createElement('a');
     anchor.href = url;
-    anchor.download = `${file.name.replace(/\.pdf$/i, '')}_redacted.pdf`;
+    anchor.download = downloadFileName || `${file.name.replace(/\.pdf$/i, '')}_redacted.pdf`;
     anchor.style.display = 'none';
     window.document.body.appendChild(anchor);
     anchor.click();

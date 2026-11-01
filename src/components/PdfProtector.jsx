@@ -127,12 +127,12 @@ const PdfProtector = () => {
   };
 
   const outputName = `protected_${file?.name || 'document.pdf'}`;
-  const downloadProtectedPdf = () => {
+  const downloadProtectedPdf = (downloadFileName) => {
     if (!outputBytes) return;
     const url = URL.createObjectURL(new Blob([outputBytes], { type: 'application/pdf' }));
     const link = document.createElement('a');
     link.href = url;
-    link.download = outputName;
+    link.download = downloadFileName || outputName;
     link.click();
     markOutputDownloaded();
     setTimeout(() => URL.revokeObjectURL(url), 10000);

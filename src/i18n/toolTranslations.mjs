@@ -238,6 +238,33 @@ for (const [language, [name, description]] of Object.entries(powerpointToolTrans
   TOOL_TRANSLATIONS[language].powerpoint = { name, description };
 }
 
+const markdownToolTranslations = {
+  en: ['PDF ↔ Markdown', 'extract selectable PDF text as Markdown or create a PDF from Markdown content'],
+  es: ['PDF ↔ Markdown', 'extraer texto seleccionable de un PDF como Markdown o crear un PDF a partir de Markdown'],
+  fr: ['PDF ↔ Markdown', 'extraire le texte sélectionnable d’un PDF en Markdown ou créer un PDF à partir de Markdown'],
+  de: ['PDF ↔ Markdown', 'auswählbaren PDF-Text als Markdown extrahieren oder ein PDF aus Markdown erstellen'],
+  pt: ['PDF ↔ Markdown', 'extrair texto selecionável de um PDF como Markdown ou criar um PDF a partir de Markdown'],
+  it: ['PDF ↔ Markdown', 'estrarre il testo selezionabile di un PDF come Markdown o creare un PDF dal Markdown'],
+  nl: ['PDF ↔ Markdown', 'selecteerbare PDF-tekst extraheren als Markdown of een PDF maken van Markdown'],
+  pl: ['PDF ↔ Markdown', 'wyodrębniać zaznaczalny tekst PDF jako Markdown lub tworzyć PDF z Markdown'],
+  sv: ['PDF ↔ Markdown', 'extrahera markerbar PDF-text som Markdown eller skapa en PDF från Markdown'],
+  fi: ['PDF ↔ Markdown', 'poimia valittava PDF-teksti Markdown-muotoon tai luoda PDF Markdown-sisällöstä'],
+  da: ['PDF ↔ Markdown', 'udtrække markerbar PDF-tekst som Markdown eller oprette en PDF fra Markdown'],
+  nb: ['PDF ↔ Markdown', 'trekke ut markerbar PDF-tekst som Markdown eller lage en PDF fra Markdown'],
+  tr: ['PDF ↔ Markdown', 'seçilebilir PDF metnini Markdown olarak çıkarma veya Markdown içeriğinden PDF oluşturma'],
+  ru: ['PDF ↔ Markdown', 'извлечь выделяемый текст PDF в Markdown или создать PDF из Markdown'],
+  uk: ['PDF ↔ Markdown', 'витягти виділюваний текст PDF у Markdown або створити PDF із Markdown'],
+  ar: ['PDF ↔ Markdown', 'استخراج نص PDF القابل للتحديد بصيغة Markdown أو إنشاء PDF من محتوى Markdown'],
+  hi: ['PDF ↔ Markdown', 'चयन योग्य PDF टेक्स्ट को Markdown के रूप में निकालें या Markdown से PDF बनाएँ'],
+  ja: ['PDF ↔ Markdown', '選択可能な PDF テキストを Markdown として抽出、または Markdown から PDF を作成'],
+  ko: ['PDF ↔ Markdown', '선택 가능한 PDF 텍스트를 Markdown으로 추출하거나 Markdown에서 PDF 만들기'],
+  'zh-CN': ['PDF ↔ Markdown', '将可选择的 PDF 文本提取为 Markdown，或根据 Markdown 创建 PDF']
+};
+
+for (const [language, [name, description]] of Object.entries(markdownToolTranslations)) {
+  TOOL_TRANSLATIONS[language].markdown = { name, description };
+}
+
 export const getLocalizedTool = (language, tool) => {
   const translation = TOOL_TRANSLATIONS[language]?.[tool.id];
   return translation ? { ...tool, ...translation } : tool;

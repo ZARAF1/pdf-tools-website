@@ -597,8 +597,32 @@ const powerpointCautions = {
   'zh-CN': '输出页面为图片，无法编辑或搜索文本。渲染 PPTX 时可能会向 Google Fonts 请求替代字体；演示文稿本身始终留在浏览器中。'
 };
 
+const markdownFileRules = {
+  en: 'One unencrypted PDF, .md, or plain-text file',
+  es: 'Un PDF sin contraseña, un archivo .md o un archivo de texto',
+  fr: 'Un PDF non chiffré, un fichier .md ou un fichier texte',
+  de: 'Eine unverschlüsselte PDF-, .md- oder Textdatei',
+  pt: 'Um PDF sem senha, arquivo .md ou arquivo de texto',
+  it: 'Un PDF non crittografato, un file .md o un file di testo',
+  nl: 'Eén niet-versleutelde PDF, .md- of tekstbestand',
+  pl: 'Jeden niezaszyfrowany plik PDF, .md lub tekstowy',
+  sv: 'En okrypterad PDF-, .md- eller textfil',
+  fi: 'Yksi salaamaton PDF-, .md- tai tekstitiedosto',
+  da: 'Én ukrypteret PDF-, .md- eller tekstfil',
+  nb: 'Én ukryptert PDF-, .md- eller tekstfil',
+  tr: 'Şifrelenmemiş bir PDF, .md veya metin dosyası',
+  ru: 'Один незашифрованный PDF-файл, файл .md или текстовый файл',
+  uk: 'Один незашифрований PDF-файл, файл .md або текстовий файл',
+  ar: 'ملف PDF واحد غير مشفر أو ملف ‎.md أو ملف نصي',
+  hi: 'एक एन्क्रिप्ट न की गई PDF, .md या टेक्स्ट फ़ाइल',
+  ja: '暗号化されていない PDF、.md、またはテキストファイルを 1 つ',
+  ko: '암호화되지 않은 PDF, .md 또는 텍스트 파일 1개',
+  'zh-CN': '一个未加密的 PDF、.md 或纯文本文件'
+};
+
 for (const { code } of SUPPORTED_LANGUAGES) {
   translations[code].rules.powerpointPdfOne = powerpointPdfRuleTranslations[code];
+  translations[code].rules.markdownFileOne = markdownFileRules[code];
   translations[code].cautions.powerpoint = `${powerpointCautions[code]} ${TOOL_UI_TRANSLATIONS[code].powerpoint.fontNameDisclosure}`;
 }
 
@@ -624,6 +648,37 @@ const faqTranslations = {
   'zh-CN': ['此工具有什么作用？', '可以使用哪些文件？', '原始文件会被修改吗？', '文件会上传吗？', '使用前需要了解什么？', '不会。工具会创建单独的输出文件，原始文件保持不变。', '不会。文件在浏览器中处理，不会发送到处理服务器。网站和托管服务商仍可能接收常规请求并保存日志。']
 };
 
+const mergeDetailTranslations = {
+  es: [['Qué hace', 'Combina PDF completos o páginas seleccionadas de varios archivos en un solo documento.'], ['Cómo funciona', 'Previsualiza, selecciona y ordena las páginas; después las combina en tu navegador.'], ['Qué obtienes', 'Un PDF independiente en el orden elegido, con marcadores de origen y páginas en blanco opcionales.']],
+  fr: [['Fonction', 'Réunit des PDF entiers ou des pages choisies de plusieurs fichiers dans un seul document.'], ['Fonctionnement', 'Prévisualisez, sélectionnez et organisez les pages, puis assemblez-les dans votre navigateur.'], ['Résultat', 'Un PDF distinct dans l’ordre choisi, avec des signets par fichier et des pages blanches facultatifs.']],
+  de: [['Funktion', 'Führt vollständige PDFs oder ausgewählte Seiten aus mehreren Dateien in einem Dokument zusammen.'], ['Ablauf', 'Seiten in der Vorschau ansehen, auswählen und anordnen; anschließend werden sie im Browser zusammengeführt.'], ['Ergebnis', 'Ein separates PDF in der gewählten Reihenfolge, optional mit Quelldatei-Lesezeichen und Leerseiten.']],
+  pt: [['O que faz', 'Combina PDFs inteiros ou páginas selecionadas de vários arquivos em um só documento.'], ['Como funciona', 'Visualize, selecione e organize as páginas; depois, combine-as no navegador.'], ['O que você recebe', 'Um PDF separado na ordem escolhida, com marcadores de origem e páginas em branco opcionais.']],
+  it: [['Cosa fa', 'Unisce PDF completi o pagine selezionate da più file in un unico documento.'], ['Come funziona', 'Visualizza, seleziona e riordina le pagine, quindi uniscile nel browser.'], ['Risultato', 'Un PDF separato nell’ordine scelto, con segnalibri per i file e pagine vuote facoltativi.']],
+  nl: [['Wat het doet', 'Voegt volledige PDF’s of geselecteerde pagina’s uit meerdere bestanden samen tot één document.'], ['Hoe het werkt', 'Bekijk, selecteer en rangschik pagina’s en voeg ze daarna samen in je browser.'], ['Wat je krijgt', 'Een aparte PDF in de gekozen volgorde, met optionele bronbladwijzers en lege pagina’s.']],
+  pl: [['Co robi', 'Łączy całe pliki PDF lub wybrane strony z wielu plików w jeden dokument.'], ['Jak działa', 'Wyświetl podgląd, wybierz i uporządkuj strony, a następnie połącz je w przeglądarce.'], ['Wynik', 'Osobny plik PDF w wybranej kolejności, z opcjonalnymi zakładkami źródeł i pustymi stronami.']],
+  sv: [['Vad det gör', 'Slår ihop hela PDF-filer eller valda sidor från flera filer till ett dokument.'], ['Så fungerar det', 'Förhandsgranska, välj och ordna sidor och slå sedan ihop dem i webbläsaren.'], ['Resultat', 'En separat PDF i vald ordning, med valfria källbokmärken och tomma sidor.']],
+  fi: [['Mitä se tekee', 'Yhdistää kokonaisia PDF-tiedostoja tai valittuja sivuja useista tiedostoista yhdeksi asiakirjaksi.'], ['Näin se toimii', 'Esikatsele, valitse ja järjestä sivut ja yhdistä ne sitten selaimessa.'], ['Tulos', 'Erillinen PDF valitsemassasi järjestyksessä, sekä halutessasi lähdekirjanmerkit ja tyhjät sivut.']],
+  da: [['Hvad det gør', 'Samler hele PDF-filer eller udvalgte sider fra flere filer i ét dokument.'], ['Sådan fungerer det', 'Forhåndsvis, vælg og arrangér siderne, og saml dem derefter i browseren.'], ['Resultat', 'En separat PDF i den valgte rækkefølge med valgfri kildebogmærker og tomme sider.']],
+  nb: [['Hva det gjør', 'Slår sammen hele PDF-er eller valgte sider fra flere filer til ett dokument.'], ['Slik fungerer det', 'Forhåndsvis, velg og ordne sidene, og slå dem deretter sammen i nettleseren.'], ['Resultat', 'En egen PDF i valgt rekkefølge, med valgfrie kildebokmerker og blanke sider.']],
+  tr: [['Ne yapar', 'Birden fazla dosyadaki PDF’leri veya seçilen sayfaları tek bir belgede birleştirir.'], ['Nasıl çalışır', 'Sayfaları önizleyin, seçin ve sıralayın; ardından tarayıcınızda birleştirin.'], ['Sonuç', 'Seçtiğiniz sırada ayrı bir PDF; isteğe bağlı kaynak yer işaretleri ve boş sayfalarla.']],
+  ru: [['Что делает', 'Объединяет целые PDF-файлы или выбранные страницы из нескольких файлов в один документ.'], ['Как работает', 'Просматривайте, выбирайте и упорядочивайте страницы, затем объединяйте их в браузере.'], ['Результат', 'Отдельный PDF в выбранном порядке с дополнительными закладками источников и пустыми страницами.']],
+  uk: [['Що робить', 'Об’єднує цілі PDF-файли або вибрані сторінки з кількох файлів в один документ.'], ['Як працює', 'Переглядайте, вибирайте й упорядковуйте сторінки, а потім об’єднуйте їх у браузері.'], ['Результат', 'Окремий PDF у вибраному порядку з додатковими закладками джерел і порожніми сторінками.']],
+  ar: [['ما الذي تفعله', 'تجمع ملفات PDF كاملة أو صفحات محددة من ملفات متعددة في مستند واحد.'], ['كيف تعمل', 'عاين الصفحات وحددها ورتبها، ثم ادمجها في متصفحك.'], ['النتيجة', 'ملف PDF منفصل بالترتيب الذي اخترته، مع إشارات مرجعية للمصادر وصفحات فارغة اختيارية.']],
+  hi: [['यह क्या करता है', 'कई फ़ाइलों के पूरे PDF या चुने हुए पेजों को एक दस्तावेज़ में जोड़ता है।'], ['यह कैसे काम करता है', 'पेजों का पूर्वावलोकन करें, चुनें और क्रम तय करें, फिर उन्हें ब्राउज़र में जोड़ें।'], ['आपको क्या मिलता है', 'चुने हुए क्रम में अलग PDF, जिसमें वैकल्पिक स्रोत बुकमार्क और खाली पेज हो सकते हैं।']],
+  ja: [['できること', '複数ファイルの PDF 全体、または選択したページを 1 つの文書にまとめます。'], ['仕組み', 'ページをプレビューして選択・並べ替え、ブラウザー内で結合します。'], ['出力結果', '選択した順序の別 PDF。元ファイルごとのしおりや空白ページも追加できます。']],
+  ko: [['기능', '여러 파일의 PDF 전체 또는 선택한 페이지를 하나의 문서로 합칩니다.'], ['작동 방식', '페이지를 미리 보고 선택하고 정렬한 다음 브라우저에서 합칩니다.'], ['결과물', '선택한 순서의 별도 PDF이며, 원본 책갈피와 빈 페이지를 선택적으로 추가할 수 있습니다.']],
+  'zh-CN': [['功能', '将多个 PDF 文件合并，或将其中选定的页面合成一个文档。'], ['工作方式', '预览、选择并排列页面，然后在浏览器中完成合并。'], ['输出结果', '按所选顺序生成独立 PDF，并可添加来源书签和空白分隔页。']]
+};
+
+const detailPointHeadings = {
+  en: { what: 'What it does', how: 'How it works', result: 'What you get' },
+  ...Object.fromEntries(Object.entries(mergeDetailTranslations).map(([code, points]) => [code, {
+    what: points[0][0],
+    how: points[1][0],
+    result: points[2][0]
+  }]))
+};
+
 const requiredRuleKeys = Object.keys(translations.en.rules);
 const requiredCautionKeys = Object.keys(translations.en.cautions);
 for (const { code } of SUPPORTED_LANGUAGES) {
@@ -634,6 +689,9 @@ for (const { code } of SUPPORTED_LANGUAGES) {
   }
   if (!faqTranslations[code] || faqTranslations[code].length !== 7) {
     throw new Error(`Tool page FAQ translations are incomplete for "${code}".`);
+  }
+  if (!detailPointHeadings[code]) {
+    throw new Error(`Tool detail point labels are incomplete for "${code}".`);
   }
   if (requiredRuleKeys.some((key) => !locale.rules[key])) {
     throw new Error(`Tool page attachment limit translations are incomplete for "${code}".`);
@@ -650,6 +708,8 @@ export const getLocalizedToolPage = (language, toolId, localizedTool, content, a
   if (language === 'en' || !translations[language]) {
     return {
       intro: content.intro,
+      detailPoints: Object.entries(content.detailPoints).map(([key, text]) => ({ key, text })),
+      detailPointHeadings: detailPointHeadings.en,
       steps: content.steps,
       attachment: attachmentRule,
       faqs: content.faqs
@@ -664,8 +724,20 @@ export const getLocalizedToolPage = (language, toolId, localizedTool, content, a
   const localizedAttachmentInfo = localizedTool?.description
     ? `${localizedTool.description} ${messages.cautions[toolId] || messages.attachmentNote}`
     : messages.cautions[toolId] || messages.attachmentNote;
+  const detailPoints = toolId === 'merge'
+    ? mergeDetailTranslations[language].map(([, text], index) => ({
+        key: ['what', 'how', 'result'][index],
+        text
+      }))
+    : [
+        { key: 'what', text: localizedTool?.description || content.detailPoints.what },
+        { key: 'how', text: messages.steps[1] },
+        { key: 'result', text: `${messages.steps[3]} ${messages.attachmentNote}` }
+      ];
   return {
     intro: messages.introSuffix,
+    detailPoints,
+    detailPointHeadings: detailPointHeadings[language],
     steps: messages.steps,
     faqs: [
       [faqTranslations[language][0], localizedTool?.description || faqTranslations[language][6]],

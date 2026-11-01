@@ -14,6 +14,7 @@ const expectedAttachments = new Map([
   ['pdf-images', ['One unencrypted PDF · up to 50 pages', 'Convert PDF pages to images', 'Export pages as PNG, JPG, or BMP files in a ZIP archive.']],
   ['word', ['One unencrypted PDF or unprotected .docx file · no fixed page cap', 'Convert PDF ↔ Word', 'Create editable DOCX text from PDFs, or image-based PDFs from DOCX. Reverse-conversion text is not searchable; .doc files are unsupported.']],
   ['powerpoint', ['One unencrypted PDF or unprotected .pptx file · page count depends on available browser memory', 'Convert PDF ↔ PowerPoint', 'Select pages or slides, name the output, and choose image quality and page or slide sizing. Results are image-based and may not be editable.']],
+  ['markdown', ['One unencrypted PDF, .md, or plain-text file', 'Convert PDF ↔ Markdown', 'Extract selectable PDF text or create a PDF from editable Markdown. Scanned pages need OCR first.']],
   ['compress', ['Up to 5 unencrypted PDF files', 'Try to reduce PDF file size', 'Higher compression rasterizes pages and can reduce image quality and remove selectable text; larger outputs are not offered.']],
   ['watermark', ['One unencrypted PDF · no fixed page cap', 'Add watermarks to PDF pages', 'Add text watermarks and optional page numbers to all or selected pages.']],
   ['remove', ['One unencrypted PDF · up to 50 pages', 'Remove selected PDF pages', 'Choose pages to omit; at least one page must remain in the output.']],
@@ -25,7 +26,7 @@ const expectedAttachments = new Map([
 const expectedRuleKeys = new Map([
   ['crop', 'pdfOne'], ['edit', 'pdfOne'], ['merge', 'pdf2To5'], ['split', 'pdfOne'],
   ['rotate', 'pdfOne'], ['protect', 'pdfOne'], ['unlock', 'passwordPdf'], ['image', 'images10'],
-  ['pdf-images', 'pdf50'], ['word', 'docxPdfOne'], ['powerpoint', 'powerpointPdfOne'], ['compress', 'pdfUpTo5'], ['watermark', 'pdfOne'],
+  ['pdf-images', 'pdf50'], ['word', 'docxPdfOne'], ['powerpoint', 'powerpointPdfOne'], ['markdown', 'markdownFileOne'], ['compress', 'pdfUpTo5'], ['watermark', 'pdfOne'],
   ['remove', 'pdf50'], ['ocr', 'pdf50'], ['organize-pages', 'pdf30'],
   ['redact', 'pdf15'], ['sign', 'pdfOne']
 ]);
@@ -44,7 +45,7 @@ test('every attach section documents accurate input limits and tool-specific gui
     const escapePattern = (value) => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
     const entryPattern = new RegExp(
       `^  ${escapePattern(key)}: \\{\\r?\\n` +
-      `    title: 'Attach (?:PDF|PDFs|Images)(?: or PowerPoint)? Here',\\r?\\n` +
+      `    title: '${tool === 'markdown' ? 'Attach a PDF or Markdown File Here' : 'Attach (?:PDF|PDFs|Images)(?: or PowerPoint)? Here'}',\\r?\\n` +
       `    ruleKey: '${escapePattern(expectedRuleKeys.get(tool))}',\\r?\\n` +
       `    rule: '${escapePattern(rule)}',\\r?\\n` +
       `    infoTitle: '${escapePattern(title)}',\\r?\\n` +

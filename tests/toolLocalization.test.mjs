@@ -77,19 +77,10 @@ test('tool page title and metadata use the selected language', () => {
   assert.match(toolPageSource, /localizedTool\?\.description/);
 });
 
-test('mobile tool introductions are summarized with an expandable full description', () => {
-  for (const { code } of SUPPORTED_LANGUAGES) {
-    for (const key of ['expandDescription', 'collapseDescription']) {
-      assert.notEqual(getMessage(code, key), key, `${code} is missing ${key}`);
-    }
-  }
-
-  assert.match(toolPageSource, /tool-detail-intro-copy/);
-  assert.match(toolPageSource, /aria-expanded=\{introExpanded\}/);
-  assert.match(toolPageSource, /translate\(introExpanded \? 'collapseDescription' : 'expandDescription'\)/);
-  assert.match(stylesheetSource, /@media \(max-width: 760px\)[\s\S]*?\.tool-detail-intro-copy[\s\S]*?-webkit-line-clamp: 4;/);
-  assert.match(stylesheetSource, /\.tool-detail-intro\.is-expanded \.tool-detail-intro-copy/);
-  assert.match(stylesheetSource, /\.tool-detail-intro-toggle[\s\S]*?text-align: start;/);
+test('mobile tool detail pages retain the concise three-point presentation', () => {
+  assert.match(toolPageSource, /localizedContent\.detailPoints\.map/);
+  assert.match(toolPageSource, /tool-detail-point-list/);
+  assert.match(stylesheetSource, /@media \(max-width: 760px\)[\s\S]*?\.tool-detail-point-list/);
 });
 
 test('tool page shared guidance headings follow the selected language', () => {

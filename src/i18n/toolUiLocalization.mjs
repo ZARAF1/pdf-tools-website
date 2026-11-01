@@ -324,26 +324,26 @@ const imageToPdfLabels = {
 };
 
 const fileActionLabels = {
-  en: ['Replace {fileName}', 'Remove {fileName}'],
-  es: ['Reemplazar {fileName}', 'Quitar {fileName}'],
-  fr: ['Remplacer {fileName}', 'Supprimer {fileName}'],
-  de: ['{fileName} ersetzen', '{fileName} entfernen'],
-  pt: ['Substituir {fileName}', 'Remover {fileName}'],
-  it: ['Sostituisci {fileName}', 'Rimuovi {fileName}'],
-  nl: ['{fileName} vervangen', '{fileName} verwijderen'],
-  pl: ['Zastąp {fileName}', 'Usuń {fileName}'],
-  sv: ['Ersätt {fileName}', 'Ta bort {fileName}'],
-  fi: ['Korvaa {fileName}', 'Poista {fileName}'],
-  da: ['Erstat {fileName}', 'Fjern {fileName}'],
-  nb: ['Erstatt {fileName}', 'Fjern {fileName}'],
-  tr: ['{fileName} dosyasını değiştir', '{fileName} dosyasını kaldır'],
-  ru: ['Заменить {fileName}', 'Удалить {fileName}'],
-  uk: ['Замінити {fileName}', 'Видалити {fileName}'],
-  ar: ['استبدال {fileName}', 'إزالة {fileName}'],
-  hi: ['{fileName} बदलें', '{fileName} हटाएँ'],
-  ja: ['{fileName}を置き換え', '{fileName}を削除'],
-  ko: ['{fileName} 바꾸기', '{fileName} 제거'],
-  'zh-CN': ['替换 {fileName}', '移除 {fileName}']
+  en: ['Replace {fileName}', 'Remove {fileName}', 'Output filename'],
+  es: ['Reemplazar {fileName}', 'Quitar {fileName}', 'Nombre del archivo de salida'],
+  fr: ['Remplacer {fileName}', 'Supprimer {fileName}', 'Nom du fichier de sortie'],
+  de: ['{fileName} ersetzen', '{fileName} entfernen', 'Name der Ausgabedatei'],
+  pt: ['Substituir {fileName}', 'Remover {fileName}', 'Nome do arquivo de saída'],
+  it: ['Sostituisci {fileName}', 'Rimuovi {fileName}', 'Nome file di output'],
+  nl: ['{fileName} vervangen', '{fileName} verwijderen', 'Naam van uitvoerbestand'],
+  pl: ['Zastąp {fileName}', 'Usuń {fileName}', 'Nazwa pliku wynikowego'],
+  sv: ['Ersätt {fileName}', 'Ta bort {fileName}', 'Filnamn för utdata'],
+  fi: ['Korvaa {fileName}', 'Poista {fileName}', 'Tulostiedoston nimi'],
+  da: ['Erstat {fileName}', 'Fjern {fileName}', 'Outputfilnavn'],
+  nb: ['Erstatt {fileName}', 'Fjern {fileName}', 'Filnavn for resultat'],
+  tr: ['{fileName} dosyasını değiştir', '{fileName} dosyasını kaldır', 'Çıktı dosya adı'],
+  ru: ['Заменить {fileName}', 'Удалить {fileName}', 'Имя выходного файла'],
+  uk: ['Замінити {fileName}', 'Видалити {fileName}', 'Ім’я вихідного файлу'],
+  ar: ['استبدال {fileName}', 'إزالة {fileName}', 'اسم ملف الإخراج'],
+  hi: ['{fileName} बदलें', '{fileName} हटाएँ', 'आउटपुट फ़ाइल का नाम'],
+  ja: ['{fileName}を置き換え', '{fileName}を削除', '出力ファイル名'],
+  ko: ['{fileName} 바꾸기', '{fileName} 제거', '출력 파일 이름'],
+  'zh-CN': ['替换 {fileName}', '移除 {fileName}', '输出文件名']
 };
 
 const powerpointKeys = [
@@ -408,14 +408,18 @@ for (const { code } of SUPPORTED_LANGUAGES) {
   const actionLabels = fileActionLabels[code];
   const powerpointLabelsForLanguage = powerpointLabels[code];
   if (!imageLabels || imageLabels.length !== imageToPdfKeys.length
-    || !actionLabels || actionLabels.length !== 2
+    || !actionLabels || actionLabels.length !== 3
     || !powerpointLabelsForLanguage || powerpointLabelsForLanguage.length !== powerpointKeys.length) {
     throw new Error(`Tool UI translations are incomplete for "${code}".`);
   }
   translations[code] = {
     imageToPdf: Object.fromEntries(imageToPdfKeys.map((key, index) => [key, imageLabels[index]])),
     powerpoint: Object.fromEntries(powerpointKeys.map((key, index) => [key, powerpointLabelsForLanguage[index]])),
-    fileActions: { replace: actionLabels[0], remove: actionLabels[1] }
+    fileActions: {
+      replace: actionLabels[0],
+      remove: actionLabels[1],
+      outputFilename: actionLabels[2]
+    }
   };
   if (!powerpointFontPrivacyDisclosures[code]) {
     throw new Error(`PowerPoint privacy disclosure is missing for "${code}".`);

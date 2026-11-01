@@ -3,6 +3,7 @@ import {
   Crop,
   FileStack,
   FileType,
+  FileText,
   FileImage as FileImageIcon,
   Image as ImageIcon,
   Lock,
@@ -29,7 +30,7 @@ export const TOOL_CATEGORIES = [
     id: 'convert',
     name: 'Convert',
     path: '/categories/convert',
-    description: 'Create PDFs from JPG, PNG, or BMP images, export PDF pages as image files, and convert between PDFs, Word documents, and PowerPoint presentations. Office conversions create image-based output.'
+    description: 'Create PDFs from JPG, PNG, or BMP images, export PDF pages as image files, convert between PDFs and Markdown, and convert between PDFs, Word documents, and PowerPoint presentations. Office conversions create image-based output.'
   },
   {
     id: 'edit-sign',
@@ -141,6 +142,16 @@ export const TOOL_REGISTRY = [
     keywords: 'pptx powerpoint presentation slides pdf to powerpoint powerpoint to pdf',
     icon: FileType,
     color: 'bg-orange-500'
+  },
+  {
+    id: 'markdown',
+    name: 'PDF ↔ Markdown',
+    path: '/pdf-to-markdown',
+    category: 'convert',
+    description: 'Extract selectable PDF text as Markdown or create a PDF from Markdown content.',
+    keywords: 'md markdown text extraction pages pdf to markdown markdown to pdf',
+    icon: FileText,
+    color: 'bg-slate-600'
   },
   {
     id: 'compress',

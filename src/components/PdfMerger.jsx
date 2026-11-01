@@ -357,12 +357,12 @@ const PdfMerger = () => {
     }
   };
 
-  const downloadMergedPdf = () => {
+  const downloadMergedPdf = (downloadFileName) => {
     if (!outputBytes) return;
     const url = URL.createObjectURL(new Blob([outputBytes], { type: 'application/pdf' }));
     const link = document.createElement('a');
     link.href = url;
-    link.download = normalizePdfFileName(outputFileName);
+    link.download = downloadFileName || normalizePdfFileName(outputFileName);
     link.click();
     markOutputDownloaded();
     setTimeout(() => URL.revokeObjectURL(url), 10000);

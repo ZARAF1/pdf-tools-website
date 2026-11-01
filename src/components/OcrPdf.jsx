@@ -304,12 +304,12 @@ const OcrPdf = () => {
     setError('OCR cancelled. Your selected PDF is still available to try again.');
   };
 
-  const downloadOutput = () => {
+  const downloadOutput = (downloadFileName) => {
     if (!outputBlob) return;
     const url = URL.createObjectURL(outputBlob);
     const link = window.document.createElement('a');
     link.href = url;
-    link.download = outputName;
+    link.download = downloadFileName || outputName;
     link.click();
     markOutputDownloaded();
     window.setTimeout(() => URL.revokeObjectURL(url), 10000);

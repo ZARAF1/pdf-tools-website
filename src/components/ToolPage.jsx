@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowRight, Download, FileText, Upload } from 'lucide-react';
 import AdSlot from './AdSlot';
@@ -13,9 +13,14 @@ const TOOL_CONTENT = {
   crop: {
     title: 'Crop PDF',
     description: 'Adjust the visible page boundaries in a PDF.',
+    detailPoints: {
+      what: `Change the visible boundaries of PDF pages without rasterizing their content.`,
+      how: `Set a crop area on the current page or apply the same relative crop to every page, then preview the result.`,
+      result: `A separate cropped PDF. Content outside the boundary is hidden, not erased, and may be recoverable.`
+    },
     intro: 'Trim the visible area of PDF pages without rasterizing their content. Choose a PDF, navigate to a page, then drag the crop area or resize it with its corner and edge handles. The selection stays aligned as the preview zooms or resizes. Apply a crop to the current page and keep earlier page-specific crops in the same output, or apply the same relative selection to every page; the all-pages option replaces earlier per-page settings. Different page sizes and rotations are mapped to their own page coordinates. Apply the crop to create and validate a separate PDF copy, then preview and download it. The original file is not changed, and the document is processed in your browser. This tool changes the PDF page CropBox; it does not erase content outside the box. Hidden material may be recovered by changing the page boundary, so use genuine redaction for sensitive content. Rewriting may also invalidate existing digital signatures.',
     mechanism: 'PDF.js renders each page and converts the normalized preview selection back to PDF page coordinates, accounting for page scaling and rotation. pdf-lib applies that rectangle to each selected page CropBox and saves a separate output. The content is not rasterized or permanently removed; content outside the new visible boundary may remain recoverable. Processing occurs in the browser.',
-    steps: ['Choose an unencrypted PDF and wait for its pages to load.', 'Navigate to a page and drag the crop boundary or use its handles to position and resize it.', 'Choose Current page only or All pages; the all-pages option applies the same relative selection to each page.', 'Select Apply crop and review the resulting cropped preview and validation message.', 'Select Download cropped PDF to save the separate copy.'],
+    steps: ['Choose a PDF and wait for its pages to load.', 'Navigate to a page and drag the crop boundary or use its handles to position and resize it.', 'Choose Current page only or All pages; the all-pages option applies the same relative selection to each page.', 'Select Apply crop and review the resulting cropped preview and validation message.', 'Select Download cropped PDF to save the separate copy.'],
     faqs: [
       ['Does cropping permanently delete what is outside the selection?', 'No. The tool changes the page CropBox, which hides content outside the visible boundary but does not erase it. Someone may recover it by changing the page box. Use a genuine redaction tool for sensitive information.'],
       ['Can I crop only one page?', 'Yes. Choose Current page only. Crops applied on other pages remain included in the output. The All pages option applies the same relative crop area to each page, scaled to its dimensions and orientation, and replaces those individual settings.'],
@@ -27,9 +32,14 @@ const TOOL_CONTENT = {
   edit: {
     title: 'Edit PDF',
     description: 'Add text, images, drawings, highlights, and shapes to a PDF copy.',
+    detailPoints: {
+      what: `Add text, images, drawings, highlights, or shapes, and remove pages from a PDF.`,
+      how: `Place and adjust marks over the page preview, then save the edited copy in your browser.`,
+      result: `A separate PDF with the new overlays. Existing text is not replaced, and some specialized features may change.`
+    },
     intro: 'Place new text or image content on a PDF page, draw freehand marks, add highlights or outlines, and remove pages you no longer need. Choose a page, select an editing tool, and position your marks in the preview; you can move or delete marks, undo or redo edits, and review the result before saving. This editor adds content over the page—it does not select, replace, or reflow existing PDF text. The original file stays unchanged, and the edited copy is generated in your browser. Added text uses a built-in font with Latin and Western European character coverage; unsupported characters are reported rather than silently substituted. Rewriting may affect signatures, forms, annotations, bookmarks, metadata, accessibility tags, or specialized PDF features. Open and inspect the saved copy before sharing it.',
     mechanism: 'PDF.js renders the page preview and maps edits to PDF coordinates. pdf-lib adds text, images, vector marks, and page removals to a separate copy in the browser. No document upload or external PDF-processing service is used.',
-    steps: ['Choose an unencrypted PDF and wait for its pages to load.', 'Select a tool, set its options, then click or drag on the page to add a mark.', 'Select marks to move or delete them; use Undo and Redo to revise edits.', 'Remove pages if needed, then select Save PDF and download the validated copy.', 'Open the downloaded PDF and review its pages and marks before sharing.'],
+    steps: ['Choose a PDF and wait for its pages to load.', 'Select a tool, set its options, then click or drag on the page to add a mark.', 'Select marks to move or delete them; use Undo and Redo to revise edits.', 'Remove pages if needed, then select Save PDF and download the validated copy.', 'Open the downloaded PDF and review its pages and marks before sharing.'],
     faqs: [
       ['Can I change or replace text already in the PDF?', 'No. The editor adds new content over the page; it does not edit, remove, or reflow existing text.'],
       ['Which editing tools are available?', 'You can add text or PNG/JPEG images, draw freehand, place highlights, draw rectangle outlines and lines, move or delete marks, and remove pages.'],
@@ -42,9 +52,14 @@ const TOOL_CONTENT = {
   merge: {
     title: 'Merge PDF',
     description: 'Combine PDFs, select individual pages, and preview their final order.',
+    detailPoints: {
+      what: `Combine complete PDFs or selected pages from multiple files into one document.`,
+      how: `Preview, select, and arrange pages, then merge them in your browser.`,
+      result: `A separate PDF in your chosen order, with optional source bookmarks and blank separator pages.`
+    },
     intro: 'Bring up to five related PDFs together in a new document. Keep the simple Merge all pages mode to combine whole files in their listed order, or switch to Select pages to choose individual pages from each source. In selective mode, each page you choose is added to a live output preview in that exact order; you can inspect larger thumbnails, remove pages, and reorder the sequence before creating the PDF. Set a custom output filename, add source-file bookmarks, preserve each original page size, or proportionally fit pages to A4 or US Letter. Fitting re-embeds the visible page content and may not retain interactive features such as forms or annotations, so preserve original page sizes when those matter. You can also insert blank pages whenever the output moves between source files. The original PDFs remain unchanged. Page previews and merging happen in your browser; no file is sent to an external processing server.',
     mechanism: 'PDF.js renders source-page previews locally. pdf-lib copies the chosen pages in their displayed output order, optionally adds source bookmarks and blank separator pages, and can re-embed and scale each page proportionally onto A4 or US Letter. Fitting may not retain interactive PDF features such as forms or annotations. The generated document is a separate browser-side PDF.',
-    steps: ['Choose two or more unencrypted PDFs (up to five).', 'Keep Merge all pages to combine complete documents in file order, or choose Select pages.', 'In Select pages, click thumbnails in the order you want them to appear; inspect larger previews and reorder or remove pages in the live output.', 'Choose an output filename and optional bookmarks, page sizing, or blank separators.', 'Select Merge PDFs, then review and download the completed document.'],
+    steps: ['Choose two or more PDFs (up to five).', 'Keep Merge all pages to combine complete documents in file order, or choose Select pages.', 'In Select pages, click thumbnails in the order you want them to appear; inspect larger previews and reorder or remove pages in the live output.', 'Choose an output filename and optional bookmarks, page sizing, or blank separators.', 'Select Merge PDFs, then review and download the completed document.'],
     faqs: [
       ['How many PDFs can I merge?', 'You can merge up to five PDF files at a time, and at least two files are required.'],
       ['Will the original files change?', 'No. The merger creates a separate output document; it does not overwrite the selected files.'],
@@ -59,9 +74,14 @@ const TOOL_CONTENT = {
   split: {
     title: 'Split / Extract PDF',
     description: 'Extract selected pages into one PDF, split every page, or divide pages into balanced sections.',
+    detailPoints: {
+      what: `Extract selected pages, create one PDF per page, or divide a document into balanced sections.`,
+      how: `Choose pages visually or by range, or use the percentage slider to set 2–10 consecutive sections.`,
+      result: `A selected-page PDF, individual PDFs, or a ZIP for larger split sets; the original stays unchanged.`
+    },
     intro: 'Use one workspace to extract selected pages, split every page, or divide a PDF into balanced sections. Choose a PDF and review its visual page previews. In Extract selected pages mode, click thumbnails or enter page numbers and ranges such as 1-3, 5; the chosen pages are combined in document order into one PDF. Split every page creates one single-page PDF for each page. Split by percentage uses a slider to divide pages into 2–10 consecutive sections. Since pages cannot be divided, section percentages may differ slightly when the page count does not divide evenly. Part labels show each section boundary in the previews. When either split mode creates more than three PDFs, they are packaged into one ZIP; three or fewer are offered individually. Your original stays unchanged, and PDF handling and ZIP creation occur in your browser.',
     mechanism: 'PDF.js renders a navigable set of page previews. pdf-lib copies selected pages or creates each split section as a separate PDF; the browser ZIP writer packages more than three split outputs locally. The source file is not overwritten.',
-    steps: ['Choose one unencrypted PDF.', 'Select Extract selected pages, Split every page, or Split by percentage.', 'Use page thumbnails or page ranges to choose extraction pages, or adjust the number-of-parts slider.', 'Review the page previews and section labels.', 'Create the output and download the PDF file or ZIP.'],
+    steps: ['Choose one PDF.', 'Select Extract selected pages, Split every page, or Split by percentage.', 'Use page thumbnails or page ranges to choose extraction pages, or adjust the number-of-parts slider.', 'Review the page previews and section labels.', 'Create the output and download the PDF file or ZIP.'],
     faqs: [
       ['How does extraction work?', 'Click the page thumbnails or enter page numbers/ranges. Selected pages are combined into one PDF in their original document order.'],
       ['How does percentage splitting work?', 'Choose 2–10 parts with the slider. Pages are grouped into consecutive sections as evenly as possible, and the previews label each part. Because pages are indivisible, the exact percentages can vary slightly.'],
@@ -73,6 +93,11 @@ const TOOL_CONTENT = {
   rotate: {
     title: 'Rotate PDF',
     description: 'Rotate every page or selected pages in a PDF.',
+    detailPoints: {
+      what: `Correct sideways or upside-down pages by rotating the whole document or selected pages.`,
+      how: `Choose a clockwise angle and optionally specify page numbers or ranges.`,
+      result: `A separate PDF with updated page rotation; page content is not flattened into images.`
+    },
     intro: 'Correct pages that appear sideways or upside down without changing the text or images into flat pictures. Select a PDF and choose a clockwise rotation of 90, 180, or 270 degrees. You can apply the chosen direction to the entire document or limit it to page numbers and ranges, using page 1 for the first page. Check the selection before starting, especially when only a few pages need adjustment. The tool saves a rotated copy and keeps the original file untouched. Once the new PDF is ready, download it and open it in your usual viewer to confirm the orientation looks right. Your document is processed in your browser and is not sent to an external conversion server.',
     mechanism: 'The browser reads and saves the document with pdf-lib, updating the selected PDF pages’ rotation metadata. It does not rasterize the pages.',
     steps: ['Choose a PDF.', 'Choose 90°, 180°, or 270°; select pages if needed.', 'Select Rotate & Download and save the new PDF.'],
@@ -85,6 +110,11 @@ const TOOL_CONTENT = {
   protect: {
     title: 'Protect PDF',
     description: 'Create a password-protected copy of a PDF.',
+    detailPoints: {
+      what: `Add an opening password to a new PDF copy.`,
+      how: `Enter and confirm a password, with an optional separate owner password for supported permissions.`,
+      result: `An encrypted PDF copy. Keep the password safe; it cannot be recovered by this tool.`
+    },
     intro: 'Create a password-protected copy of a PDF for sharing when you want readers to enter a password before opening it. Choose an unprotected PDF, enter an opening password of at least four characters, and confirm it carefully. You may also set a separate owner password for supported document permissions. Keep the password somewhere safe: this tool cannot recover it if it is lost. The protected result is a new file, and the original remains unchanged. Download the encrypted copy and test it in a PDF reader before sharing. Password restrictions are not a replacement for secure access control, and different readers may handle permissions differently. Files are processed in your browser; the PDF is not sent to an external server.',
     mechanism: 'The browser rewrites the PDF with pdf-lib and encrypts the resulting bytes with the installed AES-256 PDF encryption package. The file is handled in the browser; this tool does not upload it.',
     steps: ['Choose one PDF.', 'Enter a password of at least four characters and confirm it.', 'Optionally enter a separate owner password.', 'Select Protect PDF and save the generated encrypted copy.'],
@@ -97,6 +127,11 @@ const TOOL_CONTENT = {
   unlock: {
     title: 'Unlock PDF',
     description: 'Remove PDF opening encryption when you know the correct password.',
+    detailPoints: {
+      what: `Remove supported opening-password encryption when you know the correct password.`,
+      how: `Enter the password you are authorized to use; the tool checks the output and page count.`,
+      result: `A separate unlocked PDF. Password guessing and recovery are not supported.`
+    },
     intro: 'Remove opening-password encryption from a PDF copy when you know a valid user or owner password and are authorized to use it. Choose the encrypted PDF, enter the password, and let the browser create a separate unlocked copy; the original file is not changed. The tool verifies that the output can be opened without a password and that its page count matches the source. It never guesses, cracks, or recovers passwords. Supported encryption is AES-256 R6 and legacy RC4 R2/R3; AES-128 R4 and other encryption types are not supported. The PDF is rewritten during decryption, so review the downloaded copy carefully, especially if it contains digital signatures, forms, annotations, attachments, or specialized PDF features. The document and password are processed in your browser and are not sent to an external processing server.',
     mechanism: 'The browser uses @pdfsmaller/pdf-decrypt and Web Crypto to decrypt supported PDF objects, then validates the resulting unencrypted document with pdf-lib. It confirms the output page count matches the encrypted source. No PDF or password is uploaded.',
     steps: ['Choose one password-protected PDF that uses a supported encryption type.', 'Enter the correct password you are authorized to use.', 'Select Unlock PDF and wait for the output checks to finish.', 'Review and download the separate unlocked PDF.'],
@@ -109,6 +144,11 @@ const TOOL_CONTENT = {
   image: {
     title: 'Image to PDF',
     description: 'Create a PDF from up to 10 images with custom pages, rotation, orientation, background, alignment, and resizing.',
+    detailPoints: {
+      what: `Turn up to 10 JPEG, PNG, or BMP images into a multi-page PDF.`,
+      how: `Arrange and rotate images, then set page size, orientation, background, fit, alignment, and resizing.`,
+      result: `A PDF with one image per page, created locally without changing the source images.`
+    },
     intro: 'Turn up to 10 JPEG, PNG, or BMP images into a PDF, with one image per page. Arrange the pages and rotate individual images before creating the document. Choose A4, Letter, image-fit, or custom page dimensions in millimeters; use a fixed portrait or landscape orientation, or automatically orient each page to its image. Set the page background color, image fit, margins, and horizontal and vertical alignment. Resize bounds, scale, aspect ratio, and JPEG quality let you adjust image output; Fill can crop the image, while Contain keeps the full image visible. The page color shows through transparent areas in PNG and BMP images. The converter creates a separate PDF and leaves your original image files unchanged. Image decoding and PDF creation happen in your browser; selected images are not uploaded to an external conversion server.',
     mechanism: 'The browser decodes each selected image, applies its requested quarter-turn rotation, creates a resized canvas copy, and embeds JPEG or PNG data into a new PDF with pdf-lib. Page dimensions, orientation, background, fit, and alignment are applied independently to each output page. PNG and BMP inputs are encoded as PNG; JPEG inputs use the selected JPEG quality. BMP decoding depends on browser image support; source files are not changed.',
     steps: ['Choose up to 10 JPEG, PNG, or BMP images.', 'Arrange or rotate images and set page size, orientation, fit, alignment, background, and resize options.', 'Create and download your PDF.'],
@@ -124,9 +164,14 @@ const TOOL_CONTENT = {
   'pdf-images': {
     title: 'PDF to Images',
     description: 'Convert each PDF page into a PNG, JPG, or BMP image.',
+    detailPoints: {
+      what: `Convert every page of a PDF into a PNG, JPG, or BMP image.`,
+      how: `Choose an image format and quality; the browser renders pages and packages them in order.`,
+      result: `A ZIP containing one numbered image per page; the source PDF is unchanged.`
+    },
     intro: 'Create an image of every page in a PDF and collect the images in one ZIP download. Select a PDF containing between 1 and 50 pages, choose PNG, JPG, or BMP, and select Standard or High quality. The tool keeps the page sequence and names the image files in order, so it is straightforward to find a particular page after extracting the ZIP. Higher quality and large pages can require more memory and take longer to prepare. The original PDF is not modified. After conversion finishes, download the ZIP and open it with your usual archive tool. Page rendering and image creation happen in your browser; your PDF and its pages are not sent to an external conversion server.',
     mechanism: 'Your browser renders the pages one at a time, encodes each page in the format you selected, and places the images into a ZIP download. The PDF is not sent to an external conversion server. Larger pages and high quality can use more browser memory.',
-    steps: ['Choose one unencrypted PDF with 1–50 pages.', 'Select PNG, JPG, or BMP and choose Standard or High quality.', 'Select Convert PDF to Images and wait for every page and the ZIP to finish.', 'Select Download ZIP to save the images in page order.'],
+    steps: ['Choose one PDF with 1–50 pages.', 'Select PNG, JPG, or BMP and choose Standard or High quality.', 'Select Convert PDF to Images and wait for every page and the ZIP to finish.', 'Select Download ZIP to save the images in page order.'],
     faqs: [
       ['How many pages can I convert?', 'The tool accepts PDFs with 1–50 pages. It checks the actual document page count and rejects larger files.'],
       ['Which image formats are available?', 'PNG is lossless, JPG is usually smaller and has an adjustable quality setting, and BMP is uncompressed and may create large files. The file contents are encoded in the selected format.'],
@@ -138,9 +183,14 @@ const TOOL_CONTENT = {
   word: {
     title: 'PDF ↔ Word',
     description: 'Convert PDF text to Word or render Word documents as PDFs.',
+    detailPoints: {
+      what: `Convert selectable PDF text into an editable DOCX, or render a DOCX as a PDF.`,
+      how: `Choose a direction; PDF-to-Word can use English OCR, while Word-to-PDF renders pages as images.`,
+      result: `A DOCX or image-based PDF. Layout reconstruction is approximate, and PDF output text is not searchable.`
+    },
     intro: 'Convert between PDF and Word in one browser workspace. To create an editable Word document, select a PDF; pages with selectable text are reconstructed as DOCX text, and scanned pages can use English OCR. For the reverse direction, select a DOCX file to render its pages and create a PDF. Word-to-PDF output is image-based, so its text is not searchable or selectable; rendering can differ from Microsoft Word, especially for complex layouts, fonts, tables, and floating objects. Legacy .doc files are not supported. PDF-to-Word layout is also approximate, and OCR accuracy depends on scan quality. Your files are processed in this browser and are not uploaded to a conversion server. Review either output before relying on it; the original file stays unchanged.',
     mechanism: 'For PDF-to-Word, PDF.js extracts text and page positions; Tesseract.js performs English OCR on pages without readable text using locally bundled worker, core, and language assets; docx creates the DOCX output. For Word-to-PDF, docx-preview renders DOCX pages to browser HTML, html2canvas captures each page as an image, and pdf-lib creates a PDF containing those images. The reverse output is image-based and has no selectable text.',
-    steps: ['Choose PDF → Word or Word → PDF.', 'Select one unencrypted PDF or one supported DOCX file.', 'Start conversion and review progress; scanned PDFs may require English OCR.', 'Download and inspect the output. Word-to-PDF pages are images, so text cannot be searched or selected.'],
+    steps: ['Choose PDF → Word or Word → PDF.', 'Select one PDF or one supported DOCX file.', 'Start conversion and review progress; scanned PDFs may require English OCR.', 'Download and inspect the output. Word-to-PDF pages are images, so text cannot be searched or selected.'],
     faqs: [
       ['Can I convert both ways?', 'Yes. Choose PDF → Word to create an editable DOCX, or Word → PDF to create a PDF from a DOCX file.'],
       ['Will Word-to-PDF text be searchable?', 'No. DOCX pages are rendered as images in the PDF, so the resulting text is not searchable or selectable.'],
@@ -153,9 +203,14 @@ const TOOL_CONTENT = {
   ocr: {
     title: 'OCR PDF',
     description: 'Recognize text in scanned PDF pages and add a searchable text layer.',
-    intro: 'Turn scanned, image-only pages into a PDF you can search and select text in, while retaining the original page appearance. Choose an unencrypted PDF with up to 50 pages. The tool reads the text already present on each page and invokes OCR only for pages that lack a usable text layer, which helps avoid unnecessary recognition work in mixed documents. The OCR engine is currently configured for printed English; handwritten, low-resolution, skewed, or complex pages can be misread, so review important results. Recognized words are added invisibly at their detected positions, and the output is checked for its page count and searchable text before a download is offered. PDF processing and OCR run in your browser using locally bundled Tesseract assets; the PDF itself is not uploaded.',
+    detailPoints: {
+      what: `Make scanned PDF pages searchable while retaining their original page appearance.`,
+      how: `Keep existing text and apply English OCR to pages without a usable text layer.`,
+      result: `A checked PDF with an invisible, searchable text layer; recognition quality depends on scan clarity.`
+    },
+    intro: 'Turn scanned, image-only pages into a PDF you can search and select text in, while retaining the original page appearance. Choose a PDF with up to 50 pages. The tool reads the text already present on each page and invokes OCR only for pages that lack a usable text layer, which helps avoid unnecessary recognition work in mixed documents. The OCR engine is currently configured for printed English; handwritten, low-resolution, skewed, or complex pages can be misread, so review important results. Recognized words are added invisibly at their detected positions, and the output is checked for its page count and searchable text before a download is offered. PDF processing and OCR run in your browser using locally bundled Tesseract assets; the PDF itself is not uploaded.',
     mechanism: 'PDF.js checks existing page text and renders pages without usable text. Tesseract.js recognizes English text in the browser using OCR worker, core, and English language assets bundled with this website; pdf-lib adds an invisible text layer to the original pages, preserving their page artwork. The output is reopened and checked for page count and searchable text before download.',
-    steps: ['Choose one unencrypted PDF with up to 50 pages.', 'Review the first-page preview and file details.', 'Select Create searchable PDF and wait while scanned pages are rendered and recognized.', 'Download the validated PDF and use your PDF viewer’s text selection or Find feature to check the OCR result.'],
+    steps: ['Choose one PDF with up to 50 pages.', 'Review the first-page preview and file details.', 'Select Create searchable PDF and wait while scanned pages are rendered and recognized.', 'Download the validated PDF and use your PDF viewer’s text selection or Find feature to check the OCR result.'],
     faqs: [
       ['Will the result be searchable?', 'The tool adds invisible text at OCR word positions, then reopens the output and checks that recognized text is present before it offers a download. Verify important content with your PDF viewer’s Find or text-selection feature.'],
       ['Which languages are supported?', 'The current version runs English OCR only and does not provide a language selector. It is intended for clear printed English, not handwriting or other languages.'],
@@ -167,6 +222,11 @@ const TOOL_CONTENT = {
   compress: {
     title: 'Compress PDF',
     description: 'Try standard PDF optimization or higher compression.',
+    detailPoints: {
+      what: `Try to reduce PDF file size with standard optimization or higher compression.`,
+      how: `Standard mode rewrites the PDF; higher compression turns pages into JPEG images and may lower quality or remove selectable content.`,
+      result: `A download is offered only when the processed file is smaller than the original.`
+    },
     intro: 'Try to make PDF files smaller for easier storage or sharing, while checking the result before you replace or send anything. Add up to five PDFs and choose whether to use standard optimization or enable Higher compression. Standard mode aims to retain the document’s selectable text and page content. Higher compression can reduce image-heavy files more, but it turns pages into images, which can lower visual quality and remove selectable text, links, and interactive form fields. Some PDFs are already optimized, so processing may not reduce their size. The tool compares the result and offers a compressed download only when the generated file is smaller than the original. Your source PDFs stay unchanged. All compression is handled in your browser without sending your files to an external server.',
     mechanism: 'Standard mode rewrites the PDF with pdf-lib object streams. High mode renders pages with PDF.js and re-embeds compressed JPEG images. The tool measures output and keeps the original download when no smaller result is produced.',
     steps: ['Choose up to five PDFs.', 'Leave Higher compression off to preserve selectable content, or turn it on after reading its quality warning.', 'Select Compress PDFs and compare the reported sizes.', 'Download is offered only when the generated result is smaller.'],
@@ -179,6 +239,11 @@ const TOOL_CONTENT = {
   watermark: {
     title: 'Watermark PDF',
     description: 'Add a text watermark to all pages or selected pages.',
+    detailPoints: {
+      what: `Add a visible text watermark to every page or selected pages.`,
+      how: `Set the watermark text, size, colour, angle, and opacity, then choose the pages to mark.`,
+      result: `A separate PDF with searchable vector text; the source file remains unchanged.`
+    },
     intro: 'Add a visible text mark to a PDF to label a draft, identify a copy, or show another short message on the pages you choose. Select one PDF and enter the watermark text, then adjust its size, colour, angle, and opacity to suit the document. Apply it to every page or enter page numbers and ranges such as 1,3,5-7. You can also configure page numbering independently when that option is enabled. Review the settings and page selection before creating the result. The tool saves a separate watermarked PDF and leaves your original file unchanged. After processing, download the new copy and review it in a PDF viewer. Your PDF is handled in your browser and is not sent to an external watermarking server.',
     mechanism: 'The browser uses pdf-lib text drawing APIs to add searchable vector text to the selected pages and saves a separate copy. It does not rasterize pages.',
     steps: ['Choose one PDF and wait for its page count.', 'Enter watermark text and configure size, colour, rotation, and opacity.', 'Choose all pages or enter page numbers/ranges such as 1,3,5-7.', 'Select Add Watermark, then download the new PDF.'],
@@ -192,6 +257,11 @@ const TOOL_CONTENT = {
   remove: {
     title: 'Remove PDF Pages',
     description: 'Select and remove pages from a PDF of up to 50 pages.',
+    detailPoints: {
+      what: `Remove selected pages while keeping the remaining pages together in one PDF.`,
+      how: `Review page previews, select pages to omit, and confirm that at least one page remains.`,
+      result: `A separate PDF in the original order, containing only the pages you kept.`
+    },
     intro: 'Remove unwanted pages while keeping the remaining document together as a new PDF. Choose a file with no more than 50 pages and review the page previews in the grid. Select the pages you want to omit, then double-check the selection before creating the result; at least one page must remain. The output follows the original document order, regardless of the order in which you selected pages. The original PDF is not changed, so you can start again if you remove the wrong page. When the new document is ready, download it and verify that the pages you wanted to keep are present. Page selection and PDF creation happen in your browser; the selected file is not sent to an external server.',
     mechanism: 'PDF.js renders local page thumbnails and pdf-lib copies the unselected pages into a separate PDF. Page order is preserved and the source file is not changed.',
     steps: ['Choose a PDF with no more than 50 pages.', 'Select pages to remove in the thumbnail grid.', 'Review the selection and confirm removal; at least one page must remain.', 'Download the generated PDF manually.'],
@@ -204,6 +274,11 @@ const TOOL_CONTENT = {
   'organize-pages': {
     title: 'Organize PDF',
     description: 'Reorder, rotate, and remove pages from a PDF.',
+    detailPoints: {
+      what: `Reorder, rotate, or remove PDF pages.`,
+      how: `Use page previews and move controls to arrange pages; rotate or remove any pages you do not need.`,
+      result: `A separate PDF following the displayed order, with at least one page retained.`
+    },
     intro: 'Arrange the pages of a PDF to create a cleaner, better-ordered document. Select one PDF with up to 30 pages and review its page previews. Drag the page cards or use the move controls to place pages in the order you want; you can also rotate pages in 90-degree steps or remove pages that are not needed. At least one page must remain. The final document follows the order shown in the workspace and retains the original page content where supported. The source PDF is not changed, so you can reset or select it again if you want to start over. When the arrangement is ready, choose Organize PDF and download the separate result. Your file is processed in your browser, not sent to an external server.',
     mechanism: 'PDF.js renders page previews in your browser. pdf-lib copies the chosen pages in the displayed order and applies their rotations to a separate output PDF without rasterizing page content.',
     steps: ['Choose a pdf and review its pages.', 'Drag pages or use the move controls to reorder them; rotate or remove pages as needed.', 'Select Organize PDF and download the generated document.'],
@@ -217,6 +292,11 @@ const TOOL_CONTENT = {
   redact: {
     title: 'Redact PDF',
     description: 'Permanently cover sensitive content in a new PDF copy.',
+    detailPoints: {
+      what: `Cover sensitive page content in a new PDF copy.`,
+      how: `Draw opaque marks over each area to redact and review every marked page before saving.`,
+      result: `A rasterized PDF with the covered content removed; selectable text and interactive features are lost.`
+    },
     intro: 'Cover sensitive information in a new PDF copy before sharing it. Select a document with up to 15 pages, move to the page you want to review, and draw an opaque black box over each item to hide. Use the available undo or clear controls to correct marks before creating the output. Check every marked page carefully: redaction changes are difficult to reverse in the generated file. To prevent covered text from remaining underneath, pages are saved as images. This means the resulting PDF will not keep selectable text, sharp vector artwork, links, forms, or other interactive content. Your original PDF is left untouched. Redaction is performed in your browser, and your selected document is not sent to an external server.',
     mechanism: 'PDF.js renders every page to an image and the tool burns opaque masks into those images before creating a new PDF with pdf-lib. This removes underlying text from the output, but rasterizes all pages and removes selectable text, vectors, links, forms, and other interactive features.',
     steps: ['Choose one PDF and select the page to review.', 'Draw a black box over each item to redact; use Undo or Clear Marks to correct the page.', 'Review all marked pages, then create and download the redacted PDF.'],
@@ -230,6 +310,11 @@ const TOOL_CONTENT = {
   sign: {
     title: 'Sign PDF',
     description: 'Add a visible typed, drawn, or image signature to selected pages.',
+    detailPoints: {
+      what: `Place a visible typed, drawn, or image signature on selected PDF pages.`,
+      how: `Create or upload the signature, then set its position, size, and page selection.`,
+      result: `A separate PDF with a visual mark, not a certificate-based digital signature.`
+    },
     intro: 'Place a visible signature mark on a PDF using typed text, a drawing, or a PNG or JPEG image. Choose a document, create or upload the mark, and set its position and size. You can apply it to every page or select particular page numbers and ranges. Preview the placement and review the page selection before generating the new PDF. The source file remains unchanged, and you can download the marked copy when it is ready. This tool adds visible content only: it does not verify who signed, use a certificate, or protect the document from later edits. If you need a legally verifiable digital signature, use a certificate-based signing service. Your PDF is processed in your browser and is not uploaded to an external signing server.',
     mechanism: 'The browser adds signature text or an embedded signature image to the selected pages with pdf-lib and saves a new copy. This is a visual mark, not a cryptographic PDF signature; it does not verify identity or protect the document against later changes.',
     steps: ['Choose one PDF and create a typed, drawn, or image signature.', 'Choose the pages and placement for the visible signature.', 'Select Sign PDF and download the new document.'],
@@ -242,6 +327,11 @@ const TOOL_CONTENT = {
   excel: {
     title: 'Excel to PDF',
     description: 'Excel conversion is not available in this browser-only build.',
+    detailPoints: {
+      what: `Excel-to-PDF conversion is not currently available on this page.`,
+      how: `This page does not accept or process workbook files.`,
+      result: `No PDF is generated here; export the workbook using a spreadsheet application.`
+    },
     intro: 'Excel-to-PDF conversion is not available on this page yet. A useful spreadsheet export must preserve sheet layouts, cell formatting, formulas, print areas, and page breaks; this site does not currently provide that conversion capability. The page therefore does not accept or process workbook files, and it will not rename a spreadsheet or create a misleading PDF. Your original workbook remains on your device. To make a PDF now, open the workbook in a spreadsheet application you trust and use its built-in export or save-as-PDF option. Check the exported pages for cut-off columns and page breaks before sharing them. We may add a browser-based conversion in the future after a suitable solution is reviewed. No workbook is sent to this site or to a conversion service from this page.',
     mechanism: 'The installed dependencies do not provide Excel workbook rendering. No workbook is accepted, converted, uploaded, or renamed. A future implementation needs a compatible local renderer or an explicitly approved service.',
     steps: ['No conversion workflow is available yet.', 'Keep your original workbook unchanged.', 'Use a trusted spreadsheet application’s export-to-PDF feature in the meantime.'],
@@ -254,15 +344,39 @@ const TOOL_CONTENT = {
   powerpoint: {
     title: 'PDF ↔ PowerPoint',
     description: 'Convert selected PDF pages into image-based PowerPoint slides, or selected PowerPoint slides into an image-based PDF.',
-    intro: 'Convert selected PDF pages into PowerPoint slides, or selected slides from a .pptx file into a PDF. Choose page or slide ranges, output name, image quality, slide size, and PDF page size. Both directions create image-based output, so text is not editable or searchable. Files are processed in your browser and are not uploaded. When rendering PowerPoint, font-family names used by the presentation may be sent to Google Fonts to request substitutes; the file and slide content are not sent. Standard quality uses fewer pixels for smaller image assets, while Higher quality adds detail and can increase output size. Matching the original dimensions keeps page or slide proportions; A4, Letter, or widescreen sizing may add margins rather than reflow content. Only unencrypted PDFs and unprotected .pptx files are supported; legacy .ppt and password-protected presentations are not. Very large documents may exceed available browser memory.',
+    detailPoints: {
+      what: `Convert selected PDF pages to slides or selected .pptx slides to PDF pages.`,
+      how: `Choose ranges, output name, image quality, and page or slide size; both directions render pages as images.`,
+      result: `An image-based .pptx or PDF. Text is not editable or searchable, and font substitutions may request Google Fonts.`
+    },
+    intro: 'Convert selected PDF pages into PowerPoint slides, or selected slides from a .pptx file into a PDF. Choose page or slide ranges, output name, image quality, slide size, and PDF page size. Both directions create image-based output, so text is not editable or searchable. Files are processed in your browser and are not uploaded. When rendering PowerPoint, font-family names used by the presentation may be sent to Google Fonts to request substitutes; the file and slide content are not sent. Standard quality uses fewer pixels for smaller image assets, while Higher quality adds detail and can increase output size. Matching the original dimensions keeps page or slide proportions; A4, Letter, or widescreen sizing may add margins rather than reflow content. Password-protected PDFs and presentations are not supported; legacy .ppt files are also unsupported. Very large documents may exceed available browser memory.',
     mechanism: 'PDF.js renders selected PDF pages to images and PptxGenJS packages those images into a .pptx file. For the reverse direction, pptx-browser renders selected slides in the browser and pdf-lib places the images into a PDF. The conversion is image-based and cannot preserve editable text, animations, or every presentation effect. Font substitutions may request font assets from Google Fonts; font-family names may be included in those requests, but the presentation file and slide content remain in the browser.',
-    steps: ['Choose PDF → PowerPoint or PowerPoint → PDF.', 'Select one unencrypted PDF or unprotected .pptx file and enter page or slide ranges, or leave the selection blank to include all.', 'Set the output filename, image quality, and available page or slide size.', 'Convert, review the image-based output, and download it.'],
+    steps: ['Choose PDF → PowerPoint or PowerPoint → PDF.', 'Select one PDF or unprotected .pptx file and enter page or slide ranges, or leave the selection blank to include all.', 'Set the output filename, image quality, and available page or slide size.', 'Convert, review the image-based output, and download it.'],
     faqs: [
       ['Can I edit or search the converted text?', 'No. Each selected page or slide is saved as an image. The output preserves appearance rather than editable text.'],
       ['Can I convert only certain pages or slides?', 'Yes. Enter one-based page numbers and inclusive ranges such as 1-3,5. Leave the field blank to include every page or slide.'],
       ['Are my files uploaded?', 'No. Document files are processed in your browser. Rendering PowerPoint may send font-family names to Google Fonts to request substitute fonts, but the presentation file and slide content are not sent.'],
       ['Which PowerPoint files are supported?', 'Only unprotected .pptx files are supported. Legacy .ppt files and password-protected files are not.'],
       ['Will higher image quality make a smaller file?', 'No. Higher quality increases render resolution and can increase output size. Choose standard quality for smaller files.']
+    ]
+  },
+  markdown: {
+    title: 'PDF ↔ Markdown',
+    description: 'Extract selectable PDF text as Markdown or create a PDF from Markdown content.',
+    detailPoints: {
+      what: `Extract selectable PDF text as Markdown or create a PDF from Markdown content.`,
+      how: `Choose a direction, select pages or edit Markdown, then set page size, orientation, and text size.`,
+      result: `Editable Markdown or a text-based PDF. Exact PDF layout, images, and complex tables are not preserved.`
+    },
+    intro: 'Convert selectable text from a PDF into editable Markdown, or create a PDF from Markdown that you upload, paste, or edit in the text area. PDF-to-Markdown supports selecting pages and optionally adding horizontal separators between pages. Markdown-to-PDF supports A4 or US Letter paper, portrait or landscape orientation, and small, medium, or large text. The PDF renderer supports common headings, paragraphs, lists, quotes, code fences, links, and simple table text; it does not reproduce the original PDF layout. Scanned pages without a text layer need OCR first. Markdown-to-PDF uses built-in standard PDF fonts, so unsupported characters are reported and must be replaced before conversion. Files and text are processed locally in your browser and are not uploaded.',
+    mechanism: 'PDF.js reads the selected PDF pages’ text layer and joins text items by their approximate vertical position. pdf-lib lays out supported Markdown blocks as selectable PDF text using built-in fonts. This is a text conversion rather than visual reconstruction; images, complex tables, exact typography, and original page layout are not preserved.',
+    steps: ['Choose PDF → Markdown or Markdown → PDF.', 'For PDF to Markdown, select a PDF, optionally enter page numbers or ranges, and choose whether to separate page text.', 'For Markdown to PDF, upload an .md or .txt file or paste and edit text, then select page size, orientation, and text size.', 'Convert and review the extracted or generated content; enter a preferred output filename in the download card.', 'Download the result. All document processing stays in this browser.'],
+    faqs: [
+      ['Will the Markdown keep the PDF layout and images?', 'No. The tool extracts selectable text and its approximate reading order. It does not preserve precise layout, images, or complex table formatting.'],
+      ['Can I convert a scanned PDF?', 'Only if it has a selectable text layer. Run the file through OCR first; this tool does not recognize text in page images.'],
+      ['Can I edit Markdown before creating a PDF?', 'Yes. Upload a Markdown file or paste text, then edit it in the text area before converting.'],
+      ['Why did Markdown-to-PDF reject a character?', 'The built-in standard PDF fonts have limited character coverage. Replace unsupported characters with supported Latin characters and retry.'],
+      ['Are my files uploaded?', 'No. Both conversion directions run in your browser and do not send your PDF or Markdown to an external processing service.']
     ]
   }
 };
@@ -316,6 +430,13 @@ const ATTACHMENT_RULES = {
     rule: 'One unencrypted PDF or unprotected .pptx file · page count depends on available browser memory',
     infoTitle: 'Convert PDF ↔ PowerPoint',
     info: 'Select pages or slides, name the output, and choose image quality and page or slide sizing. Results are image-based and may not be editable.'
+  },
+  markdown: {
+    title: 'Attach a PDF or Markdown File Here',
+    ruleKey: 'markdownFileOne',
+    rule: 'One unencrypted PDF, .md, or plain-text file',
+    infoTitle: 'Convert PDF ↔ Markdown',
+    info: 'Extract selectable PDF text or create a PDF from editable Markdown. Scanned pages need OCR first.'
   },
   protect: {
     title: 'Attach PDF Here',
@@ -398,8 +519,6 @@ const ATTACHMENT_RULES = {
 
 const ToolPage = ({ tool, children }) => {
   const { language, translate } = useLanguage();
-  const [expandedIntro, setExpandedIntro] = useState({ tool, isExpanded: false });
-  const introExpanded = expandedIntro.tool === tool && expandedIntro.isExpanded;
   const content = TOOL_CONTENT[tool];
   const registeredTool = TOOL_REGISTRY.find((item) => item.id === tool);
   const localizedTool = registeredTool ? getLocalizedTool(language, registeredTool) : null;
@@ -465,17 +584,18 @@ const ToolPage = ({ tool, children }) => {
             <p className="tool-detail-description">{pageDescription}</p>
           </div>
         </div>
-        <div className={`tool-detail-intro${introExpanded ? ' is-expanded' : ''}`}>
-          <p id={`${tool}-intro`} className="tool-detail-intro-copy">{localizedContent.intro}</p>
-          <button
-            type="button"
-            className="tool-detail-intro-toggle"
-            aria-controls={`${tool}-intro`}
-            aria-expanded={introExpanded}
-            onClick={() => setExpandedIntro({ tool, isExpanded: !introExpanded })}
-          >
-            {translate(introExpanded ? 'collapseDescription' : 'expandDescription')}
-          </button>
+        <div className="tool-detail-intro">
+          <ul id={`${tool}-detail-points`} className="tool-detail-point-list">
+            {localizedContent.detailPoints.map(({ key, text }) => (
+              <li key={key} className="tool-detail-point">
+                <ToolIcon className="tool-detail-point-icon" aria-hidden="true" />
+                <span>
+                  <strong>{localizedContent.detailPointHeadings[key]}</strong>
+                  {text}
+                </span>
+              </li>
+            ))}
+          </ul>
         </div>
       </header>
 

@@ -165,7 +165,10 @@ const Home = () => {
                               tabIndex={isExpanded ? 0 : -1}
                               title={localizedTool.name}
                             >
-                              <ToolIcon className="home-hero-tool-icon" aria-hidden="true" />
+                              <ToolIcon
+                                className={`home-hero-tool-icon${localizedTool.id === 'merge' ? ' home-hero-tool-icon--merge' : ''}`}
+                                aria-hidden="true"
+                              />
                               <span className="home-hero-tool-tooltip" aria-hidden="true" role="tooltip">
                                 {localizedTool.name}
                               </span>

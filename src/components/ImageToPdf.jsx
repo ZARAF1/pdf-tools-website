@@ -452,12 +452,12 @@ const ImageToPdf = () => {
     }
   };
 
-  const downloadPdf = () => {
+  const downloadPdf = (downloadFileName) => {
     if (!outputBytes) return;
     const url = URL.createObjectURL(new Blob([outputBytes], { type: 'application/pdf' }));
     const link = window.document.createElement('a');
     link.href = url;
-    link.download = outputName;
+    link.download = downloadFileName || outputName;
     link.click();
     markOutputDownloaded();
     window.setTimeout(() => URL.revokeObjectURL(url), 10000);

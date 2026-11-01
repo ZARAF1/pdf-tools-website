@@ -258,12 +258,12 @@ const PdfPowerPoint = () => {
     }
   };
 
-  const downloadOutput = () => {
+  const downloadOutput = (downloadFileName) => {
     if (!outputBlob || !outputFileName) return;
     const url = URL.createObjectURL(outputBlob);
     const anchor = document.createElement('a');
     anchor.href = url;
-    anchor.download = outputFileName;
+    anchor.download = downloadFileName || outputFileName;
     anchor.click();
     window.setTimeout(() => URL.revokeObjectURL(url), 1000);
     markOutputDownloaded();
