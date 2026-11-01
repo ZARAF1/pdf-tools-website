@@ -58,14 +58,16 @@ const TOOL_CONTENT = {
   },
   split: {
     title: 'Split PDF',
-    description: 'Extract selected pages or save a PDF as separate page files.',
-    intro: 'Separate a PDF into the pages you need, either as one selected-page document or as individual page files. Choose a PDF, then decide whether you want to extract a specific set of pages or split the whole document into one-page PDFs. For an extraction, enter page numbers and ranges such as 1-3, 5; page numbers begin at 1. Review the selection before you start so the output contains the pages you intended. The original PDF is left unchanged, and the result is created as a separate file. When splitting every page, your browser may ask permission for multiple downloads. Page handling takes place in your browser, without sending the selected PDF to an external server.',
-    mechanism: 'The browser loads the PDF with pdf-lib, copies the requested pages into new PDF documents, and downloads the outputs locally. The source file is not overwritten.',
-    steps: ['Choose one PDF.', 'Select Extract Pages or Split All Pages.', 'For extraction, enter page numbers/ranges such as 1-3, 5.', 'Start the operation and save the generated PDF file(s).'],
+    description: 'Choose pages visually, split every page, or divide a PDF into percentage-based sections.',
+    intro: 'Use one workspace to extract selected pages, split every page, or divide a PDF into balanced sections. Choose a PDF and review its visual page previews. In Extract selected pages mode, click thumbnails or enter page numbers and ranges such as 1-3, 5; the chosen pages are combined in document order into one PDF. Split every page creates one single-page PDF for each page. Split by percentage uses a slider to divide pages into 2–10 consecutive sections. Since pages cannot be divided, section percentages may differ slightly when the page count does not divide evenly. Part labels show each section boundary in the previews. When either split mode creates more than three PDFs, they are packaged into one ZIP; three or fewer are offered individually. Your original stays unchanged, and PDF handling and ZIP creation occur in your browser.',
+    mechanism: 'PDF.js renders a navigable set of page previews. pdf-lib copies selected pages or creates each split section as a separate PDF; the browser ZIP writer packages more than three split outputs locally. The source file is not overwritten.',
+    steps: ['Choose one unencrypted PDF.', 'Select Extract selected pages, Split every page, or Split by percentage.', 'Use page thumbnails or page ranges to choose extraction pages, or adjust the number-of-parts slider.', 'Review the page previews and section labels.', 'Create the output and download the PDF file or ZIP.'],
     faqs: [
-      ['Are page numbers one-based?', 'Yes. Page 1 means the first page in the document.'],
-      ['Can I extract non-consecutive pages?', 'Use comma-separated entries such as 1,3,5-7.'],
-      ['What happens in Split All Pages mode?', 'The tool creates one single-page PDF for every page. Your browser may prompt separately for multiple downloads.']
+      ['How does extraction work?', 'Click the page thumbnails or enter page numbers/ranges. Selected pages are combined into one PDF in their original document order.'],
+      ['How does percentage splitting work?', 'Choose 2–10 parts with the slider. Pages are grouped into consecutive sections as evenly as possible, and the previews label each part. Because pages are indivisible, the exact percentages can vary slightly.'],
+      ['What happens when I split every page?', 'Each page becomes its own PDF. More than three outputs are packaged into one ZIP; three or fewer are offered as individual PDFs.'],
+      ['Can I split by percentages of file size?', 'The percentage slider divides the page count, not the PDF’s byte size. Page content and file sizes can vary.'],
+      ['Is my original PDF changed?', 'No. The tool creates new PDF output files in your browser and leaves the selected original unchanged.']
     ]
   },
   rotate: {
@@ -195,18 +197,6 @@ const TOOL_CONTENT = {
       ['Does this change my original PDF?', 'No. The tool creates a new file from the remaining pages.']
     ]
   },
-  extract: {
-    title: 'Extract PDF Pages',
-    description: 'Choose pages from a PDF of up to 50 pages and save them separately.',
-    intro: 'Copy only the pages you need into a separate PDF. Choose a document with up to 50 pages, then use the page previews to select the pages for your new file. You may select nonconsecutive pages; the finished PDF keeps them in their original document order, rather than the order in which you clicked them. Check the selected-page summary before extracting to make sure it matches your needs. The original PDF remains unchanged, and the selected pages are saved to a new document that you can download. This is useful for sharing a short excerpt or keeping a smaller subset for reference. The work is performed in your browser and your PDF is not sent to an external extraction server.',
-    mechanism: 'PDF.js renders page previews locally; pdf-lib copies selected pages in ascending source order into a new document.',
-    steps: ['Choose a PDF with no more than 50 pages.', 'Select one or more pages in the thumbnail grid.', 'Check the selected-page summary and extract.', 'Download the generated PDF manually.'],
-    faqs: [
-      ['Does selection order control output order?', 'No. Pages remain in their original document order regardless of the order in which you selected them.'],
-      ['How many pages are supported?', 'The actual PDF page count is checked and documents over 50 pages are rejected.'],
-      ['Is this the same as splitting every page?', 'No. This creates one PDF containing only the pages you selected.']
-    ]
-  },
   'organize-pages': {
     title: 'Organize PDF',
     description: 'Reorder, rotate, and remove pages from a PDF.',
@@ -333,7 +323,7 @@ const ATTACHMENT_RULES = {
     ruleKey: 'pdfOne',
     rule: 'One unencrypted PDF · no fixed page cap',
     infoTitle: 'Split or extract PDF pages',
-    info: 'Extract selected pages into one PDF or split the whole document into single-page PDFs.'
+    info: 'Select pages visually, split every page, or divide the PDF into percentage-based sections.'
   },
   ocr: {
     title: 'Attach PDF Here',
@@ -376,13 +366,6 @@ const ATTACHMENT_RULES = {
     rule: 'One unencrypted PDF · up to 50 pages',
     infoTitle: 'Remove selected PDF pages',
     info: 'Choose pages to omit; at least one page must remain in the output.'
-  },
-  extract: {
-    title: 'Attach PDF Here',
-    ruleKey: 'pdf50',
-    rule: 'One unencrypted PDF · up to 50 pages',
-    infoTitle: 'Extract selected PDF pages',
-    info: 'Save the selected pages as a new PDF in their original document order.'
   },
   rotate: {
     title: 'Attach PDF Here',

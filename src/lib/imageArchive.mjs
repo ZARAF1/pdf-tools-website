@@ -78,8 +78,8 @@ const createHeader = (length, signature) => {
 };
 
 export const createZipBlob = async (files, onProgress = () => {}, isCancelled = () => false) => {
-  if (!files.length || files.length > 50) {
-    throw new Error('The ZIP archive must contain between 1 and 50 images.');
+  if (!files.length || files.length > 0xffff) {
+    throw new Error('A ZIP archive must contain between 1 and 65,535 files.');
   }
 
   const localParts = [];
@@ -93,10 +93,10 @@ export const createZipBlob = async (files, onProgress = () => {}, isCancelled = 
     const nameBytes = new TextEncoder().encode(file.name);
     const bytes = file.bytes;
     if (!nameBytes.length || nameBytes.length > 0xffff || !(bytes instanceof Uint8Array)) {
-      throw new Error('An image could not be added to the ZIP archive.');
+      throw new Error('A file could not be added to the ZIP archive.');
     }
     if (bytes.length > ZIP_LIMIT) {
-      throw new Error('An image is too large to include in a ZIP archive.');
+      throw new Error('A file is too large to include in a ZIP archive.');
     }
 
     const checksum = await crc32(bytes, isCancelled);
@@ -131,7 +131,7 @@ export const createZipBlob = async (files, onProgress = () => {}, isCancelled = 
     localOffset += localHeader.length + nameBytes.length + bytes.length;
 
     if (localOffset > ZIP_LIMIT || directorySize > ZIP_LIMIT) {
-      throw new Error('The generated images are too large for a browser ZIP archive. Choose a lower quality or JPG format.');
+      throw new Error('The files are too large for a browser ZIP archive.');
     }
     onProgress(index + 1, files.length);
     if (index + 1 < files.length) {

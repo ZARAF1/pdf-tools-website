@@ -6,7 +6,7 @@ const expectedDescriptions = new Map([
   ['CropPdf.jsx', 'Crop PDF pages to adjust the visible page area.'],
   ['EditPdf.jsx', 'Add text, images, drawings, highlights, and shapes to a PDF copy.'],
   ['PdfMerger.jsx', 'Combine PDFs into a single document in your chosen order.'],
-  ['PdfSplitter.jsx', 'Extract selected pages or split the PDF into single-page files.'],
+  ['PdfSplitter.jsx', 'Extract selected pages, split every page, or divide the PDF into percentage-based sections.'],
   ['PdfRotator.jsx', 'Rotate all pages or selected pages in a PDF.'],
   ['PdfProtector.jsx', 'Add an opening password to protect a PDF.'],
   ['UnlockPdf.jsx', 'Remove supported PDF encryption with the correct password.'],

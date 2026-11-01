@@ -2,11 +2,23 @@ import React, { useEffect, useState } from 'react';
 import pdfjsLib from '../lib/pdfjsClient';
 import { Check } from 'lucide-react';
 
-const PdfPageGrid = ({ file, pageCount, selectedPages, onToggle, actionLabel }) => {
+const PdfPageGrid = ({
+  file,
+  pageCount,
+  selectedPages,
+  onToggle,
+  actionLabel,
+  selectionEnabled = true,
+  startPage = 1,
+  endPage,
+  pageLabels = {}
+}) => {
   const [previews, setPreviews] = useState([]);
   const [pageSummaries, setPageSummaries] = useState([]);
   const [rendering, setRendering] = useState(false);
   const [previewError, setPreviewError] = useState('');
+  const visibleStartPage = Math.max(1, startPage);
+  const visibleEndPage = Math.min(endPage ?? pageCount, pageCount);
 
   useEffect(() => {
     let active = true;
@@ -23,7 +35,7 @@ const PdfPageGrid = ({ file, pageCount, selectedPages, onToggle, actionLabel }) 
         const document = await loadingTask.promise;
         const results = [];
 
-        for (let pageNumber = 1; pageNumber <= pageCount; pageNumber += 1) {
+        for (let pageNumber = visibleStartPage; pageNumber <= visibleEndPage; pageNumber += 1) {
           if (!active) return;
           const page = await document.getPage(pageNumber);
           const baseViewport = page.getViewport({ scale: 1 });
@@ -73,47 +85,70 @@ const PdfPageGrid = ({ file, pageCount, selectedPages, onToggle, actionLabel }) 
       active = false;
       loadingTask?.destroy();
     };
-  }, [file, pageCount]);
+  }, [file, pageCount, visibleStartPage, visibleEndPage]);
 
   return (
     <div>
       {rendering && (
-        <p className="mb-3 text-sm text-slate-500" role="status">Rendering all {pageCount} page previews…</p>
+        <p className="mb-3 text-sm text-slate-500" role="status">
+          Rendering previews for pages {visibleStartPage}–{visibleEndPage} of {pageCount}…
+        </p>
       )}
       {previewError && <p className="mb-3 text-sm text-amber-700" role="status">{previewError}</p>}
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
-        {Array.from({ length: pageCount }, (_, index) => {
-          const pageNumber = index + 1;
+        {Array.from({ length: Math.max(0, visibleEndPage - visibleStartPage + 1) }, (_, index) => {
+          const pageNumber = visibleStartPage + index;
           const selected = selectedPages.has(pageNumber);
+          const pageLabel = typeof pageLabels === 'function' ? pageLabels(pageNumber) : pageLabels[pageNumber];
+          const PageElement = selectionEnabled ? 'button' : 'div';
           return (
-            <button
+            <PageElement
               key={pageNumber}
-              type="button"
-              onClick={() => onToggle(pageNumber)}
-              aria-pressed={selected}
-              aria-label={`${selected ? 'Deselect' : 'Select'} page ${pageNumber} ${actionLabel}`}
+              {...(selectionEnabled
+                ? {
+                    type: 'button',
+                    onClick: () => onToggle(pageNumber),
+                    'aria-pressed': selected
+                  }
+                : {
+                    role: 'group'
+                  })}
+              aria-label={selectionEnabled
+                ? `${selected ? 'Deselect' : 'Select'} page ${pageNumber} ${actionLabel}`
+                : `Page ${pageNumber}${pageLabel ? `, ${pageLabel}` : ''}`}
               aria-describedby={`pdf-page-${pageNumber}-description`}
-              className={`group relative min-w-0 overflow-hidden rounded-xl border-2 p-2 text-left transition-all duration-200 hover:-translate-y-1 hover:border-blue-300 hover:shadow-lg focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 motion-reduce:transform-none ${
+              className={`group relative min-w-0 overflow-hidden rounded-xl border-2 p-2 text-left ${
+                selectionEnabled
+                  ? 'transition-all duration-200 hover:-translate-y-1 hover:border-blue-300 hover:shadow-lg focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 motion-reduce:transform-none'
+                  : ''
+              } ${
                 selected
                   ? 'border-blue-600 bg-blue-50 shadow-sm'
                   : 'border-slate-200 bg-white shadow-sm'
               }`}
             >
-              <span className={`absolute right-2 top-2 z-10 flex h-6 w-6 items-center justify-center rounded-full shadow-sm transition-transform ${
-                selected ? 'bg-blue-600 text-white' : 'border border-slate-300 bg-white/90 text-transparent'
-              }`}>
-                {selected && <Check className="h-4 w-4" aria-hidden="true" />}
-              </span>
+              {selectionEnabled && (
+                <span className={`absolute right-2 top-2 z-10 flex h-6 w-6 items-center justify-center rounded-full shadow-sm transition-transform ${
+                  selected ? 'bg-blue-600 text-white' : 'border border-slate-300 bg-white/90 text-transparent'
+                }`}>
+                  {selected && <Check className="h-4 w-4" aria-hidden="true" />}
+                </span>
+              )}
               <span className="flex aspect-[3/4] items-center justify-center overflow-hidden rounded-lg bg-slate-100">
+                {pageLabel && (
+                  <span className="absolute left-3 top-3 z-10 max-w-[calc(100%-3.5rem)] truncate rounded-md bg-slate-900/80 px-2 py-1 text-[10px] font-semibold text-white">
+                    {pageLabel}
+                  </span>
+                )}
                 {previews[index]
-                  ? <img src={previews[index]} alt="" className="h-full w-full object-contain" />
+                  ? <img src={previews[index]} alt="" draggable={false} className="h-full w-full object-contain" />
                   : <span className="text-sm text-slate-400">{rendering ? 'Loading…' : 'Preview unavailable'}</span>}
               </span>
               <span className="mt-2 block text-center text-xs font-semibold text-slate-600">Page {pageNumber}</span>
               <span id={`pdf-page-${pageNumber}-description`} className="sr-only">
                 {pageSummaries[index] || 'No selectable text was found on this page; its preview is visual-only.'}
               </span>
-            </button>
+            </PageElement>
           );
         })}
       </div>

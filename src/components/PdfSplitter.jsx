@@ -4,6 +4,8 @@ import useAccessibleDropzone from '../lib/useAccessibleDropzone';
 import { PDFDocument } from 'pdf-lib';
 import { recoverPdfPageTreeRoot } from '../lib/pdfPageTreeRecovery.mjs';
 import { validateUnencryptedPdf } from '../lib/pdfValidation';
+import { createSplitPdfArchive } from '../lib/splitPdfArchive.mjs';
+import { createSplitPdfOutputs } from '../lib/splitPdfOutputs.mjs';
 import { motion } from 'framer-motion';
 import { 
   Upload, 
@@ -11,25 +13,43 @@ import {
   Loader2, 
   AlertCircle,
   Scissors,
-  Layers
+  Layers,
+  Percent,
+  ChevronLeft,
+  ChevronRight
 } from 'lucide-react';
 import { AttachedFileActions, AttachedFileIcon } from './AttachedFileControls';
 import DownloadReadyCard from './DownloadReadyCard';
+import PdfPageGrid from './PdfPageGrid';
+import {
+  createPageGroupRangesByPartCount,
+  createPageGroupsByPartCount,
+  parsePageRanges
+} from '../lib/splitPdfPages.mjs';
+
+const PREVIEW_PAGE_WINDOW = 24;
+const MAX_PERCENTAGE_PARTS = 10;
 
 const PdfSplitter = () => {
   const [file, setFile] = useState(null);
+  const [pageCount, setPageCount] = useState(0);
   const [isProcessing, setIsProcessing] = useState(false);
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(false);
-  const [mode, setMode] = useState('extract'); // 'extract' or 'split-all'
+  const [mode, setMode] = useState('extract-selected');
   const [rangeInput, setRangeInput] = useState('');
+  const [selectedPages, setSelectedPages] = useState(new Set());
+  const [partCount, setPartCount] = useState(2);
+  const [previewStartPage, setPreviewStartPage] = useState(1);
   const [outputFiles, setOutputFiles] = useState([]);
-  const markOutputDownloaded = useToolExitGuard(Boolean(file), outputFiles);
+  const [archiveOutput, setArchiveOutput] = useState(null);
+  const markOutputDownloaded = useToolExitGuard(Boolean(file), archiveOutput ? [archiveOutput] : outputFiles);
 
   const onDrop = useCallback(async (acceptedFiles, fileRejections) => {
     setError(null);
     setSuccess(false);
     setOutputFiles([]);
+    setArchiveOutput(null);
 
     if (fileRejections.length > 0) {
       setError('Please choose a valid PDF file.');
@@ -40,8 +60,17 @@ const PdfSplitter = () => {
     if (!selectedFile) return;
 
     try {
-      await validateUnencryptedPdf(selectedFile);
+      const validatedPdf = await validateUnencryptedPdf(selectedFile);
+      recoverPdfPageTreeRoot(validatedPdf);
+      const selectedPageCount = validatedPdf.getPageCount();
+      if (selectedPageCount < 1) throw new Error('This PDF does not contain any pages.');
       setFile(selectedFile);
+      setPageCount(selectedPageCount);
+      setSelectedPages(new Set());
+      setRangeInput('');
+      setPartCount(Math.min(2, selectedPageCount));
+      setPreviewStartPage(1);
+      if (selectedPageCount === 1) setMode('extract-selected');
     } catch (validationError) {
       console.error('Unable to validate PDF for splitting:', validationError);
       setError(validationError.message || 'This PDF is invalid or could not be opened.');
@@ -60,37 +89,58 @@ const PdfSplitter = () => {
     setError(null);
     setSuccess(false);
     setRangeInput('');
+    setPageCount(0);
+    setSelectedPages(new Set());
+    setPartCount(2);
+    setPreviewStartPage(1);
     setOutputFiles([]);
+    setArchiveOutput(null);
   };
 
-  const parseRanges = (input, maxPages) => {
-    const pages = new Set();
-    const parts = input.split(',');
-    
-    for (const part of parts) {
-      const trimmed = part.trim();
-      if (!trimmed) throw new Error('Page selections cannot contain empty entries.');
+  const clearResults = () => {
+    setError(null);
+    setSuccess(false);
+    setOutputFiles([]);
+    setArchiveOutput(null);
+  };
 
-      if (trimmed.includes('-')) {
-        const range = trimmed.split('-').map(s => parseInt(s.trim(), 10));
-        const start = range[0];
-        const end = range[1];
-        if (isNaN(start) || isNaN(end) || start > end || start < 1 || end > maxPages) {
-          throw new Error(`Invalid range: ${trimmed}`);
-        }
-        for (let i = start; i <= end; i++) {
-          pages.add(i);
-        }
-      } else {
-        const page = parseInt(trimmed, 10);
-        if (isNaN(page) || page < 1 || page > maxPages) {
-          throw new Error(`Invalid page: ${trimmed}`);
-        }
-        pages.add(page);
-      }
+  const togglePage = (pageNumber) => {
+    const updated = new Set(selectedPages);
+    if (updated.has(pageNumber)) updated.delete(pageNumber);
+    else updated.add(pageNumber);
+    setSelectedPages(updated);
+    setRangeInput([...updated].sort((a, b) => a - b).join(', '));
+    clearResults();
+  };
+
+  const selectAllPages = () => {
+    const allPages = new Set(Array.from({ length: pageCount }, (_, index) => index + 1));
+    setSelectedPages(allPages);
+    setRangeInput([...allPages].join(', '));
+    clearResults();
+  };
+
+  const clearSelectedPages = () => {
+    setSelectedPages(new Set());
+    setRangeInput('');
+    clearResults();
+  };
+
+  const updateRanges = (value) => {
+    setRangeInput(value);
+    if (!value.trim()) {
+      setSelectedPages(new Set());
+      clearResults();
+      return;
     }
-    if (!pages.size) throw new Error('Enter at least one page number or range.');
-    return Array.from(pages).sort((a, b) => a - b);
+    try {
+      setSelectedPages(new Set(parsePageRanges(value, pageCount)));
+      clearResults();
+    } catch {
+      setOutputFiles([]);
+      setArchiveOutput(null);
+      setSuccess(false);
+    }
   };
 
   const handleSplit = async () => {
@@ -103,39 +153,41 @@ const PdfSplitter = () => {
     setError(null);
     setSuccess(false);
     setOutputFiles([]);
+    setArchiveOutput(null);
 
     try {
       const arrayBuffer = await file.arrayBuffer();
       const srcDoc = await PDFDocument.load(arrayBuffer);
       recoverPdfPageTreeRoot(srcDoc);
-      const pageCount = srcDoc.getPageCount();
+      if (mode === 'extract-selected' && selectedPages.size === 0) {
+        throw new Error('Select at least one page to extract.');
+      }
+      const groups = mode === 'extract-selected'
+        ? [parsePageRanges(rangeInput, pageCount)]
+        : mode === 'split-percentage'
+          ? createPageGroupsByPartCount(pageCount, partCount)
+          : Array.from({ length: pageCount }, (_, index) => [index + 1]);
 
-      if (mode === 'extract') {
-        const selectedPages = parseRanges(rangeInput, pageCount);
-        if (selectedPages.length === 0) {
-          throw new Error("Please enter at least one valid page or range.");
+      const outputs = await createSplitPdfOutputs({
+        sourceDocument: srcDoc,
+        pageGroups: groups,
+        fileName: file.name,
+        mode
+      });
+
+      if (mode !== 'extract-selected') {
+        let archive = null;
+        try {
+          const archiveSuffix = mode === 'split-percentage' ? 'parts' : 'split_pages';
+          archive = await createSplitPdfArchive(outputs, file.name, archiveSuffix);
+        } catch (archiveError) {
+          console.error('Unable to create ZIP archive for Split PDF:', archiveError);
+          setError(`The ZIP archive could not be created: ${archiveError.message} Individual PDF downloads are available below.`);
         }
-
-        const dstDoc = await PDFDocument.create();
-        const indices = selectedPages.map(p => p - 1);
-        const copiedPages = await dstDoc.copyPages(srcDoc, indices);
-        copiedPages.forEach(page => dstDoc.addPage(page));
-
-        const pdfBytes = await dstDoc.save();
-        setOutputFiles([{ bytes: pdfBytes, name: `extracted_${file.name}` }]);
-      } else {
-        const outputs = [];
-        for (let i = 0; i < pageCount; i++) {
-          const dstDoc = await PDFDocument.create();
-          const [copiedPage] = await dstDoc.copyPages(srcDoc, [i]);
-          dstDoc.addPage(copiedPage);
-          const pdfBytes = await dstDoc.save();
-          const fileName = `page_${i + 1}_${file.name}`;
-          outputs.push({ bytes: pdfBytes, name: fileName });
-        }
-        setOutputFiles(outputs);
+        setArchiveOutput(archive);
       }
 
+      setOutputFiles(outputs);
       setSuccess(true);
     } catch (err) {
       console.error(err);
@@ -154,6 +206,32 @@ const PdfSplitter = () => {
     markOutputDownloaded(output.name);
     setTimeout(() => URL.revokeObjectURL(url), 10000);
   };
+
+  const downloadArchive = () => {
+    const url = URL.createObjectURL(new Blob([archiveOutput.blob], { type: 'application/zip' }));
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = archiveOutput.name;
+    link.click();
+    markOutputDownloaded(archiveOutput.name);
+    setTimeout(() => URL.revokeObjectURL(url), 10000);
+  };
+
+  const activePartCount = Math.min(partCount, Math.min(MAX_PERCENTAGE_PARTS, pageCount));
+  const percentageRanges = mode === 'split-percentage' && pageCount > 1
+    ? createPageGroupRangesByPartCount(pageCount, Math.max(2, activePartCount))
+    : [];
+  const pageLabels = (pageNumber) => {
+    if (mode === 'split-all') return 'Separate PDF';
+    const partIndex = percentageRanges.findIndex(({ startPage, endPage }) => pageNumber >= startPage && pageNumber <= endPage);
+    return partIndex < 0 ? '' : `Part ${partIndex + 1}`;
+  };
+  const previewEndPage = Math.min(previewStartPage + PREVIEW_PAGE_WINDOW - 1, pageCount);
+  const selectedSummary = [...selectedPages].sort((a, b) => a - b);
+  const percentageSummary = percentageRanges.map(({ startPage, endPage }, index) => {
+    const percent = Math.round(((endPage - startPage + 1) / pageCount) * 100);
+    return `Part ${index + 1}: pages ${startPage}–${endPage} (${percent}%)`;
+  });
 
   return (
     <div className="split-pdf-workspace space-y-8">
@@ -176,7 +254,7 @@ const PdfSplitter = () => {
             </div>
             <div className="merge-pdf-upload-copy">
               <h3>{isDragActive ? 'Drop the PDF here' : 'Choose or drop a PDF to split'}</h3>
-              <p>Extract selected pages or split the PDF into single-page files.</p>
+              <p>Extract selected pages, split every page, or divide the PDF into percentage-based sections.</p>
             </div>
             <button
               type="button"
@@ -211,49 +289,170 @@ const PdfSplitter = () => {
             </div>
           </div>
 
-          <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-6">
-            <div className="flex flex-wrap gap-4 border-b border-slate-100 pb-4" role="group" aria-label="Split action">
+          <div className="space-y-6 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:p-6">
+            <div className="flex flex-wrap gap-2 border-b border-slate-100 pb-4" role="group" aria-label="Choose how to split the PDF">
               <button
                 type="button"
-                aria-pressed={mode === 'extract'}
-                onClick={() => setMode('extract')}
-                className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${mode === 'extract' ? 'bg-blue-50 text-blue-700' : 'text-slate-500 hover:bg-slate-50'}`}
+                aria-pressed={mode === 'extract-selected'}
+                onClick={() => {
+                  setMode('extract-selected');
+                  clearResults();
+                }}
+                className={`flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition-colors sm:px-4 ${mode === 'extract-selected' ? 'bg-blue-50 text-blue-700' : 'text-slate-500 hover:bg-slate-50'}`}
               >
                 <Scissors className="w-4 h-4" />
-                Extract Pages
+                Extract selected pages
               </button>
               <button
                 type="button"
                 aria-pressed={mode === 'split-all'}
-                onClick={() => setMode('split-all')}
-                className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${mode === 'split-all' ? 'bg-blue-50 text-blue-700' : 'text-slate-500 hover:bg-slate-50'}`}
+                onClick={() => {
+                  setMode('split-all');
+                  clearResults();
+                }}
+                className={`flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition-colors sm:px-4 ${mode === 'split-all' ? 'bg-blue-50 text-blue-700' : 'text-slate-500 hover:bg-slate-50'}`}
               >
                 <Layers className="w-4 h-4" />
-                Split All Pages
+                Split every page
+              </button>
+              <button
+                type="button"
+                aria-pressed={mode === 'split-percentage'}
+                onClick={() => {
+                  setMode('split-percentage');
+                  clearResults();
+                }}
+                disabled={pageCount < 2}
+                className={`flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-50 sm:px-4 ${mode === 'split-percentage' ? 'bg-blue-50 text-blue-700' : 'text-slate-500 hover:bg-slate-50'}`}
+              >
+                <Percent className="h-4 w-4" />
+                Split by percentage
               </button>
             </div>
 
-            {mode === 'extract' && (
-              <div className="space-y-2">
-                <label htmlFor="split-page-ranges" className="text-sm font-semibold text-slate-700">Enter Page Ranges</label>
+            {mode === 'extract-selected' && (
+              <div className="space-y-3">
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                  <p className="text-sm font-semibold text-slate-700" aria-live="polite">
+                    Select pages to combine into one PDF ({selectedPages.size} selected)
+                  </p>
+                  <div className="flex gap-2">
+                    <button type="button" onClick={selectAllPages} className="rounded-lg border border-slate-200 px-3 py-2 text-sm font-medium text-slate-700 hover:border-blue-300 hover:bg-blue-50">
+                      Select all
+                    </button>
+                    <button type="button" onClick={clearSelectedPages} disabled={!selectedPages.size} className="rounded-lg border border-slate-200 px-3 py-2 text-sm font-medium text-slate-700 hover:border-blue-300 hover:bg-blue-50 disabled:cursor-not-allowed disabled:opacity-50">
+                      Clear
+                    </button>
+                  </div>
+                </div>
+                <label htmlFor="split-page-ranges" className="block text-sm font-medium text-slate-700">
+                  Or enter page numbers and ranges
+                </label>
                 <input
                   id="split-page-ranges"
                   type="text"
                   placeholder="e.g. 1-3, 5"
                   aria-describedby="split-page-ranges-help"
-                  className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
+                  className="w-full rounded-xl border border-slate-200 px-4 py-3 outline-none transition-all focus:border-transparent focus:ring-2 focus:ring-blue-500"
                   value={rangeInput}
-                  onChange={(e) => setRangeInput(e.target.value)}
+                  onChange={(event) => updateRanges(event.target.value)}
                 />
-                <p id="split-page-ranges-help" className="text-xs text-slate-500">Use commas to separate ranges. Example: 1-3, 5</p>
+                <p id="split-page-ranges-help" className="text-xs text-slate-500">Click page previews below or enter comma-separated pages and ranges. Output follows document order.</p>
               </div>
             )}
 
             {mode === 'split-all' && (
-              <div className="p-4 bg-amber-50 rounded-xl border border-amber-100 text-amber-800 text-sm">
-                Each page is prepared as a separate PDF. Download each file individually after processing.
+              <div className="rounded-xl border border-slate-200 bg-slate-50 p-4 text-sm text-slate-700">
+                Every page is included and becomes its own PDF. Page previews are for inspection. More than three outputs are packaged into one ZIP.
               </div>
             )}
+
+            {mode === 'split-percentage' && (
+              <div className="space-y-3 rounded-xl border border-slate-200 bg-slate-50 p-4">
+                <label htmlFor="split-part-count" className="block text-sm font-semibold text-slate-700">
+                  Number of equal sections: {activePartCount}
+                </label>
+                <input
+                  id="split-part-count"
+                  type="range"
+                  min="2"
+                  max={Math.min(MAX_PERCENTAGE_PARTS, pageCount)}
+                  step="1"
+                  value={activePartCount}
+                  aria-describedby="split-part-count-help"
+                  onChange={(event) => {
+                    setPartCount(Number(event.target.value));
+                    clearResults();
+                  }}
+                  className="w-full accent-blue-600"
+                />
+                <p id="split-part-count-help" className="text-xs text-slate-600">
+                  The slider divides the page count into balanced consecutive sections. The page labels below show each section boundary.
+                </p>
+                <ul className="grid gap-2 text-xs text-slate-600 sm:grid-cols-2" aria-live="polite">
+                  {percentageSummary.map((summary) => <li key={summary}>{summary}</li>)}
+                </ul>
+                {percentageRanges.length > 3 && (
+                  <p className="text-xs font-medium text-slate-600">
+                    {percentageRanges.length} PDFs will be packaged into one ZIP download.
+                  </p>
+                )}
+              </div>
+            )}
+
+            <section className="space-y-4" aria-labelledby="split-page-preview-heading">
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <div>
+                  <h3 id="split-page-preview-heading" className="text-base font-semibold text-slate-800">Page previews</h3>
+                  <p className="text-sm text-slate-500">
+                    {mode === 'extract-selected'
+                      ? 'Select thumbnails to choose pages for one PDF.'
+                      : mode === 'split-percentage'
+                        ? 'Part labels show where the percentage-based sections begin and end.'
+                        : 'Inspect the pages; each one will be saved separately.'}
+                  </p>
+                </div>
+                {pageCount > PREVIEW_PAGE_WINDOW && (
+                  <nav className="flex items-center gap-2" aria-label="Page preview pages">
+                    <button
+                      type="button"
+                      onClick={() => setPreviewStartPage(Math.max(1, previewStartPage - PREVIEW_PAGE_WINDOW))}
+                      disabled={previewStartPage <= 1}
+                      aria-label="Previous preview pages"
+                      className="rounded-lg border border-slate-200 p-2 text-slate-700 disabled:cursor-not-allowed disabled:opacity-50"
+                    >
+                      <ChevronLeft className="h-4 w-4" aria-hidden="true" />
+                    </button>
+                    <span className="text-xs text-slate-500">Pages {previewStartPage}–{previewEndPage} of {pageCount}</span>
+                    <button
+                      type="button"
+                      onClick={() => setPreviewStartPage(Math.min(pageCount, previewStartPage + PREVIEW_PAGE_WINDOW))}
+                      disabled={previewEndPage >= pageCount}
+                      aria-label="Next preview pages"
+                      className="rounded-lg border border-slate-200 p-2 text-slate-700 disabled:cursor-not-allowed disabled:opacity-50"
+                    >
+                      <ChevronRight className="h-4 w-4" aria-hidden="true" />
+                    </button>
+                  </nav>
+                )}
+              </div>
+              <PdfPageGrid
+                file={file}
+                pageCount={pageCount}
+                selectedPages={selectedPages}
+                onToggle={togglePage}
+                actionLabel="for extraction"
+                selectionEnabled={mode === 'extract-selected'}
+                startPage={previewStartPage}
+                endPage={previewEndPage}
+                pageLabels={pageLabels}
+              />
+              {mode === 'extract-selected' && selectedSummary.length > 0 && (
+                <p className="rounded-lg bg-slate-50 p-3 text-sm text-slate-600">
+                  Selected pages: {selectedSummary.join(', ')}
+                </p>
+              )}
+            </section>
 
             <button
               type="button"
@@ -272,7 +471,11 @@ const PdfSplitter = () => {
               ) : (
                 <>
                   <Download className="w-5 h-5" />
-                  {mode === 'extract' ? 'Extract Pages' : 'Prepare Individual Pages'}
+                  {mode === 'extract-selected'
+                    ? 'Create PDF from selected pages'
+                    : mode === 'split-percentage'
+                      ? `Create ${activePartCount} PDF parts`
+                      : 'Split into individual pages'}
                 </>
               )}
             </button>
@@ -299,7 +502,14 @@ const PdfSplitter = () => {
           animate={{ opacity: 1, y: 0 }}
           className="split-pdf-result-content min-w-0 space-y-3"
         >
-          {outputFiles.map((output) => (
+          {archiveOutput ? (
+            <DownloadReadyCard
+              fileName={archiveOutput.name}
+              sizeBytes={archiveOutput.blob.size}
+              onDownload={downloadArchive}
+              downloadLabel="Download ZIP"
+            />
+          ) : outputFiles.map((output) => (
             <DownloadReadyCard
               key={output.name}
               fileName={output.name}

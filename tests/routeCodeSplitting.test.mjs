@@ -21,7 +21,6 @@ const toolComponents = [
   'PdfCompressor',
   'PdfWatermarker',
   'RemovePdfPages',
-  'ExtractPdfPages',
   'OrganizePdf',
   'CropPdf',
   'RedactPdf',

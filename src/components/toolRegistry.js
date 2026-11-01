@@ -2,7 +2,6 @@ import {
   Archive,
   Crop,
   FileStack,
-  FileText,
   FileType,
   FileImage as FileImageIcon,
   Image as ImageIcon,
@@ -48,7 +47,7 @@ export const TOOL_CATEGORIES = [
     id: 'extract-analyze',
     name: 'Extract',
     path: '/categories/extract',
-    description: 'Save selected pages as a new PDF, split a document by page numbers or ranges, or recognize text in scanned pages to add a searchable text layer. OCR may download its supporting language resources when first used.'
+    description: 'Choose pages visually to make one PDF, split every page, divide a document into percentage-based sections, or recognize text in scanned pages. OCR may download supporting language resources when first used.'
   }
 ];
 
@@ -68,8 +67,8 @@ export const TOOL_REGISTRY = [
     name: 'Split PDF',
     path: '/split',
     category: 'extract-analyze',
-    description: 'Extract pages or create separate page files.',
-    keywords: 'divide separate pages',
+    description: 'Select pages visually, split every page, or create balanced percentage-based sections.',
+    keywords: 'divide separate pages select thumbnails percentage parts',
     icon: Scissors,
     color: 'bg-purple-500'
   },
@@ -172,16 +171,6 @@ export const TOOL_REGISTRY = [
     keywords: 'delete erase omit',
     icon: Trash2,
     color: 'bg-rose-500'
-  },
-  {
-    id: 'extract',
-    name: 'Extract PDF Pages',
-    path: '/extract-pages',
-    category: 'extract-analyze',
-    description: 'Save selected pages as a new PDF.',
-    keywords: 'copy selected pages',
-    icon: FileText,
-    color: 'bg-sky-500'
   },
   {
     id: 'ocr',

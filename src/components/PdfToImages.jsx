@@ -10,7 +10,7 @@ import {
 } from 'lucide-react';
 import { PASSWORD_PROTECTED_PDF_MESSAGE, validateUnencryptedPdf } from '../lib/pdfValidation';
 import pdfjsLib from '../lib/pdfjsClient';
-import { createZipBlob, encodeBmp } from '../lib/imageArchive';
+import { createZipBlob, encodeBmp } from '../lib/imageArchive.mjs';
 import { AttachedFileActions, AttachedFileIcon } from './AttachedFileControls';
 import DownloadReadyCard from './DownloadReadyCard';
 

@@ -7,7 +7,7 @@ import { fileURLToPath } from 'node:url';
 
 const toolIds = [
   'merge', 'split', 'rotate', 'protect', 'unlock', 'image', 'pdf-images',
-  'word', 'compress', 'edit', 'watermark', 'remove', 'extract', 'ocr',
+  'word', 'compress', 'edit', 'watermark', 'remove', 'ocr',
   'crop', 'organize-pages', 'redact', 'sign'
 ];
 const toolCardSource = await readFile(

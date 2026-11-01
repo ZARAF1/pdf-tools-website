@@ -77,7 +77,7 @@ test('every PDF tool reports ready outputs and acknowledges initiated downloads'
   const downloadableTools = [
     ['PdfMerger.jsx', /useToolExitGuard\(files\.length > 0,\s*outputBytes\)/, /markOutputDownloaded\(\)/],
     ['PdfCompressor.jsx', /useToolExitGuard\(files\.length > 0,\s*downloadableResults\)/, /markOutputDownloaded\(item\.id\)/],
-    ['PdfSplitter.jsx', /useToolExitGuard\(Boolean\(file\),\s*outputFiles\)/, /markOutputDownloaded\(output\.name\)/],
+    ['PdfSplitter.jsx', /useToolExitGuard\(Boolean\(file\),\s*archiveOutput \? \[archiveOutput\] : outputFiles\)/, /markOutputDownloaded\(archiveOutput\.name\)/],
     ['PdfRotator.jsx', /useToolExitGuard\(Boolean\(file\),\s*outputBytes\)/, /markOutputDownloaded\(\)/],
     ['PdfProtector.jsx', /useToolExitGuard\(Boolean\(file\),\s*outputBytes\)/, /markOutputDownloaded\(\)/],
     ['ImageToPdf.jsx', /useToolExitGuard\([\s\S]*?outputBytes\)/, /markOutputDownloaded\(\)/],

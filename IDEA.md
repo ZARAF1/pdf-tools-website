@@ -10,16 +10,15 @@ Create a polished, trustworthy online PDF toolkit where users can perform common
 
 The current application uses React 19, Vite, React Router, Tailwind CSS, Lucide React, `pdf-lib`, PDF.js, and `react-dropzone`. Check `package.json` and source before changing dependencies.
 
-The active tool registry currently lists 14 browser-side tools across six categories, ordered as follows:
+The active tool registry lists 17 browser-side tools across five categories, ordered as follows:
 
-- **Organize PDF:** Merge, Rotate, Remove Pages, and Organize PDF.
+- **Organize PDF:** Merge, Rotate, Remove Pages, Organize PDF, and Crop PDF.
 - **Convert Files:** Image to PDF, PDF to Images, and PDF to Word.
-- **Edit & Sign:** Watermark PDF, Redact PDF, and Sign PDF. Redaction rasterizes every page and removes selectable text and interactive features; Sign PDF adds a visible mark, not a cryptographic signature.
-- **Protect & Repair:** Protect PDF and Compress PDF.
-- **Extract:** Split PDF and Extract PDF Pages.
-- **Image Tools:** No image-manipulation tool is currently registered; keep this category last and add only genuine image tools here.
+- **Edit & Sign:** Edit PDF, Watermark PDF, Redact PDF, and Sign PDF. Redaction rasterizes every page and removes selectable text and interactive features; Sign PDF adds a visible mark, not a cryptographic signature.
+- **Protect & Repair:** Protect PDF, Unlock PDF, and Compress PDF.
+- **Extract:** Split PDF combines visual page extraction, per-page splitting, and percentage-based sections; OCR PDF recognizes scanned text.
 
-PDF to Images is available at `/pdf-to-images`; it converts pages to PNG, JPG, or BMP images and provides them in one ZIP. Image to PDF and PDF to Images belong under Convert Files. `/excel-to-pdf` and `/powerpoint-to-pdf` explain that local conversion is unavailable. Unlock PDF is not registered or routed: the installed encryption package only encrypts, and a separate decryption dependency requires explicit approval before installation. See `.github/project-status.md` for current verification and limitations.
+PDF to Images is available at `/pdf-to-images`; it converts pages to PNG, JPG, or BMP images and provides them in one ZIP. Image to PDF and PDF to Images belong under Convert Files. `/excel-to-pdf` and `/powerpoint-to-pdf` explain that local conversion is unavailable. See `.github/project-status.md` for current verification and limitations.
 
 ## Design Direction — Extremely Important
 

@@ -1,5 +1,5 @@
 import React, { lazy, Suspense, useEffect, useRef, useState } from 'react';
-import { BrowserRouter as Router, Routes, Route, Link, NavLink, useLocation, useParams } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Link, NavLink, Navigate, useLocation, useParams } from 'react-router-dom';
 import {
   BookOpenText,
   Check,
@@ -30,7 +30,6 @@ const OcrPdf = lazy(() => import('./components/OcrPdf'));
 const PdfCompressor = lazy(() => import('./components/PdfCompressor'));
 const PdfWatermarker = lazy(() => import('./components/PdfWatermarker'));
 const RemovePdfPages = lazy(() => import('./components/RemovePdfPages'));
-const ExtractPdfPages = lazy(() => import('./components/ExtractPdfPages'));
 const OrganizePdf = lazy(() => import('./components/OrganizePdf'));
 const CropPdf = lazy(() => import('./components/CropPdf'));
 const RedactPdf = lazy(() => import('./components/RedactPdf'));
@@ -648,7 +647,7 @@ function App() {
                 <Route path="/compress" element={<ToolPage tool="compress"><PdfCompressor /></ToolPage>} />
                 <Route path="/watermark" element={<ToolPage tool="watermark"><PdfWatermarker /></ToolPage>} />
                 <Route path="/remove-pages" element={<ToolPage tool="remove"><RemovePdfPages /></ToolPage>} />
-                <Route path="/extract-pages" element={<ToolPage tool="extract"><ExtractPdfPages /></ToolPage>} />
+                <Route path="/extract-pages" element={<Navigate to="/split" replace />} />
                 <Route path="/organize" element={<ToolPage tool="organize-pages"><OrganizePdf /></ToolPage>} />
                 <Route path="/crop-pdf" element={<ToolPage tool="crop"><CropPdf /></ToolPage>} />
                 <Route path="/redact" element={<ToolPage tool="redact"><RedactPdf /></ToolPage>} />
