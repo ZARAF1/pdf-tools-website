@@ -1,8 +1,8 @@
 import React, { useState, useCallback, useEffect, useRef } from 'react';
 import { useToolExitGuard } from './ToolExitGuard';
 import useAccessibleDropzone from '../lib/useAccessibleDropzone';
-import { PDFDocument } from 'pdf-lib';
 import { validateUnencryptedPdf } from '../lib/pdfValidation';
+import { recoverPdfPageTreeRoot } from '../lib/pdfPageTreeRecovery.mjs';
 import { motion, Reorder } from 'framer-motion';
 import { 
   Upload, 
@@ -16,6 +16,9 @@ import {
 } from 'lucide-react';
 import { AttachedFileIcon } from './AttachedFileControls';
 import DownloadReadyCard from './DownloadReadyCard';
+import PdfMergePagePicker from './PdfMergePagePicker';
+import { addPageToMergeOrder, getFitPageDimensions, normalizePdfFileName } from '../lib/pdfMergeOptions.mjs';
+import { buildMergedPdf } from '../lib/pdfMergeOutput.mjs';
 
 const MAX_FILES = 5;
 
@@ -27,6 +30,13 @@ const PdfMerger = () => {
   const [success, setSuccess] = useState(false);
   const [outputBytes, setOutputBytes] = useState(null);
   const markOutputDownloaded = useToolExitGuard(files.length > 0, outputBytes);
+  const [mergeMode, setMergeMode] = useState('all');
+  const [selectedPages, setSelectedPages] = useState([]);
+  const [previewImages, setPreviewImages] = useState({});
+  const [outputFileName, setOutputFileName] = useState('merged_document.pdf');
+  const [addSourceBookmarks, setAddSourceBookmarks] = useState(false);
+  const [pageSize, setPageSize] = useState('preserve');
+  const [addBlankPages, setAddBlankPages] = useState(false);
   const [announcement, setAnnouncement] = useState('');
   const isValidatingRef = useRef(false);
   const pendingFocusRef = useRef(null);
@@ -58,8 +68,9 @@ const PdfMerger = () => {
     try {
       for (const file of filesToCheck) {
         try {
-          await validateUnencryptedPdf(file);
-          validatedFiles.push(file);
+          const document = await validateUnencryptedPdf(file);
+          recoverPdfPageTreeRoot(document);
+          validatedFiles.push({ file, pageCount: document.getPageCount() });
         } catch (validationError) {
           validationErrors.push(`${file.name}: ${validationError.message || 'This PDF could not be opened.'}`);
         }
@@ -73,10 +84,11 @@ const PdfMerger = () => {
       if (validatedFiles.length > 0) {
         setFiles((previous) => [
           ...previous,
-          ...validatedFiles.map((file) => ({
+          ...validatedFiles.map(({ file, pageCount }) => ({
             file,
             id: Math.random().toString(36).substring(7),
             name: file.name,
+            pageCount,
             size: (file.size / 1024 / 1024).toFixed(2) + ' MB'
           }))
         ]);
@@ -113,7 +125,8 @@ const PdfMerger = () => {
     isValidatingRef.current = true;
     setIsValidating(true);
     try {
-      await validateUnencryptedPdf(replacementFile);
+      const replacementDocument = await validateUnencryptedPdf(replacementFile);
+      recoverPdfPageTreeRoot(replacementDocument);
       const currentFile = files.find((file) => file.id === targetId);
       if (!currentFile) {
         setError('The selected PDF is no longer available to replace.');
@@ -126,10 +139,17 @@ const PdfMerger = () => {
             ...file,
             file: replacementFile,
             name: replacementFile.name,
+            pageCount: replacementDocument.getPageCount(),
             size: (replacementFile.size / 1024 / 1024).toFixed(2) + ' MB'
           }
         : file
       ));
+      setSelectedPages((previous) => previous.filter((page) => page.fileId !== targetId));
+      setPreviewImages((previous) => {
+        const next = { ...previous };
+        delete next[targetId];
+        return next;
+      });
       setAnnouncement(`${currentFile.name} replaced with ${replacementFile.name}.`);
     } catch (validationError) {
       console.error('Unable to validate replacement PDF:', validationError);
@@ -155,7 +175,7 @@ const PdfMerger = () => {
     onDrop,
     accept: { 'application/pdf': ['.pdf'] },
     multiple: true,
-    disabled: isValidating || files.length >= MAX_FILES,
+    disabled: isValidating || isMerging || files.length >= MAX_FILES,
   });
 
   const {
@@ -184,6 +204,12 @@ const PdfMerger = () => {
       : { action: 'upload' };
     const removedFile = files[index];
     setFiles(files.filter(f => f.id !== id));
+    setSelectedPages((previous) => previous.filter((page) => page.fileId !== id));
+    setPreviewImages((previous) => {
+      const next = { ...previous };
+      delete next[id];
+      return next;
+    });
     setAnnouncement(`${removedFile?.name || 'PDF'} removed.`);
     setError(null);
     setOutputBytes(null);
@@ -205,11 +231,102 @@ const PdfMerger = () => {
   const reorderFiles = (nextFiles) => {
     setFiles(nextFiles);
     setAnnouncement(`File order updated. ${nextFiles.map((file) => file.name).join(', ')}.`);
+    setOutputBytes(null);
+    setSuccess(false);
+  };
+
+  const toggleMergeMode = (mode) => {
+    if (mode === 'select' && mergeMode !== 'select') setSelectedPages([]);
+    setMergeMode(mode);
+    setOutputBytes(null);
+    setSuccess(false);
+    setError(null);
+  };
+
+  const togglePageSelection = (fileEntry, pageIndex) => {
+    const next = addPageToMergeOrder(selectedPages, { fileId: fileEntry.id, pageIndex });
+    setSelectedPages(next);
+    setOutputBytes(null);
+    setSuccess(false);
+    setError(null);
+    const wasSelected = selectedPages.some((page) => page.fileId === fileEntry.id && page.pageIndex === pageIndex);
+    setAnnouncement(`Page ${pageIndex + 1} ${wasSelected ? 'removed from' : 'added to'} the live output.`);
+  };
+
+  const selectVisiblePages = (fileId, count) => {
+    setSelectedPages((previous) => {
+      const next = [...previous];
+      for (let pageIndex = 0; pageIndex < count; pageIndex += 1) {
+        if (!next.some((page) => page.fileId === fileId && page.pageIndex === pageIndex)) {
+          next.push({ fileId, pageIndex });
+        }
+      }
+      return next;
+    });
+    setOutputBytes(null);
+    setSuccess(false);
+  };
+
+  const clearFilePageSelection = (fileId) => {
+    setSelectedPages((previous) => previous.filter((page) => page.fileId !== fileId));
+    setOutputBytes(null);
+    setSuccess(false);
+  };
+
+  const reorderSelectedPages = (nextPages) => {
+    setSelectedPages(nextPages);
+    setOutputBytes(null);
+    setSuccess(false);
+    setAnnouncement('Live output page order updated.');
+  };
+
+  const moveSelectedPage = (index, direction) => {
+    const targetIndex = index + direction;
+    if (targetIndex < 0 || targetIndex >= selectedPages.length) return;
+    const next = [...selectedPages];
+    [next[index], next[targetIndex]] = [next[targetIndex], next[index]];
+    reorderSelectedPages(next);
+  };
+
+  const handlePreviewsReady = useCallback((fileId, previews) => {
+    setPreviewImages((previous) => ({ ...previous, [fileId]: previews }));
+  }, []);
+
+  const fileEntriesById = new Map(files.map((file) => [file.id, file]));
+  let outputPageNumber = 0;
+  const liveOutputItems = selectedPages.map((page, index) => {
+    const fileEntry = fileEntriesById.get(page.fileId);
+    const preview = previewImages[page.fileId]?.[page.pageIndex];
+    const previousPage = selectedPages[index - 1];
+    const blankBefore = Boolean(addBlankPages && previousPage && previousPage.fileId !== page.fileId);
+    outputPageNumber += Number(blankBefore) + 1;
+    return {
+      ...page,
+      key: `${page.fileId}:${page.pageIndex}`,
+      fileEntry,
+      preview,
+      blankBefore,
+      outputPageNumber
+    };
+  });
+  const blankPageCount = liveOutputItems.filter((item) => item.blankBefore).length;
+
+  const getOutputPageStyle = (preview) => {
+    if (!preview) return undefined;
+    if (pageSize === 'preserve') {
+      return { aspectRatio: `${preview.width} / ${preview.height}` };
+    }
+    const fitted = getFitPageDimensions(preview.width, preview.height, pageSize);
+    return { aspectRatio: `${fitted.pageWidth} / ${fitted.pageHeight}` };
   };
 
   const mergePdfs = async () => {
     if (files.length < 2) {
       setError("Please add at least 2 PDF files to merge.");
+      return;
+    }
+    if (mergeMode === 'select' && selectedPages.length === 0) {
+      setError('Select at least one page in Select pages mode.');
       return;
     }
 
@@ -220,22 +337,21 @@ const PdfMerger = () => {
     setOutputBytes(null);
 
     try {
-      const mergedPdf = await PDFDocument.create();
-
-      for (const fileObj of files) {
-        const pdf = await validateUnencryptedPdf(fileObj.file);
-        const copiedPages = await mergedPdf.copyPages(pdf, pdf.getPageIndices());
-        copiedPages.forEach((page) => mergedPdf.addPage(page));
-      }
-
-      const pdfBytes = await mergedPdf.save();
+      const normalizedFileName = normalizePdfFileName(outputFileName);
+      const pdfBytes = await buildMergedPdf({
+        files,
+        mode: mergeMode,
+        selectedPages,
+        addBlankPages,
+        addBookmarks: addSourceBookmarks,
+        pageSize
+      });
+      setOutputFileName(normalizedFileName);
       setOutputBytes(pdfBytes);
       setSuccess(true);
     } catch (err) {
       console.error(err);
-      setError(err?.message?.startsWith('Password-protected PDFs')
-        ? err.message
-        : 'An error occurred while merging the PDFs. Please ensure they are valid PDF files.');
+      setError(err?.message || 'An error occurred while merging the PDFs. Please ensure they are valid PDF files.');
     } finally {
       setIsMerging(false);
     }
@@ -246,7 +362,7 @@ const PdfMerger = () => {
     const url = URL.createObjectURL(new Blob([outputBytes], { type: 'application/pdf' }));
     const link = document.createElement('a');
     link.href = url;
-    link.download = 'merged_document.pdf';
+    link.download = normalizePdfFileName(outputFileName);
     link.click();
     markOutputDownloaded();
     setTimeout(() => URL.revokeObjectURL(url), 10000);
@@ -333,7 +449,7 @@ const PdfMerger = () => {
                       type="button"
                       aria-label={`Move ${fileObj.name} up`}
                       onClick={() => moveFile(index, -1)}
-                      disabled={index === 0}
+                      disabled={isMerging || index === 0}
                       className="p-1 hover:bg-slate-100 rounded disabled:opacity-20"
                     >
                       <ChevronUp className="w-4 h-4 text-slate-500" aria-hidden="true" />
@@ -342,7 +458,7 @@ const PdfMerger = () => {
                       type="button"
                       aria-label={`Move ${fileObj.name} down`}
                       onClick={() => moveFile(index, 1)}
-                      disabled={index === files.length - 1}
+                      disabled={isMerging || index === files.length - 1}
                       className="p-1 hover:bg-slate-100 rounded disabled:opacity-20"
                     >
                       <ChevronDown className="w-4 h-4 text-slate-500" aria-hidden="true" />
@@ -382,11 +498,207 @@ const PdfMerger = () => {
 
         {uploadZone}
 
+        <section className="merge-pdf-settings space-y-6" aria-label="Merge options">
+          <div className="merge-mode-switch" role="group" aria-label="Choose merge mode">
+            <button
+              type="button"
+              aria-pressed={mergeMode === 'all'}
+              onClick={() => toggleMergeMode('all')}
+              disabled={isMerging}
+            >
+              Merge all pages
+            </button>
+            <button
+              type="button"
+              aria-pressed={mergeMode === 'select'}
+              onClick={() => toggleMergeMode('select')}
+              disabled={isMerging}
+            >
+              Select pages
+            </button>
+          </div>
+
+          {mergeMode === 'select' && (
+            <div className="merge-page-selection-workspace">
+              <div className="merge-section-heading">
+                <div>
+                  <h3>Select pages</h3>
+                  <p>Click pages to add them to the live output in that order. New selections start empty.</p>
+                </div>
+                <p className="merge-page-count-summary" aria-live="polite">
+                  {selectedPages.length} pages selected
+                </p>
+              </div>
+              <div className="merge-source-page-pickers">
+                {files.map((fileEntry) => (
+                  <PdfMergePagePicker
+                    key={fileEntry.id}
+                    fileEntry={fileEntry}
+                    selectedPages={selectedPages}
+                    onTogglePage={togglePageSelection}
+                    onSelectVisible={selectVisiblePages}
+                    onClear={clearFilePageSelection}
+                    onPreviewsReady={handlePreviewsReady}
+                    disabled={isMerging}
+                  />
+                ))}
+              </div>
+
+              <section className="merge-live-output" aria-labelledby="merge-live-output-heading">
+                <div className="merge-section-heading">
+                  <div>
+                    <h3 id="merge-live-output-heading">Live output preview</h3>
+                    <p>Pages are shown in the order they will appear. Drag to reorder, or use the move buttons.</p>
+                  </div>
+                  <p className="merge-page-count-summary">
+                    {selectedPages.length + blankPageCount} output pages
+                  </p>
+                </div>
+                {selectedPages.length === 0 ? (
+                  <p className="merge-live-output-empty">Select a page above to start building the output.</p>
+                ) : (
+                  <Reorder.Group
+                    axis="x"
+                    values={selectedPages}
+                    onReorder={reorderSelectedPages}
+                    className="merge-live-output-list"
+                    aria-label="Pages in merged output order"
+                  >
+                    {liveOutputItems.map((item, index) => (
+                      <Reorder.Item
+                        key={item.key}
+                        value={selectedPages[index]}
+                        dragListener={!isMerging}
+                        className="merge-live-output-item"
+                      >
+                        <div className={`merge-live-blank-slot${addBlankPages ? ' is-enabled' : ''}`}>
+                          {item.blankBefore && (
+                            <span className="merge-live-blank-before" aria-label="A blank page will be inserted before this page">
+                              Blank page
+                            </span>
+                          )}
+                        </div>
+                        <div className="merge-live-output-page">
+                          <div className="merge-live-output-page-number">Output page {item.outputPageNumber}</div>
+                          <div className="merge-live-output-image" style={getOutputPageStyle(item.preview)}>
+                            {item.preview
+                              ? <img src={item.preview.preview} alt="" draggable={false} />
+                              : <span>Rendering preview…</span>}
+                          </div>
+                          <p className="merge-live-output-source" title={`${item.fileEntry?.name || 'PDF'}, page ${item.pageIndex + 1}`}>
+                            {item.fileEntry?.name || 'PDF'} · Page {item.pageIndex + 1}
+                          </p>
+                          <div className="merge-live-output-actions">
+                            <button
+                              type="button"
+                              aria-label={`Move output page ${index + 1} up`}
+                              onClick={() => moveSelectedPage(index, -1)}
+                              disabled={isMerging || index === 0}
+                            >
+                              <ChevronUp className="h-4 w-4" aria-hidden="true" />
+                            </button>
+                            <button
+                              type="button"
+                              aria-label={`Move output page ${index + 1} down`}
+                              onClick={() => moveSelectedPage(index, 1)}
+                              disabled={isMerging || index === selectedPages.length - 1}
+                            >
+                              <ChevronDown className="h-4 w-4" aria-hidden="true" />
+                            </button>
+                            <button
+                              type="button"
+                              aria-label={`Remove page ${item.pageIndex + 1} from ${item.fileEntry?.name || 'PDF'} output`}
+                              onClick={() => item.fileEntry && togglePageSelection(item.fileEntry, item.pageIndex)}
+                              disabled={isMerging}
+                            >
+                              <Trash2 className="h-4 w-4" aria-hidden="true" />
+                            </button>
+                          </div>
+                        </div>
+                      </Reorder.Item>
+                    ))}
+                  </Reorder.Group>
+                )}
+              </section>
+            </div>
+          )}
+
+          <div className="merge-output-settings">
+            <div className="merge-option-field">
+              <label htmlFor="merge-output-filename">Output filename</label>
+              <input
+                id="merge-output-filename"
+                type="text"
+                value={outputFileName}
+                disabled={isMerging}
+                onChange={(event) => {
+                  setOutputFileName(event.target.value);
+                  setOutputBytes(null);
+                  setSuccess(false);
+                }}
+                maxLength={120}
+                autoComplete="off"
+              />
+              <p>The .pdf extension is added automatically when needed.</p>
+            </div>
+            <div className="merge-option-field">
+              <label htmlFor="merge-page-size">Page size</label>
+              <select
+                id="merge-page-size"
+                value={pageSize}
+                disabled={isMerging}
+                onChange={(event) => {
+                  setPageSize(event.target.value);
+                  setOutputBytes(null);
+                  setSuccess(false);
+                }}
+              >
+                <option value="preserve">Preserve original page sizes</option>
+                <option value="letter">Fit to US Letter</option>
+                <option value="a4">Fit to A4</option>
+              </select>
+              <p>Fitting centers and scales page content proportionally without cropping. Some interactive PDF features may not carry over; preserve original sizes when they matter.</p>
+            </div>
+            <label className="merge-option-checkbox">
+              <input
+                type="checkbox"
+                checked={addSourceBookmarks}
+                disabled={isMerging}
+                onChange={(event) => {
+                  setAddSourceBookmarks(event.target.checked);
+                  setOutputBytes(null);
+                  setSuccess(false);
+                }}
+              />
+              <span>
+                <strong>Bookmark each source file</strong>
+                <small>Add a PDF outline entry at the first page from each source document.</small>
+              </span>
+            </label>
+            <label className="merge-option-checkbox">
+              <input
+                type="checkbox"
+                checked={addBlankPages}
+                disabled={isMerging}
+                onChange={(event) => {
+                  setAddBlankPages(event.target.checked);
+                  setOutputBytes(null);
+                  setSuccess(false);
+                }}
+              />
+              <span>
+                <strong>Insert a blank page between source files</strong>
+                <small>In Select pages mode, a blank is inserted whenever the output switches to a different source file.</small>
+              </span>
+            </label>
+          </div>
+        </section>
+
         <div className="pdf-workflow-actions pt-4">
             <button
               type="button"
               onClick={mergePdfs}
-              disabled={isMerging || files.length < 2}
+              disabled={isMerging || files.length < 2 || (mergeMode === 'select' && selectedPages.length === 0)}
               className={`
                 w-full flex items-center justify-center gap-2 py-4 px-6 rounded-xl font-bold text-white transition-all
                 ${isMerging || files.length < 2 
@@ -409,7 +721,7 @@ const PdfMerger = () => {
             {isMerging && <p className="sr-only" role="status">Merging the selected PDFs.</p>}
             {success && outputBytes && (
               <DownloadReadyCard
-                fileName="merged_document.pdf"
+                fileName={normalizePdfFileName(outputFileName)}
                 sizeBytes={outputBytes.length}
                 onDownload={downloadMergedPdf}
                 downloadLabel="Download PDF"

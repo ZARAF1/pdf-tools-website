@@ -5,7 +5,7 @@ import { readFile } from 'node:fs/promises';
 const expectedAttachments = new Map([
   ['crop', ['One unencrypted PDF · no fixed page cap', 'Crop PDF pages', 'Cropping changes the visible page boundary; it does not permanently remove content outside it.']],
   ['edit', ['One unencrypted PDF · no fixed page cap', 'Add content to PDF pages', 'Add text, images, drawings, highlights, or shapes, and remove pages. Existing text is not edited or replaced; added marks are overlays.']],
-  ['merge', ['2–5 unencrypted PDF files', 'Combine PDFs into one file', 'Arrange whole files before merging; pages within each file stay together.']],
+  ['merge', ['2–5 unencrypted PDF files', 'Combine PDFs into one file', 'Merge whole files, or choose individual pages and arrange their final output order.']],
   ['split', ['One unencrypted PDF · no fixed page cap', 'Split or extract PDF pages', 'Extract selected pages into one PDF or split the whole document into single-page PDFs.']],
   ['rotate', ['One unencrypted PDF · no fixed page cap', 'Rotate PDF pages', 'Rotate every page or only the pages and ranges you select.']],
   ['protect', ['One unencrypted PDF · no fixed page cap', 'Protect a PDF with a password', 'Add an opening password to a new copy; keep the password because it cannot be recovered here.']],

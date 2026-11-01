@@ -41,14 +41,19 @@ const TOOL_CONTENT = {
   },
   merge: {
     title: 'Merge PDF',
-    description: 'Combine PDF files into one document, with control over their order.',
-    intro: 'Bring related documents together in one PDF that is easier to save, share, and review. Choose at least two files and add no more than five, then arrange the file list into the sequence you want. The pages from each document stay together; this tool changes the order of whole files, not individual pages within a file. Before merging, check that the correct PDFs are listed and that their order makes sense for the finished document. The tool creates a new combined copy, so your original files remain unchanged. When processing finishes, use the download control to save the result. Your selected PDFs are handled in your browser and are not sent to an external server for merging.',
-    mechanism: 'Choose your PDF files, arrange them in the order you want, and select Merge PDFs. The combined file is created in your browser for you to download. Your files stay in your browser and are not sent to an external server.',
-    steps: ['Choose two or more PDF files (up to five).', 'Reorder the files with drag-and-drop or the move buttons.', 'Select Merge PDFs and download the combined document.'],
+    description: 'Combine PDFs, select individual pages, and preview their final order.',
+    intro: 'Bring up to five related PDFs together in a new document. Keep the simple Merge all pages mode to combine whole files in their listed order, or switch to Select pages to choose individual pages from each source. In selective mode, each page you choose is added to a live output preview in that exact order; you can inspect larger thumbnails, remove pages, and reorder the sequence before creating the PDF. Set a custom output filename, add source-file bookmarks, preserve each original page size, or proportionally fit pages to A4 or US Letter. Fitting re-embeds the visible page content and may not retain interactive features such as forms or annotations, so preserve original page sizes when those matter. You can also insert blank pages whenever the output moves between source files. The original PDFs remain unchanged. Page previews and merging happen in your browser; no file is sent to an external processing server.',
+    mechanism: 'PDF.js renders source-page previews locally. pdf-lib copies the chosen pages in their displayed output order, optionally adds source bookmarks and blank separator pages, and can re-embed and scale each page proportionally onto A4 or US Letter. Fitting may not retain interactive PDF features such as forms or annotations. The generated document is a separate browser-side PDF.',
+    steps: ['Choose two or more unencrypted PDFs (up to five).', 'Keep Merge all pages to combine complete documents in file order, or choose Select pages.', 'In Select pages, click thumbnails in the order you want them to appear; inspect larger previews and reorder or remove pages in the live output.', 'Choose an output filename and optional bookmarks, page sizing, or blank separators.', 'Select Merge PDFs, then review and download the completed document.'],
     faqs: [
       ['How many PDFs can I merge?', 'You can merge up to five PDF files at a time, and at least two files are required.'],
       ['Will the original files change?', 'No. The merger creates a separate output document; it does not overwrite the selected files.'],
-      ['Can I change the page order?', 'You can reorder whole input files before merging. This version does not reorder pages within an individual file.']
+      ['Can I choose and arrange individual pages?', 'Yes. Switch to Select pages, then click source thumbnails. Each newly selected page is appended to the live output in click order. Drag the output thumbnails or use the move controls to change the order; click a selected source page again to remove it.'],
+      ['What does the live output preview show?', 'It shows the selected page thumbnails and their order, including where optional blank separator pages will be inserted. It is a sequence preview, not a combined-page canvas.'],
+      ['What happens when I fit pages to A4 or US Letter?', 'Each page is centered and scaled proportionally to fit the chosen paper dimensions. Its aspect ratio is preserved; content is not intentionally stretched or cropped, and unused margins may remain. Re-embedding may not retain interactive features such as forms or annotations, so use Preserve original page sizes when those features matter.'],
+      ['How do source bookmarks work?', 'When enabled, the output gets a bookmark for each source PDF that points to the first page from that file in the final sequence.'],
+      ['When are blank pages inserted?', 'When enabled, a blank page is inserted between adjacent source files. In Select pages mode, this means whenever consecutive output pages switch from one source PDF to another.'],
+      ['Can I set the output filename?', 'Yes. Enter a filename in Merge options; the tool adds the .pdf extension if it is missing.']
     ]
   },
   split: {
@@ -272,7 +277,7 @@ const ATTACHMENT_RULES = {
     ruleKey: 'pdf2To5',
     rule: '2–5 unencrypted PDF files',
     infoTitle: 'Combine PDFs into one file',
-    info: 'Arrange whole files before merging; pages within each file stay together.'
+    info: 'Merge whole files, or choose individual pages and arrange their final output order.'
   },
   compress: {
     title: 'Attach PDFs Here',
