@@ -16,6 +16,40 @@ test('Merge PDF keeps merge-all as the default and offers selective page mode', 
   assert.match(picker, /Larger preview/);
 });
 
+test('Merge PDF settings do not show standalone horizontal divider lines', () => {
+  const modeSwitch = styles.match(/\.merge-mode-switch\s*\{([^}]*)\}/)?.[1];
+  const outputSettings = styles.match(/\.merge-output-settings\s*\{([^}]*)\}/)?.[1];
+
+  assert.ok(modeSwitch, 'merge mode switch styles are defined');
+  assert.ok(outputSettings, 'merge output settings styles are defined');
+  assert.doesNotMatch(modeSwitch, /border-bottom\s*:/);
+  assert.doesNotMatch(modeSwitch, /padding-bottom\s*:/);
+  assert.doesNotMatch(outputSettings, /border-top\s*:/);
+  assert.doesNotMatch(outputSettings, /padding-top\s*:/);
+});
+
+test('Merge PDF settings remove top margin and leave space before the file list', () => {
+  const settingsSpacing = styles.match(
+    /\.tool-attachment-content \.pdf-tool-workflow\.space-y-8 > \.merge-pdf-settings\s*\{([^}]*)\}/
+  )?.[1];
+
+  assert.ok(settingsSpacing, 'Merge settings need a scoped spacing override');
+  assert.match(settingsSpacing, /margin-block-start:\s*0\s*;/);
+  assert.match(settingsSpacing, /margin-block-end:\s*1rem\s*;/);
+});
+
+test('Merge source filenames are prominent and preview sections are separated', () => {
+  const sourceTitle = styles.match(/\.merge-page-source-title\s*\{([^}]*)\}/)?.[1];
+  const sourcePickers = styles.match(/\.merge-source-page-pickers\s*\{([^}]*)\}/)?.[1];
+
+  assert.ok(sourceTitle, 'source filename styles are defined');
+  assert.match(sourceTitle, /font-size:\s*1\.125rem\s*;/);
+  assert.match(sourceTitle, /text-decoration:\s*underline\s*;/);
+  assert.ok(sourcePickers, 'source preview sections have a layout rule');
+  assert.match(sourcePickers, /display:\s*grid\s*;/);
+  assert.match(sourcePickers, /gap:\s*1rem\s*;/);
+});
+
 test('selected pages are previewed in their live output order and can be reordered', () => {
   assert.match(merger, /<Reorder\.Group[^>]*axis="x"[^>]*values=\{selectedPages\}/);
   assert.match(merger, /onReorder=\{reorderSelectedPages\}/);

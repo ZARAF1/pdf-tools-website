@@ -4039,12 +4039,15 @@ body {
   padding: clamp(1rem, 2.5vw, 1.5rem);
 }
 
+.tool-attachment-content .pdf-tool-workflow.space-y-8 > .merge-pdf-settings {
+  margin-block-start: 0;
+  margin-block-end: 1rem;
+}
+
 .merge-mode-switch {
   display: flex;
   flex-wrap: wrap;
   gap: 0.5rem;
-  border-bottom: 1px solid var(--border-color);
-  padding-bottom: 1rem;
 }
 
 .merge-mode-switch button,
@@ -4124,7 +4127,15 @@ body {
 .merge-page-source-title {
   overflow-wrap: anywhere;
   color: var(--text-primary);
+  font-size: 1.125rem;
   font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 0.15em;
+}
+
+.merge-source-page-pickers {
+  display: grid;
+  gap: 1rem;
 }
 
 .merge-page-source-actions {
@@ -4371,8 +4382,6 @@ body {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 1rem;
-  border-top: 1px solid var(--border-color);
-  padding-top: 1.25rem;
 }
 
 .merge-option-field {
