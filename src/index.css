@@ -1519,6 +1519,10 @@ body {
   animation: home-hero-tool-atom-orbit 18s linear infinite;
 }
 
+.home-hero-tool-fan.is-open.is-ready .home-hero-tool-tooltip {
+  animation: home-hero-tool-tooltip-counter-orbit 18s linear infinite;
+}
+
 .home-hero-tool-fan-ring {
   position: absolute;
   top: 50%;
@@ -1649,15 +1653,26 @@ body {
   color: #2563eb;
 }
 
-.home-hero-tool-tooltip {
+.home-hero-tool-tooltip-position {
   position: absolute;
   bottom: calc(100% + 0.55rem);
   left: 50%;
   width: max-content;
   max-width: 11rem;
+  opacity: 0;
+  pointer-events: none;
+  transform: translate(-50%, 0.25rem);
+  transition: opacity 140ms ease, transform 140ms ease;
+}
+
+.home-hero-tool-tooltip {
+  display: block;
+  width: max-content;
+  max-width: inherit;
   padding: 0.4rem 0.6rem;
   border: 1px solid rgb(148 163 184 / 0.45);
   border-radius: 0.55rem;
+  transform-origin: 50% 50%;
   background: #0f172a;
   box-shadow: 0 6px 18px rgb(15 23 42 / 0.2);
   color: #ffffff;
@@ -1666,14 +1681,10 @@ body {
   line-height: 1.35;
   text-align: center;
   white-space: normal;
-  opacity: 0;
-  pointer-events: none;
-  transform: translate(-50%, 0.25rem);
-  transition: opacity 140ms ease, transform 140ms ease;
 }
 
-.home-hero-tool-link:hover .home-hero-tool-tooltip,
-.home-hero-tool-link:focus-visible .home-hero-tool-tooltip {
+.home-hero-tool-link:hover .home-hero-tool-tooltip-position,
+.home-hero-tool-link:focus-visible .home-hero-tool-tooltip-position {
   opacity: 1;
   transform: translate(-50%, 0);
 }
@@ -1702,6 +1713,15 @@ body {
   }
   to {
     transform: rotate(1turn);
+  }
+}
+
+@keyframes home-hero-tool-tooltip-counter-orbit {
+  from {
+    rotate: 0turn;
+  }
+  to {
+    rotate: -1turn;
   }
 }
 
@@ -1961,6 +1981,10 @@ body {
   .home-hero-orbit,
   .home-hero-category-orbit,
   .home-hero-tool-fan.is-open.is-ready {
+    animation: none;
+  }
+
+  .home-hero-tool-fan.is-open.is-ready .home-hero-tool-tooltip {
     animation: none;
   }
 }

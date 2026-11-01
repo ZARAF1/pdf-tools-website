@@ -169,8 +169,10 @@ const Home = () => {
                                 className={`home-hero-tool-icon${localizedTool.id === 'merge' ? ' home-hero-tool-icon--merge' : ''}`}
                                 aria-hidden="true"
                               />
-                              <span className="home-hero-tool-tooltip" aria-hidden="true" role="tooltip">
-                                {localizedTool.name}
+                              <span className="home-hero-tool-tooltip-position" aria-hidden="true">
+                                <span className="home-hero-tool-tooltip" role="tooltip">
+                                  {localizedTool.name}
+                                </span>
                               </span>
                             </Link>
                           );
