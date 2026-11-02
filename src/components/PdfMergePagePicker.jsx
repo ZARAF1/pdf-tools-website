@@ -101,7 +101,7 @@ const PdfMergePagePicker = ({ fileEntry, selectedPages, onTogglePage, onSelectVi
         </div>
         <div className="merge-page-source-actions">
           <button type="button" onClick={() => onSelectVisible(fileEntry.id, previews.length)} disabled={!previews.length || disabled}>
-            Select visible
+            Select All
           </button>
           <button type="button" onClick={() => onClear(fileEntry.id)} disabled={!selectedCount || disabled}>
             Clear
@@ -148,9 +148,9 @@ const PdfMergePagePicker = ({ fileEntry, selectedPages, onTogglePage, onSelectVi
                 }}
                 disabled={disabled}
                 aria-label={`View larger preview of ${fileEntry.name}, page ${pageIndex + 1}`}
+                title={`Larger preview, page ${pageIndex + 1}`}
               >
                 <Eye className="h-4 w-4" aria-hidden="true" />
-                Larger preview
               </button>
             </div>
           );

@@ -420,80 +420,98 @@ const PdfMerger = () => {
       {/* File List */}
       {files.length > 0 && (
         <>
-        <div className="pdf-workflow-selected space-y-3">
-          <div className="flex justify-between items-center px-1">
-            <h4 className="text-sm font-bold text-slate-500 uppercase tracking-wider">
-              Files to merge ({files.length}/{MAX_FILES})
-            </h4>
-          </div>
-          
-          <Reorder.Group axis="y" values={files} onReorder={reorderFiles} className="space-y-3">
-            {files.map((fileObj, index) => (
-              <Reorder.Item 
-                key={fileObj.id} 
-                value={fileObj}
-                className="pdf-attached-file-card group relative flex items-center justify-between bg-white p-4 rounded-xl border border-slate-200 shadow-sm hover:shadow-md transition-shadow"
-              >
-                <div className="flex items-center gap-4 flex-1 min-w-0">
-                  <AttachedFileIcon />
-                  <div className="truncate">
-                    <p className="text-sm font-medium text-slate-700 truncate">{fileObj.name}</p>
-                    <p className="text-xs text-slate-400">{fileObj.size}</p>
-                  </div>
-                </div>
+        <div className="pdf-workflow-selected">
+          <section className="merge-selected-files" aria-labelledby="merge-selected-files-heading">
+            <header className="merge-selected-files-header">
+              <div>
+                <h3 id="merge-selected-files-heading" className="merge-selected-files-title">Files to merge</h3>
+                <p>Drag files to arrange their order.</p>
+              </div>
+              <span className="merge-selected-files-count" aria-label={`${files.length} of ${MAX_FILES} PDFs selected`}>
+                {files.length} / {MAX_FILES}
+              </span>
+            </header>
 
-                <div className="flex items-center gap-1">
-                  {/* Move controls for mobile/non-drag users */}
-                  <div className="flex flex-col mr-2 border-r border-slate-100 pr-2">
-                    <button
-                      type="button"
-                      aria-label={`Move ${fileObj.name} up`}
-                      onClick={() => moveFile(index, -1)}
-                      disabled={isMerging || index === 0}
-                      className="p-1 hover:bg-slate-100 rounded disabled:opacity-20"
-                    >
-                      <ChevronUp className="w-4 h-4 text-slate-500" aria-hidden="true" />
-                    </button>
-                    <button
-                      type="button"
-                      aria-label={`Move ${fileObj.name} down`}
-                      onClick={() => moveFile(index, 1)}
-                      disabled={isMerging || index === files.length - 1}
-                      className="p-1 hover:bg-slate-100 rounded disabled:opacity-20"
-                    >
-                      <ChevronDown className="w-4 h-4 text-slate-500" aria-hidden="true" />
-                    </button>
+            <Reorder.Group
+              axis="y"
+              values={files}
+              onReorder={reorderFiles}
+              className="merge-selected-file-list"
+              aria-label="PDFs in merge order"
+            >
+              {files.map((fileObj, index) => (
+                <Reorder.Item
+                  key={fileObj.id}
+                  value={fileObj}
+                  className="pdf-attached-file-card merge-selected-file-card group"
+                >
+                  <div className="merge-selected-file-main">
+                    <span className="merge-selected-file-position" aria-hidden="true">
+                      {String(index + 1).padStart(2, '0')}
+                    </span>
+                    <AttachedFileIcon />
+                    <div className="merge-selected-file-details">
+                      <p className="merge-selected-file-name" title={fileObj.name}>{fileObj.name}</p>
+                      <p className="merge-selected-file-meta">
+                        <span>{fileObj.pageCount} {fileObj.pageCount === 1 ? 'page' : 'pages'}</span>
+                        <span aria-hidden="true">·</span>
+                        <span>{fileObj.size}</span>
+                      </p>
+                    </div>
                   </div>
 
-                  <button
-                    type="button"
-                    aria-label={`Replace ${fileObj.name}`}
-                    title={`Replace ${fileObj.name}`}
-                    data-merge-file-replace={fileObj.id}
-                    onPointerDown={(event) => event.stopPropagation()}
-                    onClick={() => replaceFile(fileObj.id)}
-                    disabled={isValidating || isMerging}
-                    className="pdf-attached-file-action is-replace disabled:cursor-not-allowed disabled:opacity-50"
-                  >
-                    <RefreshCw className="w-5 h-5" aria-hidden="true" />
-                  </button>
+                  <div className="merge-selected-file-actions">
+                    <div className="merge-selected-file-order" role="group" aria-label={`Change order of ${fileObj.name}`}>
+                      <button
+                        type="button"
+                        aria-label={`Move ${fileObj.name} up`}
+                        onClick={() => moveFile(index, -1)}
+                        disabled={isMerging || index === 0}
+                        className="merge-selected-file-order-button"
+                      >
+                        <ChevronUp aria-hidden="true" />
+                      </button>
+                      <button
+                        type="button"
+                        aria-label={`Move ${fileObj.name} down`}
+                        onClick={() => moveFile(index, 1)}
+                        disabled={isMerging || index === files.length - 1}
+                        className="merge-selected-file-order-button"
+                      >
+                        <ChevronDown aria-hidden="true" />
+                      </button>
+                    </div>
 
-                  <button
-                    type="button"
-                    aria-label={`Remove ${fileObj.name}`}
-                    title={`Remove ${fileObj.name}`}
-                    data-merge-file-remove={fileObj.id}
-                    onPointerDown={(event) => event.stopPropagation()}
-                    onClick={() => removeFile(fileObj.id)}
-                    disabled={isValidating || isMerging}
-                    className="pdf-attached-file-action is-remove disabled:cursor-not-allowed disabled:opacity-50"
-                  >
-                    <Trash2 className="w-5 h-5" aria-hidden="true" />
-                  </button>
-                </div>
-              </Reorder.Item>
-            ))}
-          </Reorder.Group>
+                    <button
+                      type="button"
+                      aria-label={`Replace ${fileObj.name}`}
+                      title={`Replace ${fileObj.name}`}
+                      data-merge-file-replace={fileObj.id}
+                      onPointerDown={(event) => event.stopPropagation()}
+                      onClick={() => replaceFile(fileObj.id)}
+                      disabled={isValidating || isMerging}
+                      className="pdf-attached-file-action is-replace disabled:cursor-not-allowed disabled:opacity-50"
+                    >
+                      <RefreshCw className="w-5 h-5" aria-hidden="true" />
+                    </button>
+
+                    <button
+                      type="button"
+                      aria-label={`Remove ${fileObj.name}`}
+                      title={`Remove ${fileObj.name}`}
+                      data-merge-file-remove={fileObj.id}
+                      onPointerDown={(event) => event.stopPropagation()}
+                      onClick={() => removeFile(fileObj.id)}
+                      disabled={isValidating || isMerging}
+                      className="pdf-attached-file-action is-remove disabled:cursor-not-allowed disabled:opacity-50"
+                    >
+                      <Trash2 className="w-5 h-5" aria-hidden="true" />
+                    </button>
+                  </div>
+                </Reorder.Item>
+              ))}
+            </Reorder.Group>
+          </section>
         </div>
 
         {uploadZone}
@@ -516,6 +534,13 @@ const PdfMerger = () => {
             >
               Select pages
             </button>
+          </div>
+
+          <div className="merge-section-heading">
+            <div>
+              <h3 className="merge-section-heading-title">Choose Settings</h3>
+              <p>Set the output name and page size, and choose optional bookmarks or blank pages.</p>
+            </div>
           </div>
 
           <div className="merge-output-settings">
@@ -592,8 +617,8 @@ const PdfMerger = () => {
             <div className="merge-page-selection-workspace">
               <div className="merge-section-heading">
                 <div>
-                  <h3>Select pages</h3>
-                  <p className="pdf-preview-instructions">Click page previews to add them to the live output in that order. New selections start empty.</p>
+                  <h3 className="merge-section-heading-title">Select pages</h3>
+                  <p>Click page previews to add them to the live output in that order. New selections start empty.</p>
                 </div>
                 <p className="merge-page-count-summary" aria-live="polite">
                   {selectedPages.length} pages selected
@@ -617,8 +642,8 @@ const PdfMerger = () => {
               <section className="merge-live-output" aria-labelledby="merge-live-output-heading">
                 <div className="merge-section-heading">
                   <div>
-                    <h3 id="merge-live-output-heading">Live output preview</h3>
-                    <p className="pdf-preview-instructions">Pages are shown in the order they will appear. Drag to reorder, or use the move buttons.</p>
+                    <h3 id="merge-live-output-heading" className="merge-section-heading-title">Live output preview</h3>
+                    <p>Pages are shown in the order they will appear. Drag to reorder, or use the move buttons.</p>
                   </div>
                   <p className="merge-page-count-summary">
                     {selectedPages.length + blankPageCount} output pages
