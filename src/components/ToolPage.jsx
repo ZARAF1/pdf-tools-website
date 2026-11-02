@@ -572,7 +572,7 @@ const ToolPage = ({ tool, children }) => {
   }, [content, pageDescription, pageTitleText]);
 
   return (
-    <article className="space-y-8">
+    <article className={tool === 'merge' ? 'space-y-8 merge-tool-page' : 'space-y-8'}>
       <header className="tool-detail-hero">
         <div className="tool-detail-hero-main">
           <div className="tool-detail-heading">

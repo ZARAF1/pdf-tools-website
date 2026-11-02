@@ -311,6 +311,20 @@ const PdfMerger = () => {
   });
   const blankPageCount = liveOutputItems.filter((item) => item.blankBefore).length;
 
+  const chooseFilesButton = (className) => (
+    <button
+      type="button"
+      className={`pdf-editor-primary-button ${className}`}
+      onClick={(event) => {
+        event.stopPropagation();
+        open();
+      }}
+      disabled={isValidating || isMerging || files.length >= MAX_FILES}
+    >
+      Choose Up to 5 PDFs
+    </button>
+  );
+
   const getOutputPageStyle = (preview) => {
     if (!preview) return undefined;
     if (pageSize === 'preserve') {
@@ -368,6 +382,13 @@ const PdfMerger = () => {
     setTimeout(() => URL.revokeObjectURL(url), 10000);
   };
 
+  const uploadInputs = (
+    <>
+      <input {...getInputProps({ 'aria-label': 'Choose PDF files to merge' })} />
+      <input {...getReplaceInputProps()} />
+    </>
+  );
+
   const uploadZone = (
     <div
       {...getRootProps({ role: 'group', 'aria-label': 'Choose PDF files to merge', 'data-merge-upload': '' })}
@@ -377,8 +398,6 @@ const PdfMerger = () => {
         ${files.length >= MAX_FILES ? 'pointer-events-none opacity-50 cursor-not-allowed' : ''}
       `}
     >
-      <input {...getInputProps({ 'aria-label': 'Choose PDF files to merge' })} />
-      <input {...getReplaceInputProps()} />
       <div className="merge-pdf-upload-content">
         <div className="pdf-upload-icon" aria-hidden="true">
           {isValidating
@@ -398,23 +417,14 @@ const PdfMerger = () => {
           </h3>
           <p>Combine PDFs into a single document in your chosen order.</p>
         </div>
-        <button
-          type="button"
-          className="pdf-editor-primary-button merge-pdf-upload-button"
-          onClick={(event) => {
-            event.stopPropagation();
-            open();
-          }}
-          disabled={isValidating || isMerging || files.length >= MAX_FILES}
-        >
-          Choose Up to 5 PDFs
-        </button>
+        {chooseFilesButton('merge-pdf-upload-button')}
       </div>
     </div>
   );
 
   return (
     <div className="pdf-tool-workflow space-y-8">
+      {uploadInputs}
       {files.length === 0 && uploadZone}
 
       {/* File List */}
@@ -511,10 +521,11 @@ const PdfMerger = () => {
                 </Reorder.Item>
               ))}
             </Reorder.Group>
+            <div className="merge-selected-files-footer">
+              {chooseFilesButton('merge-pdf-add-files-button')}
+            </div>
           </section>
         </div>
-
-        {uploadZone}
 
         <section className="merge-pdf-settings space-y-6" aria-label="Merge options">
           <div className="merge-control-intro">
@@ -541,113 +552,117 @@ const PdfMerger = () => {
             </button>
           </div>
 
-          <div className="merge-section-heading">
-            <div>
-              <h3 className="merge-section-heading-title">Choose Settings</h3>
-              <p>Set the output name and page size, and choose optional bookmarks or blank pages.</p>
+          <div className="merge-output-settings-panel">
+            <div className="merge-section-heading merge-output-settings-heading">
+              <div>
+                <h3 className="merge-section-heading-title merge-output-settings-title">Choose Settings</h3>
+                <p>Set the output name and page size, and choose optional bookmarks or blank pages.</p>
+              </div>
             </div>
-          </div>
 
-          <div className="merge-output-settings">
-            <div className="merge-option-field">
-              <label htmlFor="merge-output-filename">Output filename</label>
-              <input
-                id="merge-output-filename"
-                type="text"
-                value={outputFileName}
-                disabled={isMerging}
-                onChange={(event) => {
-                  setOutputFileName(event.target.value);
-                  setOutputBytes(null);
-                  setSuccess(false);
-                }}
-                maxLength={120}
-                autoComplete="off"
-              />
-              <p>The .pdf extension is added automatically when needed.</p>
+            <div className="merge-output-settings">
+              <div className="merge-option-field">
+                <label htmlFor="merge-output-filename">Output filename</label>
+                <input
+                  id="merge-output-filename"
+                  type="text"
+                  value={outputFileName}
+                  disabled={isMerging}
+                  onChange={(event) => {
+                    setOutputFileName(event.target.value);
+                    setOutputBytes(null);
+                    setSuccess(false);
+                  }}
+                  maxLength={120}
+                  autoComplete="off"
+                />
+                <p>The .pdf extension is added automatically when needed.</p>
+              </div>
+              <div className="merge-option-field">
+                <label htmlFor="merge-page-size">Page size</label>
+                <select
+                  id="merge-page-size"
+                  value={pageSize}
+                  disabled={isMerging}
+                  onChange={(event) => {
+                    setPageSize(event.target.value);
+                    setOutputBytes(null);
+                    setSuccess(false);
+                  }}
+                >
+                  <option value="preserve">Preserve original page sizes</option>
+                  <option value="letter">Fit to US Letter</option>
+                  <option value="a4">Fit to A4</option>
+                </select>
+                <p>Fitting centers and scales page content proportionally without cropping. Some interactive PDF features may not carry over; preserve original sizes when they matter.</p>
+              </div>
+              <label className="merge-option-checkbox">
+                <input
+                  type="checkbox"
+                  checked={addSourceBookmarks}
+                  disabled={isMerging}
+                  onChange={(event) => {
+                    setAddSourceBookmarks(event.target.checked);
+                    setOutputBytes(null);
+                    setSuccess(false);
+                  }}
+                />
+                <span>
+                  <strong>Bookmark each source file</strong>
+                  <small>Add a PDF outline entry at the first page from each source document.</small>
+                </span>
+              </label>
+              <label className="merge-option-checkbox">
+                <input
+                  type="checkbox"
+                  checked={addBlankPages}
+                  disabled={isMerging}
+                  onChange={(event) => {
+                    setAddBlankPages(event.target.checked);
+                    setOutputBytes(null);
+                    setSuccess(false);
+                  }}
+                />
+                <span>
+                  <strong>Insert a blank page between source files</strong>
+                  <small>In Select pages mode, a blank is inserted whenever the output switches to a different source file.</small>
+                </span>
+              </label>
             </div>
-            <div className="merge-option-field">
-              <label htmlFor="merge-page-size">Page size</label>
-              <select
-                id="merge-page-size"
-                value={pageSize}
-                disabled={isMerging}
-                onChange={(event) => {
-                  setPageSize(event.target.value);
-                  setOutputBytes(null);
-                  setSuccess(false);
-                }}
-              >
-                <option value="preserve">Preserve original page sizes</option>
-                <option value="letter">Fit to US Letter</option>
-                <option value="a4">Fit to A4</option>
-              </select>
-              <p>Fitting centers and scales page content proportionally without cropping. Some interactive PDF features may not carry over; preserve original sizes when they matter.</p>
-            </div>
-            <label className="merge-option-checkbox">
-              <input
-                type="checkbox"
-                checked={addSourceBookmarks}
-                disabled={isMerging}
-                onChange={(event) => {
-                  setAddSourceBookmarks(event.target.checked);
-                  setOutputBytes(null);
-                  setSuccess(false);
-                }}
-              />
-              <span>
-                <strong>Bookmark each source file</strong>
-                <small>Add a PDF outline entry at the first page from each source document.</small>
-              </span>
-            </label>
-            <label className="merge-option-checkbox">
-              <input
-                type="checkbox"
-                checked={addBlankPages}
-                disabled={isMerging}
-                onChange={(event) => {
-                  setAddBlankPages(event.target.checked);
-                  setOutputBytes(null);
-                  setSuccess(false);
-                }}
-              />
-              <span>
-                <strong>Insert a blank page between source files</strong>
-                <small>In Select pages mode, a blank is inserted whenever the output switches to a different source file.</small>
-              </span>
-            </label>
           </div>
 
           {mergeMode === 'select' && (
             <div className="merge-page-selection-workspace">
-              <div className="merge-section-heading">
-                <div>
-                  <h3 className="merge-section-heading-title">Select pages</h3>
-                  <p>Click page previews to add them to the live output in that order. New selections start empty.</p>
+              <div className="merge-page-selection-panel">
+                <div className="merge-section-heading merge-page-selection-heading">
+                  <div>
+                    <h3 className="merge-section-heading-title merge-page-selection-title">Select pages</h3>
+                    <p>Click page previews to add them to the live output in that order. New selections start empty.</p>
+                  </div>
+                  <p className="merge-page-count-summary" aria-live="polite">
+                    {selectedPages.length} pages selected
+                  </p>
                 </div>
-                <p className="merge-page-count-summary" aria-live="polite">
-                  {selectedPages.length} pages selected
-                </p>
-              </div>
-              <div className="merge-source-page-pickers">
-                {files.map((fileEntry) => (
-                  <PdfMergePagePicker
-                    key={fileEntry.id}
-                    fileEntry={fileEntry}
-                    selectedPages={selectedPages}
-                    onTogglePage={togglePageSelection}
-                    onSelectVisible={selectVisiblePages}
-                    onClear={clearFilePageSelection}
-                    onPreviewsReady={handlePreviewsReady}
-                    disabled={isMerging}
-                  />
-                ))}
+                <div className="merge-source-page-pickers">
+                  {files.map((fileEntry) => (
+                    <PdfMergePagePicker
+                      key={fileEntry.id}
+                      fileEntry={fileEntry}
+                      selectedPages={selectedPages}
+                      onTogglePage={togglePageSelection}
+                      onSelectVisible={selectVisiblePages}
+                      onClear={clearFilePageSelection}
+                      onPreviewsReady={handlePreviewsReady}
+                      disabled={isMerging}
+                    />
+                  ))}
+                </div>
               </div>
 
-              <section className="merge-live-output" aria-labelledby="merge-live-output-heading">
-                <div className="merge-section-heading">
+              <section className="merge-live-output merge-live-output-panel" aria-labelledby="merge-live-output-heading">
+                <div className="merge-section-heading merge-live-output-heading">
                   <div>
-                    <h3 id="merge-live-output-heading" className="merge-section-heading-title">Live output preview</h3>
+                    <h3 id="merge-live-output-heading" className="merge-section-heading-title merge-live-output-title">Live output preview</h3>
                     <p>Pages are shown in the order they will appear. Drag to reorder, or use the move buttons.</p>
                   </div>
                   <p className="merge-page-count-summary">
@@ -656,7 +671,7 @@ const PdfMerger = () => {
                 </div>
                 <div className="merge-live-output-content">
                   {selectedPages.length === 0 ? (
-                    <p className="merge-live-output-empty pdf-preview-instructions">Select a page above to start building the output.</p>
+                    <p className="merge-live-output-empty">Select a page above to start building the output.</p>
                   ) : (
                     <Reorder.Group
                       axis="x"
