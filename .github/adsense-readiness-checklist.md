@@ -2,6 +2,8 @@
 
 This is the persistent evidence log. Update the observed result and evidence when a check is run. A build or visible control alone does not verify a user flow. AdSense readiness is not approval.
 
+**Merge Choose Settings–Select pages spacing (2026-11-02):** Removed the extra 16 px top padding from the Select pages workspace. Chromium measures a consistent 24 px gap after Choose Settings, matching the preceding merge-mode/settings gap; mobile document width remains within the 390 px viewport. Regression failed before the fix; Merge tests pass (24/24), full suite (202/202), production build, and `git diff --check` pass. **PASS — VERIFIED**
+
 **Merge Select pages and Live output preview grouping (2026-11-02):** Grouped each heading and its contents inside a theme-aware dark panel. Blue tint is limited to heading labels; the empty-output prompt remains neutral. Chromium verified both themes and no horizontal overflow at 390 px. Focused Merge/preview tests pass (25/25); full suite passes (201/201), production build succeeds with existing warnings, and `git diff --check` passes. **PASS — VERIFIED**
 
 **Merge Choose Settings grouping (2026-11-02):** Combined the heading, explanation, and all output controls in one theme-aware panel. Browser checks confirm the dark surface and title-only blue tint in dark and light themes, and no horizontal overflow at 390 px. Regression and focused Merge tests pass (22/22); the full suite passes (200/200), production build succeeds with existing warnings, and `git diff --check` passes. **PASS — VERIFIED**

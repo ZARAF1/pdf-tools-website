@@ -183,6 +183,14 @@ test('Merge page selection and live output each group their heading and content 
   assert.doesNotMatch(outputContentStyle, /margin-block-start:\s*1rem\s*;/);
 });
 
+test('Merge page-selection panel uses the parent section gap without extra top padding', () => {
+  const workspaceStyle = styles.match(/\.merge-page-selection-workspace\s*\{([^}]*)\}/)?.[1];
+
+  assert.ok(workspaceStyle, 'the page-selection workspace has a dedicated layout rule');
+  assert.match(workspaceStyle, /gap:\s*1rem\s*;/);
+  assert.doesNotMatch(workspaceStyle, /padding-top\s*:/, 'the parent section gap is not doubled by workspace padding');
+});
+
 test('Merge section headings carry the highlight while their explanations stay unhighlighted', () => {
   for (const heading of ['Choose Settings', 'Select pages', 'Live output preview']) {
     const titleClass = {
