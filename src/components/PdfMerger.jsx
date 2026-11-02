@@ -529,7 +529,7 @@ const PdfMerger = () => {
 
         <section className="merge-pdf-settings space-y-6" aria-label="Merge options">
           <div className="merge-control-intro">
-            <h3 className="merge-selected-files-title">Settings</h3>
+            <h3 className="merge-selected-files-title">Settings &gt; Selection &gt; Preview</h3>
             <p>Choose how to combine your PDFs and customize the output.</p>
           </div>
 

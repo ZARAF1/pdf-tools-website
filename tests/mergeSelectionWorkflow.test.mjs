@@ -221,14 +221,14 @@ test('Merge section headings carry the highlight while their explanations stay u
 
 test('Merge settings and preview controls have matching heading and guidance', () => {
   const settingsIntro = merger.match(
-    /<div className="merge-control-intro">\s*<h3 className="merge-selected-files-title">Settings<\/h3>\s*<p>Choose how to combine your PDFs and customize the output\.<\/p>\s*<\/div>/
+    /<div className="merge-control-intro">\s*<h3 className="merge-selected-files-title">Settings &gt; Selection &gt; Preview<\/h3>\s*<p>Choose how to combine your PDFs and customize the output\.<\/p>\s*<\/div>/
   );
   const settingsButtons = merger.indexOf('className="merge-mode-switch"');
   const previewControls = picker.match(
     /<div className="merge-page-source-action-group">\s*<h5 className="merge-selected-files-title">Preview<\/h5>\s*<p>Choose which pages to include in the output\.<\/p>\s*<div className="merge-page-source-actions">/
   );
 
-  assert.ok(settingsIntro, 'Settings heading and guidance appear above the merge-mode buttons');
+  assert.ok(settingsIntro, 'The Settings > Selection > Preview heading and guidance appear above the merge-mode buttons');
   assert.ok(settingsButtons > merger.indexOf('className="merge-control-intro"'), 'Settings guidance precedes its buttons');
   assert.ok(previewControls, 'Preview heading and guidance appear above Select All and Clear');
 });
