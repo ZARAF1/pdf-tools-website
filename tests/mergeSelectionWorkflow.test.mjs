@@ -54,10 +54,60 @@ test('Merge section headings carry the highlight while their explanations stay u
     merger,
     /<p className="pdf-preview-instructions">(?:Set the output name and page size, and choose optional bookmarks or blank pages\.|Click page previews to add them to the live output in that order\. New selections start empty\.|Pages are shown in the order they will appear\. Drag to reorder, or use the move buttons\.)<\/p>/
   );
-  const headingStyle = styles.match(/\.merge-section-heading-title\s*\{([^}]*)\}/)?.[1];
-  assert.ok(headingStyle, 'Merge section headings have a dedicated highlight style');
-  assert.match(headingStyle, /background:\s*var\(--surface-muted\)\s*;/);
+  const headingStyle = styles.match(/\.merge-section-heading\s*\{([^}]*)\}/)?.[1];
+  const headingTitleStyle = styles.match(/\.merge-section-heading-title\s*\{([^}]*)\}/)?.[1];
+  assert.ok(headingStyle, 'Merge section heading bands have a dedicated style');
+  assert.match(headingStyle, /background:\s*var\(--surface-background\)\s*;/);
   assert.match(headingStyle, /border-left:\s*4px solid #3b82f6\s*;/);
+  assert.match(headingStyle, /width:\s*100%\s*;/);
+  assert.ok(headingTitleStyle, 'Merge section titles have a dedicated style');
+  assert.doesNotMatch(headingTitleStyle, /background\s*:/);
+  assert.doesNotMatch(headingTitleStyle, /border-left\s*:/);
+});
+
+test('Merge settings and preview controls have matching heading and guidance', () => {
+  const settingsIntro = merger.match(
+    /<div className="merge-control-intro">\s*<h3 className="merge-selected-files-title">Settings<\/h3>\s*<p>Choose how to combine your PDFs and customize the output\.<\/p>\s*<\/div>/
+  );
+  const settingsButtons = merger.indexOf('className="merge-mode-switch"');
+  const previewControls = picker.match(
+    /<div className="merge-page-source-action-group">\s*<h5 className="merge-selected-files-title">Preview<\/h5>\s*<p>Choose which pages to include in the output\.<\/p>\s*<div className="merge-page-source-actions">/
+  );
+
+  assert.ok(settingsIntro, 'Settings heading and guidance appear above the merge-mode buttons');
+  assert.ok(settingsButtons > merger.indexOf('className="merge-control-intro"'), 'Settings guidance precedes its buttons');
+  assert.ok(previewControls, 'Preview heading and guidance appear above Select All and Clear');
+});
+
+test('Merge output options occupy their own panel and live output has no outer box', () => {
+  const outputSettingsStyle = styles.match(/\.merge-output-settings\s*\{([^}]*)\}/)?.[1];
+  const liveOutputStyle = styles.match(/(?:^|\n)\.merge-live-output\s*\{([^}]*)\}/)?.[1];
+
+  assert.ok(outputSettingsStyle, 'Output controls have a dedicated container style');
+  assert.match(outputSettingsStyle, /background:\s*var\(--surface-background\)\s*;/);
+  assert.match(outputSettingsStyle, /border:\s*1px solid var\(--border-color\)\s*;/);
+  assert.match(outputSettingsStyle, /padding:\s*clamp\(/);
+  assert.ok(liveOutputStyle, 'Live output has a layout rule separate from its heading');
+  assert.doesNotMatch(liveOutputStyle, /background\s*:/);
+  assert.doesNotMatch(liveOutputStyle, /border\s*:/);
+  assert.doesNotMatch(liveOutputStyle, /padding\s*:/);
+});
+
+test('Merge live output pages sit inside a dark, spaced surface box', () => {
+  const outputContentStyle = styles.match(/\.merge-live-output-content\s*\{([^}]*)\}/)?.[1];
+  const contentStart = merger.indexOf('<div className="merge-live-output-content">');
+  const emptyStateIndex = merger.indexOf('className="merge-live-output-empty', contentStart);
+  const outputListIndex = merger.indexOf('className="merge-live-output-list"', contentStart);
+
+  assert.ok(outputContentStyle, 'Live output pages have a dedicated containing box');
+  assert.match(outputContentStyle, /background:\s*var\(--surface-background\)\s*;/);
+  assert.match(outputContentStyle, /border:\s*1px solid var\(--border-color\)\s*;/);
+  assert.match(outputContentStyle, /border-radius:\s*0\.875rem\s*;/);
+  assert.match(outputContentStyle, /padding:\s*clamp\(/);
+  assert.match(outputContentStyle, /margin-block-start:\s*1rem\s*;/);
+  assert.ok(contentStart >= 0, 'Output content has a wrapper below the preview heading');
+  assert.ok(emptyStateIndex > contentStart, 'The empty-state prompt is inside the output box');
+  assert.ok(outputListIndex > contentStart, 'Output pages are inside the output box');
 });
 
 test('Merge PDF selected files use an ordered, responsive list with clear per-file controls', () => {
@@ -97,6 +147,13 @@ test('Merge PDF settings do not show standalone horizontal divider lines', () =>
   assert.doesNotMatch(modeSwitch, /padding-bottom\s*:/);
   assert.doesNotMatch(outputSettings, /border-top\s*:/);
   assert.doesNotMatch(outputSettings, /padding-top\s*:/);
+});
+
+test('Merge settings panel uses the muted Merge surface color', () => {
+  const settingsPanel = styles.match(/(?:^|\n)\.merge-pdf-settings\s*\{([^}]*)\}/)?.[1];
+
+  assert.ok(settingsPanel, 'Merge settings panel has a dedicated style rule');
+  assert.match(settingsPanel, /background:\s*var\(--surface-muted\)\s*;/);
 });
 
 test('Merge PDF settings remove top margin and leave space before the file list', () => {

@@ -99,13 +99,17 @@ const PdfMergePagePicker = ({ fileEntry, selectedPages, onTogglePage, onSelectVi
           <h4 id={`merge-source-${fileEntry.id}`} className="merge-page-source-title">{fileEntry.name}</h4>
           <p>{fileEntry.pageCount} pages · {selectedCount} selected</p>
         </div>
-        <div className="merge-page-source-actions">
-          <button type="button" onClick={() => onSelectVisible(fileEntry.id, previews.length)} disabled={!previews.length || disabled}>
-            Select All
-          </button>
-          <button type="button" onClick={() => onClear(fileEntry.id)} disabled={!selectedCount || disabled}>
-            Clear
-          </button>
+        <div className="merge-page-source-action-group">
+          <h5 className="merge-selected-files-title">Preview</h5>
+          <p>Choose which pages to include in the output.</p>
+          <div className="merge-page-source-actions">
+            <button type="button" onClick={() => onSelectVisible(fileEntry.id, previews.length)} disabled={!previews.length || disabled}>
+              Select All
+            </button>
+            <button type="button" onClick={() => onClear(fileEntry.id)} disabled={!selectedCount || disabled}>
+              Clear
+            </button>
+          </div>
         </div>
       </div>
 
