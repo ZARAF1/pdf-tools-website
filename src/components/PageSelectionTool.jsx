@@ -184,7 +184,9 @@ const PageSelectionTool = ({ mode }) => {
           'aria-label': file ? `Selected PDF ${file.name}` : 'Choose a PDF'
         })}
         className={file
-          ? 'pdf-attached-file-card flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between'
+          ? isRemoving
+            ? 'remove-pdf-attachment-dropzone'
+            : 'pdf-attached-file-card flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between'
           : `pdf-workflow-upload merge-pdf-upload-zone rounded-2xl border-2 border-dashed cursor-pointer transition-all duration-200 ${
             isDragActive
               ? 'border-blue-500 bg-blue-50'
@@ -192,7 +194,29 @@ const PageSelectionTool = ({ mode }) => {
           }`}
       >
         <input {...getInputProps()} />
-        {file ? (
+        {file ? (isRemoving ? (
+          <section className="remove-pdf-file-section" aria-labelledby="remove-pdf-file-heading">
+            <header>
+              <h3 id="remove-pdf-file-heading" className="merge-selected-files-title">PDF to remove pages from</h3>
+              <p>One PDF selected. Replace it or remove it to choose another.</p>
+            </header>
+            <div className="pdf-attached-file-card rotate-selected-file-card">
+              <div className="rotate-selected-file-main">
+                <AttachedFileIcon />
+                <div className="rotate-selected-file-details">
+                  <p className="rotate-selected-file-name" title={file.name}>{file.name}</p>
+                  <p className="rotate-selected-file-meta">{formatBytes(file.size)} · {pageCount} pages</p>
+                </div>
+              </div>
+              <AttachedFileActions
+                fileName={file.name}
+                onReplace={open}
+                onRemove={clearFile}
+                disabled={isLoading || isProcessing}
+              />
+            </div>
+          </section>
+        ) : (
           <>
             <div className="flex min-w-0 flex-1 items-center gap-3">
               <AttachedFileIcon />
@@ -210,7 +234,7 @@ const PageSelectionTool = ({ mode }) => {
               />
             </div>
           </>
-        ) : (
+        )) : (
           <div className="merge-pdf-upload-content">
             <div className="pdf-upload-icon" aria-hidden="true">
               {isLoading ? <Loader2 className="h-6 w-6 animate-spin text-blue-600" /> : <Upload className="h-6 w-6 text-blue-600" />}
@@ -235,31 +259,83 @@ const PageSelectionTool = ({ mode }) => {
       </div>
 
       {file && (
-        <section className="space-y-4 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm" aria-labelledby="page-selection-heading">
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <div>
-              <h3 id="page-selection-heading" className="text-lg font-bold text-slate-800">Select pages</h3>
-              <p aria-live="polite" className="text-sm text-slate-500">{selectedPages.size} {selectedPages.size === 1 ? 'page' : 'pages'} selected {actionLabel}.</p>
-            </div>
-            <div className="flex gap-2">
-              <button type="button" onClick={selectAll} className="rounded-lg border border-slate-200 px-3 py-2 text-sm font-medium text-slate-700 transition hover:border-blue-300 hover:bg-blue-50">Select All</button>
-              <button type="button" onClick={clearSelection} disabled={!selectedPages.size} className="rounded-lg border border-slate-200 px-3 py-2 text-sm font-medium text-slate-700 transition hover:border-blue-300 hover:bg-blue-50 disabled:cursor-not-allowed disabled:opacity-50">Clear Selection</button>
-            </div>
-          </div>
+        <section
+          className={isRemoving ? 'remove-pdf-workspace' : 'space-y-4 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm'}
+          aria-labelledby={isRemoving ? 'remove-pdf-workspace-heading' : 'page-selection-heading'}
+        >
+          {isRemoving ? (
+            <div className="remove-pdf-settings-shell">
+              <div className="merge-control-intro">
+                <h3 id="remove-pdf-workspace-heading" className="merge-selected-files-title">Settings &gt; Preview</h3>
+                <p>Select pages to remove, then review and confirm your changes.</p>
+              </div>
 
-          <p className="pdf-preview-instructions">Click page previews to select or deselect pages.</p>
-          <PdfPageGrid
-            file={file}
-            pageCount={pageCount}
-            selectedPages={selectedPages}
-            onToggle={togglePage}
-            actionLabel={actionLabel}
-          />
+              <section className="remove-pdf-settings-panel" aria-labelledby="remove-pdf-settings-heading">
+                <div className="merge-section-heading merge-output-settings-heading">
+                  <div>
+                    <h3 id="remove-pdf-settings-heading" className="merge-section-heading-title merge-output-settings-title">Choose Settings</h3>
+                    <p>Select the pages to remove from your PDF.</p>
+                  </div>
+                </div>
+                <p className="remove-pdf-selection-count" aria-live="polite">
+                  {selectedPages.size} {selectedPages.size === 1 ? 'page' : 'pages'} selected for removal.
+                </p>
+                <div className="remove-pdf-selection-actions">
+                  <button type="button" onClick={selectAll} className="remove-pdf-selection-action">Select All</button>
+                  <button type="button" onClick={clearSelection} disabled={!selectedPages.size} className="remove-pdf-selection-action">Clear Selection</button>
+                </div>
+              </section>
 
-          {selectedSummary.length > 0 && (
-            <p className="rounded-lg bg-slate-50 p-3 text-sm text-slate-600">
-              Selected pages: {selectedSummary.join(', ')}
-            </p>
+              <section className="remove-pdf-page-preview-panel" aria-labelledby="remove-pdf-page-preview-heading">
+                <div className="merge-section-heading merge-output-settings-heading">
+                  <div>
+                    <h3 id="remove-pdf-page-preview-heading" className="merge-section-heading-title merge-output-settings-title">Page preview</h3>
+                    <p>Click a page to select it for removal or use its eye button to view it larger.</p>
+                  </div>
+                </div>
+                <PdfPageGrid
+                  file={file}
+                  pageCount={pageCount}
+                  selectedPages={selectedPages}
+                  onToggle={togglePage}
+                  actionLabel={actionLabel}
+                  showPreviewButton={isRemoving}
+                />
+                {selectedSummary.length > 0 && (
+                  <p className="remove-pdf-selected-summary">
+                    Selected pages: {selectedSummary.join(', ')}
+                  </p>
+                )}
+              </section>
+            </div>
+          ) : (
+            <>
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                  <h3 id="page-selection-heading" className="text-lg font-bold text-slate-800">Select pages</h3>
+                  <p aria-live="polite" className="text-sm text-slate-500">{selectedPages.size} {selectedPages.size === 1 ? 'page' : 'pages'} selected {actionLabel}.</p>
+                </div>
+                <div className="flex gap-2">
+                  <button type="button" onClick={selectAll} className="rounded-lg border border-slate-200 px-3 py-2 text-sm font-medium text-slate-700 transition hover:border-blue-300 hover:bg-blue-50">Select All</button>
+                  <button type="button" onClick={clearSelection} disabled={!selectedPages.size} className="rounded-lg border border-slate-200 px-3 py-2 text-sm font-medium text-slate-700 transition hover:border-blue-300 hover:bg-blue-50 disabled:cursor-not-allowed disabled:opacity-50">Clear Selection</button>
+                </div>
+              </div>
+
+              <p className="pdf-preview-instructions">Click page previews to select or deselect pages.</p>
+              <PdfPageGrid
+                file={file}
+                pageCount={pageCount}
+                selectedPages={selectedPages}
+                onToggle={togglePage}
+                actionLabel={actionLabel}
+              />
+
+              {selectedSummary.length > 0 && (
+                <p className="rounded-lg bg-slate-50 p-3 text-sm text-slate-600">
+                  Selected pages: {selectedSummary.join(', ')}
+                </p>
+              )}
+            </>
           )}
 
           {confirmRemoval && isRemoving && (

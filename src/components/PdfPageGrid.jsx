@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import pdfjsLib from '../lib/pdfjsClient';
-import { Check } from 'lucide-react';
+import { Check, Eye, X } from 'lucide-react';
 
 const PdfPageGrid = ({
   file,
@@ -11,12 +11,16 @@ const PdfPageGrid = ({
   selectionEnabled = true,
   startPage = 1,
   endPage,
-  pageLabels = {}
+  pageLabels = {},
+  showPreviewButton = false
 }) => {
   const [previews, setPreviews] = useState([]);
   const [pageSummaries, setPageSummaries] = useState([]);
   const [rendering, setRendering] = useState(false);
   const [previewError, setPreviewError] = useState('');
+  const [largePreview, setLargePreview] = useState(null);
+  const closeLargePreviewRef = useRef(null);
+  const previewTriggerRef = useRef(null);
   const visibleStartPage = Math.max(1, startPage);
   const visibleEndPage = Math.min(endPage ?? pageCount, pageCount);
 
@@ -87,6 +91,21 @@ const PdfPageGrid = ({
     };
   }, [file, pageCount, visibleStartPage, visibleEndPage]);
 
+  const closeLargePreview = () => {
+    setLargePreview(null);
+    previewTriggerRef.current?.focus();
+  };
+
+  useEffect(() => {
+    if (!largePreview) return undefined;
+    closeLargePreviewRef.current?.focus();
+    const handleKeyDown = (event) => {
+      if (event.key === 'Escape') closeLargePreview();
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [largePreview]);
+
   return (
     <div>
       {rendering && (
@@ -102,56 +121,100 @@ const PdfPageGrid = ({
           const pageLabel = typeof pageLabels === 'function' ? pageLabels(pageNumber) : pageLabels[pageNumber];
           const PageElement = selectionEnabled ? 'button' : 'div';
           return (
-            <PageElement
-              key={pageNumber}
-              {...(selectionEnabled
-                ? {
-                    type: 'button',
-                    onClick: () => onToggle(pageNumber),
-                    'aria-pressed': selected
-                  }
-                : {
-                    role: 'group'
-                  })}
-              aria-label={selectionEnabled
-                ? `${selected ? 'Deselect' : 'Select'} page ${pageNumber} ${actionLabel}`
-                : `Page ${pageNumber}${pageLabel ? `, ${pageLabel}` : ''}`}
-              aria-describedby={`pdf-page-${pageNumber}-description`}
-              className={`group relative min-w-0 overflow-hidden rounded-xl border-2 p-2 text-left ${
-                selectionEnabled
-                  ? 'transition-all duration-200 hover:-translate-y-1 hover:border-blue-300 hover:shadow-lg focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 motion-reduce:transform-none'
-                  : ''
-              } ${
-                selected
-                  ? 'border-blue-600 bg-blue-50 shadow-sm'
-                  : 'border-slate-200 bg-white shadow-sm'
-              }`}
-            >
-              {selectionEnabled && (
-                <span className={`absolute right-2 top-2 z-10 flex h-6 w-6 items-center justify-center rounded-full shadow-sm transition-transform ${
-                  selected ? 'bg-blue-600 text-white' : 'border border-slate-300 bg-white/90 text-transparent'
-                }`}>
-                  {selected && <Check className="h-4 w-4" aria-hidden="true" />}
-                </span>
-              )}
-              <span className="flex aspect-[3/4] items-center justify-center overflow-hidden rounded-lg bg-slate-100">
-                {pageLabel && (
-                  <span className="absolute left-3 top-3 z-10 max-w-[calc(100%-3.5rem)] truncate rounded-md bg-slate-900/80 px-2 py-1 text-[10px] font-semibold text-white">
-                    {pageLabel}
+            <div className="pdf-page-grid-item" key={pageNumber}>
+              <PageElement
+                {...(selectionEnabled
+                  ? {
+                      type: 'button',
+                      onClick: () => onToggle(pageNumber),
+                      'aria-pressed': selected
+                    }
+                  : {
+                      role: 'group'
+                    })}
+                aria-label={selectionEnabled
+                  ? `${selected ? 'Deselect' : 'Select'} page ${pageNumber} ${actionLabel}`
+                  : `Page ${pageNumber}${pageLabel ? `, ${pageLabel}` : ''}`}
+                aria-describedby={`pdf-page-${pageNumber}-description`}
+                className={`pdf-page-grid-select group relative min-w-0 overflow-hidden rounded-xl border-2 p-2 text-left ${
+                  selectionEnabled
+                    ? 'transition-all duration-200 hover:-translate-y-1 hover:border-blue-300 hover:shadow-lg focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 motion-reduce:transform-none'
+                    : ''
+                } ${
+                  selected
+                    ? 'border-blue-600 bg-blue-50 shadow-sm'
+                    : 'border-slate-200 bg-white shadow-sm'
+                }`}
+              >
+                {selectionEnabled && (
+                  <span className={`absolute right-2 top-2 z-10 flex h-6 w-6 items-center justify-center rounded-full shadow-sm transition-transform ${
+                    selected ? 'bg-blue-600 text-white' : 'border border-slate-300 bg-white/90 text-transparent'
+                  }`}>
+                    {selected && <Check className="h-4 w-4" aria-hidden="true" />}
                   </span>
                 )}
-                {previews[index]
-                  ? <img src={previews[index]} alt="" draggable={false} className="h-full w-full object-contain" />
-                  : <span className="text-sm text-slate-400">{rendering ? 'Loading…' : 'Preview unavailable'}</span>}
-              </span>
-              <span className="mt-2 block text-center text-xs font-semibold text-slate-600">Page {pageNumber}</span>
-              <span id={`pdf-page-${pageNumber}-description`} className="sr-only">
-                {pageSummaries[index] || 'No selectable text was found on this page; its preview is visual-only.'}
-              </span>
-            </PageElement>
+                <span className="flex aspect-[3/4] items-center justify-center overflow-hidden rounded-lg bg-slate-100">
+                  {pageLabel && (
+                    <span className="absolute left-3 top-3 z-10 max-w-[calc(100%-3.5rem)] truncate rounded-md bg-slate-900/80 px-2 py-1 text-[10px] font-semibold text-white">
+                      {pageLabel}
+                    </span>
+                  )}
+                  {previews[index]
+                    ? <img src={previews[index]} alt="" draggable={false} className="h-full w-full object-contain" />
+                    : <span className="text-sm text-slate-400">{rendering ? 'Loading…' : 'Preview unavailable'}</span>}
+                </span>
+                <span className="mt-2 block text-center text-xs font-semibold text-slate-600">Page {pageNumber}</span>
+                <span id={`pdf-page-${pageNumber}-description`} className="sr-only">
+                  {pageSummaries[index] || 'No selectable text was found on this page; its preview is visual-only.'}
+                </span>
+              </PageElement>
+              {showPreviewButton && (
+                <button
+                  type="button"
+                  className="merge-page-preview-button pdf-page-grid-preview-button"
+                  onClick={(event) => {
+                    previewTriggerRef.current = event.currentTarget;
+                    setLargePreview({ pageNumber, preview: previews[index] });
+                  }}
+                  disabled={!previews[index]}
+                  aria-label={`View larger preview of page ${pageNumber}`}
+                  title={`Larger preview, page ${pageNumber}`}
+                >
+                  <Eye className="h-4 w-4" aria-hidden="true" />
+                </button>
+              )}
+            </div>
           );
         })}
       </div>
+      {showPreviewButton && largePreview && (
+        <div
+          className="merge-page-preview-backdrop"
+          onMouseDown={(event) => {
+            if (event.target === event.currentTarget) closeLargePreview();
+          }}
+        >
+          <section
+            className="merge-page-preview-dialog"
+            role="dialog"
+            aria-modal="true"
+            aria-label={`Page ${largePreview.pageNumber} preview`}
+          >
+            <div className="merge-page-preview-dialog-header">
+              <h3>Page {largePreview.pageNumber} preview</h3>
+              <button
+                ref={closeLargePreviewRef}
+                type="button"
+                onClick={closeLargePreview}
+                aria-label="Close larger page preview"
+              >
+                <X className="h-5 w-5" aria-hidden="true" />
+              </button>
+            </div>
+            <img src={largePreview.preview} alt={`Larger preview of page ${largePreview.pageNumber}`} />
+          </section>
+        </div>
+      )}
     </div>
   );
 };

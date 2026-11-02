@@ -8,7 +8,6 @@ const instructionTools = [
   'ImageToPdf',
   'OrganizePdf',
   'PageSelectionTool',
-  'PdfRotator',
   'PdfSplitter',
   'RedactPdf'
 ];
