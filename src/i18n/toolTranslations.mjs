@@ -8,7 +8,7 @@ const toolIds = [
 
 const translations = {
   en: [
-    ['Merge PDF', 'Split PDF', 'Rotate PDF', 'Protect PDF', 'Unlock PDF', 'Image to PDF', 'PDF to Images', 'PDF to Word', 'Compress PDF', 'Edit PDF', 'Watermark PDF', 'Remove PDF Pages', 'Extract PDF Pages', 'OCR PDF', 'Crop PDF', 'Organize PDF', 'Redact PDF', 'Sign PDF'],
+    ['Merge PDF', 'Split PDF', 'Rotate PDF', 'Protect PDF', 'Unlock PDF', 'Image to PDF', 'PDF to Images', 'PDF to Word', 'Compress PDF', 'Edit PDF', 'Watermark PDF', 'Remove PDF', 'Extract PDF Pages', 'OCR PDF', 'Crop PDF', 'Organize PDF', 'Redact PDF', 'Sign PDF'],
     ['combine PDF files into one document', 'extract selected pages or split a PDF into page files', 'rotate all or selected PDF pages', 'add an opening password to a PDF', 'remove supported encryption with the correct password', 'create a PDF from images', 'export PDF pages as image files', 'convert PDF text into an editable Word document', 'try to reduce PDF file size', 'add text, images, and annotations to a PDF copy', 'add text watermarks and page numbers', 'remove selected pages from a PDF', 'save selected pages as a new PDF', 'recognize scanned text and make a PDF searchable', 'change the visible page boundaries in a PDF', 'reorder, rotate, or remove PDF pages', 'permanently remove marked page content', 'add a visible signature to PDF pages']
   ],
   es: [

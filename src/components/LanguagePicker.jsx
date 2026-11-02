@@ -1,5 +1,5 @@
 import React, { useEffect, useId, useRef, useState } from 'react';
-import { Check, Languages } from 'lucide-react';
+import { Check, ChevronRight, Languages } from 'lucide-react';
 import { getLanguageName, SUPPORTED_LANGUAGES } from '../i18n/languageCatalog.mjs';
 import { useLanguage } from '../i18n/useLanguage';
 
@@ -87,6 +87,7 @@ const LanguagePicker = ({ placement, isOpen: sidebarIsOpen, onToggle, onSelected
       >
         <Languages aria-hidden="true" />
         <span>{placement === 'sidebar' ? translate('language') : getLanguageName(language)}</span>
+        {isSidebar && <ChevronRight className="site-left-link-chevron" aria-hidden="true" />}
       </button>
       {!isSidebar && (
         <div

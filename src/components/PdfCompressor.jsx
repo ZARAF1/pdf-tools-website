@@ -493,47 +493,6 @@ const PdfCompressor = () => {
     <div className="compress-pdf-workspace space-y-8">
       {selectedFileCards}
 
-      {files.length > 0 && (
-      <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-        <div className="flex items-center justify-between gap-4">
-          <div>
-            <p className="font-semibold text-slate-800">Higher compression</p>
-            <p className="text-sm text-slate-500">Off: standard optimization · On: attempts stronger compression with quality loss</p>
-          </div>
-          <button
-            type="button"
-            role="switch"
-            aria-checked={highCompression}
-            aria-label="Higher compression"
-            disabled={isProcessing}
-            onClick={() => setHighCompression((enabled) => !enabled)}
-            className={`relative inline-flex h-7 w-12 flex-shrink-0 items-center rounded-full transition-colors disabled:cursor-not-allowed disabled:opacity-60 ${
-              highCompression ? 'bg-violet-600' : 'bg-slate-300'
-            }`}
-          >
-            <span
-              className={`inline-block h-5 w-5 transform rounded-full bg-white shadow transition-transform ${
-                highCompression ? 'translate-x-6' : 'translate-x-1'
-              }`}
-            />
-          </button>
-        </div>
-        {highCompression && (
-          <motion.div
-            initial={{ opacity: 0, y: -6 }}
-            animate={{ opacity: 1, y: 0 }}
-            role="status"
-            className="mt-4 flex items-start gap-3 rounded-xl border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900"
-          >
-            <AlertCircle className="mt-0.5 h-5 w-5 flex-shrink-0" />
-            <p>
-              Higher compression rasterizes every page and reduces image quality. Text may look less sharp and will no longer be searchable or selectable; links and interactive form fields will not work. Processing happens locally in your browser; files are not uploaded.
-            </p>
-          </motion.div>
-        )}
-      </div>
-      )}
-
       <input {...getReplaceInputProps()} />
       <div
         {...getRootProps({
@@ -574,6 +533,47 @@ const PdfCompressor = () => {
           </button>
         </div>
       </div>
+
+      {files.length > 0 && (
+      <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+        <div className="flex items-center justify-between gap-4">
+          <div>
+            <p className="font-semibold text-slate-800">Higher compression</p>
+            <p className="text-sm text-slate-500">Off: standard optimization · On: attempts stronger compression with quality loss</p>
+          </div>
+          <button
+            type="button"
+            role="switch"
+            aria-checked={highCompression}
+            aria-label="Higher compression"
+            disabled={isProcessing}
+            onClick={() => setHighCompression((enabled) => !enabled)}
+            className={`relative inline-flex h-7 w-12 flex-shrink-0 items-center rounded-full transition-colors disabled:cursor-not-allowed disabled:opacity-60 ${
+              highCompression ? 'bg-violet-600' : 'bg-slate-300'
+            }`}
+          >
+            <span
+              className={`inline-block h-5 w-5 transform rounded-full bg-white shadow transition-transform ${
+                highCompression ? 'translate-x-6' : 'translate-x-1'
+              }`}
+            />
+          </button>
+        </div>
+        {highCompression && (
+          <motion.div
+            initial={{ opacity: 0, y: -6 }}
+            animate={{ opacity: 1, y: 0 }}
+            role="status"
+            className="mt-4 flex items-start gap-3 rounded-xl border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900"
+          >
+            <AlertCircle className="mt-0.5 h-5 w-5 flex-shrink-0" />
+            <p>
+              Higher compression rasterizes every page and reduces image quality. Text may look less sharp and will no longer be searchable or selectable; links and interactive form fields will not work. Processing happens locally in your browser; files are not uploaded.
+            </p>
+          </motion.div>
+        )}
+      </div>
+      )}
 
       {error && (
         <motion.div

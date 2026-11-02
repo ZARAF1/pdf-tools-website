@@ -9,6 +9,7 @@ import {
   createPdfFromMarkdown,
   parseMarkdownPageSelection
 } from '../lib/markdownConversion.mjs';
+import { AttachedFileIcon } from './AttachedFileControls';
 
 const PdfMarkdown = () => {
   const [direction, setDirection] = useState('pdf-to-markdown');
@@ -159,13 +160,42 @@ const PdfMarkdown = () => {
 
       {direction === 'pdf-to-markdown' ? (
         <section className="space-y-4">
-          <label className="block space-y-2 font-semibold" htmlFor="markdown-pdf-input">
-            <span>Choose a PDF to convert</span>
-            <input id="markdown-pdf-input" type="file" accept="application/pdf,.pdf"
-              onChange={(event) => selectPdf(event.target.files?.[0])}
-              className="block w-full rounded-xl border border-slate-300 p-3" />
-          </label>
-          {file && <p className="text-sm text-slate-600">{file.name}</p>}
+          <div className="markdown-file-picker pdf-workflow-upload merge-pdf-upload-zone">
+            <div className="merge-pdf-upload-content">
+              <div className="pdf-upload-icon" aria-hidden="true">
+                <FileText className="h-6 w-6 text-blue-600" />
+              </div>
+              <div className="merge-pdf-upload-copy">
+                <h3>Choose a PDF to convert</h3>
+                <p>Extract selectable text and optionally choose pages.</p>
+              </div>
+              <input id="markdown-pdf-input" className="markdown-file-input sr-only" type="file" accept="application/pdf,.pdf"
+                aria-label="Choose a PDF to convert"
+                onChange={(event) => selectPdf(event.target.files?.[0])} />
+              <label htmlFor="markdown-pdf-input" className="pdf-editor-primary-button merge-pdf-upload-button cursor-pointer">Choose PDF</label>
+            </div>
+          </div>
+          {file && (
+            <div className="pdf-attached-file-card flex min-w-0 items-center gap-3 p-4">
+              <AttachedFileIcon />
+              <p className="min-w-0 truncate text-sm font-semibold text-slate-800">{file.name}</p>
+            </div>
+          )}
+          <div className="markdown-file-picker pdf-workflow-upload merge-pdf-upload-zone">
+            <div className="merge-pdf-upload-content">
+              <div className="pdf-upload-icon" aria-hidden="true">
+                <FileText className="h-6 w-6 text-blue-600" />
+              </div>
+              <div className="merge-pdf-upload-copy">
+                <h3>Or choose a Markdown file</h3>
+                <p>Load Markdown content to create a PDF instead.</p>
+              </div>
+              <input id="markdown-upload" className="markdown-file-input sr-only" type="file" accept=".md,text/markdown,text/plain"
+                aria-label="Choose a Markdown file"
+                onChange={(event) => selectMarkdownFile(event.target.files?.[0])} />
+              <label htmlFor="markdown-upload" className="pdf-editor-primary-button merge-pdf-upload-button cursor-pointer">Choose Markdown file</label>
+            </div>
+          </div>
           <label className="block space-y-2 font-semibold" htmlFor="markdown-page-selection">
             <span>Pages to convert (optional)</span>
             <input id="markdown-page-selection" type="text" value={pageSelection}
@@ -177,21 +207,30 @@ const PdfMarkdown = () => {
               onChange={(event) => setIncludePageBreaks(event.target.checked)} />
             Add Markdown separators between pages
           </label>
-          <label className="block space-y-2 font-semibold" htmlFor="markdown-upload">
-            <span>Or upload a Markdown file</span>
-            <input id="markdown-upload" type="file" accept=".md,text/markdown,text/plain"
-              onChange={(event) => selectMarkdownFile(event.target.files?.[0])}
-              className="block w-full rounded-xl border border-slate-300 p-3" />
-          </label>
         </section>
       ) : (
         <section className="space-y-4">
-          <label className="block space-y-2 font-semibold" htmlFor="markdown-upload-pdf">
-            <span>Upload a Markdown file, or paste and edit Markdown below</span>
-            <input id="markdown-upload-pdf" type="file" accept=".md,text/markdown,text/plain"
-              onChange={(event) => selectMarkdownFile(event.target.files?.[0])}
-              className="block w-full rounded-xl border border-slate-300 p-3" />
-          </label>
+          <div className="markdown-file-picker pdf-workflow-upload merge-pdf-upload-zone">
+            <div className="merge-pdf-upload-content">
+              <div className="pdf-upload-icon" aria-hidden="true">
+                <FileText className="h-6 w-6 text-blue-600" />
+              </div>
+              <div className="merge-pdf-upload-copy">
+                <h3>Upload a Markdown file, or paste and edit below</h3>
+                <p>Choose an existing Markdown file or enter content directly.</p>
+              </div>
+              <input id="markdown-upload-pdf" className="markdown-file-input sr-only" type="file" accept=".md,text/markdown,text/plain"
+                aria-label="Choose a Markdown file"
+                onChange={(event) => selectMarkdownFile(event.target.files?.[0])} />
+              <label htmlFor="markdown-upload-pdf" className="pdf-editor-primary-button merge-pdf-upload-button cursor-pointer">Choose Markdown file</label>
+            </div>
+          </div>
+          {file && (
+            <div className="pdf-attached-file-card flex min-w-0 items-center gap-3 p-4">
+              <AttachedFileIcon />
+              <p className="min-w-0 truncate text-sm font-semibold text-slate-800">{file.name}</p>
+            </div>
+          )}
           <textarea value={markdown} onChange={(event) => { setMarkdown(event.target.value); clearOutput(); }}
             rows={12} aria-label="Markdown content" placeholder="# Document title"
             className="block w-full rounded-xl border border-slate-300 p-3 font-mono text-sm" />

@@ -170,6 +170,7 @@ const ToolSearch = () => {
               suppressFocusOpen.current = false;
               return;
             }
+            setIsExpanded(true);
             if (query.trim()) setIsOpen(true);
           }}
           placeholder={translate('findPdfTool')}

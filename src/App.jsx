@@ -260,26 +260,31 @@ const LeftNavigation = ({ theme, setTheme, isSidebarCollapsed, onToggleSidebar }
     if (event.shiftKey && currentIndex === 0) {
       event.preventDefault();
       getMegaTrigger()?.focus();
-    } else if (!event.shiftKey && currentIndex === items.length - 1 && items.length > 0) {
+    } else if (
+      !event.shiftKey
+      && currentIndex === items.length - 1
+      && items.length > 0
+    ) {
       event.preventDefault();
       if (activeMenu === 'all') {
-        items[0]?.focus();
-      } else {
-        if (activeMenu === 'language') {
-          setActiveMenu(null);
-          document.querySelector('[data-mega-trigger="all"]')?.focus();
-          return;
-        }
-        const currentIndexInCategories = TOOL_CATEGORIES.findIndex(
-          (category) => category.id === activeMenu
-        );
-        const nextCategory = TOOL_CATEGORIES[currentIndexInCategories + 1];
         setActiveMenu(null);
-        if (nextCategory) {
-          document.querySelector(`[data-mega-trigger="${nextCategory.id}"]`)?.focus();
-        } else {
-          document.querySelector('.site-left-privacy')?.focus();
-        }
+        document.querySelector('[data-mega-trigger="organize"]')?.focus();
+        return;
+      }
+      if (activeMenu === 'language') {
+        setActiveMenu(null);
+        document.querySelector('[data-mega-trigger="all"]')?.focus();
+        return;
+      }
+      const currentIndexInCategories = TOOL_CATEGORIES.findIndex(
+        (category) => category.id === activeMenu
+      );
+      const nextCategory = TOOL_CATEGORIES[currentIndexInCategories + 1];
+      setActiveMenu(null);
+      if (nextCategory) {
+        document.querySelector(`[data-mega-trigger="${nextCategory.id}"]`)?.focus();
+      } else {
+        document.querySelector('.site-left-privacy')?.focus();
       }
     }
   };
@@ -427,6 +432,9 @@ const LeftNavigation = ({ theme, setTheme, isSidebarCollapsed, onToggleSidebar }
               ? translate('chooseLanguage')
               : `${translate('categories')}: ${translate(`category.${activeCategory?.id}`)}`}
           onKeyDown={handleMegaKeyDown}
+          onBlur={(event) => {
+            if (!megaMenuRef.current?.contains(event.relatedTarget)) setActiveMenu(null);
+          }}
           onMouseEnter={cancelMenuClose}
           onMouseLeave={scheduleMenuClose}
           style={{ '--mega-menu-top': `${megaPosition.top}px`, '--mega-menu-left': `${megaPosition.left}px` }}
@@ -574,8 +582,6 @@ const RouteFocusManager = () => {
     if (previousPath.current === pathname) return;
     previousPath.current = pathname;
 
-    if (document.activeElement?.closest('nav')) return;
-
     const mainContent = document.querySelector('#main-content');
     if (!mainContent) return;
 
@@ -616,19 +622,20 @@ function App() {
       <ToolExitGuardProvider>
       <div className={`site-app-shell${isSidebarCollapsed ? ' is-sidebar-collapsed' : ''}`}>
         <RouteFocusManager />
-        <a className="skip-to-content" href="#main-content">Skip to main content</a>
-        <LeftNavigation
-          theme={theme}
-          setTheme={setTheme}
-          isSidebarCollapsed={isSidebarCollapsed}
-          onToggleSidebar={() => setIsSidebarCollapsed((current) => !current)}
-        />
+        <a className="skip-to-content" href="#tool-search">Skip to main content</a>
         <div className="site-workspace">
           <header className="site-topbar">
             <div className="site-topbar-search">
               <ToolSearch />
             </div>
           </header>
+
+          <LeftNavigation
+            theme={theme}
+            setTheme={setTheme}
+            isSidebarCollapsed={isSidebarCollapsed}
+            onToggleSidebar={() => setIsSidebarCollapsed((current) => !current)}
+          />
 
           <main id="main-content" tabIndex={-1} className="site-main-content">
           <RouteErrorBoundaryWithLocation fallback={<RouteErrorFallback />}>

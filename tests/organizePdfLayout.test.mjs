@@ -27,3 +27,14 @@ test('Organize PDF presents concise, prominent page-reordering instructions', ()
   assert.match(instructionStyles, /font-weight:\s*600\s*;/);
   assert.match(instructionStyles, /border-left:\s*4px solid/);
 });
+
+test('Organize PDF separates the selected-file card from its empty-state upload zone', () => {
+  const workflowStart = organizePdf.indexOf('<div className="pdf-tool-workflow organize-pdf-workflow space-y-6">');
+  const pickerInput = organizePdf.indexOf('<input {...getInputProps()} />', workflowStart);
+  const attachedCard = organizePdf.indexOf('pdf-workflow-selected pdf-attached-file-card', workflowStart);
+  const emptyUploadZone = organizePdf.indexOf('className={`pdf-workflow-upload pdf-upload-zone merge-pdf-upload-zone', workflowStart);
+
+  assert.ok(pickerInput >= 0 && pickerInput < attachedCard, 'the picker input remains mounted before the selected card');
+  assert.ok(attachedCard > workflowStart, 'the selected PDF uses the shared card');
+  assert.ok(emptyUploadZone > attachedCard, 'the empty-state upload zone is distinct from the selected card');
+});

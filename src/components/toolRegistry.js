@@ -185,7 +185,7 @@ export const TOOL_REGISTRY = [
   },
   {
     id: 'remove',
-    name: 'Remove PDF Pages',
+    name: 'Remove PDF',
     path: '/remove-pages',
     category: 'organize',
     description: 'Select and remove pages from a PDF.',

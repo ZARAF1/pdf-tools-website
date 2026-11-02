@@ -26,9 +26,16 @@ test('PDF preview-use instructions share the prominent blue-accent callout style
   assert.match(instructionStyles, /font-weight:\s*600\s*;/);
   assert.match(instructionStyles, /border-left:\s*4px solid\s+#3b82f6\s*;/);
 
-  for (const [tool, source] of toolSources) {
+  for (const [tool, source] of toolSources.filter(([tool]) => tool !== 'CropPdf')) {
     assert.match(source, /pdf-preview-instructions/, `${tool} marks its preview-use guidance for consistent styling`);
   }
+});
+
+test('Crop PDF settings summary uses normal supporting text rather than the tinted callout', () => {
+  const cropSource = toolSources.find(([tool]) => tool === 'CropPdf')?.[1] ?? '';
+
+  assert.match(cropSource, /id="crop-pdf-settings-description"[^>]*>Set bounds as percentages/);
+  assert.doesNotMatch(cropSource, /<p[^>]*id="crop-pdf-settings-description"[^>]*className="pdf-preview-instructions"/);
 });
 
 test('Merge PDF empty-state prompt remains neutral inside its output box', async () => {

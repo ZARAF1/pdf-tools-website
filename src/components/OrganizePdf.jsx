@@ -243,33 +243,37 @@ const OrganizePdf = () => {
 
   return (
     <div className="pdf-tool-workflow organize-pdf-workflow space-y-6">
-      <div
-        {...getRootProps({
-          role: 'group',
-          'aria-label': file ? `Selected PDF ${file.name}` : 'Choose a PDF to organize'
-        })}
-        className={`pdf-workflow-selected pdf-workflow-upload pdf-upload-zone merge-pdf-upload-zone rounded-2xl border-2 border-dashed p-8 text-center transition-all ${file ? 'has-attached-file' : ''} ${
-          isDragActive ? 'border-blue-500 bg-blue-50' : 'cursor-pointer border-slate-300 bg-white hover:border-blue-400 hover:bg-blue-50/50'
-        }`}
-      >
-        <input {...getInputProps()} />
-        {file ? (
-          <div className="flex flex-wrap items-center justify-between gap-4 text-left">
-            <div className="flex min-w-0 items-center gap-3">
-              <AttachedFileIcon />
-              <div>
-                <p className="font-semibold text-slate-800">{file.name}</p>
-                <p className="text-sm text-slate-500">{formatBytes(file.size)} · {pages.length} pages</p>
-              </div>
+      <input {...getInputProps()} />
+      {file ? (
+        <section
+          {...getRootProps({
+            role: 'group',
+            'aria-label': `Selected PDF ${file.name}`
+          })}
+          className={`pdf-workflow-selected pdf-attached-file-card flex min-w-0 items-center justify-between gap-4 p-4 ${isDragActive ? 'border-blue-500 bg-blue-50' : ''}`}
+        >
+          <div className="flex min-w-0 items-center gap-3">
+            <AttachedFileIcon />
+            <div className="min-w-0">
+              <p className="truncate font-semibold text-slate-800">{file.name}</p>
+              <p className="text-sm text-slate-500">{formatBytes(file.size)} · {pages.length} pages</p>
             </div>
-            <AttachedFileActions
-              fileName={file.name}
-              onReplace={open}
-              onRemove={clearFile}
-              disabled={isLoading || isProcessing}
-            />
           </div>
-        ) : (
+          <AttachedFileActions
+            fileName={file.name}
+            onReplace={open}
+            onRemove={clearFile}
+            disabled={isLoading || isProcessing}
+          />
+        </section>
+      ) : (
+        <div
+          {...getRootProps({
+            role: 'group',
+            'aria-label': 'Choose a PDF to organize'
+          })}
+          className={`pdf-workflow-upload pdf-upload-zone merge-pdf-upload-zone cursor-pointer ${isDragActive ? 'border-blue-500 bg-blue-50' : 'border-slate-300 bg-white hover:border-blue-400 hover:bg-blue-50/50'}`}
+        >
           <div className="merge-pdf-upload-content">
             <div className="pdf-upload-icon" aria-hidden="true">
               {isLoading ? <Loader2 className="h-6 w-6 animate-spin text-blue-600" aria-hidden="true" /> : <Upload className="h-6 w-6 text-blue-600" aria-hidden="true" />}
@@ -290,8 +294,8 @@ const OrganizePdf = () => {
               Choose PDF
             </button>
           </div>
-        )}
-      </div>
+        </div>
+      )}
 
       {previewError && <p className="text-sm text-amber-700" role="status">{previewError}</p>}
       {error && <p className="rounded-lg bg-red-50 p-3 text-sm text-red-700" role="alert">{error}</p>}

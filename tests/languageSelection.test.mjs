@@ -37,6 +37,9 @@ test('sidebar languages use the stacked All tools submenu pattern', () => {
   assert.match(app, /site-language-columns/);
   assert.match(languagePicker, /onToggle/);
   assert.match(languagePicker, /onKeyDown=\{isSidebar \? onKeyDown : undefined\}/);
+  assert.match(languagePicker, /ChevronRight className="site-left-link-chevron"/);
+  assert.match(styles, /\.language-picker-sidebar \.language-picker-trigger:hover \.site-left-link-chevron/);
+  assert.match(styles, /\.language-picker-sidebar \.language-picker-trigger:focus-visible \.site-left-link-chevron/);
   assert.match(app, /onKeyDown=\{focusFirstMegaItem\}/);
   assert.match(styles, /\.site-language-columns\s*\{[\s\S]*?display:\s*grid/);
   assert.doesNotMatch(styles, /\.site-language-submenu\s*\{[^}]*overflow-y:\s*auto/);
