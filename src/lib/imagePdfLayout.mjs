@@ -61,3 +61,61 @@ export const calculateImagePlacement = ({
     height
   };
 };
+
+export const calculateImagePageLayout = ({
+  imageWidth,
+  imageHeight,
+  rotation = 0,
+  settings,
+  pageSizes
+}) => {
+  const [rotatedSourceWidth, rotatedSourceHeight] = getRotatedImageDimensions(
+    imageWidth,
+    imageHeight,
+    rotation
+  );
+  let outputWidth;
+  let outputHeight;
+  if (settings.maintainAspect) {
+    const scale = Math.min(
+      1,
+      settings.scalePercent / 100,
+      settings.maxWidth / rotatedSourceWidth,
+      settings.maxHeight / rotatedSourceHeight
+    );
+    outputWidth = Math.max(1, Math.round(rotatedSourceWidth * scale));
+    outputHeight = Math.max(1, Math.round(rotatedSourceHeight * scale));
+  } else {
+    outputWidth = Math.max(1, Math.round(Math.min(rotatedSourceWidth, settings.maxWidth) * settings.scalePercent / 100));
+    outputHeight = Math.max(1, Math.round(Math.min(rotatedSourceHeight, settings.maxHeight) * settings.scalePercent / 100));
+  }
+
+  let [pageWidth, pageHeight] = settings.pageSize === 'A4'
+    ? pageSizes.A4
+    : settings.pageSize === 'Letter'
+      ? pageSizes.Letter
+      : settings.pageSize === 'custom'
+        ? getCustomPageDimensions(settings.customWidthMm, settings.customHeightMm)
+        : [outputWidth * 0.75 + settings.margin * 2, outputHeight * 0.75 + settings.margin * 2];
+  if (settings.pageSize !== 'fit') {
+    [pageWidth, pageHeight] = getOrientedPageDimensions(pageWidth, pageHeight, {
+      autoOrient: settings.autoOrient,
+      orientation: settings.orientation,
+      imageWidth: outputWidth,
+      imageHeight: outputHeight
+    });
+  }
+
+  const placement = calculateImagePlacement({
+    imageWidth: outputWidth,
+    imageHeight: outputHeight,
+    pageWidth,
+    pageHeight,
+    margin: settings.margin,
+    fitMode: settings.pageSize === 'fit' ? 'contain' : settings.fitMode,
+    horizontalAlignment: settings.horizontalAlignment,
+    verticalAlignment: settings.verticalAlignment
+  });
+
+  return { outputWidth, outputHeight, pageWidth, pageHeight, placement };
+};

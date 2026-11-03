@@ -9,12 +9,33 @@ const styles = await readFile(new URL('../src/index.css', import.meta.url), 'utf
 
 test('Merge PDF keeps merge-all as the default and offers selective page mode', () => {
   assert.match(merger, /useState\('all'\)/);
-  assert.match(merger, /Merge all pages/);
-  assert.match(merger, /Select pages/);
+  assert.match(merger, /Merge All/);
+  assert.match(merger, /Select Pages/);
   assert.match(merger, /<PdfMergePagePicker\b/);
   assert.match(picker, /INITIAL_PREVIEW_COUNT = 12/);
   assert.match(picker, /scale = Math\.min\(1\.5, 520 \/ originalViewport\.width, 740 \/ originalViewport\.height\)/);
   assert.match(picker, /Larger preview/);
+});
+
+test('Merge labels use title case for modes, settings, selection, and output preview', () => {
+  for (const label of [
+    'Files to Merge',
+    'Settings &gt; Selection &gt; Preview',
+    'Choose Merge Mode',
+    'Merge All',
+    'Select Pages',
+    'Choose Settings',
+    'Output Filename',
+    'Page Size',
+    'Bookmark Each Source File',
+    'Insert a Blank Page Between Source Files',
+    'Live Output Preview'
+  ]) {
+    assert.ok(merger.includes(label), `Merge UI includes the title-cased label "${label}"`);
+  }
+  assert.doesNotMatch(merger, />\s*Merge all pages\s*</);
+  assert.doesNotMatch(merger, />\s*Select pages\s*</);
+  assert.doesNotMatch(merger, />\s*Live output preview\s*</);
 });
 
 test('Merge PDF keeps a compact gap between its heading and attachment workspace', () => {
@@ -71,6 +92,15 @@ test('Merge attachment list and add-PDF chooser appear immediately before settin
   assert.match(settingsSpacing, /margin-block-start:\s*1rem\s*;/);
   assert.ok(attachmentOrder, 'Merge settings have an explicit flex order after attachments');
   assert.match(attachmentOrder, /order:\s*4\s*;/);
+});
+
+test('Merge attachment count shows the selected and maximum file totals', () => {
+  const headerStart = merger.indexOf('<header className="merge-selected-files-header">');
+  const headerEnd = merger.indexOf('</header>', headerStart);
+  const headerMarkup = merger.slice(headerStart, headerEnd);
+
+  assert.match(headerMarkup, /aria-label=\{`Files: \$\{files\.length\}\/\$\{MAX_FILES\}`\}/);
+  assert.match(headerMarkup, /Files: \{files\.length\}\/\{MAX_FILES\}/);
 });
 
 test('Merge keeps the dropzone empty-state only and puts the add-files button below the file list', () => {
@@ -146,14 +176,14 @@ test('Merge page selection and live output each group their heading and content 
   const selectionPanelIndex = merger.indexOf('className="merge-page-selection-panel"');
   const selectionHeadingIndex = merger.indexOf('className="merge-section-heading merge-page-selection-heading"', selectionPanelIndex);
   const selectionTitleIndex = merger.indexOf(
-    'className="merge-section-heading-title merge-page-selection-title">Select pages',
+    'className="merge-section-heading-title merge-page-selection-title">Select Pages',
     selectionHeadingIndex
   );
   const pagePickersIndex = merger.indexOf('className="merge-source-page-pickers"', selectionTitleIndex);
   const outputPanelIndex = merger.indexOf('className="merge-live-output merge-live-output-panel"');
   const outputHeadingIndex = merger.indexOf('className="merge-section-heading merge-live-output-heading"', outputPanelIndex);
   const outputTitleIndex = merger.indexOf(
-    'className="merge-section-heading-title merge-live-output-title">Live output preview',
+    'className="merge-section-heading-title merge-live-output-title">Live Output Preview',
     outputHeadingIndex
   );
   const outputContentIndex = merger.indexOf('className="merge-live-output-content"', outputTitleIndex);
@@ -192,11 +222,11 @@ test('Merge page-selection panel uses the parent section gap without extra top p
 });
 
 test('Merge section headings carry the highlight while their explanations stay unhighlighted', () => {
-  for (const heading of ['Choose Settings', 'Select pages', 'Live output preview']) {
+  for (const heading of ['Choose Settings', 'Select Pages', 'Live Output Preview']) {
     const titleClass = {
       'Choose Settings': 'merge-section-heading-title merge-output-settings-title',
-      'Select pages': 'merge-section-heading-title merge-page-selection-title',
-      'Live output preview': 'merge-section-heading-title merge-live-output-title',
+      'Select Pages': 'merge-section-heading-title merge-page-selection-title',
+      'Live Output Preview': 'merge-section-heading-title merge-live-output-title',
     }[heading];
     const headingMarkup = merger.match(
       new RegExp(`<h3(?: id="[^"]+")? className="${titleClass}">${heading}</h3>`)
@@ -343,7 +373,7 @@ test('selected pages are previewed in their live output order and can be reorder
   assert.match(merger, /<Reorder\.Group[^>]*axis="x"[^>]*values=\{selectedPages\}/);
   assert.match(merger, /onReorder=\{reorderSelectedPages\}/);
   assert.match(merger, /<img src=\{item\.preview\.preview\} alt="" draggable=\{false\}/);
-  assert.match(merger, /Live output preview/);
+  assert.match(merger, /Live Output Preview/);
   assert.match(merger, /onClick=\{\(\) => moveSelectedPage/);
 });
 
@@ -353,12 +383,12 @@ test('blank-page markers reserve the same space on every live-output tile', () =
 });
 
 test('Merge PDF exposes output filename, source bookmarks, page sizing, and file-boundary blanks', () => {
-  assert.match(merger, /Output filename/);
-  assert.match(merger, /Bookmark each source file/);
-  assert.match(merger, /Preserve original page sizes/);
+  assert.match(merger, /Output Filename/);
+  assert.match(merger, /Bookmark Each Source File/);
+  assert.match(merger, /Preserve Original Page Sizes/);
   assert.match(merger, /Fit to US Letter/);
   assert.match(merger, /Fit to A4/);
-  assert.match(merger, /Insert a blank page between source files/);
+  assert.match(merger, /Insert a Blank Page Between Source Files/);
 });
 
 test('Merge page selection uses compact thumbnails and controls with a responsive output preview lane', () => {

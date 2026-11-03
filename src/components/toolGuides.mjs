@@ -38,9 +38,9 @@ export const TOOL_GUIDES = {
     applications: 'Turn photographed receipts into a single archive, assemble scanned paper forms for submission, or package product photos into a simple printable catalog.'
   },
   'pdf-images': {
-    what: 'Export PDF pages as PNG, JPG, or BMP image files. This is a visual export of page appearances rather than a way to extract original embedded photos or editable text.',
-    how: 'Select the PDF, choose the pages and available image format or quality options, then render the chosen pages in the browser. Multiple page images are delivered together in a ZIP archive.',
-    result: 'You receive image files for the selected pages, packaged as a ZIP when there is more than one. Images can be larger than the original PDF and do not retain selectable text, links, or PDF form behavior.',
+    what: 'Export PDF pages as PNG, JPG, or BMP image files, optionally trimming blank page margins. This is a visual export rather than a way to extract original embedded photos or editable text.',
+    how: 'Select the PDF, choose an image format and quality, set an output name, and optionally enable automatic margin cropping. Pages render sequentially in the browser.',
+    result: 'A one-page PDF downloads as an image; multiple pages are packaged in a ZIP. Images can be larger than the original PDF and do not retain selectable text, links, or PDF form behavior.',
     applications: 'Create page previews for a presentation, share a single page in an image-only workflow, or prepare visual references for a design or review process.'
   },
   word: {

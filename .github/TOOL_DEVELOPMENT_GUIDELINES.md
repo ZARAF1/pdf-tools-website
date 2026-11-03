@@ -111,6 +111,12 @@ These decisions are grounded in the current `PdfMerger.jsx`, `PdfMergePagePicker
 6. **Live output:** in a separate matching panel, show the selected output sequence and count. The inset output-content box contains either a neutral empty prompt or the real selected-page previews. Allow drag reorder and provide explicit move/remove controls as keyboard-accessible alternatives. Preserve the existing blank-page markers and output ordering.
 7. **Output:** processing and the manual download/result card follow settings and preview. Clear or revalidate generated output when relevant inputs/settings change.
 
+#### Image to PDF: page selection, output, and actions
+
+1. **Selectable image tiles:** In Select Pages settings scope, clicking the page image toggles that image's settings selection. Match Merge's selected-page treatment: a blue tile outline, a selected checkmark at the upper-right of the image, and a distinct eye action at the upper-left. Keep the selection button keyboard-operable and labelled; the eye opens the larger preview without changing selection. This selection scopes per-image settings and does not exclude images from PDF output.
+2. **PDF output mode:** Offer one PDF containing all images or a separate one-page PDF per image, packaged together in a single ZIP download. The combined PDF is the default. Keep the mode localized and clear generated output when the user changes it.
+3. **Primary and reset actions:** Place Create PDF before Reset in the action row, with Reset immediately to its right. Keep them side by side at narrow widths; let Create PDF flex while keeping Reset compact.
+
 #### Rotate PDF: single-source transformation reference
 
 1. **Selected source:** show one selected-file card with file details and Replace/Remove actions. Do not show a second add-file chooser; replacement remains a single-file operation.
@@ -153,6 +159,7 @@ Before editing, identify whether the target is single- or multi-file, what contr
 - Keep generated files available through a clearly labelled manual Download action; do not imply a download started automatically. Ensure download controls are not nested in other buttons. Revalidate output after settings change.
 - Image-to-PDF should validate actual browser decoding for each claimed format, preserve the image list order, disclose resize/re-encode behavior, and verify generated page count and dimensions. Do not promise format support based only on the file extension or picker filter.
 - PDF-to-image outputs must contain genuine bytes for the selected format, not a renamed encoding. Render pages sequentially, bound per-page and cumulative memory, package only completed images, and verify ZIP entry names, order, signatures, and archive readability.
+- PDF to Images should use a theme-aware muted attachment section and Settings shell, with its “Choose Settings” controls in a surface-background inner panel. Keep the existing format and quality options; make blank-margin cropping an explicit, default-on choice that trims near-white margins only, preserves blank pages, and is not described as extracting embedded photos. Let users name the output before conversion; download a single-page result as its selected image format and multiple pages as a named ZIP with numbered entries.
 - Watermark page numbering is independent from text-watermark settings and page selections. Verify the starting sequence against selected pages in document order.
 - Configure PDF.js through the shared worker URL helper. For rendering performed offscreen (page previews, OCR preparation, or image compression), account for background-tab `requestAnimationFrame` throttling and verify completion without requiring the tab to be foregrounded.
 - Treat an extracted text check, parsed page count, or successful build as separate evidence from visual inspection and browser download verification. Record each result independently; never claim an output looks correct unless it was rendered and inspected.

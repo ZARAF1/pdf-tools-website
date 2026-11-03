@@ -10,7 +10,10 @@ import {
 } from 'lucide-react';
 import { PASSWORD_PROTECTED_PDF_MESSAGE, validateUnencryptedPdf } from '../lib/pdfValidation';
 import pdfjsLib from '../lib/pdfjsClient';
-import { createZipBlob, encodeBmp } from '../lib/imageArchive.mjs';
+import { encodeBmp } from '../lib/imageArchive.mjs';
+import { findContentBounds } from '../lib/pdfImageCrop.mjs';
+import { createPdfImageDownload } from '../lib/pdfImageOutput.mjs';
+import { normalizeOutputFileName } from '../lib/outputFileName.mjs';
 import { AttachedFileActions, AttachedFileIcon } from './AttachedFileControls';
 import DownloadReadyCard from './DownloadReadyCard';
 
@@ -47,20 +50,53 @@ const canvasToBlob = (canvas, format, quality) => new Promise((resolve, reject) 
   }, format.mimeType, quality);
 });
 
+const cropCanvasToContent = (canvas, context) => {
+  const bounds = findContentBounds(context.getImageData(0, 0, canvas.width, canvas.height));
+  if (!bounds || (bounds.left === 0 && bounds.top === 0
+    && bounds.width === canvas.width && bounds.height === canvas.height)) {
+    return { canvas, context };
+  }
+
+  const croppedCanvas = window.document.createElement('canvas');
+  croppedCanvas.width = bounds.width;
+  croppedCanvas.height = bounds.height;
+  const croppedContext = croppedCanvas.getContext('2d', { alpha: false });
+  if (!croppedContext) {
+    croppedCanvas.width = 0;
+    croppedCanvas.height = 0;
+    throw new Error('Your browser could not create a cropped page image.');
+  }
+  croppedContext.drawImage(
+    canvas,
+    bounds.left,
+    bounds.top,
+    bounds.width,
+    bounds.height,
+    0,
+    0,
+    bounds.width,
+    bounds.height
+  );
+  return { canvas: croppedCanvas, context: croppedContext };
+};
+
 const PdfToImages = () => {
   const [file, setFile] = useState(null);
   const [pageCount, setPageCount] = useState(0);
   const [format, setFormat] = useState('png');
   const [quality, setQuality] = useState('standard');
   const [jpegQuality, setJpegQuality] = useState(0.85);
+  const [autoCrop, setAutoCrop] = useState(true);
+  const [outputBaseName, setOutputBaseName] = useState('');
   const [isValidating, setIsValidating] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const [progress, setProgress] = useState('');
   const [error, setError] = useState('');
-  const [zipUrl, setZipUrl] = useState('');
-  const [zipName, setZipName] = useState('');
-  const [zipSizeBytes, setZipSizeBytes] = useState(0);
-  const markOutputDownloaded = useToolExitGuard(Boolean(file), zipUrl);
+  const [outputUrl, setOutputUrl] = useState('');
+  const [outputName, setOutputName] = useState('');
+  const [outputSizeBytes, setOutputSizeBytes] = useState(0);
+  const [downloadLabel, setDownloadLabel] = useState('');
+  const markOutputDownloaded = useToolExitGuard(Boolean(file), outputUrl);
 
   const generationRef = useRef(0);
   const validationRef = useRef(0);
@@ -69,14 +105,15 @@ const PdfToImages = () => {
   const renderTaskRef = useRef(null);
   const generatedFilesRef = useRef(null);
   const generatedFormatRef = useRef(null);
-  const zipUrlRef = useRef('');
+  const outputUrlRef = useRef('');
 
-  const clearZip = useCallback(() => {
-    if (zipUrlRef.current) URL.revokeObjectURL(zipUrlRef.current);
-    zipUrlRef.current = '';
-    setZipUrl('');
-    setZipName('');
-    setZipSizeBytes(0);
+  const clearOutput = useCallback(() => {
+    if (outputUrlRef.current) URL.revokeObjectURL(outputUrlRef.current);
+    outputUrlRef.current = '';
+    setOutputUrl('');
+    setOutputName('');
+    setOutputSizeBytes(0);
+    setDownloadLabel('');
   }, []);
 
   const stopPdfLoading = useCallback(() => {
@@ -93,7 +130,7 @@ const PdfToImages = () => {
     if (isProcessing || isValidating) return;
     setError('');
     setProgress('');
-    clearZip();
+    clearOutput();
     generatedFilesRef.current = null;
     generatedFormatRef.current = null;
 
@@ -119,6 +156,7 @@ const PdfToImages = () => {
       if (validationRef.current !== validationRun) return;
       setFile(selectedFile);
       setPageCount(count);
+      setOutputBaseName(getBaseName(selectedFile.name));
     } catch (validationError) {
       if (validationRef.current === validationRun) {
         console.error('Unable to validate PDF for image conversion:', validationError);
@@ -132,7 +170,7 @@ const PdfToImages = () => {
     } finally {
       if (validationRef.current === validationRun) setIsValidating(false);
     }
-  }, [clearZip, isProcessing, isValidating]);
+  }, [clearOutput, isProcessing, isValidating]);
 
   const { getRootProps, getInputProps, isDragActive, open } = useAccessibleDropzone({
     onDrop,
@@ -142,25 +180,33 @@ const PdfToImages = () => {
     disabled: isValidating || isProcessing
   });
 
-  const createArchive = async (images, selectedFormat, baseName, runId) => {
+  const createOutput = async (images, selectedFormat, baseName, runId) => {
     const imageLabel = images.length === 1 ? 'image' : 'images';
-    setProgress(`Creating ZIP: 0 of ${images.length} ${imageLabel}`);
-    const blob = await createZipBlob(images, (processed, total) => {
-      if (generationRef.current === runId) {
-        setProgress(`Creating ZIP: ${processed} of ${total} ${imageLabel}`);
-      }
-    }, () => generationRef.current !== runId);
+    if (images.length > 1) setProgress(`Creating ZIP: 0 of ${images.length} ${imageLabel}`);
+    const output = await createPdfImageDownload({
+      images,
+      format: selectedFormat,
+      outputBaseName: baseName,
+      fallbackBaseName: getBaseName(file?.name || 'document.pdf'),
+      onProgress: (processed, total) => {
+        if (generationRef.current === runId) {
+          setProgress(`Creating ZIP: ${processed} of ${total} ${imageLabel}`);
+        }
+      },
+      isCancelled: () => generationRef.current !== runId
+    });
     if (generationRef.current !== runId) return;
 
-    const url = URL.createObjectURL(blob);
-    clearZip();
-    zipUrlRef.current = url;
-    setZipUrl(url);
-    setZipName(`${baseName}-images-${selectedFormat.extension}.zip`);
-    setZipSizeBytes(blob.size);
+    const url = URL.createObjectURL(output.blob);
+    clearOutput();
+    outputUrlRef.current = url;
+    setOutputUrl(url);
+    setOutputName(output.fileName);
+    setOutputSizeBytes(output.blob.size);
+    setDownloadLabel(output.downloadLabel);
     generatedFilesRef.current = null;
     generatedFormatRef.current = null;
-    setProgress(`ZIP ready with ${images.length} ${imageLabel}.`);
+    setProgress(images.length === 1 ? 'Image ready for download.' : `ZIP ready with ${images.length} images.`);
   };
 
   const convert = async () => {
@@ -189,7 +235,7 @@ const PdfToImages = () => {
     setIsProcessing(true);
     setError('');
     setProgress('Opening the PDF…');
-    clearZip();
+    clearOutput();
     generatedFilesRef.current = null;
     generatedFormatRef.current = null;
 
@@ -228,6 +274,8 @@ const PdfToImages = () => {
         const context = canvas.getContext('2d', { alpha: false });
         if (!context) throw new Error('Your browser could not create a page image.');
 
+        let outputCanvas = canvas;
+        let outputContext = context;
         try {
           context.fillStyle = '#ffffff';
           context.fillRect(0, 0, canvas.width, canvas.height);
@@ -237,12 +285,18 @@ const PdfToImages = () => {
           renderTaskRef.current = null;
           if (generationRef.current !== runId) return;
 
+          if (autoCrop) {
+            const cropped = cropCanvasToContent(canvas, context);
+            outputCanvas = cropped.canvas;
+            outputContext = cropped.context;
+          }
+
           let bytes;
           if (format === 'bmp') {
-            bytes = encodeBmp(context.getImageData(0, 0, canvas.width, canvas.height));
+            bytes = encodeBmp(outputContext.getImageData(0, 0, outputCanvas.width, outputCanvas.height));
           } else {
             const blob = await canvasToBlob(
-              canvas,
+              outputCanvas,
               selectedFormat,
               format === 'jpg' ? jpegQuality : undefined
             );
@@ -260,6 +314,10 @@ const PdfToImages = () => {
           });
         } finally {
           renderTaskRef.current = null;
+          if (outputCanvas !== canvas) {
+            outputCanvas.width = 0;
+            outputCanvas.height = 0;
+          }
           canvas.width = 0;
           canvas.height = 0;
           page.cleanup();
@@ -269,7 +327,7 @@ const PdfToImages = () => {
       if (generationRef.current !== runId) return;
       generatedFilesRef.current = imageFiles;
       generatedFormatRef.current = selectedFormat;
-      await createArchive(imageFiles, selectedFormat, getBaseName(file.name), runId);
+      await createOutput(imageFiles, selectedFormat, outputBaseName, runId);
     } catch (processingError) {
       if (generationRef.current === runId) {
         console.error('Unable to convert PDF pages to images:', processingError);
@@ -296,17 +354,17 @@ const PdfToImages = () => {
     }
   };
 
-  const retryZip = async () => {
+  const retryArchive = async () => {
     const images = generatedFilesRef.current;
     const selectedFormat = generatedFormatRef.current;
-    if (processingRef.current || !images?.length || !selectedFormat) return;
+    if (processingRef.current || !images || images.length < 2 || !selectedFormat) return;
 
     const runId = ++generationRef.current;
     processingRef.current = true;
     setIsProcessing(true);
     setError('');
     try {
-      await createArchive(images, selectedFormat, getBaseName(file?.name || 'document.pdf'), runId);
+      await createOutput(images, selectedFormat, outputBaseName, runId);
     } catch (archiveError) {
       if (generationRef.current === runId) {
         console.error('Unable to create ZIP archive:', archiveError);
@@ -342,12 +400,14 @@ const PdfToImages = () => {
     processingRef.current = false;
     generatedFilesRef.current = null;
     generatedFormatRef.current = null;
-    clearZip();
+    clearOutput();
     setFile(null);
     setPageCount(0);
     setFormat('png');
     setQuality('standard');
     setJpegQuality(0.85);
+    setAutoCrop(true);
+    setOutputBaseName('');
     setIsValidating(false);
     setIsProcessing(false);
     setProgress('');
@@ -365,12 +425,19 @@ const PdfToImages = () => {
         console.error('Unable to release the PDF rendering task:', destroyError);
       });
     }
-    if (zipUrlRef.current) URL.revokeObjectURL(zipUrlRef.current);
+    if (outputUrlRef.current) URL.revokeObjectURL(outputUrlRef.current);
   }, []);
 
   return (
     <div className="pdf-tool-workflow pdf-to-images-workflow mx-auto max-w-4xl space-y-6">
       <input {...getInputProps()} aria-label="Choose a PDF to convert to images" />
+      <section className="pdf-images-file-section" aria-labelledby="pdf-images-file-heading">
+        <header className="pdf-images-file-section-header">
+          <div>
+            <h3 id="pdf-images-file-heading" className="merge-selected-files-title">PDF to convert</h3>
+            <p>Attach one PDF to export its pages as images.</p>
+          </div>
+        </header>
       {!file && (
       <section
         {...getRootProps({
@@ -395,7 +462,7 @@ const PdfToImages = () => {
                   ? 'Drop the PDF here'
                   : 'Choose or drop a PDF to convert to images'}
             </h3>
-            <p>Convert PDF pages to PNG, JPG, or BMP images in a ZIP file.</p>
+            <p>Trim blank page margins automatically, then save one image or a ZIP of all pages.</p>
           </div>
           <button
             type="button"
@@ -429,9 +496,64 @@ const PdfToImages = () => {
           />
         </section>
       )}
+      </section>
 
       {file && (
-      <section className="pdf-workflow-controls space-y-5 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+      <section className="pdf-images-settings-shell" aria-labelledby="pdf-images-settings-overview">
+        <div className="merge-control-intro">
+          <h3 id="pdf-images-settings-overview" className="merge-selected-files-title">Settings</h3>
+          <p>Choose the image format, quality, crop, and output name before converting.</p>
+        </div>
+        <section className="pdf-images-settings-panel pdf-workflow-controls" aria-labelledby="pdf-images-settings-heading">
+          <div className="merge-section-heading merge-output-settings-heading">
+            <div>
+              <h3 id="pdf-images-settings-heading" className="merge-section-heading-title merge-output-settings-title">Choose Settings</h3>
+              <p>Set how each page is cropped and saved.</p>
+            </div>
+          </div>
+
+          <div className="pdf-images-output-name-field">
+            <label htmlFor="pdf-images-output-name" className="text-sm font-semibold text-slate-700">Output file name</label>
+            <input
+              id="pdf-images-output-name"
+              type="text"
+              value={outputBaseName}
+              disabled={!file || isValidating || isProcessing}
+              onChange={(event) => {
+                const nextName = event.target.value;
+                setOutputBaseName(nextName);
+                if (outputUrl && outputName) {
+                  setOutputName(normalizeOutputFileName(nextName, outputName));
+                }
+              }}
+              className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
+            />
+            <p className="text-xs text-slate-500">The extension is added automatically. One page saves as an image; multiple pages use this name for the ZIP.</p>
+          </div>
+
+          <div className="pdf-images-crop-setting">
+            <input
+              id="pdf-images-auto-crop"
+              type="checkbox"
+              aria-describedby="pdf-images-auto-crop-help"
+              checked={autoCrop}
+              disabled={!file || isValidating || isProcessing}
+              onChange={(event) => {
+                setAutoCrop(event.target.checked);
+                clearOutput();
+                generatedFilesRef.current = null;
+                generatedFormatRef.current = null;
+                setError('');
+                setProgress('');
+              }}
+              className="accent-blue-600"
+            />
+            <div>
+              <label htmlFor="pdf-images-auto-crop" className="font-semibold text-slate-800">Automatically crop blank page margins</label>
+              <p id="pdf-images-auto-crop-help" className="mt-1 text-sm text-slate-600">Keep the page content and a small border; blank pages remain full size.</p>
+            </div>
+          </div>
+
         <fieldset disabled={!file || isValidating || isProcessing}>
           <legend className="mb-3 text-lg font-bold text-slate-800">Output format</legend>
           <div className="grid gap-3 sm:grid-cols-3">
@@ -450,7 +572,7 @@ const PdfToImages = () => {
                     checked={format === item.id}
                     onChange={() => {
                       setFormat(item.id);
-                      clearZip();
+                      clearOutput();
                       generatedFilesRef.current = null;
                       generatedFormatRef.current = null;
                       setError('');
@@ -478,7 +600,7 @@ const PdfToImages = () => {
                   checked={quality === 'standard'}
                   onChange={() => {
                     setQuality('standard');
-                    clearZip();
+                    clearOutput();
                     generatedFilesRef.current = null;
                     generatedFormatRef.current = null;
                     setProgress('');
@@ -498,7 +620,7 @@ const PdfToImages = () => {
                   checked={quality === 'high'}
                   onChange={() => {
                     setQuality('high');
-                    clearZip();
+                    clearOutput();
                     generatedFilesRef.current = null;
                     generatedFormatRef.current = null;
                     setProgress('');
@@ -527,7 +649,7 @@ const PdfToImages = () => {
               disabled={!file || isValidating || isProcessing}
               onChange={(event) => {
                 setJpegQuality(Number(event.target.value));
-                clearZip();
+                clearOutput();
                 generatedFilesRef.current = null;
                 generatedFormatRef.current = null;
                 setProgress('');
@@ -544,11 +666,12 @@ const PdfToImages = () => {
           </p>
         )}
 
+        </section>
       </section>
       )}
 
       {file && (
-        <div className="pdf-workflow-actions flex flex-wrap gap-3">
+        <div className="pdf-workflow-actions flex flex-wrap justify-end gap-3">
           <button
             type="button"
             onClick={convert}
@@ -586,23 +709,23 @@ const PdfToImages = () => {
         <AlertCircle className="mt-0.5 h-5 w-5 shrink-0" aria-hidden="true" />
         <span>{error}</span>
       </p>}
-      {error && generatedFilesRef.current?.length > 0 && !isProcessing && (
+      {error && generatedFilesRef.current?.length > 1 && !isProcessing && (
         <button
           type="button"
-          onClick={retryZip}
+          onClick={retryArchive}
           className="inline-flex items-center gap-2 rounded-xl border border-blue-200 bg-white px-4 py-2.5 font-semibold text-blue-700 transition hover:bg-blue-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
         >
           <RefreshCw className="h-4 w-4" aria-hidden="true" />
           Retry ZIP creation
         </button>
       )}
-      {zipUrl && (
+      {outputUrl && (
         <DownloadReadyCard
-          fileName={zipName}
-          sizeBytes={zipSizeBytes}
-          href={zipUrl}
+          fileName={outputName}
+          sizeBytes={outputSizeBytes}
+          href={outputUrl}
           onDownload={markOutputDownloaded}
-          downloadLabel="Download ZIP"
+          downloadLabel={downloadLabel}
         />
       )}
     </div>

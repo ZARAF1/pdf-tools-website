@@ -323,6 +323,79 @@ const imageToPdfLabels = {
   ]
 };
 
+const imageWorkflowKeys = [
+  'imageCount', 'settingsTitle', 'pagePreview', 'settingsScope', 'allPages', 'selectPages', 'selectPagesHint',
+  'previewTitle', 'previewDescription', 'selectImage', 'viewLargerPreview', 'closePreview',
+  'settingsDescription', 'chooseSettingsDescription', 'attachedImages'
+];
+const imageOutputKeys = ['outputMode', 'singlePdf', 'separatePdf', 'downloadZip'];
+const imageOutputLabels = {
+  en: ['PDF output', 'One PDF with all images', 'Separate PDFs in a ZIP', 'Download ZIP'],
+  es: ['Salida PDF', 'Un PDF con todas las imágenes', 'PDF separados en un ZIP', 'Descargar ZIP'],
+  fr: ['Sortie PDF', 'Un seul PDF avec toutes les images', 'PDF séparés dans un ZIP', 'Télécharger le ZIP'],
+  de: ['PDF-Ausgabe', 'Ein PDF mit allen Bildern', 'Separate PDFs in einer ZIP-Datei', 'ZIP herunterladen'],
+  pt: ['Saída PDF', 'Um PDF com todas as imagens', 'PDFs separados em um ZIP', 'Baixar ZIP'],
+  it: ['Output PDF', 'Un PDF con tutte le immagini', 'PDF separati in un file ZIP', 'Scarica ZIP'],
+  nl: ['PDF-uitvoer', 'Eén PDF met alle afbeeldingen', 'Afzonderlijke pdf’s in een ZIP', 'ZIP downloaden'],
+  pl: ['Wyjściowy PDF', 'Jeden PDF ze wszystkimi obrazami', 'Osobne pliki PDF w archiwum ZIP', 'Pobierz ZIP'],
+  sv: ['PDF-utdata', 'En PDF med alla bilder', 'Separata PDF-filer i en ZIP-fil', 'Ladda ned ZIP'],
+  fi: ['PDF-tuloste', 'Yksi PDF kaikilla kuvilla', 'Erilliset PDF-tiedostot ZIP-arkistossa', 'Lataa ZIP'],
+  da: ['PDF-output', 'Én PDF med alle billeder', 'Separate PDF-filer i en ZIP-fil', 'Download ZIP'],
+  nb: ['PDF-utdata', 'Én PDF med alle bilder', 'Separate PDF-filer i en ZIP-fil', 'Last ned ZIP'],
+  tr: ['PDF çıktısı', 'Tüm görseller tek PDF içinde', 'Ayrı PDF dosyaları ZIP içinde', 'ZIP indir'],
+  ru: ['Результат PDF', 'Один PDF со всеми изображениями', 'Отдельные PDF в ZIP-архиве', 'Скачать ZIP'],
+  uk: ['Результат PDF', 'Один PDF з усіма зображеннями', 'Окремі PDF у ZIP-архіві', 'Завантажити ZIP'],
+  ar: ['إخراج PDF', 'ملف PDF واحد بكل الصور', 'ملفات PDF منفصلة في ZIP', 'تنزيل ZIP'],
+  hi: ['PDF आउटपुट', 'सभी छवियों के साथ एक PDF', 'अलग-अलग PDF एक ZIP में', 'ZIP डाउनलोड करें'],
+  ja: ['PDF出力', 'すべての画像を1つのPDFにする', '画像ごとにPDFを作成してZIPにまとめる', 'ZIPをダウンロード'],
+  ko: ['PDF 출력', '모든 이미지가 포함된 PDF 하나', '이미지별 PDF를 ZIP으로 다운로드', 'ZIP 다운로드'],
+  'zh-CN': ['PDF 输出', '所有图片合并为一个 PDF', '每张图片单独生成 PDF 并打包为 ZIP', '下载 ZIP']
+};
+const imageWorkflowLabels = {
+  en: ['Images: {count}/{max}', 'Settings', 'Page Preview', 'Choose Settings', 'All Pages', 'Select Pages', 'Select pages below; settings changes affect only selected images.', 'Preview', 'Review and reorder images. Changes appear in each page preview.', 'Select page {page}', 'View larger preview of {fileName}', 'Close larger preview', 'Choose page size and orientation, fit, alignment, background, and resizing.', 'Choose whether changes apply to all images or only selected pages.', 'Attached Images'],
+  es: ['Imágenes: {count}/{max}', 'Ajustes', 'Vista previa de páginas', 'Elegir ajustes', 'Todas las páginas', 'Páginas seleccionadas', 'Elige páginas abajo; los cambios se aplican solo a esas imágenes.', 'Vista previa', 'Revisa y reordena las imágenes. Los cambios se muestran en cada página.', 'Seleccionar página {page}', 'Ver vista previa ampliada de {fileName}', 'Cerrar vista previa ampliada', 'Elige el tamaño y la orientación de página, el ajuste, la alineación, el fondo y el redimensionamiento.', 'Elige si los cambios se aplican a todas las imágenes o solo a las páginas seleccionadas.', 'Imágenes adjuntas'],
+  fr: ['Images : {count}/{max}', 'Paramètres', 'Aperçu des pages', 'Choisir les réglages', 'Toutes les pages', 'Pages sélectionnées', 'Choisissez les pages ci-dessous ; les réglages ne changent que ces images.', 'Aperçu', 'Examinez et réorganisez les images. Les changements apparaissent sur chaque page.', 'Sélectionner la page {page}', 'Afficher un aperçu agrandi de {fileName}', 'Fermer l’aperçu agrandi', 'Choisissez le format et l’orientation, l’ajustement, l’alignement, le fond et le redimensionnement.', 'Choisissez si les changements s’appliquent à toutes les images ou uniquement aux pages sélectionnées.', 'Images jointes'],
+  de: ['Bilder: {count}/{max}', 'Einstellungen', 'Seitenvorschau', 'Einstellungen wählen', 'Alle Seiten', 'Seiten auswählen', 'Wähle unten Seiten aus; Änderungen gelten nur für diese Bilder.', 'Vorschau', 'Prüfe und ordne die Bilder neu. Änderungen erscheinen in jeder Seitenvorschau.', 'Seite {page} auswählen', 'Größere Vorschau von {fileName} anzeigen', 'Größere Vorschau schließen', 'Lege Seitengröße und Ausrichtung sowie Anpassung, Ausrichtung, Hintergrund und Skalierung fest.', 'Wähle, ob Änderungen für alle Bilder oder nur ausgewählte Seiten gelten.', 'Angehängte Bilder'],
+  pt: ['Imagens: {count}/{max}', 'Configurações', 'Pré-visualização da página', 'Escolher configurações', 'Todas as páginas', 'Selecionar páginas', 'Selecione páginas abaixo; as alterações afetam apenas essas imagens.', 'Pré-visualização', 'Revise e reordene as imagens. As alterações aparecem em cada página.', 'Selecionar página {page}', 'Ver pré-visualização ampliada de {fileName}', 'Fechar pré-visualização ampliada', 'Escolha o tamanho e a orientação da página, o ajuste, o alinhamento, o fundo e o redimensionamento.', 'Escolha se as alterações se aplicam a todas as imagens ou somente às páginas selecionadas.', 'Imagens anexadas'],
+  it: ['Immagini: {count}/{max}', 'Impostazioni', 'Anteprima pagina', 'Scegli impostazioni', 'Tutte le pagine', 'Seleziona pagine', 'Seleziona le pagine qui sotto; le modifiche riguardano solo quelle immagini.', 'Anteprima', 'Rivedi e riordina le immagini. Le modifiche appaiono in ogni pagina.', 'Seleziona pagina {page}', 'Visualizza anteprima ingrandita di {fileName}', 'Chiudi anteprima ingrandita', 'Scegli formato e orientamento della pagina, adattamento, allineamento, sfondo e ridimensionamento.', 'Scegli se applicare le modifiche a tutte le immagini o solo alle pagine selezionate.', 'Immagini allegate'],
+  nl: ['Afbeeldingen: {count}/{max}', 'Instellingen', 'Paginavoorbeeld', 'Instellingen kiezen', 'Alle pagina’s', 'Pagina’s selecteren', 'Selecteer hieronder pagina’s; wijzigingen gelden alleen voor die afbeeldingen.', 'Voorbeeld', 'Bekijk en rangschik afbeeldingen. Wijzigingen verschijnen op elke pagina.', 'Pagina {page} selecteren', 'Groter voorbeeld van {fileName} bekijken', 'Groter voorbeeld sluiten', 'Kies papierformaat en -stand, passend maken, uitlijning, achtergrond en verkleining.', 'Kies of wijzigingen gelden voor alle afbeeldingen of alleen geselecteerde pagina’s.', 'Bijgevoegde afbeeldingen'],
+  pl: ['Obrazy: {count}/{max}', 'Ustawienia', 'Podgląd stron', 'Wybierz ustawienia', 'Wszystkie strony', 'Wybierz strony', 'Wybierz strony poniżej; zmiany dotyczą tylko tych obrazów.', 'Podgląd', 'Przejrzyj i zmień kolejność obrazów. Zmiany widać na każdej stronie.', 'Wybierz stronę {page}', 'Pokaż większy podgląd: {fileName}', 'Zamknij większy podgląd', 'Wybierz rozmiar i orientację strony, dopasowanie, wyrównanie, tło i zmianę rozmiaru.', 'Wybierz, czy zmiany dotyczą wszystkich obrazów, czy tylko wybranych stron.', 'Załączone obrazy'],
+  sv: ['Bilder: {count}/{max}', 'Inställningar', 'Sidförhandsgranskning', 'Välj inställningar', 'Alla sidor', 'Välj sidor', 'Välj sidor nedan; ändringarna gäller bara de valda bilderna.', 'Förhandsgranskning', 'Granska och ordna bilderna. Ändringar visas på varje sida.', 'Välj sida {page}', 'Visa större förhandsgranskning av {fileName}', 'Stäng större förhandsgranskning', 'Välj sidstorlek och riktning, anpassning, justering, bakgrund och storleksändring.', 'Välj om ändringarna ska gälla alla bilder eller bara valda sidor.', 'Bifogade bilder'],
+  fi: ['Kuvat: {count}/{max}', 'Asetukset', 'Sivun esikatselu', 'Valitse asetukset', 'Kaikki sivut', 'Valitse sivut', 'Valitse sivut alta; muutokset koskevat vain valittuja kuvia.', 'Esikatselu', 'Tarkista ja järjestä kuvat. Muutokset näkyvät jokaisella sivulla.', 'Valitse sivu {page}', 'Näytä suurempi esikatselu: {fileName}', 'Sulje suurempi esikatselu', 'Valitse sivukoko ja suunta sekä sovitus, tasaus, tausta ja koon muuttaminen.', 'Valitse, koskevatko muutokset kaikkia kuvia vai vain valittuja sivuja.', 'Liitetyt kuvat'],
+  da: ['Billeder: {count}/{max}', 'Indstillinger', 'Sideforhåndsvisning', 'Vælg indstillinger', 'Alle sider', 'Vælg sider', 'Vælg sider nedenfor; ændringer gælder kun de valgte billeder.', 'Forhåndsvisning', 'Gennemse og omarranger billeder. Ændringer vises på hver side.', 'Vælg side {page}', 'Vis større forhåndsvisning af {fileName}', 'Luk større forhåndsvisning', 'Vælg sidestørrelse og retning, tilpasning, justering, baggrund og skalering.', 'Vælg, om ændringer gælder alle billeder eller kun valgte sider.', 'Vedhæftede billeder'],
+  nb: ['Bilder: {count}/{max}', 'Innstillinger', 'Sideforhåndsvisning', 'Velg innstillinger', 'Alle sider', 'Velg sider', 'Velg sider nedenfor; endringer gjelder bare de valgte bildene.', 'Forhåndsvisning', 'Se gjennom og sorter bildene. Endringer vises på hver side.', 'Velg side {page}', 'Vis større forhåndsvisning av {fileName}', 'Lukk større forhåndsvisning', 'Velg sidestørrelse og retning, tilpasning, justering, bakgrunn og skalering.', 'Velg om endringer gjelder alle bilder eller bare valgte sider.', 'Vedlagte bilder'],
+  tr: ['Görseller: {count}/{max}', 'Ayarlar', 'Sayfa Önizlemesi', 'Ayarları Seç', 'Tüm Sayfalar', 'Sayfaları Seç', 'Aşağıdan sayfaları seçin; değişiklikler yalnızca seçilen görselleri etkiler.', 'Önizleme', 'Görselleri inceleyin ve yeniden sıralayın. Değişiklikler her sayfada görünür.', '{page}. sayfayı seç', '{fileName} için büyük önizlemeyi görüntüle', 'Büyük önizlemeyi kapat', 'Sayfa boyutunu ve yönünü, sığdırmayı, hizalamayı, arka planı ve yeniden boyutlandırmayı seçin.', 'Değişikliklerin tüm görsellere mi yoksa yalnızca seçilen sayfalara mı uygulanacağını seçin.', 'Ekli Görseller'],
+  ru: ['Изображения: {count}/{max}', 'Настройки', 'Предпросмотр страниц', 'Выбрать настройки', 'Все страницы', 'Выбрать страницы', 'Выберите страницы ниже; изменения затронут только выбранные изображения.', 'Предпросмотр', 'Просмотрите изображения и измените их порядок. Изменения видны на каждой странице.', 'Выбрать страницу {page}', 'Увеличенный просмотр: {fileName}', 'Закрыть увеличенный просмотр', 'Выберите размер и ориентацию страницы, размещение, выравнивание, фон и изменение размера.', 'Выберите, применять ли изменения ко всем изображениям или только к выбранным страницам.', 'Прикрепленные изображения'],
+  uk: ['Зображення: {count}/{max}', 'Налаштування', 'Попередній перегляд сторінок', 'Вибрати налаштування', 'Усі сторінки', 'Вибрати сторінки', 'Виберіть сторінки нижче; зміни стосуватимуться лише цих зображень.', 'Попередній перегляд', 'Переглядайте зображення та змінюйте їх порядок. Зміни видно на кожній сторінці.', 'Вибрати сторінку {page}', 'Збільшений перегляд: {fileName}', 'Закрити збільшений перегляд', 'Виберіть розмір і орієнтацію сторінки, розміщення, вирівнювання, тло та зміну розміру.', 'Виберіть, чи застосовувати зміни до всіх зображень або лише до вибраних сторінок.', 'Прикріплені зображення'],
+  ar: ['الصور: {count}/{max}', 'الإعدادات', 'معاينة الصفحات', 'اختيار الإعدادات', 'كل الصفحات', 'تحديد الصفحات', 'حدد الصفحات أدناه؛ ستؤثر التغييرات على الصور المحددة فقط.', 'معاينة', 'راجع الصور وأعد ترتيبها. تظهر التغييرات في معاينة كل صفحة.', 'تحديد الصفحة {page}', 'عرض معاينة أكبر لـ {fileName}', 'إغلاق المعاينة الأكبر', 'اختر حجم الصفحة واتجاهها وملاءمة الصورة ومحاذاتها وخلفيتها وتغيير حجمها.', 'اختر ما إذا كانت التغييرات ستُطبق على كل الصور أم على الصفحات المحددة فقط.', 'الصور المرفقة'],
+  hi: ['छवियाँ: {count}/{max}', 'सेटिंग', 'पेज पूर्वावलोकन', 'सेटिंग चुनें', 'सभी पेज', 'पेज चुनें', 'नीचे पेज चुनें; बदलाव केवल चुनी गई छवियों पर लागू होंगे।', 'पूर्वावलोकन', 'छवियाँ देखें और क्रम बदलें। बदलाव हर पेज पर दिखाई देंगे।', 'पेज {page} चुनें', '{fileName} का बड़ा पूर्वावलोकन देखें', 'बड़ा पूर्वावलोकन बंद करें', 'पेज का आकार और दिशा, फिट, संरेखण, पृष्ठभूमि और छवि का आकार चुनें।', 'चुनें कि बदलाव सभी छवियों पर लागू हों या केवल चुने गए पेजों पर।', 'संलग्न छवियाँ'],
+  ja: ['画像: {count}/{max}', '設定', 'ページプレビュー', '設定を選択', 'すべてのページ', 'ページを選択', '下からページを選択すると、選択した画像だけに変更が適用されます。', 'プレビュー', '画像を確認して並べ替えます。変更は各ページにすぐ反映されます。', 'ページ {page} を選択', '{fileName} の拡大プレビューを表示', '拡大プレビューを閉じる', 'ページサイズと向き、フィット、配置、背景、画像のサイズ変更を設定します。', 'すべての画像に適用するか、選択したページだけに適用するかを選びます。', '添付画像'],
+  ko: ['이미지: {count}/{max}', '설정', '페이지 미리 보기', '설정 선택', '모든 페이지', '페이지 선택', '아래에서 페이지를 선택하세요. 변경 사항은 선택한 이미지에만 적용됩니다.', '미리 보기', '이미지를 확인하고 순서를 바꾸세요. 변경 사항은 각 페이지에 표시됩니다.', '{page}페이지 선택', '{fileName} 크게 미리 보기', '큰 미리 보기 닫기', '페이지 크기와 방향, 맞춤, 정렬, 배경 및 이미지 크기를 설정하세요.', '모든 이미지 또는 선택한 페이지만 변경할지 선택하세요.', '첨부된 이미지'],
+  'zh-CN': ['图片：{count}/{max}', '设置', '页面预览', '选择设置', '所有页面', '选择页面', '在下方选择页面；更改仅应用于所选图片。', '预览', '查看并重新排列图片。更改会显示在每个页面中。', '选择第 {page} 页', '查看 {fileName} 的大图预览', '关闭大图预览', '选择页面大小和方向、适配方式、对齐方式、背景及图片缩放。', '选择将更改应用于所有图片还是仅应用于所选页面。', '已附加图片']
+};
+const imagePreviewInvalidLabels = {
+  en: 'Preview unavailable until the page settings are valid.',
+  es: 'La vista previa no estará disponible hasta que los ajustes de página sean válidos.',
+  fr: 'L’aperçu sera disponible lorsque les réglages de page seront valides.',
+  de: 'Die Vorschau ist verfügbar, sobald die Seiteneinstellungen gültig sind.',
+  pt: 'A pré-visualização ficará disponível quando as configurações da página forem válidas.',
+  it: 'L’anteprima sarà disponibile quando le impostazioni della pagina saranno valide.',
+  nl: 'De voorbeeldweergave is beschikbaar zodra de pagina-instellingen geldig zijn.',
+  pl: 'Podgląd będzie dostępny po wprowadzeniu prawidłowych ustawień strony.',
+  sv: 'Förhandsgranskningen blir tillgänglig när sidinställningarna är giltiga.',
+  fi: 'Esikatselu on käytettävissä, kun sivuasetukset ovat kelvollisia.',
+  da: 'Forhåndsvisningen er tilgængelig, når sideindstillingerne er gyldige.',
+  nb: 'Forhåndsvisningen blir tilgjengelig når sideinnstillingene er gyldige.',
+  tr: 'Sayfa ayarları geçerli olduğunda önizleme kullanılabilir.',
+  ru: 'Предпросмотр будет доступен после ввода допустимых настроек страницы.',
+  uk: 'Попередній перегляд буде доступний після введення допустимих налаштувань сторінки.',
+  ar: 'ستتوفر المعاينة عند إدخال إعدادات صفحة صالحة.',
+  hi: 'पेज सेटिंग मान्य होने पर पूर्वावलोकन उपलब्ध होगा।',
+  ja: 'ページ設定が有効になるとプレビューを表示できます。',
+  ko: '페이지 설정이 유효하면 미리 보기를 사용할 수 있습니다.',
+  'zh-CN': '页面设置有效后即可显示预览。'
+};
+
 const fileActionLabels = {
   en: ['Replace {fileName}', 'Remove {fileName}', 'Output filename'],
   es: ['Reemplazar {fileName}', 'Quitar {fileName}', 'Nombre del archivo de salida'],
@@ -405,15 +478,25 @@ const powerpointFontPrivacyDisclosures = {
 const translations = {};
 for (const { code } of SUPPORTED_LANGUAGES) {
   const imageLabels = imageToPdfLabels[code];
+  const imageWorkflowLabelsForLanguage = imageWorkflowLabels[code];
+  const imageOutputLabelsForLanguage = imageOutputLabels[code];
+  const imagePreviewInvalidLabel = imagePreviewInvalidLabels[code];
   const actionLabels = fileActionLabels[code];
   const powerpointLabelsForLanguage = powerpointLabels[code];
   if (!imageLabels || imageLabels.length !== imageToPdfKeys.length
+    || !imageWorkflowLabelsForLanguage || imageWorkflowLabelsForLanguage.length !== imageWorkflowKeys.length
+    || !imageOutputLabelsForLanguage || imageOutputLabelsForLanguage.length !== imageOutputKeys.length
+    || !imagePreviewInvalidLabel
     || !actionLabels || actionLabels.length !== 3
     || !powerpointLabelsForLanguage || powerpointLabelsForLanguage.length !== powerpointKeys.length) {
     throw new Error(`Tool UI translations are incomplete for "${code}".`);
   }
   translations[code] = {
-    imageToPdf: Object.fromEntries(imageToPdfKeys.map((key, index) => [key, imageLabels[index]])),
+    imageToPdf: {
+      ...Object.fromEntries(imageToPdfKeys.map((key, index) => [key, imageLabels[index]])),
+      ...Object.fromEntries(imageWorkflowKeys.map((key, index) => [key, imageWorkflowLabelsForLanguage[index]])),
+      ...Object.fromEntries(imageOutputKeys.map((key, index) => [key, imageOutputLabelsForLanguage[index]]))
+    },
     powerpoint: Object.fromEntries(powerpointKeys.map((key, index) => [key, powerpointLabelsForLanguage[index]])),
     fileActions: {
       replace: actionLabels[0],
@@ -425,6 +508,7 @@ for (const { code } of SUPPORTED_LANGUAGES) {
     throw new Error(`PowerPoint privacy disclosure is missing for "${code}".`);
   }
   translations[code].powerpoint.fontNameDisclosure = powerpointFontPrivacyDisclosures[code];
+  translations[code].imageToPdf.previewInvalid = imagePreviewInvalidLabel;
 }
 
 export const TOOL_UI_TRANSLATIONS = translations;

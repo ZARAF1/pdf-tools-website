@@ -40,7 +40,7 @@ test('Crop PDF separates the selected-file card from its empty-state upload zone
   assert.ok(pickerInput >= 0 && pickerInput < attachedCard, 'the picker input remains mounted before the selected card');
   assert.ok(attachedCard > workflowStart, 'the attached file uses the shared card');
   assert.ok(emptyUploadZone > attachedCard, 'the empty-state upload zone is distinct from the selected card');
-  assert.match(styles, /\.crop-pdf-attached-file-card\.is-drag-active\s*\{[^}]*border-color:\s*#60a5fa;[^}]*background:\s*var\(--surface-muted\);/s);
+  assert.match(styles, /\.crop-pdf-attached-file-card\.is-drag-active,\s*\.organize-pdf-attached-file-card\.is-drag-active\s*\{[^}]*border-color:\s*#60a5fa;[^}]*background:\s*var\(--surface-muted\);/s);
 });
 
 test('Crop PDF places its attachment in a dedicated File to crop section', () => {
@@ -53,7 +53,7 @@ test('Crop PDF places its attachment in a dedicated File to crop section', () =>
   assert.ok(headingIndex > sectionStart, 'the section is labelled File to crop');
   assert.ok(attachedCardIndex > headingIndex, 'the selected PDF card follows the section heading');
   assert.ok(settingsShellIndex > attachedCardIndex, 'settings follow the selected-file section');
-  assert.match(styles, /\.crop-pdf-file-section,\s*\.crop-pdf-settings-shell\s*\{[^}]*background:\s*var\(--surface-muted\)/s);
+  assert.match(styles, /\.crop-pdf-file-section,\s*\.organize-pdf-file-section,\s*\.image-to-pdf-file-section,\s*\.crop-pdf-settings-shell\s*\{[^}]*background:\s*var\(--surface-muted\)/s);
 });
 
 test('Crop PDF groups scope and bounds in Choose Settings before its page preview', () => {

@@ -11,7 +11,7 @@ const expectedDescriptions = new Map([
   ['PdfProtector.jsx', 'Add an opening password to protect a PDF.'],
   ['UnlockPdf.jsx', 'Remove supported PDF encryption with the correct password.'],
   ['ImageToPdf.jsx', 'Create a PDF from up to 10 JPEG, PNG, or BMP images.'],
-  ['PdfToImages.jsx', 'Convert PDF pages to PNG, JPG, or BMP images in a ZIP file.'],
+  ['PdfToImages.jsx', 'Trim blank page margins automatically, then save one image or a ZIP of all pages.'],
   ['PdfToWord.jsx', 'Convert text-based and scanned PDFs into editable Word documents.'],
   ['PdfCompressor.jsx', 'Try to reduce PDF file size with standard or higher compression.'],
   ['PdfWatermarker.jsx', 'Add a text watermark and page numbers to selected PDF pages.'],

@@ -434,11 +434,11 @@ const PdfMerger = () => {
           <section className="merge-selected-files" aria-labelledby="merge-selected-files-heading">
             <header className="merge-selected-files-header">
               <div>
-                <h3 id="merge-selected-files-heading" className="merge-selected-files-title">Files to merge</h3>
+                <h3 id="merge-selected-files-heading" className="merge-selected-files-title">Files to Merge</h3>
                 <p>Drag files to arrange their order.</p>
               </div>
-              <span className="merge-selected-files-count" aria-label={`${files.length} of ${MAX_FILES} PDFs selected`}>
-                {files.length} / {MAX_FILES}
+              <span className="merge-selected-files-count" aria-label={`Files: ${files.length}/${MAX_FILES}`}>
+                Files: {files.length}/{MAX_FILES}
               </span>
             </header>
 
@@ -527,20 +527,20 @@ const PdfMerger = () => {
           </section>
         </div>
 
-        <section className="merge-pdf-settings space-y-6" aria-label="Merge options">
+        <section className="merge-pdf-settings space-y-6" aria-label="Merge Options">
           <div className="merge-control-intro">
             <h3 className="merge-selected-files-title">Settings &gt; Selection &gt; Preview</h3>
             <p>Choose how to combine your PDFs and customize the output.</p>
           </div>
 
-          <div className="merge-mode-switch" role="group" aria-label="Choose merge mode">
+          <div className="merge-mode-switch" role="group" aria-label="Choose Merge Mode">
             <button
               type="button"
               aria-pressed={mergeMode === 'all'}
               onClick={() => toggleMergeMode('all')}
               disabled={isMerging}
             >
-              Merge all pages
+              Merge All
             </button>
             <button
               type="button"
@@ -548,7 +548,7 @@ const PdfMerger = () => {
               onClick={() => toggleMergeMode('select')}
               disabled={isMerging}
             >
-              Select pages
+              Select Pages
             </button>
           </div>
 
@@ -562,7 +562,7 @@ const PdfMerger = () => {
 
             <div className="merge-output-settings">
               <div className="merge-option-field">
-                <label htmlFor="merge-output-filename">Output filename</label>
+                <label htmlFor="merge-output-filename">Output Filename</label>
                 <input
                   id="merge-output-filename"
                   type="text"
@@ -579,7 +579,7 @@ const PdfMerger = () => {
                 <p>The .pdf extension is added automatically when needed.</p>
               </div>
               <div className="merge-option-field">
-                <label htmlFor="merge-page-size">Page size</label>
+                <label htmlFor="merge-page-size">Page Size</label>
                 <select
                   id="merge-page-size"
                   value={pageSize}
@@ -590,7 +590,7 @@ const PdfMerger = () => {
                     setSuccess(false);
                   }}
                 >
-                  <option value="preserve">Preserve original page sizes</option>
+                  <option value="preserve">Preserve Original Page Sizes</option>
                   <option value="letter">Fit to US Letter</option>
                   <option value="a4">Fit to A4</option>
                 </select>
@@ -608,7 +608,7 @@ const PdfMerger = () => {
                   }}
                 />
                 <span>
-                  <strong>Bookmark each source file</strong>
+                  <strong>Bookmark Each Source File</strong>
                   <small>Add a PDF outline entry at the first page from each source document.</small>
                 </span>
               </label>
@@ -624,7 +624,7 @@ const PdfMerger = () => {
                   }}
                 />
                 <span>
-                  <strong>Insert a blank page between source files</strong>
+                  <strong>Insert a Blank Page Between Source Files</strong>
                   <small>In Select pages mode, a blank is inserted whenever the output switches to a different source file.</small>
                 </span>
               </label>
@@ -636,7 +636,7 @@ const PdfMerger = () => {
               <div className="merge-page-selection-panel">
                 <div className="merge-section-heading merge-page-selection-heading">
                   <div>
-                    <h3 className="merge-section-heading-title merge-page-selection-title">Select pages</h3>
+                    <h3 className="merge-section-heading-title merge-page-selection-title">Select Pages</h3>
                     <p>Click page previews to add them to the live output in that order. New selections start empty.</p>
                   </div>
                   <p className="merge-page-count-summary" aria-live="polite">
@@ -662,7 +662,7 @@ const PdfMerger = () => {
               <section className="merge-live-output merge-live-output-panel" aria-labelledby="merge-live-output-heading">
                 <div className="merge-section-heading merge-live-output-heading">
                   <div>
-                    <h3 id="merge-live-output-heading" className="merge-section-heading-title merge-live-output-title">Live output preview</h3>
+                    <h3 id="merge-live-output-heading" className="merge-section-heading-title merge-live-output-title">Live Output Preview</h3>
                     <p>Pages are shown in the order they will appear. Drag to reorder, or use the move buttons.</p>
                   </div>
                   <p className="merge-page-count-summary">

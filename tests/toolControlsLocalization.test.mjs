@@ -29,6 +29,12 @@ const imageControlKeys = [
   'reset', 'addMoreImages', 'createPdf', 'creatingPdf', 'page', 'pages',
   'downloadPdf'
 ];
+const imageWorkflowControlKeys = [
+  'imageCount', 'attachedImages', 'settingsTitle', 'settingsDescription', 'pagePreview', 'settingsScope',
+  'chooseSettingsDescription', 'allPages', 'selectPages', 'selectPagesHint',
+  'previewTitle', 'previewDescription', 'selectImage', 'viewLargerPreview',
+  'closePreview', 'previewInvalid', 'outputMode', 'singlePdf', 'separatePdf'
+];
 const powerpointControlKeys = [
   'directionPdfToPptx', 'directionPptxToPdf', 'choosePdf', 'choosePptx',
   'uploadPdfPrompt', 'uploadPptxPrompt', 'dropPdfPrompt', 'dropPptxPrompt',
@@ -112,4 +118,17 @@ test('image attachment prompts and settings render through the selected language
   assert.match(attachedControlsSource, /getLocalizedToolUi\(language\)/);
   assert.match(attachedControlsSource, /fileActions\.replace/);
   assert.match(attachedControlsSource, /fileActions\.remove/);
+});
+
+test('image preview workflow controls have bundled translations in every language', async () => {
+  const { getLocalizedToolUi } = await import('../src/i18n/toolUiLocalization.mjs');
+  for (const { code } of SUPPORTED_LANGUAGES) {
+    const localized = getLocalizedToolUi(code).imageToPdf;
+    for (const key of imageWorkflowControlKeys) {
+      assert.ok(localized[key], `${code} is missing imageToPdf.${key}`);
+    }
+  }
+  for (const key of imageWorkflowControlKeys) {
+    assert.match(imageToolSource, new RegExp(`imageUi\\.${key}\\b`), `Image to PDF does not render ${key}`);
+  }
 });

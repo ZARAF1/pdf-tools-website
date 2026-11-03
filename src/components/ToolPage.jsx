@@ -164,19 +164,20 @@ const TOOL_CONTENT = {
   },
   'pdf-images': {
     title: 'PDF to Images',
-    description: 'Convert each PDF page into a PNG, JPG, or BMP image.',
+    description: 'Trim blank page margins and save PDF pages as PNG, JPG, or BMP images.',
     detailPoints: {
-      what: `Convert every page of a PDF into a PNG, JPG, or BMP image.`,
-      how: `Choose an image format and quality; the browser renders pages and packages them in order.`,
-      result: `A ZIP containing one numbered image per page; the source PDF is unchanged.`
+      what: `Save each PDF page as a PNG, JPG, or BMP image, with optional automatic trimming of blank margins.`,
+      how: `Choose format, quality, crop preference, and output name before rendering pages in your browser.`,
+      result: `One page downloads as an image; multiple pages are delivered in a ZIP. The source PDF is unchanged.`
     },
-    intro: 'Create an image of every page in a PDF and collect the images in one ZIP download. Select a PDF containing between 1 and 50 pages, choose PNG, JPG, or BMP, and select Standard or High quality. The tool keeps the page sequence and names the image files in order, so it is straightforward to find a particular page after extracting the ZIP. Higher quality and large pages can require more memory and take longer to prepare. The original PDF is not modified. After conversion finishes, download the ZIP and open it with your usual archive tool. Page rendering and image creation happen in your browser; your PDF and its pages are not sent to an external conversion server.',
-    mechanism: 'Your browser renders the pages one at a time, encodes each page in the format you selected, and places the images into a ZIP download. The PDF is not sent to an external conversion server. Larger pages and high quality can use more browser memory.',
-    steps: ['Choose one PDF with 1–50 pages.', 'Select PNG, JPG, or BMP and choose Standard or High quality.', 'Select Convert PDF to Images and wait for every page and the ZIP to finish.', 'Select Download ZIP to save the images in page order.'],
+    intro: 'Convert every page of a PDF into a PNG, JPG, or BMP image. Select one unencrypted PDF with 1–50 pages, choose an image format and Standard or High quality, and decide whether to trim blank margins automatically. You can set the output filename before converting. If the PDF has one page, the image downloads directly; multiple pages are bundled as a ZIP with numbered images in page order. Automatic cropping detects near-white page margins around visible content and keeps a small border; blank pages remain full size. It does not extract original photos embedded inside the PDF or edit text. Higher quality and large pages can require more memory and take longer. The original PDF is unchanged. Pages are rendered in your browser and are not sent to an external conversion server; the site still makes ordinary hosting and third-party resource requests.',
+    mechanism: 'Your browser renders PDF pages one at a time, optionally detects and trims blank near-white margins, and encodes each page in the selected image format. A single-page PDF produces one image; multiple pages are packaged into a ZIP. The PDF is not sent to an external conversion server. Larger pages and High quality can use more browser memory.',
+    steps: ['Choose one PDF with 1–50 pages.', 'Select PNG, JPG, or BMP and choose Standard or High quality.', 'Set the output name and choose whether to automatically crop blank margins.', 'Convert and download the image or ZIP.'],
     faqs: [
       ['How many pages can I convert?', 'The tool accepts PDFs with 1–50 pages. It checks the actual document page count and rejects larger files.'],
       ['Which image formats are available?', 'PNG is lossless, JPG is usually smaller and has an adjustable quality setting, and BMP is uncompressed and may create large files. The file contents are encoded in the selected format.'],
-      ['What is inside the ZIP?', 'It contains one image for each PDF page, named in order from page-001 to the final page. The filename extension matches the selected format.'],
+      ['What does automatic cropping do?', 'When enabled, it trims near-white margins around visible page content and keeps a small border. A blank page remains full size. It does not extract original photos embedded inside a PDF.'],
+      ['When do I get a ZIP?', 'A one-page PDF downloads directly as an image. PDFs with multiple pages download as a ZIP containing one numbered image for each page.'],
       ['Can I convert a password-protected PDF?', 'No. Password-protected PDFs are rejected.'],
       ['Does conversion change or upload my PDF?', 'No. Pages are rendered in your browser and the original file is left unchanged. The website can still make ordinary hosting and third-party resource requests.']
     ]
@@ -493,7 +494,7 @@ const ATTACHMENT_RULES = {
     ruleKey: 'pdf50',
     rule: 'One unencrypted PDF · up to 50 pages',
     infoTitle: 'Convert PDF pages to images',
-    info: 'Export pages as PNG, JPG, or BMP files in a ZIP archive.'
+    info: 'Export each page as PNG, JPG, or BMP; optionally trim blank margins. One page downloads as an image, multiple pages as a ZIP.'
   },
   remove: {
     title: 'Attach PDF Here',

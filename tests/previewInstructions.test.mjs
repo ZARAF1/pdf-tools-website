@@ -18,7 +18,7 @@ const toolSources = await Promise.all(instructionTools.map(async (tool) => [
 ]));
 const styles = await readFile(new URL('../src/index.css', import.meta.url), 'utf8');
 
-test('PDF preview-use instructions share the prominent blue-accent callout style', () => {
+test('PDF preview-use instructions use the callout style only where intended', () => {
   const instructionStyles = styles.match(/(?:\.organize-pdf-instructions,\s*)?\.pdf-preview-instructions\s*\{([^}]*)\}/)?.[1];
 
   assert.ok(instructionStyles, 'preview instructions have a shared style rule');
@@ -26,9 +26,16 @@ test('PDF preview-use instructions share the prominent blue-accent callout style
   assert.match(instructionStyles, /font-weight:\s*600\s*;/);
   assert.match(instructionStyles, /border-left:\s*4px solid\s+#3b82f6\s*;/);
 
-  for (const [tool, source] of toolSources.filter(([tool]) => tool !== 'CropPdf')) {
+  for (const [tool, source] of toolSources.filter(([tool]) => !['CropPdf', 'OrganizePdf', 'ImageToPdf'].includes(tool))) {
     assert.match(source, /pdf-preview-instructions/, `${tool} marks its preview-use guidance for consistent styling`);
   }
+  const organizeSource = toolSources.find(([tool]) => tool === 'OrganizePdf')?.[1] ?? '';
+  const imageToPdfSource = toolSources.find(([tool]) => tool === 'ImageToPdf')?.[1] ?? '';
+  assert.doesNotMatch(organizeSource, /pdf-preview-instructions/);
+  assert.match(imageToPdfSource, /className="image-to-pdf-preview-shell"/);
+  assert.match(imageToPdfSource, /imageUi\.previewDescription/);
+  assert.doesNotMatch(imageToPdfSource, /image-to-pdf-selected-guidance/);
+  assert.doesNotMatch(imageToPdfSource, /pdf-preview-instructions/);
 });
 
 test('Crop PDF settings summary uses normal supporting text rather than the tinted callout', () => {

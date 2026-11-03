@@ -444,7 +444,7 @@ const PdfRotator = () => {
               <p>Choose a rotation, select pages, and review each page before processing.</p>
             </div>
 
-            <div className="rotate-page-tabs" role="tablist" aria-label="Pages to rotate">
+            <div className="rotate-page-tabs" role="tablist" aria-label="Pages to Rotate">
               <button
                 type="button"
                 onClick={() => setMode('all')}
@@ -469,7 +469,7 @@ const PdfRotator = () => {
                 className={`rotate-page-tab ${mode === 'selected' ? 'is-active' : ''}`}
                 onKeyDown={handleTabKeyDown}
               >
-                Selected Pages
+                Select Pages
               </button>
             </div>
 
@@ -571,7 +571,7 @@ const PdfRotator = () => {
             <section className="rotate-page-preview-panel" aria-labelledby="rotate-page-preview-heading">
               <div className="merge-section-heading merge-output-settings-heading">
                 <div>
-                  <h3 id="rotate-page-preview-heading" className="merge-section-heading-title merge-output-settings-title">Page preview</h3>
+                  <h3 id="rotate-page-preview-heading" className="merge-section-heading-title merge-output-settings-title">Page Preview</h3>
                   <p>Review each page and rotate it individually with its button.</p>
                 </div>
               </div>
@@ -582,7 +582,7 @@ const PdfRotator = () => {
                   Loading PDF pages…
                 </p>
               ) : (
-                <div className="rotate-page-grid" aria-label={mode === 'all' ? 'All PDF pages' : 'Select pages to rotate'}>
+                <div className="rotate-page-grid" aria-label={mode === 'all' ? 'All PDF pages' : 'Select Pages to Rotate'}>
                   {Array.from({ length: pageCount }, (_, index) => {
                     const pageNumber = index + 1;
                     const isSelected = selectedPages.has(pageNumber);

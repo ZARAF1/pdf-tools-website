@@ -4,14 +4,18 @@ import useAccessibleDropzone from '../lib/useAccessibleDropzone';
 import { PDFDocument, PageSizes, rgb } from 'pdf-lib';
 import {
   AlertCircle,
-  ChevronDown,
-  ChevronUp,
+  ArrowDown,
+  ArrowUp,
+  Check,
+  Eye,
   Image as ImageIcon,
   Loader2,
   RotateCcw,
   RotateCw,
   RefreshCw,
-  Upload
+  Trash2,
+  Upload,
+  X
 } from 'lucide-react';
 import { AttachedFileActions } from './AttachedFileControls';
 import DownloadReadyCard from './DownloadReadyCard';
@@ -19,14 +23,34 @@ import { limitImageFiles } from '../lib/imageSelection.mjs';
 import { formatToolUiMessage, getLocalizedToolUi } from '../i18n/toolUiLocalization.mjs';
 import { useLanguage } from '../i18n/useLanguage';
 import {
-  calculateImagePlacement,
-  getCustomPageDimensions,
-  getHexColorComponents,
-  getOrientedPageDimensions,
-  getRotatedImageDimensions
+  calculateImagePageLayout,
+  getHexColorComponents
 } from '../lib/imagePdfLayout.mjs';
+import {
+  getEffectiveImagePdfSettings,
+  updateImagePdfSettingsForScope
+} from '../lib/imagePdfSettings.mjs';
+import { createImagePdfArchive } from '../lib/imagePdfArchive.mjs';
 
 const MAX_IMAGES = 10;
+const INITIAL_SETTINGS = {
+  pageSize: 'A4',
+  orientation: 'portrait',
+  autoOrient: false,
+  customWidthMm: 210,
+  customHeightMm: 297,
+  margin: 24,
+  fitMode: 'contain',
+  backgroundColor: '#ffffff',
+  horizontalAlignment: 'center',
+  verticalAlignment: 'middle',
+  maxWidth: 2400,
+  maxHeight: 2400,
+  scalePercent: 100,
+  maintainAspect: true,
+  jpegQuality: 0.9
+};
+const PDF_PAGE_SIZES = { A4: PageSizes.A4, Letter: PageSizes.Letter };
 
 const formatBytes = (bytes) => {
   if (bytes < 1024) return `${bytes} B`;
@@ -90,9 +114,71 @@ const makeImageBytes = (canvas, mimeType, quality) => new Promise((resolve, reje
   }, mimeType, quality);
 });
 
+const isValidPreviewSettings = (settings) => (
+  Number.isFinite(settings.margin) && settings.margin >= 0 && settings.margin <= 300
+  && Number.isSafeInteger(settings.maxWidth) && settings.maxWidth >= 1
+  && Number.isSafeInteger(settings.maxHeight) && settings.maxHeight >= 1
+  && Number.isFinite(settings.scalePercent) && settings.scalePercent >= 1 && settings.scalePercent <= 100
+  && (settings.pageSize !== 'custom'
+    || (Number.isFinite(settings.customWidthMm) && Number.isFinite(settings.customHeightMm)
+      && settings.customWidthMm >= 10 && settings.customWidthMm <= 2000
+      && settings.customHeightMm >= 10 && settings.customHeightMm <= 2000))
+);
+
+const ImagePdfPagePreview = ({ image, settings, label, invalidLabel, size = 'compact' }) => {
+  if (!isValidPreviewSettings(settings)) {
+    return <p className="image-to-pdf-preview-invalid" role="status">{invalidLabel}</p>;
+  }
+
+  const layout = calculateImagePageLayout({
+    imageWidth: image.width,
+    imageHeight: image.height,
+    rotation: image.rotation,
+    settings,
+    pageSizes: PDF_PAGE_SIZES
+  });
+  const aspectRatio = layout.pageWidth / layout.pageHeight;
+  const { placement } = layout;
+  const rotated = image.rotation % 180 !== 0;
+  const imagePosition = {
+    left: `${placement.x / layout.pageWidth * 100}%`,
+    top: `${(layout.pageHeight - placement.y - placement.height) / layout.pageHeight * 100}%`,
+    width: `${placement.width / layout.pageWidth * 100}%`,
+    height: `${placement.height / layout.pageHeight * 100}%`
+  };
+  const imageStyle = {
+    position: 'absolute',
+    top: '50%',
+    left: '50%',
+    width: rotated ? `${placement.height / placement.width * 100}%` : '100%',
+    height: rotated ? `${placement.width / placement.height * 100}%` : '100%',
+    maxWidth: 'none',
+    transform: `translate(-50%, -50%) rotate(${image.rotation}deg)`
+  };
+  const maxHeight = size === 'large' ? 560 : 180;
+
+  return (
+    <div
+      className={`image-to-pdf-page-canvas ${size === 'large' ? 'is-large' : ''}`}
+      role="img"
+      aria-label={label}
+      style={{
+        width: `min(100%, ${maxHeight * aspectRatio}px)`,
+        aspectRatio: `${layout.pageWidth} / ${layout.pageHeight}`,
+        backgroundColor: settings.backgroundColor,
+        maxHeight: size === 'large' ? '70vh' : `${maxHeight}px`
+      }}
+    >
+      <div className="image-to-pdf-page-image" style={{ ...imagePosition, overflow: 'visible' }}>
+        <img src={image.preview} alt="" aria-hidden="true" style={imageStyle} />
+      </div>
+    </div>
+  );
+};
+
 const ImageToPdf = () => {
   const { language } = useLanguage();
-  const { imageToPdf: imageUi } = getLocalizedToolUi(language);
+  const { imageToPdf: imageUi, fileActions } = getLocalizedToolUi(language);
   const [images, setImages] = useState([]);
   const [pendingImageCount, setPendingImageCount] = useState(0);
   const pendingImageCountRef = useRef(0);
@@ -101,34 +187,58 @@ const ImageToPdf = () => {
   const [isProcessing, setIsProcessing] = useState(false);
   const [error, setError] = useState('');
   const [outputBytes, setOutputBytes] = useState(null);
+  const [outputArchive, setOutputArchive] = useState(null);
+  const [outputMode, setOutputMode] = useState('single');
+  const downloadableOutput = outputArchive
+    ? { id: outputArchive.name, blob: outputArchive.blob }
+    : outputBytes;
   const markOutputDownloaded = useToolExitGuard(
     images.length > 0 || pendingImageCount > 0,
-    outputBytes
+    downloadableOutput
   );
   const [outputName, setOutputName] = useState('images_to_pdf.pdf');
   const previewUrls = useRef(new Set());
 
-  const [pageSize, setPageSize] = useState('A4');
-  const [orientation, setOrientation] = useState('portrait');
-  const [autoOrient, setAutoOrient] = useState(false);
-  const [customWidthMm, setCustomWidthMm] = useState(210);
-  const [customHeightMm, setCustomHeightMm] = useState(297);
-  const [margin, setMargin] = useState(24);
-  const [fitMode, setFitMode] = useState('contain');
-  const [backgroundColor, setBackgroundColor] = useState('#ffffff');
-  const [horizontalAlignment, setHorizontalAlignment] = useState('center');
-  const [verticalAlignment, setVerticalAlignment] = useState('middle');
-  const [maxWidth, setMaxWidth] = useState(2400);
-  const [maxHeight, setMaxHeight] = useState(2400);
-  const [scalePercent, setScalePercent] = useState(100);
-  const [maintainAspect, setMaintainAspect] = useState(true);
-  const [jpegQuality, setJpegQuality] = useState(0.9);
+  const [settings, setSettings] = useState(INITIAL_SETTINGS);
+  const [settingsScope, setSettingsScope] = useState('all');
+  const [selectedImageIds, setSelectedImageIds] = useState(() => new Set());
+  const [largePreviewImageId, setLargePreviewImageId] = useState(null);
+  const largePreviewTriggerRef = useRef(null);
+  const largePreviewCloseRef = useRef(null);
+  const selectedImages = images.filter((image) => selectedImageIds.has(image.id));
+  const editingImage = settingsScope === 'select'
+    ? selectedImages[0]
+    : images[0];
+  const activeSettings = editingImage
+    ? getEffectiveImagePdfSettings(editingImage, settings)
+    : settings;
+  const largePreviewImage = images.find((image) => image.id === largePreviewImageId);
 
   useEffect(() => () => {
     previewUrls.current.forEach((url) => URL.revokeObjectURL(url));
   }, []);
 
-  const clearOutput = () => setOutputBytes(null);
+  const closeLargePreview = useCallback(() => setLargePreviewImageId(null), []);
+
+  useEffect(() => {
+    if (!largePreviewImageId) {
+      if (largePreviewTriggerRef.current?.isConnected) largePreviewTriggerRef.current.focus();
+      largePreviewTriggerRef.current = null;
+      return undefined;
+    }
+
+    largePreviewCloseRef.current?.focus();
+    const handleKeyDown = (event) => {
+      if (event.key === 'Escape') closeLargePreview();
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [largePreviewImageId, closeLargePreview]);
+
+  const clearOutput = () => {
+    setOutputBytes(null);
+    setOutputArchive(null);
+  };
 
   const onDrop = useCallback(async (acceptedFiles, rejectedFiles) => {
     setError('');
@@ -204,7 +314,7 @@ const ImageToPdf = () => {
       const replacement = await createImageEntry(acceptedFiles[0], targetId);
       previewUrls.current.add(replacement.preview);
       setImages((current) => current.map((image) => (
-        image.id === targetId ? replacement : image
+        image.id === targetId ? { ...replacement, settings: image.settings } : image
       )));
       URL.revokeObjectURL(target.preview);
       previewUrls.current.delete(target.preview);
@@ -260,6 +370,12 @@ const ImageToPdf = () => {
       }
       return current.filter((image) => image.id !== id);
     });
+    setSelectedImageIds((current) => {
+      const next = new Set(current);
+      next.delete(id);
+      return next;
+    });
+    if (largePreviewImageId === id) closeLargePreview();
     clearOutput();
   };
 
@@ -281,28 +397,50 @@ const ImageToPdf = () => {
     previewUrls.current.forEach((url) => URL.revokeObjectURL(url));
     previewUrls.current.clear();
     setImages([]);
+    setSelectedImageIds(new Set());
+    setSettingsScope('all');
+    setOutputMode('single');
+    closeLargePreview();
     setError('');
     clearOutput();
-    setPageSize('A4');
-    setOrientation('portrait');
-    setAutoOrient(false);
-    setCustomWidthMm(210);
-    setCustomHeightMm(297);
-    setMargin(24);
-    setFitMode('contain');
-    setBackgroundColor('#ffffff');
-    setHorizontalAlignment('center');
-    setVerticalAlignment('middle');
-    setMaxWidth(2400);
-    setMaxHeight(2400);
-    setScalePercent(100);
-    setMaintainAspect(true);
-    setJpegQuality(0.9);
+    setSettings(INITIAL_SETTINGS);
   };
 
-  const updateSetting = (setter, value) => {
-    setter(value);
+  const updateSetting = (settingKey, value) => {
+    setImages((current) => updateImagePdfSettingsForScope(current, {
+      scope: settingsScope,
+      selectedImageIds: [...selectedImageIds],
+      settingKey,
+      value
+    }));
+    if (settingsScope === 'all') {
+      setSettings((current) => ({ ...current, [settingKey]: value }));
+    }
     clearOutput();
+  };
+
+  const toggleImageSelection = (id) => {
+    setSelectedImageIds((current) => {
+      const next = new Set(current);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+
+  const changeSettingsScope = (scope) => {
+    if (scope === 'select') setSelectedImageIds(new Set());
+    setSettingsScope(scope);
+  };
+
+  const changeOutputMode = (mode) => {
+    setOutputMode(mode);
+    clearOutput();
+  };
+
+  const openLargePreview = (imageId, event) => {
+    largePreviewTriggerRef.current = event.currentTarget;
+    setLargePreviewImageId(imageId);
   };
 
   const rotateImage = (id, direction) => {
@@ -319,64 +457,68 @@ const ImageToPdf = () => {
       setError('Add at least one JPEG, PNG, or BMP image first.');
       return;
     }
-    if (!Number.isFinite(margin) || margin < 0 || margin > 300) {
-      setError('Margin must be between 0 and 300 points.');
-      return;
-    }
-    if (!Number.isSafeInteger(maxWidth) || !Number.isSafeInteger(maxHeight) || maxWidth < 1 || maxHeight < 1) {
-      setError('Maximum width and height must be positive whole pixel values.');
-      return;
-    }
-    if (!Number.isFinite(scalePercent) || scalePercent < 1 || scalePercent > 100) {
-      setError('Image scale must be between 1% and 100%.');
-      return;
-    }
-    if (!Number.isFinite(jpegQuality) || jpegQuality < 0.1 || jpegQuality > 1) {
-      setError('JPEG quality must be between 10% and 100%.');
-      return;
-    }
-    if (pageSize === 'custom' && (
-      !Number.isFinite(customWidthMm) || !Number.isFinite(customHeightMm)
-      || customWidthMm < 10 || customWidthMm > 2000
-      || customHeightMm < 10 || customHeightMm > 2000
-    )) {
-      setError('Custom page width and height must each be between 10 and 2000 millimeters.');
-      return;
+    const settingsByImageId = new Map(images.map((image) => [
+      image.id,
+      getEffectiveImagePdfSettings(image, settings)
+    ]));
+    for (const imageSettings of settingsByImageId.values()) {
+      if (!Number.isFinite(imageSettings.margin) || imageSettings.margin < 0 || imageSettings.margin > 300) {
+        setError('Margin must be between 0 and 300 points.');
+        return;
+      }
+      if (!Number.isSafeInteger(imageSettings.maxWidth) || !Number.isSafeInteger(imageSettings.maxHeight)
+        || imageSettings.maxWidth < 1 || imageSettings.maxHeight < 1) {
+        setError('Maximum width and height must be positive whole pixel values.');
+        return;
+      }
+      if (!Number.isFinite(imageSettings.scalePercent)
+        || imageSettings.scalePercent < 1 || imageSettings.scalePercent > 100) {
+        setError('Image scale must be between 1% and 100%.');
+        return;
+      }
+      if (!Number.isFinite(imageSettings.jpegQuality)
+        || imageSettings.jpegQuality < 0.1 || imageSettings.jpegQuality > 1) {
+        setError('JPEG quality must be between 10% and 100%.');
+        return;
+      }
+      if (imageSettings.pageSize === 'custom' && (
+        !Number.isFinite(imageSettings.customWidthMm) || !Number.isFinite(imageSettings.customHeightMm)
+        || imageSettings.customWidthMm < 10 || imageSettings.customWidthMm > 2000
+        || imageSettings.customHeightMm < 10 || imageSettings.customHeightMm > 2000
+      )) {
+        setError('Custom page width and height must each be between 10 and 2000 millimeters.');
+        return;
+      }
     }
 
     setIsProcessing(true);
     setError('');
     clearOutput();
     try {
-      const pdf = await PDFDocument.create();
+      const combinedPdf = outputMode === 'single' ? await PDFDocument.create() : null;
+      const separatePdfs = [];
       for (const item of images) {
+        const pdf = combinedPdf || await PDFDocument.create();
+        const imageSettings = settingsByImageId.get(item.id);
         const decoded = await loadImage(item.file);
         try {
-          const [rotatedSourceWidth, rotatedSourceHeight] = getRotatedImageDimensions(
-            decoded.width,
-            decoded.height,
-            item.rotation
-          );
-          let outputWidth;
-          let outputHeight;
-          if (maintainAspect) {
-            const scale = Math.min(1, scalePercent / 100, maxWidth / rotatedSourceWidth, maxHeight / rotatedSourceHeight);
-            outputWidth = Math.max(1, Math.round(rotatedSourceWidth * scale));
-            outputHeight = Math.max(1, Math.round(rotatedSourceHeight * scale));
-          } else {
-            outputWidth = Math.max(1, Math.round(Math.min(rotatedSourceWidth, maxWidth) * scalePercent / 100));
-            outputHeight = Math.max(1, Math.round(Math.min(rotatedSourceHeight, maxHeight) * scalePercent / 100));
-          }
+          const layout = calculateImagePageLayout({
+            imageWidth: decoded.width,
+            imageHeight: decoded.height,
+            rotation: item.rotation,
+            settings: imageSettings,
+            pageSizes: PDF_PAGE_SIZES
+          });
 
           const canvas = window.document.createElement('canvas');
-          canvas.width = outputWidth;
-          canvas.height = outputHeight;
+          canvas.width = layout.outputWidth;
+          canvas.height = layout.outputHeight;
           const context = canvas.getContext('2d');
           if (!context) throw new Error(`The browser could not resize ${item.name}.`);
-          context.translate(outputWidth / 2, outputHeight / 2);
+          context.translate(layout.outputWidth / 2, layout.outputHeight / 2);
           context.rotate((item.rotation * Math.PI) / 180);
-          const sourceDrawWidth = item.rotation % 180 ? outputHeight : outputWidth;
-          const sourceDrawHeight = item.rotation % 180 ? outputWidth : outputHeight;
+          const sourceDrawWidth = item.rotation % 180 ? layout.outputHeight : layout.outputWidth;
+          const sourceDrawHeight = item.rotation % 180 ? layout.outputWidth : layout.outputHeight;
           context.drawImage(
             decoded.image,
             -sourceDrawWidth / 2,
@@ -387,63 +529,50 @@ const ImageToPdf = () => {
 
           const isJpeg = /\.(jpe?g)$/i.test(item.name) || item.file.type === 'image/jpeg';
           const mimeType = isJpeg ? 'image/jpeg' : 'image/png';
-          const imageBytes = await makeImageBytes(canvas, mimeType, jpegQuality);
+          const imageBytes = await makeImageBytes(canvas, mimeType, imageSettings.jpegQuality);
           const embedded = isJpeg ? await pdf.embedJpg(imageBytes) : await pdf.embedPng(imageBytes);
           canvas.width = 0;
           canvas.height = 0;
 
-          let [pageWidth, pageHeight] = pageSize === 'A4'
-            ? PageSizes.A4
-            : pageSize === 'Letter'
-              ? PageSizes.Letter
-              : pageSize === 'custom'
-                ? getCustomPageDimensions(customWidthMm, customHeightMm)
-                : [outputWidth * 0.75 + margin * 2, outputHeight * 0.75 + margin * 2];
-          if (pageSize !== 'fit') {
-            [pageWidth, pageHeight] = getOrientedPageDimensions(pageWidth, pageHeight, {
-              autoOrient,
-              orientation,
-              imageWidth: outputWidth,
-              imageHeight: outputHeight
-            });
-          }
-          const page = pdf.addPage([pageWidth, pageHeight]);
-          const [red, green, blue] = getHexColorComponents(backgroundColor);
+          const page = pdf.addPage([layout.pageWidth, layout.pageHeight]);
+          const [red, green, blue] = getHexColorComponents(imageSettings.backgroundColor);
           page.drawRectangle({
             x: 0,
             y: 0,
-            width: pageWidth,
-            height: pageHeight,
+            width: layout.pageWidth,
+            height: layout.pageHeight,
             color: rgb(red, green, blue)
           });
-          const placement = calculateImagePlacement({
-            imageWidth: embedded.width,
-            imageHeight: embedded.height,
-            pageWidth,
-            pageHeight,
-            margin,
-            fitMode: pageSize === 'fit' ? 'contain' : fitMode,
-            horizontalAlignment,
-            verticalAlignment
-          });
           page.drawImage(embedded, {
-            x: placement.x,
-            y: placement.y,
-            width: placement.width,
-            height: placement.height
+            x: layout.placement.x,
+            y: layout.placement.y,
+            width: layout.placement.width,
+            height: layout.placement.height
           });
         } finally {
           decoded.close();
         }
+        if (outputMode === 'separate') {
+          const bytes = await pdf.save();
+          const verified = await PDFDocument.load(bytes);
+          if (verified.getPageCount() !== 1) {
+            throw new Error(`The PDF generated for ${item.name} did not contain exactly one page.`);
+          }
+          separatePdfs.push({ imageName: item.name, bytes });
+        }
       }
 
-      const bytes = await pdf.save();
-      const verified = await PDFDocument.load(bytes);
-      if (verified.getPageCount() !== images.length) {
-        throw new Error('The generated PDF did not contain the expected image page count.');
+      if (outputMode === 'separate') {
+        setOutputArchive(await createImagePdfArchive(separatePdfs));
+      } else {
+        const bytes = await combinedPdf.save();
+        const verified = await PDFDocument.load(bytes);
+        if (verified.getPageCount() !== images.length) {
+          throw new Error('The generated PDF did not contain the expected image page count.');
+        }
+        setOutputBytes(bytes);
+        setOutputName('images_to_pdf.pdf');
       }
-      setOutputBytes(bytes);
-      setOutputName('images_to_pdf.pdf');
     } catch (processingError) {
       console.error('Unable to generate image PDF:', processingError);
       setError(processingError.message || 'The PDF could not be generated. Check that the selected images are valid.');
@@ -452,193 +581,394 @@ const ImageToPdf = () => {
     }
   };
 
-  const downloadPdf = (downloadFileName) => {
-    if (!outputBytes) return;
-    const url = URL.createObjectURL(new Blob([outputBytes], { type: 'application/pdf' }));
+  const downloadOutput = (downloadFileName) => {
+    if (!outputBytes && !outputArchive) return;
+    const blob = outputArchive?.blob || new Blob([outputBytes], { type: 'application/pdf' });
+    const url = URL.createObjectURL(blob);
     const link = window.document.createElement('a');
     link.href = url;
-    link.download = downloadFileName || outputName;
+    link.download = downloadFileName || outputArchive?.name || outputName;
     link.click();
-    markOutputDownloaded();
+    markOutputDownloaded(outputArchive?.name);
     window.setTimeout(() => URL.revokeObjectURL(url), 10000);
   };
 
   return (
     <div className="pdf-tool-workflow image-to-pdf-workflow mx-auto max-w-4xl space-y-6">
-      {images.length > 0 && (
-        <div className="pdf-workflow-selected space-y-3">
-          <p className="pdf-preview-instructions">Review the image previews and use the controls to set their order and orientation in the PDF.</p>
-          {images.map((image, index) => (
-            <div key={image.id} className="pdf-attached-file-card group flex items-center gap-3 rounded-xl border border-slate-200 bg-white p-4 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md motion-reduce:transform-none">
-              <img
-                src={image.preview}
-                alt=""
-                style={{ transform: `rotate(${image.rotation}deg)` }}
-                className="h-16 w-16 shrink-0 rounded-lg bg-slate-100 object-contain transition-transform"
-              />
-              <div className="min-w-0 flex-1">
-                <p className="truncate text-sm font-semibold text-slate-800">{image.name}</p>
-                <p className="text-xs text-slate-500">{image.width} × {image.height} px · {formatBytes(image.file.size)} · {image.rotation}°</p>
-              </div>
-              <div className="flex items-center gap-1">
-                <button type="button" onClick={() => moveImage(index, -1)} disabled={index === 0 || isProcessing} aria-label={`${imageUi.moveUp}: ${image.name}`} className="rounded-lg p-2 text-slate-500 transition hover:bg-slate-100 disabled:opacity-30"><ChevronUp className="h-4 w-4" aria-hidden="true" /></button>
-                <button type="button" onClick={() => moveImage(index, 1)} disabled={index === images.length - 1 || isProcessing} aria-label={`${imageUi.moveDown}: ${image.name}`} className="rounded-lg p-2 text-slate-500 transition hover:bg-slate-100 disabled:opacity-30"><ChevronDown className="h-4 w-4" aria-hidden="true" /></button>
-                <button type="button" onClick={() => rotateImage(image.id, -90)} disabled={isProcessing} aria-label={`${imageUi.rotateCounterclockwise}: ${image.name}`} title={imageUi.rotateCounterclockwise} className="rounded-lg p-2 text-slate-500 transition hover:bg-slate-100 disabled:opacity-30"><RotateCcw className="h-4 w-4" aria-hidden="true" /></button>
-                <button type="button" onClick={() => rotateImage(image.id, 90)} disabled={isProcessing} aria-label={`${imageUi.rotateClockwise}: ${image.name}`} title={imageUi.rotateClockwise} className="rounded-lg p-2 text-slate-500 transition hover:bg-slate-100 disabled:opacity-30"><RotateCw className="h-4 w-4" aria-hidden="true" /></button>
-                <AttachedFileActions
-                  fileName={image.name}
-                  onReplace={() => replaceImage(image.id)}
-                  onRemove={() => removeImage(image.id)}
-                  disabled={isProcessing}
-                />
-              </div>
-            </div>
-          ))}
-          <div className="flex justify-end">
-            <button type="button" onClick={open} disabled={isProcessing || images.length >= MAX_IMAGES} className="pdf-upload-trigger rounded-xl border px-5 py-3 font-semibold transition disabled:cursor-not-allowed disabled:opacity-50">{formatToolUiMessage(imageUi.addMoreImages, { count: images.length, max: MAX_IMAGES })}</button>
+      <section className="image-to-pdf-file-section" aria-labelledby="image-to-pdf-file-heading">
+        <header className="image-to-pdf-file-section-header">
+          <div>
+            <h3 id="image-to-pdf-file-heading" className="merge-selected-files-title">{imageUi.uploadLabel}</h3>
+            <p>{formatToolUiMessage(imageUi.uploadDescription, { max: MAX_IMAGES })}</p>
           </div>
-        </div>
-      )}
-
-      {images.length > 0 && (
-      <section className="pdf-workflow-controls grid grid-cols-1 gap-4 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm md:grid-cols-2 lg:grid-cols-3">
-        <div className="image-to-pdf-setting space-y-2">
-          <label htmlFor="image-page-size" className="text-sm font-semibold text-slate-700">{imageUi.pageSize}</label>
-          <select id="image-page-size" value={pageSize} onChange={(event) => updateSetting(setPageSize, event.target.value)} className="w-full rounded-lg border border-slate-200 px-3 py-2.5">
-            <option value="A4">A4</option>
-            <option value="Letter">Letter</option>
-            <option value="fit">{imageUi.fitImageDimensions}</option>
-            <option value="custom">{imageUi.customDimensions}</option>
-          </select>
-        </div>
-        <div className="image-to-pdf-setting space-y-2">
-          <label htmlFor="image-orientation" className="text-sm font-semibold text-slate-700">{imageUi.orientation}</label>
-          <select id="image-orientation" value={orientation} disabled={autoOrient || pageSize === 'fit'} onChange={(event) => updateSetting(setOrientation, event.target.value)} className="w-full rounded-lg border border-slate-200 px-3 py-2.5 disabled:cursor-not-allowed disabled:opacity-50">
-            <option value="portrait">{imageUi.portrait}</option>
-            <option value="landscape">{imageUi.landscape}</option>
-          </select>
-          <label className="flex items-center gap-2 text-xs font-medium text-slate-600">
-            <input type="checkbox" checked={autoOrient} disabled={pageSize === 'fit'} onChange={(event) => updateSetting(setAutoOrient, event.target.checked)} className="h-4 w-4 accent-blue-600 disabled:opacity-50" />
-            {imageUi.autoOrient}
-          </label>
-        </div>
-        {pageSize === 'custom' && (
+          <span className="image-to-pdf-image-count" aria-live="polite">
+            {formatToolUiMessage(imageUi.imageCount, { count: images.length, max: MAX_IMAGES })}
+          </span>
+        </header>
+        {images.length > 0 && (
           <>
-            <div className="image-to-pdf-setting space-y-2">
-              <label htmlFor="image-custom-width" className="text-sm font-semibold text-slate-700">{imageUi.customWidth}</label>
-              <input id="image-custom-width" type="number" min="10" max="2000" step="0.1" value={customWidthMm} onChange={(event) => updateSetting(setCustomWidthMm, Number(event.target.value))} className="w-full rounded-lg border border-slate-200 px-3 py-2.5" />
-            </div>
-            <div className="image-to-pdf-setting space-y-2">
-              <label htmlFor="image-custom-height" className="text-sm font-semibold text-slate-700">{imageUi.customHeight}</label>
-              <input id="image-custom-height" type="number" min="10" max="2000" step="0.1" value={customHeightMm} onChange={(event) => updateSetting(setCustomHeightMm, Number(event.target.value))} className="w-full rounded-lg border border-slate-200 px-3 py-2.5" />
-            </div>
+            <h4 className="image-to-pdf-attached-images-title">{imageUi.attachedImages}</h4>
+            <ol className="image-to-pdf-attached-image-list" aria-label={imageUi.attachedImages}>
+              {images.map((image, index) => (
+                <li key={image.id} className="pdf-attached-file-card image-to-pdf-attached-image-card">
+                  <span className="merge-selected-file-position image-to-pdf-attached-image-position" aria-hidden="true">
+                    {String(index + 1).padStart(2, '0')}
+                  </span>
+                  <img className="image-to-pdf-attached-image-thumbnail" src={image.preview} alt="" />
+                  <div className="merge-selected-file-details">
+                    <p className="merge-selected-file-name" title={image.name}>{image.name}</p>
+                    <p className="merge-selected-file-meta">
+                      <span>{image.width} × {image.height} px</span>
+                      <span aria-hidden="true">·</span>
+                      <span>{formatBytes(image.file.size)}</span>
+                    </p>
+                  </div>
+                </li>
+              ))}
+            </ol>
           </>
         )}
-        <div className="image-to-pdf-setting space-y-2">
-          <label htmlFor="image-fit" className="text-sm font-semibold text-slate-700">{imageUi.imageFit}</label>
-          <select id="image-fit" value={fitMode} onChange={(event) => updateSetting(setFitMode, event.target.value)} className="w-full rounded-lg border border-slate-200 px-3 py-2.5">
-            <option value="contain">{imageUi.contain}</option>
-            <option value="fill">{imageUi.fill}</option>
-          </select>
-        </div>
-        <div className="image-to-pdf-setting space-y-2">
-          <label htmlFor="image-margin" className="text-sm font-semibold text-slate-700">{imageUi.margin}</label>
-          <input id="image-margin" type="number" min="0" max="300" value={margin} onChange={(event) => updateSetting(setMargin, Number(event.target.value))} className="w-full rounded-lg border border-slate-200 px-3 py-2.5" />
-        </div>
-        <div className="image-to-pdf-setting space-y-2">
-          <label htmlFor="image-horizontal-alignment" className="text-sm font-semibold text-slate-700">{imageUi.horizontalAlignment}</label>
-          <select id="image-horizontal-alignment" value={horizontalAlignment} onChange={(event) => updateSetting(setHorizontalAlignment, event.target.value)} className="w-full rounded-lg border border-slate-200 px-3 py-2.5">
-            <option value="left">{imageUi.left}</option>
-            <option value="center">{imageUi.center}</option>
-            <option value="right">{imageUi.right}</option>
-          </select>
-        </div>
-        <div className="image-to-pdf-setting space-y-2">
-          <label htmlFor="image-vertical-alignment" className="text-sm font-semibold text-slate-700">{imageUi.verticalAlignment}</label>
-          <select id="image-vertical-alignment" value={verticalAlignment} onChange={(event) => updateSetting(setVerticalAlignment, event.target.value)} className="w-full rounded-lg border border-slate-200 px-3 py-2.5">
-            <option value="top">{imageUi.top}</option>
-            <option value="middle">{imageUi.middle}</option>
-            <option value="bottom">{imageUi.bottom}</option>
-          </select>
-        </div>
-        <div className="image-to-pdf-setting space-y-2">
-          <label htmlFor="image-max-width" className="text-sm font-semibold text-slate-700">{imageUi.maximumWidth}</label>
-          <input id="image-max-width" type="number" min="1" max="20000" value={maxWidth} onChange={(event) => updateSetting(setMaxWidth, Number(event.target.value))} className="w-full rounded-lg border border-slate-200 px-3 py-2.5" />
-        </div>
-        <div className="image-to-pdf-setting space-y-2">
-          <label htmlFor="image-max-height" className="text-sm font-semibold text-slate-700">{imageUi.maximumHeight}</label>
-          <input id="image-max-height" type="number" min="1" max="20000" value={maxHeight} onChange={(event) => updateSetting(setMaxHeight, Number(event.target.value))} className="w-full rounded-lg border border-slate-200 px-3 py-2.5" />
-        </div>
-        <div className="image-to-pdf-setting space-y-2">
-          <label htmlFor="image-scale" className="text-sm font-semibold text-slate-700">{imageUi.scale}</label>
-          <input id="image-scale" type="number" min="1" max="100" value={scalePercent} onChange={(event) => updateSetting(setScalePercent, Number(event.target.value))} className="w-full rounded-lg border border-slate-200 px-3 py-2.5" />
-        </div>
-        <div className="image-to-pdf-setting space-y-2">
-          <label htmlFor="image-background-color" className="text-sm font-semibold text-slate-700">{imageUi.pageBackgroundColor}</label>
-          <div className="flex items-center gap-3">
-            <input id="image-background-color" type="color" value={backgroundColor} onChange={(event) => updateSetting(setBackgroundColor, event.target.value)} className="h-10 w-14 cursor-pointer rounded border border-slate-200 p-1" />
-            <span className="text-sm text-slate-600">{backgroundColor.toUpperCase()}</span>
-          </div>
-        </div>
-        <div className="image-to-pdf-setting space-y-2">
-          <label htmlFor="jpeg-quality" className="text-sm font-semibold text-slate-700">{formatToolUiMessage(imageUi.jpegQuality, { quality: Math.round(jpegQuality * 100) })}</label>
-          <input id="jpeg-quality" type="range" min="0.1" max="1" step="0.05" value={jpegQuality} onChange={(event) => updateSetting(setJpegQuality, Number(event.target.value))} className="w-full accent-blue-600" />
-        </div>
-        <label className="image-to-pdf-setting inline-flex w-full items-center justify-center gap-2 text-sm font-medium text-slate-700">
-          <input type="checkbox" checked={maintainAspect} onChange={(event) => updateSetting(setMaintainAspect, event.target.checked)} className="h-4 w-4 accent-blue-600" />
-          {imageUi.maintainAspectRatio}
-        </label>
-        <p className="image-to-pdf-setting text-xs leading-relaxed text-slate-500 md:col-span-2 lg:col-span-3">
-          {imageUi.encodingNote}
-        </p>
-      </section>
-      )}
-
-      <div
-        {...getRootProps({
-          role: 'group',
-          'aria-label': imageUi.uploadLabel,
-          tabIndex: images.length ? -1 : undefined
-        })}
-        aria-hidden={images.length ? 'true' : undefined}
-        className={images.length
-          ? 'sr-only'
-          : `pdf-workflow-upload pdf-upload-zone merge-pdf-upload-zone rounded-2xl border-2 border-dashed transition-all duration-200 ${
-            isDragActive ? 'border-blue-500 bg-blue-50' : 'cursor-pointer border-slate-300 bg-white hover:border-blue-400 hover:bg-blue-50/50 hover:shadow-md'
-          }`}
-      >
-        <input {...getInputProps()} />
-        <input {...getReplaceInputProps()} />
-        {images.length === 0 && (
-          <div className="merge-pdf-upload-content">
-            <div className="pdf-upload-icon" aria-hidden="true">
-              <Upload className="h-6 w-6 text-blue-600" />
+        {images.length > 0 && (
+          <div className="image-to-pdf-file-actions">
+            <div className="flex justify-end">
+              <button type="button" onClick={open} disabled={isProcessing || images.length >= MAX_IMAGES} className="pdf-upload-trigger rounded-xl border px-5 py-3 font-semibold transition disabled:cursor-not-allowed disabled:opacity-50">{formatToolUiMessage(imageUi.addMoreImages, { count: images.length, max: MAX_IMAGES })}</button>
             </div>
-            <div className="merge-pdf-upload-copy">
-              <h3>{isDragActive ? imageUi.dropPrompt : imageUi.uploadPrompt}</h3>
-              <p>{formatToolUiMessage(imageUi.uploadDescription, { max: MAX_IMAGES })}</p>
-            </div>
-            <button
-              type="button"
-              className="pdf-editor-primary-button merge-pdf-upload-button"
-              onClick={(event) => {
-                event.stopPropagation();
-                open();
-              }}
-              disabled={isProcessing}
-            >
-              {imageUi.chooseImages}
-            </button>
           </div>
         )}
-      </div>
+
+        <div
+          {...getRootProps({
+            role: 'group',
+            'aria-label': imageUi.uploadLabel,
+            tabIndex: images.length ? -1 : undefined
+          })}
+          aria-hidden={images.length ? 'true' : undefined}
+          className={images.length
+            ? 'sr-only'
+            : `pdf-workflow-upload pdf-upload-zone merge-pdf-upload-zone rounded-2xl border-2 border-dashed transition-all duration-200 ${
+              isDragActive ? 'border-blue-500 bg-blue-50' : 'cursor-pointer border-slate-300 bg-white hover:border-blue-400 hover:bg-blue-50/50 hover:shadow-md'
+            }`}
+        >
+          <input {...getInputProps()} />
+          <input {...getReplaceInputProps()} />
+          {images.length === 0 && (
+            <div className="merge-pdf-upload-content">
+              <div className="pdf-upload-icon" aria-hidden="true">
+                <Upload className="h-6 w-6 text-blue-600" />
+              </div>
+              <div className="merge-pdf-upload-copy">
+                <h3>{isDragActive ? imageUi.dropPrompt : imageUi.uploadPrompt}</h3>
+                <p>{formatToolUiMessage(imageUi.uploadDescription, { max: MAX_IMAGES })}</p>
+              </div>
+              <button
+                type="button"
+                className="pdf-editor-primary-button merge-pdf-upload-button"
+                onClick={(event) => {
+                  event.stopPropagation();
+                  open();
+                }}
+                disabled={isProcessing}
+              >
+                {imageUi.chooseImages}
+              </button>
+            </div>
+          )}
+        </div>
+      </section>
 
       {images.length > 0 && (
-          <div className="pdf-workflow-actions flex flex-col gap-3 pt-2 sm:flex-row">
-            <button type="button" onClick={reset} disabled={isProcessing} className="inline-flex items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-5 py-3 font-semibold text-slate-700 transition hover:bg-slate-50 disabled:opacity-50">
-              <RefreshCw className="h-4 w-4" aria-hidden="true" /> {imageUi.reset}
-            </button>
-            <button type="button" onClick={generatePdf} disabled={isProcessing} className="inline-flex flex-1 items-center justify-center gap-2 rounded-xl bg-blue-600 px-6 py-3 font-bold text-white shadow-md transition hover:bg-blue-700 active:scale-[0.99] disabled:cursor-not-allowed disabled:bg-slate-300">
+        <div className="pdf-workflow-controls space-y-4">
+          <div className="image-to-pdf-settings-shell">
+            <header className="merge-control-intro">
+              <h3 className="merge-selected-files-title">{imageUi.settingsTitle}</h3>
+              <p>{imageUi.settingsDescription}</p>
+            </header>
+            <section className="image-to-pdf-settings-panel" aria-labelledby="image-to-pdf-settings-heading">
+              <div className="image-to-pdf-settings-mode">
+                <div className="image-to-pdf-choose-settings-copy">
+                  <div className="merge-section-heading merge-output-settings-heading">
+                    <h3 id="image-to-pdf-settings-heading" className="merge-section-heading-title merge-output-settings-title">{imageUi.settingsScope}</h3>
+                  </div>
+                  <p className="image-to-pdf-choose-settings-description">{imageUi.chooseSettingsDescription}</p>
+                </div>
+                <div className="image-to-pdf-scope-actions" role="group" aria-label={imageUi.settingsScope}>
+                  <button
+                    type="button"
+                    onClick={() => changeSettingsScope('all')}
+                    aria-pressed={settingsScope === 'all'}
+                    disabled={isProcessing}
+                    className={`image-to-pdf-scope-button${settingsScope === 'all' ? ' is-active' : ''}`}
+                  >
+                    {imageUi.allPages}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => changeSettingsScope('select')}
+                    aria-pressed={settingsScope === 'select'}
+                    disabled={isProcessing}
+                    className={`image-to-pdf-scope-button${settingsScope === 'select' ? ' is-active' : ''}`}
+                  >
+                    {imageUi.selectPages}
+                  </button>
+                </div>
+              </div>
+              <div className="image-to-pdf-output-mode-setting">
+                <p className="image-to-pdf-output-mode-label">{imageUi.outputMode}</p>
+                <div className="merge-mode-switch image-to-pdf-output-mode" role="group" aria-label={imageUi.outputMode}>
+                  <button
+                    type="button"
+                    onClick={() => changeOutputMode('single')}
+                    aria-pressed={outputMode === 'single'}
+                    disabled={isProcessing}
+                  >
+                    {imageUi.singlePdf}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => changeOutputMode('separate')}
+                    aria-pressed={outputMode === 'separate'}
+                    disabled={isProcessing}
+                  >
+                    {imageUi.separatePdf}
+                  </button>
+                </div>
+              </div>
+              <fieldset
+                className="image-to-pdf-settings-controls grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3"
+                disabled={isProcessing || (settingsScope === 'select' && selectedImages.length === 0)}
+              >
+                <legend className="sr-only">{imageUi.settingsTitle}</legend>
+                <div className="image-to-pdf-setting space-y-2">
+                  <label htmlFor="image-page-size" className="text-sm font-semibold text-slate-700">{imageUi.pageSize}</label>
+                  <select id="image-page-size" value={activeSettings.pageSize} onChange={(event) => updateSetting('pageSize', event.target.value)} className="w-full rounded-lg border border-slate-200 px-3 py-2.5">
+                    <option value="A4">A4</option>
+                    <option value="Letter">Letter</option>
+                    <option value="fit">{imageUi.fitImageDimensions}</option>
+                    <option value="custom">{imageUi.customDimensions}</option>
+                  </select>
+                </div>
+                <div className="image-to-pdf-setting space-y-2">
+                  <label htmlFor="image-orientation" className="text-sm font-semibold text-slate-700">{imageUi.orientation}</label>
+                  <select id="image-orientation" value={activeSettings.orientation} disabled={activeSettings.autoOrient || activeSettings.pageSize === 'fit'} onChange={(event) => updateSetting('orientation', event.target.value)} className="w-full rounded-lg border border-slate-200 px-3 py-2.5 disabled:cursor-not-allowed disabled:opacity-50">
+                    <option value="portrait">{imageUi.portrait}</option>
+                    <option value="landscape">{imageUi.landscape}</option>
+                  </select>
+                  <label className="flex items-center gap-2 text-xs font-medium text-slate-600">
+                    <input type="checkbox" checked={activeSettings.autoOrient} disabled={activeSettings.pageSize === 'fit'} onChange={(event) => updateSetting('autoOrient', event.target.checked)} className="h-4 w-4 accent-blue-600 disabled:opacity-50" />
+                    {imageUi.autoOrient}
+                  </label>
+                </div>
+                {activeSettings.pageSize === 'custom' && (
+                  <>
+                    <div className="image-to-pdf-setting space-y-2">
+                      <label htmlFor="image-custom-width" className="text-sm font-semibold text-slate-700">{imageUi.customWidth}</label>
+                      <input id="image-custom-width" type="number" min="10" max="2000" step="0.1" value={activeSettings.customWidthMm} onChange={(event) => updateSetting('customWidthMm', Number(event.target.value))} className="w-full rounded-lg border border-slate-200 px-3 py-2.5" />
+                    </div>
+                    <div className="image-to-pdf-setting space-y-2">
+                      <label htmlFor="image-custom-height" className="text-sm font-semibold text-slate-700">{imageUi.customHeight}</label>
+                      <input id="image-custom-height" type="number" min="10" max="2000" step="0.1" value={activeSettings.customHeightMm} onChange={(event) => updateSetting('customHeightMm', Number(event.target.value))} className="w-full rounded-lg border border-slate-200 px-3 py-2.5" />
+                    </div>
+                  </>
+                )}
+                <div className="image-to-pdf-setting space-y-2">
+                  <label htmlFor="image-fit" className="text-sm font-semibold text-slate-700">{imageUi.imageFit}</label>
+                  <select id="image-fit" value={activeSettings.fitMode} onChange={(event) => updateSetting('fitMode', event.target.value)} className="w-full rounded-lg border border-slate-200 px-3 py-2.5">
+                    <option value="contain">{imageUi.contain}</option>
+                    <option value="fill">{imageUi.fill}</option>
+                  </select>
+                </div>
+                <div className="image-to-pdf-setting space-y-2">
+                  <label htmlFor="image-margin" className="text-sm font-semibold text-slate-700">{imageUi.margin}</label>
+                  <input id="image-margin" type="number" min="0" max="300" value={activeSettings.margin} onChange={(event) => updateSetting('margin', Number(event.target.value))} className="w-full rounded-lg border border-slate-200 px-3 py-2.5" />
+                </div>
+                <div className="image-to-pdf-setting space-y-2">
+                  <label htmlFor="image-horizontal-alignment" className="text-sm font-semibold text-slate-700">{imageUi.horizontalAlignment}</label>
+                  <select id="image-horizontal-alignment" value={activeSettings.horizontalAlignment} onChange={(event) => updateSetting('horizontalAlignment', event.target.value)} className="w-full rounded-lg border border-slate-200 px-3 py-2.5">
+                    <option value="left">{imageUi.left}</option>
+                    <option value="center">{imageUi.center}</option>
+                    <option value="right">{imageUi.right}</option>
+                  </select>
+                </div>
+                <div className="image-to-pdf-setting space-y-2">
+                  <label htmlFor="image-vertical-alignment" className="text-sm font-semibold text-slate-700">{imageUi.verticalAlignment}</label>
+                  <select id="image-vertical-alignment" value={activeSettings.verticalAlignment} onChange={(event) => updateSetting('verticalAlignment', event.target.value)} className="w-full rounded-lg border border-slate-200 px-3 py-2.5">
+                    <option value="top">{imageUi.top}</option>
+                    <option value="middle">{imageUi.middle}</option>
+                    <option value="bottom">{imageUi.bottom}</option>
+                  </select>
+                </div>
+                <div className="image-to-pdf-setting space-y-2">
+                  <label htmlFor="image-max-width" className="text-sm font-semibold text-slate-700">{imageUi.maximumWidth}</label>
+                  <input id="image-max-width" type="number" min="1" max="20000" value={activeSettings.maxWidth} onChange={(event) => updateSetting('maxWidth', Number(event.target.value))} className="w-full rounded-lg border border-slate-200 px-3 py-2.5" />
+                </div>
+                <div className="image-to-pdf-setting space-y-2">
+                  <label htmlFor="image-max-height" className="text-sm font-semibold text-slate-700">{imageUi.maximumHeight}</label>
+                  <input id="image-max-height" type="number" min="1" max="20000" value={activeSettings.maxHeight} onChange={(event) => updateSetting('maxHeight', Number(event.target.value))} className="w-full rounded-lg border border-slate-200 px-3 py-2.5" />
+                </div>
+                <div className="image-to-pdf-setting space-y-2">
+                  <label htmlFor="image-scale" className="text-sm font-semibold text-slate-700">{imageUi.scale}</label>
+                  <input id="image-scale" type="number" min="1" max="100" value={activeSettings.scalePercent} onChange={(event) => updateSetting('scalePercent', Number(event.target.value))} className="w-full rounded-lg border border-slate-200 px-3 py-2.5" />
+                </div>
+                <div className="image-to-pdf-setting space-y-2">
+                  <label htmlFor="image-background-color" className="text-sm font-semibold text-slate-700">{imageUi.pageBackgroundColor}</label>
+                  <div className="flex items-center gap-3">
+                    <input id="image-background-color" type="color" value={activeSettings.backgroundColor} onChange={(event) => updateSetting('backgroundColor', event.target.value)} className="h-10 w-14 cursor-pointer rounded border border-slate-200 p-1" />
+                    <span className="text-sm text-slate-600">{activeSettings.backgroundColor.toUpperCase()}</span>
+                  </div>
+                </div>
+                <div className="image-to-pdf-setting space-y-2">
+                  <label htmlFor="jpeg-quality" className="text-sm font-semibold text-slate-700">{formatToolUiMessage(imageUi.jpegQuality, { quality: Math.round(activeSettings.jpegQuality * 100) })}</label>
+                  <input id="jpeg-quality" type="range" min="0.1" max="1" step="0.05" value={activeSettings.jpegQuality} onChange={(event) => updateSetting('jpegQuality', Number(event.target.value))} className="w-full accent-blue-600" />
+                </div>
+                <label className="image-to-pdf-setting inline-flex w-full items-center justify-center gap-2 text-sm font-medium text-slate-700">
+                  <input type="checkbox" checked={activeSettings.maintainAspect} onChange={(event) => updateSetting('maintainAspect', event.target.checked)} className="h-4 w-4 accent-blue-600" />
+                  {imageUi.maintainAspectRatio}
+                </label>
+                <p className="image-to-pdf-setting text-xs leading-relaxed text-slate-500 md:col-span-2 lg:col-span-3">
+                  {imageUi.encodingNote}
+                </p>
+              </fieldset>
+            </section>
+          </div>
+
+          <div className="image-to-pdf-preview-shell">
+            <header className="merge-control-intro">
+              <h3 className="merge-selected-files-title">{imageUi.previewTitle}</h3>
+              <p>{imageUi.previewDescription}</p>
+            </header>
+            <section className="image-to-pdf-preview-panel" aria-labelledby="image-to-pdf-preview-heading">
+              <div className="merge-section-heading merge-page-selection-heading">
+                <h3 id="image-to-pdf-preview-heading" className="merge-section-heading-title merge-page-selection-title">{imageUi.pagePreview}</h3>
+              </div>
+              {settingsScope === 'select' && (
+                <p className="image-to-pdf-page-preview-description">{imageUi.selectPagesHint}</p>
+              )}
+              <div className="image-to-pdf-page-grid grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
+                {images.map((image, index) => {
+                  const imageSettings = getEffectiveImagePdfSettings(image, settings);
+                  const isSelected = selectedImageIds.has(image.id);
+                  const previewLabel = formatToolUiMessage(imageUi.selectImage, { page: index + 1 });
+                  const largerPreviewLabel = formatToolUiMessage(imageUi.viewLargerPreview, { fileName: image.name });
+
+                  return (
+                    <article
+                      key={image.id}
+                      className={`image-to-pdf-page-card merge-page-source-card${isSelected ? ' is-selected' : ''}`}
+                    >
+                      <div className="image-to-pdf-page-thumbnail-wrap">
+                        {settingsScope === 'select' ? (
+                          <button
+                            type="button"
+                            className="merge-page-source-select image-to-pdf-page-select"
+                            onClick={() => toggleImageSelection(image.id)}
+                            disabled={isProcessing}
+                            aria-pressed={isSelected}
+                            aria-label={previewLabel}
+                            title={previewLabel}
+                          >
+                            <span className="merge-page-source-image image-to-pdf-page-select-image">
+                              <ImagePdfPagePreview
+                                image={image}
+                                settings={imageSettings}
+                                label={`${image.name}, page ${index + 1}`}
+                                invalidLabel={imageUi.previewInvalid}
+                              />
+                              <span className={`merge-page-selection-mark${isSelected ? ' is-selected' : ''}`} aria-hidden="true">
+                                {isSelected && <Check className="h-4 w-4" />}
+                              </span>
+                            </span>
+                          </button>
+                        ) : (
+                          <ImagePdfPagePreview
+                            image={image}
+                            settings={imageSettings}
+                            label={`${image.name}, page ${index + 1}`}
+                            invalidLabel={imageUi.previewInvalid}
+                          />
+                        )}
+                        <button
+                          type="button"
+                          className="merge-page-preview-button organize-pdf-page-preview-button image-to-pdf-page-preview-button"
+                          onClick={(event) => openLargePreview(image.id, event)}
+                          disabled={isProcessing || !isValidPreviewSettings(imageSettings)}
+                          aria-label={largerPreviewLabel}
+                          title={largerPreviewLabel}
+                        >
+                          <Eye className="h-4 w-4" aria-hidden="true" />
+                        </button>
+                      </div>
+                      <p className="image-to-pdf-page-label" title={image.name}>{image.name}</p>
+                      <p className="image-to-pdf-page-details">
+                        {image.width} × {image.height} px · {formatBytes(image.file.size)} · {image.rotation}°
+                      </p>
+                      <div className="image-to-pdf-page-actions">
+                        <button type="button" onClick={() => moveImage(index, -1)} disabled={index === 0 || isProcessing} aria-label={`${imageUi.moveUp}: ${image.name}`} className="organize-pdf-page-action">
+                          <ArrowUp className="h-4 w-4" aria-hidden="true" />
+                        </button>
+                        <button type="button" onClick={() => moveImage(index, 1)} disabled={index === images.length - 1 || isProcessing} aria-label={`${imageUi.moveDown}: ${image.name}`} className="organize-pdf-page-action">
+                          <ArrowDown className="h-4 w-4" aria-hidden="true" />
+                        </button>
+                        <button type="button" onClick={() => rotateImage(image.id, -90)} disabled={isProcessing} aria-label={`${imageUi.rotateCounterclockwise}: ${image.name}`} title={imageUi.rotateCounterclockwise} className="organize-pdf-page-action">
+                          <RotateCcw className="h-4 w-4" aria-hidden="true" />
+                        </button>
+                        <button type="button" onClick={() => rotateImage(image.id, 90)} disabled={isProcessing} aria-label={`${imageUi.rotateClockwise}: ${image.name}`} title={imageUi.rotateClockwise} className="organize-pdf-page-action">
+                          <RotateCw className="h-4 w-4" aria-hidden="true" />
+                        </button>
+                        <button type="button" onClick={() => removeImage(image.id)} disabled={isProcessing} aria-label={formatToolUiMessage(fileActions.remove, { fileName: image.name })} title={formatToolUiMessage(fileActions.remove, { fileName: image.name })} className="organize-pdf-page-action image-to-pdf-page-remove">
+                          <Trash2 className="h-4 w-4" aria-hidden="true" />
+                        </button>
+                      </div>
+                      <AttachedFileActions
+                        fileName={image.name}
+                        onReplace={() => replaceImage(image.id)}
+                        disabled={isProcessing}
+                      />
+                    </article>
+                  );
+                })}
+              </div>
+            </section>
+            {largePreviewImage && (
+              <div
+                className="merge-page-preview-backdrop"
+                onMouseDown={(event) => {
+                  if (event.target === event.currentTarget) closeLargePreview();
+                }}
+              >
+                <section
+                  className="merge-page-preview-dialog image-to-pdf-page-preview-dialog"
+                  role="dialog"
+                  aria-modal="true"
+                  aria-label={formatToolUiMessage(imageUi.viewLargerPreview, { fileName: largePreviewImage.name })}
+                >
+                  <div className="merge-page-preview-dialog-header">
+                    <h3>{largePreviewImage.name}</h3>
+                    <button
+                      ref={largePreviewCloseRef}
+                      type="button"
+                      onClick={closeLargePreview}
+                      aria-label={imageUi.closePreview}
+                    >
+                      <X className="h-5 w-5" aria-hidden="true" />
+                    </button>
+                  </div>
+                  <ImagePdfPagePreview
+                    image={largePreviewImage}
+                    settings={getEffectiveImagePdfSettings(largePreviewImage, settings)}
+                    label={formatToolUiMessage(imageUi.viewLargerPreview, { fileName: largePreviewImage.name })}
+                    invalidLabel={imageUi.previewInvalid}
+                    size="large"
+                  />
+                </section>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {images.length > 0 && (
+          <div className="pdf-workflow-actions image-to-pdf-action-row flex flex-row justify-end gap-3 pt-2">
+            <button type="button" onClick={generatePdf} disabled={isProcessing} className="inline-flex min-w-0 flex-1 items-center justify-center gap-2 rounded-xl bg-blue-600 px-6 py-3 font-bold text-white shadow-md transition hover:bg-blue-700 active:scale-[0.99] disabled:cursor-not-allowed disabled:bg-slate-300">
               {isProcessing ? <Loader2 className="h-5 w-5 animate-spin" aria-hidden="true" /> : <ImageIcon className="h-5 w-5" aria-hidden="true" />}
               {isProcessing
                 ? imageUi.creatingPdf
@@ -647,17 +977,20 @@ const ImageToPdf = () => {
                   pageUnit: images.length === 1 ? imageUi.page : imageUi.pages
                 })}
             </button>
+            <button type="button" onClick={reset} disabled={isProcessing} className="inline-flex shrink-0 items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-5 py-3 font-semibold text-slate-700 transition hover:bg-slate-50 disabled:opacity-50">
+              <RefreshCw className="h-4 w-4" aria-hidden="true" /> {imageUi.reset}
+            </button>
           </div>
       )}
 
       {error && <div role="alert" className="image-to-pdf-error flex items-start gap-3 rounded-xl border border-rose-200 bg-rose-50 p-4 text-rose-800"><AlertCircle className="h-5 w-5 shrink-0" aria-hidden="true" /><span className="text-sm">{error}</span></div>}
 
-      {outputBytes && (
+      {(outputBytes || outputArchive) && (
         <DownloadReadyCard
-          fileName={outputName}
-          sizeBytes={outputBytes.length}
-          onDownload={downloadPdf}
-          downloadLabel={imageUi.downloadPdf}
+          fileName={outputArchive?.name || outputName}
+          sizeBytes={outputArchive?.blob.size ?? outputBytes.length}
+          onDownload={downloadOutput}
+          downloadLabel={outputArchive ? imageUi.downloadZip : imageUi.downloadPdf}
         />
       )}
     </div>

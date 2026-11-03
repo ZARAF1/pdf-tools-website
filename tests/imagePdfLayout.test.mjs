@@ -7,6 +7,7 @@ import {
   getRotatedImageDimensions,
   getOrientedPageDimensions
 } from '../src/lib/imagePdfLayout.mjs';
+import * as imagePdfLayout from '../src/lib/imagePdfLayout.mjs';
 
 test('converts custom page dimensions from millimeters to PDF points', () => {
   const [width, height] = getCustomPageDimensions(210, 297);
@@ -74,4 +75,31 @@ test('swaps image dimensions for quarter-turn rotations', () => {
 
 test('converts a six-digit hex color into normalized PDF color components', () => {
   assert.deepEqual(getHexColorComponents('#3366cc'), [51 / 255, 102 / 255, 204 / 255]);
+});
+
+test('calculates the composed page dimensions and placement for a rotated image', () => {
+  const layout = imagePdfLayout.calculateImagePageLayout({
+    imageWidth: 800,
+    imageHeight: 400,
+    rotation: 90,
+    settings: {
+      pageSize: 'fit',
+      margin: 24,
+      fitMode: 'contain',
+      horizontalAlignment: 'center',
+      verticalAlignment: 'middle',
+      maxWidth: 2400,
+      maxHeight: 2400,
+      scalePercent: 100,
+      maintainAspect: true
+    }
+  });
+
+  assert.deepEqual(layout, {
+    outputWidth: 400,
+    outputHeight: 800,
+    pageWidth: 348,
+    pageHeight: 648,
+    placement: { x: 24, y: 24, width: 300, height: 600 }
+  });
 });
