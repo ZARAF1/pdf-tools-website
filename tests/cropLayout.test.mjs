@@ -43,17 +43,32 @@ test('Crop PDF separates the selected-file card from its empty-state upload zone
   assert.match(styles, /\.crop-pdf-attached-file-card\.is-drag-active,\s*\.organize-pdf-attached-file-card\.is-drag-active\s*\{[^}]*border-color:\s*#60a5fa;[^}]*background:\s*var\(--surface-muted\);/s);
 });
 
-test('Crop PDF places its attachment in a dedicated File to crop section', () => {
-  const sectionStart = cropPdf.indexOf('className="crop-pdf-file-section"');
-  const headingIndex = cropPdf.indexOf('File to crop', sectionStart);
-  const attachedCardIndex = cropPdf.indexOf('pdf-workflow-selected pdf-attached-file-card', sectionStart);
+test('Crop PDF uses the Merge-style empty chooser without a File to crop panel', () => {
+  const toolStart = cropPdf.indexOf('<div className="crop-pdf-tool">');
+  const pickerInput = cropPdf.indexOf('<input {...getInputProps()} />', toolStart);
+  const attachedCardIndex = cropPdf.indexOf('pdf-workflow-selected pdf-attached-file-card', toolStart);
+  const emptyUploadZone = cropPdf.indexOf(
+    'className={`crop-pdf-upload pdf-workflow-upload pdf-upload-zone merge-pdf-upload-zone',
+    toolStart
+  );
   const settingsShellIndex = cropPdf.indexOf('className="crop-pdf-settings-shell"');
 
-  assert.ok(sectionStart >= 0, 'a dedicated File to crop section is present');
-  assert.ok(headingIndex > sectionStart, 'the section is labelled File to crop');
-  assert.ok(attachedCardIndex > headingIndex, 'the selected PDF card follows the section heading');
-  assert.ok(settingsShellIndex > attachedCardIndex, 'settings follow the selected-file section');
-  assert.match(styles, /\.crop-pdf-file-section,\s*\.organize-pdf-file-section,\s*\.image-to-pdf-file-section,\s*\.crop-pdf-settings-shell\s*\{[^}]*background:\s*var\(--surface-muted\)/s);
+  assert.ok(toolStart >= 0, 'the Crop PDF workflow is present');
+  assert.ok(pickerInput > toolStart && pickerInput < emptyUploadZone, 'the file input precedes the empty-state chooser');
+  assert.ok(attachedCardIndex > pickerInput, 'the selected-file card remains available after the input');
+  assert.ok(emptyUploadZone > pickerInput, 'the empty-state chooser remains available');
+  assert.ok(settingsShellIndex > attachedCardIndex, 'settings follow the selected-file card');
+  assert.doesNotMatch(cropPdf, /crop-pdf-file-section|File to crop/, 'the extra attachment subpanel is removed');
+  assert.match(styles, /\.image-to-pdf-file-section,\s*\.crop-pdf-settings-shell\s*\{[^}]*background:\s*var\(--surface-muted\)/s);
+});
+
+test('Crop PDF hidden file input does not add grid spacing before its empty chooser', () => {
+  const inputSpacing = styles.match(
+    /\.tool-attachment-content \.crop-pdf-tool > input\[type="file"\]\s*\{([^}]*)\}/
+  )?.[1];
+
+  assert.ok(inputSpacing, 'Crop PDF file input is removed from the workflow grid');
+  assert.match(inputSpacing, /position:\s*absolute\s*;/);
 });
 
 test('Crop PDF groups scope and bounds in Choose Settings before its page preview', () => {

@@ -328,6 +328,31 @@ const imageWorkflowKeys = [
   'previewTitle', 'previewDescription', 'selectImage', 'viewLargerPreview', 'closePreview',
   'settingsDescription', 'chooseSettingsDescription', 'attachedImages'
 ];
+const imageSettingsScopeKeys = [
+  'scopeToggleLabel', 'allImages', 'selectedImages', 'selectImagesHint', 'selectImage'
+];
+const imageSettingsScopeLabels = {
+  en: ['Apply settings to all or selected images (select images in preview to enable settings)', 'All images', 'Selected images', 'Select images below; changes affect only those images. All images remain in the PDF.', 'Select image {page}'],
+  es: ['Aplicar ajustes a todas las imágenes o a las seleccionadas (selecciona imágenes en la vista previa para habilitar los ajustes)', 'Todas las imágenes', 'Imágenes seleccionadas', 'Selecciona imágenes abajo; los cambios solo afectan a esas imágenes. Todas se incluirán en el PDF.', 'Seleccionar imagen {page}'],
+  fr: ['Appliquer les réglages à toutes les images ou aux images sélectionnées (sélectionnez des images dans l’aperçu pour activer les réglages)', 'Toutes les images', 'Images sélectionnées', 'Sélectionnez des images ci-dessous ; les changements ne concernent que celles-ci. Toutes restent dans le PDF.', 'Sélectionner l’image {page}'],
+  de: ['Einstellungen auf alle oder ausgewählte Bilder anwenden (wähle Bilder in der Vorschau aus, um Einstellungen zu aktivieren)', 'Alle Bilder', 'Ausgewählte Bilder', 'Wähle unten Bilder aus; Änderungen gelten nur für diese. Alle Bilder bleiben im PDF.', 'Bild {page} auswählen'],
+  pt: ['Aplicar configurações a todas as imagens ou às selecionadas (selecione imagens na pré-visualização para ativar as configurações)', 'Todas as imagens', 'Imagens selecionadas', 'Selecione imagens abaixo; as alterações afetam apenas essas imagens. Todas permanecem no PDF.', 'Selecionar imagem {page}'],
+  it: ['Applica le impostazioni a tutte o alle immagini selezionate (seleziona immagini nell’anteprima per attivare le impostazioni)', 'Tutte le immagini', 'Immagini selezionate', 'Seleziona le immagini qui sotto; le modifiche riguardano solo quelle. Tutte restano nel PDF.', 'Seleziona immagine {page}'],
+  nl: ['Instellingen toepassen op alle of geselecteerde afbeeldingen (selecteer afbeeldingen in het voorbeeld om instellingen in te schakelen)', 'Alle afbeeldingen', 'Geselecteerde afbeeldingen', 'Selecteer hieronder afbeeldingen; wijzigingen gelden alleen daarvoor. Alle afbeeldingen blijven in de PDF.', 'Afbeelding {page} selecteren'],
+  pl: ['Zastosuj ustawienia do wszystkich lub wybranych obrazów (wybierz obrazy w podglądzie, aby włączyć ustawienia)', 'Wszystkie obrazy', 'Wybrane obrazy', 'Wybierz obrazy poniżej; zmiany dotyczą tylko ich. Wszystkie obrazy pozostaną w pliku PDF.', 'Wybierz obraz {page}'],
+  sv: ['Tillämpa inställningar på alla eller valda bilder (välj bilder i förhandsgranskningen för att aktivera inställningar)', 'Alla bilder', 'Valda bilder', 'Välj bilder nedan; ändringarna gäller bara dem. Alla bilder finns kvar i PDF-filen.', 'Välj bild {page}'],
+  fi: ['Käytä asetuksia kaikkiin tai valittuihin kuviin (valitse kuvat esikatselussa, jotta asetukset otetaan käyttöön)', 'Kaikki kuvat', 'Valitut kuvat', 'Valitse kuvat alta; muutokset koskevat vain niitä. Kaikki kuvat säilyvät PDF-tiedostossa.', 'Valitse kuva {page}'],
+  da: ['Anvend indstillinger på alle eller valgte billeder (vælg billeder i forhåndsvisningen for at aktivere indstillinger)', 'Alle billeder', 'Valgte billeder', 'Vælg billeder nedenfor; ændringer gælder kun dem. Alle billeder forbliver i PDF-filen.', 'Vælg billede {page}'],
+  nb: ['Bruk innstillinger på alle eller valgte bilder (velg bilder i forhåndsvisningen for å aktivere innstillinger)', 'Alle bilder', 'Valgte bilder', 'Velg bilder nedenfor; endringene gjelder bare dem. Alle bildene blir med i PDF-en.', 'Velg bilde {page}'],
+  tr: ['Ayarları tümüne veya seçilen görsellere uygula (ayarları etkinleştirmek için Önizleme bölümünde görsel seçin)', 'Tüm Görseller', 'Seçilen Görseller', 'Görselleri aşağıdan seçin; değişiklikler yalnızca onları etkiler. Tüm görseller PDF içinde kalır.', '{page}. görseli seç'],
+  ru: ['Применить настройки ко всем или выбранным изображениям (выберите изображения в предпросмотре, чтобы включить настройки)', 'Все изображения', 'Выбранные изображения', 'Выберите изображения ниже; изменения коснутся только их. Все изображения останутся в PDF.', 'Выбрать изображение {page}'],
+  uk: ['Застосувати налаштування до всіх або вибраних зображень (виберіть зображення в попередньому перегляді, щоб увімкнути налаштування)', 'Усі зображення', 'Вибрані зображення', 'Виберіть зображення нижче; зміни стосуватимуться лише їх. Усі зображення залишаться в PDF.', 'Вибрати зображення {page}'],
+  ar: ['تطبيق الإعدادات على كل الصور أو الصور المحددة (حدد الصور في المعاينة لتفعيل الإعدادات)', 'كل الصور', 'الصور المحددة', 'حدد الصور أدناه؛ ستؤثر التغييرات عليها فقط. ستبقى كل الصور في ملف PDF.', 'اختر الصورة {page}'],
+  hi: ['सभी या चुनी गई छवियों पर सेटिंग लागू करें (सेटिंग सक्षम करने के लिए पूर्वावलोकन में छवियाँ चुनें)', 'सभी छवियाँ', 'चुनी गई छवियाँ', 'नीचे छवियाँ चुनें; बदलाव केवल उन्हीं पर लागू होंगे। सभी छवियाँ PDF में रहेंगी।', 'छवि {page} चुनें'],
+  ja: ['すべてまたは選択した画像に設定を適用（設定を有効にするにはプレビューで画像を選択）', 'すべての画像', '選択した画像', '下から画像を選択してください。変更は選択した画像のみに適用されます。すべての画像がPDFに含まれます。', '画像 {page}を選択'],
+  ko: ['모든 이미지 또는 선택한 이미지에 설정 적용 (설정을 사용하려면 미리보기에서 이미지 선택)', '모든 이미지', '선택한 이미지', '아래에서 이미지를 선택하세요. 변경 사항은 선택한 이미지만 적용됩니다. 모든 이미지는 PDF에 포함됩니다.', '이미지 {page} 선택'],
+  'zh-CN': ['将设置应用于所有图片或所选图片（请在预览中选择图片以启用设置）', '所有图片', '已选图片', '在下方选择图片；更改仅影响所选图片。所有图片都会保留在 PDF 中。', '选择图片 {page}']
+};
 const imageOutputKeys = ['outputMode', 'singlePdf', 'separatePdf', 'downloadZip'];
 const imageOutputLabels = {
   en: ['PDF output', 'One PDF with all images', 'Separate PDFs in a ZIP', 'Download ZIP'],
@@ -485,6 +510,7 @@ for (const { code } of SUPPORTED_LANGUAGES) {
   const powerpointLabelsForLanguage = powerpointLabels[code];
   if (!imageLabels || imageLabels.length !== imageToPdfKeys.length
     || !imageWorkflowLabelsForLanguage || imageWorkflowLabelsForLanguage.length !== imageWorkflowKeys.length
+    || !imageSettingsScopeLabels[code] || imageSettingsScopeLabels[code].length !== imageSettingsScopeKeys.length
     || !imageOutputLabelsForLanguage || imageOutputLabelsForLanguage.length !== imageOutputKeys.length
     || !imagePreviewInvalidLabel
     || !actionLabels || actionLabels.length !== 3
@@ -495,6 +521,7 @@ for (const { code } of SUPPORTED_LANGUAGES) {
     imageToPdf: {
       ...Object.fromEntries(imageToPdfKeys.map((key, index) => [key, imageLabels[index]])),
       ...Object.fromEntries(imageWorkflowKeys.map((key, index) => [key, imageWorkflowLabelsForLanguage[index]])),
+      ...Object.fromEntries(imageSettingsScopeKeys.map((key, index) => [key, imageSettingsScopeLabels[code][index]])),
       ...Object.fromEntries(imageOutputKeys.map((key, index) => [key, imageOutputLabelsForLanguage[index]]))
     },
     powerpoint: Object.fromEntries(powerpointKeys.map((key, index) => [key, powerpointLabelsForLanguage[index]])),

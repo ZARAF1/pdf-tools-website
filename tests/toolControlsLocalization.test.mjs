@@ -30,8 +30,8 @@ const imageControlKeys = [
   'downloadPdf'
 ];
 const imageWorkflowControlKeys = [
-  'imageCount', 'attachedImages', 'settingsTitle', 'settingsDescription', 'pagePreview', 'settingsScope',
-  'chooseSettingsDescription', 'allPages', 'selectPages', 'selectPagesHint',
+  'imageCount', 'attachedImages', 'settingsTitle', 'settingsDescription', 'pagePreview', 'scopeToggleLabel',
+  'allImages', 'selectedImages', 'selectImagesHint',
   'previewTitle', 'previewDescription', 'selectImage', 'viewLargerPreview',
   'closePreview', 'previewInvalid', 'outputMode', 'singlePdf', 'separatePdf'
 ];
@@ -63,9 +63,22 @@ test('every bundled language has localized image attachment and control labels',
       assert.ok(localized.imageToPdf[key], `${code} is missing imageToPdf.${key}`);
     }
     assert.ok(localized.imageToPdf.ready, `${code} is missing imageToPdf.ready`);
+    if (code === 'en') {
+      assert.equal(localized.imageToPdf.scopeToggleLabel,
+        'Apply settings to all or selected images (select images in preview to enable settings)');
+      assert.equal(localized.imageToPdf.allImages, 'All images');
+      assert.equal(localized.imageToPdf.selectedImages, 'Selected images');
+    }
 
     if (code !== 'en') {
       for (const key of ['uploadPrompt', 'pageSize', 'createPdf', 'reset', 'downloadPdf']) {
+        assert.notEqual(
+          localized.imageToPdf[key],
+          TOOL_UI_TRANSLATIONS.en.imageToPdf[key],
+          `${code} leaves imageToPdf.${key} in English`
+        );
+      }
+      for (const key of ['scopeToggleLabel', 'allImages', 'selectedImages', 'selectImagesHint']) {
         assert.notEqual(
           localized.imageToPdf[key],
           TOOL_UI_TRANSLATIONS.en.imageToPdf[key],

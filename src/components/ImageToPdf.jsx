@@ -21,6 +21,7 @@ import { AttachedFileActions } from './AttachedFileControls';
 import DownloadReadyCard from './DownloadReadyCard';
 import { limitImageFiles } from '../lib/imageSelection.mjs';
 import { formatToolUiMessage, getLocalizedToolUi } from '../i18n/toolUiLocalization.mjs';
+import { getLocalizedTool } from '../i18n/toolTranslations.mjs';
 import { useLanguage } from '../i18n/useLanguage';
 import {
   calculateImagePageLayout,
@@ -177,8 +178,13 @@ const ImagePdfPagePreview = ({ image, settings, label, invalidLabel, size = 'com
 };
 
 const ImageToPdf = () => {
-  const { language } = useLanguage();
+  const { language, translate } = useLanguage();
   const { imageToPdf: imageUi, fileActions } = getLocalizedToolUi(language);
+  const localizedTool = getLocalizedTool(language, {
+    id: 'image',
+    name: 'Image to PDF',
+    description: 'Create a PDF from images.'
+  });
   const [images, setImages] = useState([]);
   const [pendingImageCount, setPendingImageCount] = useState(0);
   const pendingImageCountRef = useRef(0);
@@ -594,85 +600,102 @@ const ImageToPdf = () => {
   };
 
   return (
-    <div className="pdf-tool-workflow image-to-pdf-workflow mx-auto max-w-4xl space-y-6">
-      <section className="image-to-pdf-file-section" aria-labelledby="image-to-pdf-file-heading">
-        <header className="image-to-pdf-file-section-header">
+    <div className="pdf-tool-workflow image-to-pdf-workflow space-y-6">
+      <section className="tool-attachment-section image-pdf-attachment-section" aria-labelledby="image-pdf-attachment-heading">
+        <div className="tool-attachment-heading">
+          <span className="tool-attachment-icon" aria-hidden="true">
+            <Upload className="h-5 w-5" />
+          </span>
           <div>
-            <h3 id="image-to-pdf-file-heading" className="merge-selected-files-title">{imageUi.uploadLabel}</h3>
+            <h2 id="image-pdf-attachment-heading">{translate('attachImagesHere')}</h2>
             <p>{formatToolUiMessage(imageUi.uploadDescription, { max: MAX_IMAGES })}</p>
           </div>
-          <span className="image-to-pdf-image-count" aria-live="polite">
-            {formatToolUiMessage(imageUi.imageCount, { count: images.length, max: MAX_IMAGES })}
-          </span>
-        </header>
-        {images.length > 0 && (
-          <>
-            <h4 className="image-to-pdf-attached-images-title">{imageUi.attachedImages}</h4>
-            <ol className="image-to-pdf-attached-image-list" aria-label={imageUi.attachedImages}>
-              {images.map((image, index) => (
-                <li key={image.id} className="pdf-attached-file-card image-to-pdf-attached-image-card">
-                  <span className="merge-selected-file-position image-to-pdf-attached-image-position" aria-hidden="true">
-                    {String(index + 1).padStart(2, '0')}
-                  </span>
-                  <img className="image-to-pdf-attached-image-thumbnail" src={image.preview} alt="" />
-                  <div className="merge-selected-file-details">
-                    <p className="merge-selected-file-name" title={image.name}>{image.name}</p>
-                    <p className="merge-selected-file-meta">
-                      <span>{image.width} × {image.height} px</span>
-                      <span aria-hidden="true">·</span>
-                      <span>{formatBytes(image.file.size)}</span>
-                    </p>
-                  </div>
-                </li>
-              ))}
-            </ol>
-          </>
-        )}
-        {images.length > 0 && (
-          <div className="image-to-pdf-file-actions">
-            <div className="flex justify-end">
-              <button type="button" onClick={open} disabled={isProcessing || images.length >= MAX_IMAGES} className="pdf-upload-trigger rounded-xl border px-5 py-3 font-semibold transition disabled:cursor-not-allowed disabled:opacity-50">{formatToolUiMessage(imageUi.addMoreImages, { count: images.length, max: MAX_IMAGES })}</button>
-            </div>
-          </div>
-        )}
+        </div>
+        <aside className="tool-attachment-guidance" aria-labelledby="image-pdf-attachment-guidance-heading">
+          <h3 id="image-pdf-attachment-guidance-heading">{localizedTool.name}</h3>
+          <p>{localizedTool.description}</p>
+        </aside>
+        <div className="tool-attachment-content">
+          <section className="image-to-pdf-file-section" aria-label={imageUi.uploadLabel}>
+            {images.length > 0 && (
+              <header className="image-to-pdf-file-section-header">
+                <div>
+                  <h3 id="image-to-pdf-file-heading" className="merge-selected-files-title">{imageUi.uploadLabel}</h3>
+                </div>
+                <span className="image-to-pdf-image-count" aria-live="polite">
+                  {formatToolUiMessage(imageUi.imageCount, { count: images.length, max: MAX_IMAGES })}
+                </span>
+              </header>
+            )}
+            {images.length > 0 && (
+              <>
+                <h4 className="image-to-pdf-attached-images-title">{imageUi.attachedImages}</h4>
+                <ol className="image-to-pdf-attached-image-list" aria-label={imageUi.attachedImages}>
+                  {images.map((image, index) => (
+                    <li key={image.id} className="pdf-attached-file-card image-to-pdf-attached-image-card">
+                      <span className="merge-selected-file-position image-to-pdf-attached-image-position" aria-hidden="true">
+                        {String(index + 1).padStart(2, '0')}
+                      </span>
+                      <img className="image-to-pdf-attached-image-thumbnail" src={image.preview} alt="" />
+                      <div className="merge-selected-file-details">
+                        <p className="merge-selected-file-name" title={image.name}>{image.name}</p>
+                        <p className="merge-selected-file-meta">
+                          <span>{image.width} × {image.height} px</span>
+                          <span aria-hidden="true">·</span>
+                          <span>{formatBytes(image.file.size)}</span>
+                        </p>
+                      </div>
+                    </li>
+                  ))}
+                </ol>
+              </>
+            )}
+            {images.length > 0 && (
+              <div className="image-to-pdf-file-actions">
+                <div className="flex justify-end">
+                  <button type="button" onClick={open} disabled={isProcessing || images.length >= MAX_IMAGES} className="pdf-upload-trigger rounded-xl border px-5 py-3 font-semibold transition disabled:cursor-not-allowed disabled:opacity-50">{formatToolUiMessage(imageUi.addMoreImages, { count: images.length, max: MAX_IMAGES })}</button>
+                </div>
+              </div>
+            )}
 
-        <div
-          {...getRootProps({
-            role: 'group',
-            'aria-label': imageUi.uploadLabel,
-            tabIndex: images.length ? -1 : undefined
-          })}
-          aria-hidden={images.length ? 'true' : undefined}
-          className={images.length
-            ? 'sr-only'
-            : `pdf-workflow-upload pdf-upload-zone merge-pdf-upload-zone rounded-2xl border-2 border-dashed transition-all duration-200 ${
-              isDragActive ? 'border-blue-500 bg-blue-50' : 'cursor-pointer border-slate-300 bg-white hover:border-blue-400 hover:bg-blue-50/50 hover:shadow-md'
-            }`}
-        >
-          <input {...getInputProps()} />
-          <input {...getReplaceInputProps()} />
-          {images.length === 0 && (
-            <div className="merge-pdf-upload-content">
-              <div className="pdf-upload-icon" aria-hidden="true">
-                <Upload className="h-6 w-6 text-blue-600" />
-              </div>
-              <div className="merge-pdf-upload-copy">
-                <h3>{isDragActive ? imageUi.dropPrompt : imageUi.uploadPrompt}</h3>
-                <p>{formatToolUiMessage(imageUi.uploadDescription, { max: MAX_IMAGES })}</p>
-              </div>
-              <button
-                type="button"
-                className="pdf-editor-primary-button merge-pdf-upload-button"
-                onClick={(event) => {
-                  event.stopPropagation();
-                  open();
-                }}
-                disabled={isProcessing}
-              >
-                {imageUi.chooseImages}
-              </button>
+            <div
+              {...getRootProps({
+                role: 'group',
+                'aria-label': imageUi.uploadLabel,
+                tabIndex: images.length ? -1 : undefined
+              })}
+              aria-hidden={images.length ? 'true' : undefined}
+              className={images.length
+                ? 'sr-only'
+                : `pdf-workflow-upload pdf-upload-zone merge-pdf-upload-zone rounded-2xl border-2 border-dashed transition-all duration-200 ${
+                  isDragActive ? 'border-blue-500 bg-blue-50' : 'cursor-pointer border-slate-300 bg-white hover:border-blue-400 hover:bg-blue-50/50 hover:shadow-md'
+                }`}
+            >
+              <input {...getInputProps()} />
+              <input {...getReplaceInputProps()} />
+              {images.length === 0 && (
+                <div className="merge-pdf-upload-content">
+                  <div className="pdf-upload-icon" aria-hidden="true">
+                    <Upload className="h-6 w-6 text-blue-600" />
+                  </div>
+                  <div className="merge-pdf-upload-copy">
+                    <h3>{isDragActive ? imageUi.dropPrompt : imageUi.uploadPrompt}</h3>
+                  </div>
+                  <button
+                    type="button"
+                    className="pdf-editor-primary-button merge-pdf-upload-button"
+                    onClick={(event) => {
+                      event.stopPropagation();
+                      open();
+                    }}
+                    disabled={isProcessing}
+                  >
+                    {imageUi.chooseImages}
+                  </button>
+                </div>
+              )}
             </div>
-          )}
+          </section>
         </div>
       </section>
 
@@ -684,34 +707,6 @@ const ImageToPdf = () => {
               <p>{imageUi.settingsDescription}</p>
             </header>
             <section className="image-to-pdf-settings-panel" aria-labelledby="image-to-pdf-settings-heading">
-              <div className="image-to-pdf-settings-mode">
-                <div className="image-to-pdf-choose-settings-copy">
-                  <div className="merge-section-heading merge-output-settings-heading">
-                    <h3 id="image-to-pdf-settings-heading" className="merge-section-heading-title merge-output-settings-title">{imageUi.settingsScope}</h3>
-                  </div>
-                  <p className="image-to-pdf-choose-settings-description">{imageUi.chooseSettingsDescription}</p>
-                </div>
-                <div className="image-to-pdf-scope-actions" role="group" aria-label={imageUi.settingsScope}>
-                  <button
-                    type="button"
-                    onClick={() => changeSettingsScope('all')}
-                    aria-pressed={settingsScope === 'all'}
-                    disabled={isProcessing}
-                    className={`image-to-pdf-scope-button${settingsScope === 'all' ? ' is-active' : ''}`}
-                  >
-                    {imageUi.allPages}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => changeSettingsScope('select')}
-                    aria-pressed={settingsScope === 'select'}
-                    disabled={isProcessing}
-                    className={`image-to-pdf-scope-button${settingsScope === 'select' ? ' is-active' : ''}`}
-                  >
-                    {imageUi.selectPages}
-                  </button>
-                </div>
-              </div>
               <div className="image-to-pdf-output-mode-setting">
                 <p className="image-to-pdf-output-mode-label">{imageUi.outputMode}</p>
                 <div className="merge-mode-switch image-to-pdf-output-mode" role="group" aria-label={imageUi.outputMode}>
@@ -732,6 +727,27 @@ const ImageToPdf = () => {
                     {imageUi.separatePdf}
                   </button>
                 </div>
+              </div>
+              <div className="image-to-pdf-scope-toggle-setting">
+                <p id="image-to-pdf-scope-toggle-label" className="image-to-pdf-scope-toggle-label">
+                  {imageUi.scopeToggleLabel}
+                </p>
+                <button
+                  type="button"
+                  role="switch"
+                  aria-checked={settingsScope === 'select'}
+                  aria-labelledby="image-to-pdf-scope-toggle-label"
+                  disabled={isProcessing}
+                  onClick={() => changeSettingsScope(settingsScope === 'all' ? 'select' : 'all')}
+                  className={`image-to-pdf-scope-toggle${settingsScope === 'select' ? ' is-selected' : ''}`}
+                >
+                  <span className="image-to-pdf-scope-toggle-value">
+                    {settingsScope === 'select' ? imageUi.selectedImages : imageUi.allImages}
+                  </span>
+                  <span className="image-to-pdf-scope-toggle-track" aria-hidden="true">
+                    <span />
+                  </span>
+                </button>
               </div>
               <fieldset
                 className="image-to-pdf-settings-controls grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3"
@@ -841,7 +857,7 @@ const ImageToPdf = () => {
                 <h3 id="image-to-pdf-preview-heading" className="merge-section-heading-title merge-page-selection-title">{imageUi.pagePreview}</h3>
               </div>
               {settingsScope === 'select' && (
-                <p className="image-to-pdf-page-preview-description">{imageUi.selectPagesHint}</p>
+                <p className="image-to-pdf-page-preview-description">{imageUi.selectImagesHint}</p>
               )}
               <div className="image-to-pdf-page-grid grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
                 {images.map((image, index) => {

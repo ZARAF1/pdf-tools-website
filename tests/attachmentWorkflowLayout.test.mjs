@@ -28,7 +28,7 @@ test('Image to PDF shows a top-right image count and keeps Add more in the attac
   assert.ok(settings > fileSectionEnd, 'settings should follow the attachment panel');
 });
 
-test('Image to PDF attachment panel has a descriptive heading and theme-aware muted surface', async () => {
+test('Image to PDF attachment content has a descriptive heading and a neutral nested panel', async () => {
   const [component, styles] = await Promise.all([
     readSource('../src/components/ImageToPdf.jsx'),
     readSource('../src/index.css')
@@ -37,11 +37,11 @@ test('Image to PDF attachment panel has a descriptive heading and theme-aware mu
   const panelEnd = component.indexOf('</section>', panelStart);
   const panel = component.slice(panelStart, panelEnd);
 
-  assert.match(panel, /aria-labelledby="image-to-pdf-file-heading"/);
+  assert.match(panel, /aria-label=\{imageUi\.uploadLabel\}/);
   assert.match(panel, /<h3 id="image-to-pdf-file-heading"[^>]*>\{imageUi\.uploadLabel\}<\/h3>/);
-  assert.match(panel, /<p>\{formatToolUiMessage\(imageUi\.uploadDescription, \{ max: MAX_IMAGES \}\)\}<\/p>/);
   assert.match(panel, /pdf-workflow-upload pdf-upload-zone merge-pdf-upload-zone/);
-  assert.match(styles, /\.crop-pdf-file-section,\s*\.organize-pdf-file-section,\s*\.image-to-pdf-file-section,\s*\.crop-pdf-settings-shell\s*\{[^}]*background:\s*var\(--surface-muted\)/s);
+  assert.doesNotMatch(panel, /imageUi\.uploadDescription/, 'the file limit should not be repeated in the chooser');
+  assert.match(styles, /\.image-to-pdf-file-section,\s*\.crop-pdf-settings-shell\s*\{[^}]*background:\s*var\(--surface-muted\)/s);
 });
 
 test('Image to PDF page tiles keep their previews and controls within narrow panels', async () => {
@@ -62,11 +62,72 @@ test('Image to PDF page tiles keep their previews and controls within narrow pan
 
 test('PDF and Markdown file pickers use the shared attachment upload card', async () => {
   const component = await readSource('../src/components/PdfMarkdown.jsx');
+  const styles = await readSource('../src/index.css');
   const pickerCards = component.match(/className="markdown-file-picker pdf-workflow-upload merge-pdf-upload-zone"/g) || [];
-  const alternateMarkdownPicker = component.indexOf('id="markdown-upload"');
-  const pageSettings = component.indexOf('id="markdown-page-selection"');
+  const attachmentPanels = Array.from(component.matchAll(/<section className="pdf-markdown-attachment-panel"[\s\S]*?<\/section>/g), ([panel]) => panel);
+  const settingsPanels = Array.from(component.matchAll(/<section className="pdf-markdown-settings-panel"[\s\S]*?<\/section>/g), ([panel]) => panel);
 
-  assert.equal(pickerCards.length, 3, 'each PDF or Markdown file picker should use the shared card');
-  assert.equal((component.match(/type="file"/g) || []).length, 3, 'all existing file inputs should remain available');
-  assert.ok(alternateMarkdownPicker < pageSettings, 'all file choices should precede PDF-to-Markdown settings');
+  assert.equal(pickerCards.length, 2, 'each conversion direction should show only its own file picker');
+  assert.equal((component.match(/type="file"/g) || []).length, 2, 'each conversion direction should keep its own file input');
+  assert.equal(attachmentPanels.length, 2, 'both conversion directions have a dedicated attachment panel');
+  assert.equal(settingsPanels.length, 2, 'both conversion directions have their own settings panel');
+  assert.equal((component.match(/conversion-attachment-shell pdf-markdown-attachment-shell/g) || []).length, 2);
+  assert.equal((component.match(/tool-attachment-guidance/g) || []).length, 2);
+  assert.match(component, /translate\('attachMarkdownFileHere'\)/);
+  assert.ok(
+    component.indexOf('aria-label="Conversion direction"') < component.indexOf('conversion-attachment-shell'),
+    'the direction switch appears before both shared attachment shells'
+  );
+  assert.match(attachmentPanels[0], /id="markdown-pdf-input"/);
+  assert.doesNotMatch(attachmentPanels[0], /id="markdown-upload"/);
+  assert.match(attachmentPanels[1], /id="markdown-upload-pdf"/);
+  assert.match(component, /image-pdf-direction-switch conversion-direction-switch/);
+  assert.equal((component.match(/className="conversion-direction-option"/g) || []).length, 2);
+  assert.ok(attachmentPanels.every((panel) => !/id="markdown-page-selection"|<textarea/.test(panel)));
+  assert.match(settingsPanels[0], /id="markdown-page-selection"/);
+  assert.match(settingsPanels[0], /Add Markdown separators between pages/);
+  assert.match(settingsPanels[1], /aria-label="Markdown content"/);
+  assert.match(settingsPanels[1], /Page size[\s\S]*Orientation[\s\S]*Text size/);
+  assert.ok(
+    component.indexOf('pdf-markdown-settings-panel') > component.indexOf('pdf-markdown-attachment-panel'),
+    'settings follow the attachment panel'
+  );
+  assert.match(styles, /\.pdf-markdown-attachment-shell \.pdf-markdown-attachment-panel\s*\{[^}]*background:\s*transparent/);
+  assert.match(styles, /\.tool-attachment-section\.conversion-attachment-shell\s*\{[^}]*background:\s*var\(--surface-muted\)/);
+});
+
+test('PDF and PowerPoint use the shared attachment shell before conversion settings', async () => {
+  const [component, styles] = await Promise.all([
+    readSource('../src/components/PdfPowerPoint.jsx'),
+    readSource('../src/index.css')
+  ]);
+  const attachmentPanel = component.match(/<section className="powerpoint-attachment-panel"[\s\S]*?<\/section>/)?.[0];
+  const settingsPanel = component.match(/<section className="powerpoint-settings-panel"[\s\S]*?<\/section>/)?.[0];
+
+  assert.ok(attachmentPanel, 'PDF or PPTX selection has its own panel');
+  assert.ok(settingsPanel, 'conversion options have their own settings panel');
+  assert.match(component, /className="tool-attachment-section conversion-attachment-shell powerpoint-attachment-shell"/);
+  assert.match(component, /<input \{\.\.\.getInputProps\(\)\} className="sr-only" \/>/);
+  assert.match(component, /image-pdf-direction-switch conversion-direction-switch/);
+  assert.equal((component.match(/className="conversion-direction-option disabled:cursor-not-allowed disabled:opacity-50"/g) || []).length, 2);
+  assert.ok(
+    component.indexOf('aria-pressed=') < component.indexOf('conversion-attachment-shell'),
+    'the direction switch appears before the shared attachment shell'
+  );
+  assert.match(component, /tool-attachment-guidance/);
+  assert.match(component, /powerpointUi\.imageBasedWarning/);
+  assert.match(attachmentPanel, /uploadPdfPrompt/);
+  assert.match(attachmentPanel, /AttachedFileActions/);
+  assert.doesNotMatch(attachmentPanel, /pageSelection|outputName|powerpointUi\.imageQuality/);
+  assert.match(settingsPanel, /powerpointUi\.pageSelection/);
+  assert.match(settingsPanel, /powerpointUi\.outputFilename/);
+  assert.match(settingsPanel, /powerpointUi\.imageQuality/);
+  assert.match(settingsPanel, /powerpointUi\.convert/);
+  assert.ok(
+    component.indexOf('powerpoint-settings-panel') > component.indexOf('powerpoint-attachment-panel'),
+    'settings follow the attachment panel'
+  );
+  assert.match(styles, /\.powerpoint-attachment-shell \.powerpoint-attachment-panel,[\s\S]*?background:\s*transparent/);
+  assert.match(styles, /\.image-pdf-direction-switch\.conversion-direction-switch\s*\{[^}]*grid-template-columns:\s*repeat\(2,\s*minmax\(0,\s*1fr\)\)/s);
+  assert.match(styles, /\.tool-attachment-section\.conversion-attachment-shell\s*\{[^}]*background:\s*var\(--surface-muted\)/);
 });

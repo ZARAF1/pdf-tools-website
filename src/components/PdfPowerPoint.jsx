@@ -1,5 +1,5 @@
 import React, { useCallback, useState } from 'react';
-import { AlertCircle, Download, Info, Loader2, Upload } from 'lucide-react';
+import { AlertCircle, Download, Loader2, Upload } from 'lucide-react';
 import { useToolExitGuard } from './ToolExitGuard';
 import { AttachedFileActions, AttachedFileIcon } from './AttachedFileControls';
 import DownloadReadyCard from './DownloadReadyCard';
@@ -276,17 +276,15 @@ const PdfPowerPoint = () => {
     : powerpointUi.countSlides.replace('{count}', String(pageCount));
 
   return (
-    <div className="space-y-5">
-      <input {...getInputProps()} />
-      <div className="flex flex-wrap gap-2 rounded-xl border border-slate-200 bg-white p-2">
+    <div className="powerpoint-workspace">
+      <input {...getInputProps()} className="sr-only" />
+      <div className="image-pdf-direction-switch conversion-direction-switch" role="group" aria-label="Choose conversion direction">
         <button
           type="button"
           disabled={isLoadingFile || isProcessing}
           aria-pressed={isPdfToPowerPoint}
           onClick={() => changeDirection('pdf-to-pptx')}
-          className={`flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-50 ${
-            isPdfToPowerPoint ? 'bg-blue-50 text-blue-700' : 'text-slate-600 hover:bg-slate-50'
-          }`}
+          className="conversion-direction-option disabled:cursor-not-allowed disabled:opacity-50"
         >
           {powerpointUi.directionPdfToPptx}
         </button>
@@ -295,26 +293,42 @@ const PdfPowerPoint = () => {
           disabled={isLoadingFile || isProcessing}
           aria-pressed={!isPdfToPowerPoint}
           onClick={() => changeDirection('pptx-to-pdf')}
-          className={`flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-50 ${
-            !isPdfToPowerPoint ? 'bg-blue-50 text-blue-700' : 'text-slate-600 hover:bg-slate-50'
-          }`}
+          className="conversion-direction-option disabled:cursor-not-allowed disabled:opacity-50"
         >
           {powerpointUi.directionPptxToPdf}
         </button>
       </div>
 
-      <div className="space-y-2 rounded-xl border border-blue-100 bg-blue-50 p-4 text-sm text-blue-900">
-        <p className="flex items-start gap-2">
-          <Info className="mt-0.5 h-4 w-4 flex-shrink-0" aria-hidden="true" />
-          <span>{powerpointUi.imageBasedWarning}</span>
-        </p>
-        {!isPdfToPowerPoint && (
-          <div className="space-y-1 pl-6 text-blue-800">
-            <p>{powerpointUi.fontNetworkWarning}</p>
-            <p>{powerpointUi.fontNameDisclosure}</p>
+      <section className="tool-attachment-section conversion-attachment-shell powerpoint-attachment-shell" aria-labelledby="powerpoint-attachment-heading">
+        <div className="tool-attachment-heading">
+          <span className="tool-attachment-icon" aria-hidden="true">
+            <Upload className="h-5 w-5" />
+          </span>
+          <div>
+            <h2 id="powerpoint-attachment-heading">
+              {isPdfToPowerPoint ? 'Attach PDF Here' : 'Attach PowerPoint Here'}
+            </h2>
+            <p>
+              {isPdfToPowerPoint
+                ? 'One unencrypted PDF · page count depends on available browser memory'
+                : 'One .pptx file · slide count depends on available browser memory'}
+            </p>
           </div>
-        )}
-      </div>
+        </div>
+        <aside className="tool-attachment-guidance" aria-labelledby="powerpoint-attachment-guidance-heading">
+          <h3 id="powerpoint-attachment-guidance-heading">
+            {isPdfToPowerPoint ? powerpointUi.directionPdfToPptx : powerpointUi.directionPptxToPdf}
+          </h3>
+          <p>{powerpointUi.imageBasedWarning}</p>
+          {!isPdfToPowerPoint && (
+            <>
+              <p>{powerpointUi.fontNetworkWarning}</p>
+              <p>{powerpointUi.fontNameDisclosure}</p>
+            </>
+          )}
+        </aside>
+        <div className="tool-attachment-content">
+          <section className="powerpoint-attachment-panel" aria-label="File to convert">
 
       {!file ? (
         <div
@@ -344,7 +358,6 @@ const PdfPowerPoint = () => {
                     ? isPdfToPowerPoint ? powerpointUi.dropPdfPrompt : powerpointUi.dropPptxPrompt
                     : isPdfToPowerPoint ? powerpointUi.uploadPdfPrompt : powerpointUi.uploadPptxPrompt}
               </h3>
-              <p>{powerpointUi.imageBasedWarning}</p>
             </div>
             <button
               type="button"
@@ -360,24 +373,33 @@ const PdfPowerPoint = () => {
           </div>
         </div>
       ) : (
-        <div className="space-y-5">
-          <div className="pdf-attached-file-card flex items-center justify-between rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
-            <div className="flex min-w-0 items-center gap-4">
-              <AttachedFileIcon />
-              <div className="min-w-0">
-                <p className="truncate text-sm font-medium text-slate-700">{file.name}</p>
-                <p className="text-xs text-slate-400">{countLabel} · {(file.size / 1024 / 1024).toFixed(2)} MB</p>
-              </div>
+        <div className="pdf-attached-file-card powerpoint-attached-file-card">
+          <div className="powerpoint-attached-file-main">
+            <AttachedFileIcon />
+            <div className="powerpoint-attached-file-details">
+              <p className="powerpoint-attached-file-name" title={file.name}>{file.name}</p>
+              <p className="powerpoint-attached-file-meta">{countLabel} · {(file.size / 1024 / 1024).toFixed(2)} MB</p>
             </div>
-            <AttachedFileActions
-              fileName={file.name}
-              onReplace={open}
-              onRemove={resetFile}
-              disabled={isProcessing || isLoadingFile}
-            />
           </div>
+          <AttachedFileActions
+            fileName={file.name}
+            onReplace={open}
+            onRemove={resetFile}
+            disabled={isProcessing || isLoadingFile}
+          />
+        </div>
+      )}
+          </section>
+        </div>
+      </section>
 
-          <div className="space-y-5 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+      {file && (
+        <section className="powerpoint-settings-panel" aria-labelledby="powerpoint-settings-heading">
+          <header className="conversion-panel-header">
+            <h3 id="powerpoint-settings-heading" className="merge-selected-files-title">Settings &gt; Selection &gt; Preview</h3>
+            <p>Choose pages or slides, output name, image quality, and page or slide size.</p>
+          </header>
+          <div className="powerpoint-settings-controls">
             <label className="block space-y-2">
               <span className="text-sm font-semibold text-slate-700">{powerpointUi.pageSelection}</span>
               <input
@@ -482,7 +504,7 @@ const PdfPowerPoint = () => {
                 : <><Download className="h-5 w-5" />{powerpointUi.convert}</>}
             </button>
           </div>
-        </div>
+        </section>
       )}
 
       {error && (

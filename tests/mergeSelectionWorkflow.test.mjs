@@ -20,7 +20,7 @@ test('Merge PDF keeps merge-all as the default and offers selective page mode', 
 test('Merge labels use title case for modes, settings, selection, and output preview', () => {
   for (const label of [
     'Files to Merge',
-    'Settings &gt; Selection &gt; Preview',
+    'Merge Setup &amp; Preview',
     'Choose Merge Mode',
     'Merge All',
     'Select Pages',
@@ -57,8 +57,34 @@ test('Merge selected files do not add a second workflow gap inside the attachmen
   assert.match(selectedFilesSpacing, /margin-block-start:\s*0\s*;/);
 });
 
-test('Merge page picker labels its bulk selection action Select All', () => {
-  assert.match(picker, />\s*Select All\s*</);
+test('Merge empty upload zone does not inherit the 32px workflow top gap', () => {
+  const uploadSpacing = styles.match(
+    /\.merge-tool-page \.tool-attachment-content \.pdf-tool-workflow\.space-y-8 > \.merge-pdf-upload-zone\[data-merge-upload\]\s*\{([^}]*)\}/
+  )?.[1];
+
+  assert.ok(uploadSpacing, 'Merge upload zone has a dedicated spacing override');
+  assert.match(uploadSpacing, /margin-block-start:\s*0\s*;/);
+});
+
+test('Merge page picker places bulk actions below the file name and shows a Pages count badge', () => {
+  const headerStart = picker.indexOf('<div className="merge-page-source-header">');
+  const headerEnd = picker.indexOf('{previewError &&', headerStart);
+  const header = headerStart >= 0 && headerEnd > headerStart
+    ? picker.slice(headerStart, headerEnd)
+    : '';
+
+  assert.ok(header, 'the page picker has a dedicated file header');
+  assert.match(
+    header,
+    /<h4 id=\{`merge-source-\$\{fileEntry\.id\}`\} className="merge-page-source-title">\{fileEntry\.name\}<\/h4>[\s\S]*?<div className="merge-page-source-actions">[\s\S]*?>\s*Select All\s*</
+  );
+  assert.match(
+    header,
+    /className="merge-page-source-count image-to-pdf-image-count"[^>]*>[\s\S]*Pages: \{selectedCount\}\/\{fileEntry\.pageCount\}/
+  );
+  assert.doesNotMatch(header, /Preview|Choose which pages to include in the output|\{fileEntry\.pageCount\} pages · \{selectedCount\} selected/);
+  assert.match(styles, /\.image-to-pdf-image-count\s*\{[^}]*border-radius:\s*999px/s);
+  assert.match(styles, /\.merge-page-source-actions\s*\{[^}]*margin-block-start:\s*0\.5rem\s*;/s);
 });
 
 test('Merge PDF output settings appear between the mode buttons and page selection', () => {
@@ -121,7 +147,10 @@ test('Merge keeps the dropzone empty-state only and puts the add-files button be
   assert.match(uploadZoneMarkup, /chooseFilesButton\('merge-pdf-upload-button'\)/);
   assert.match(chooseFilesButtonMarkup, /pdf-editor-primary-button \$\{className\}/);
   assert.match(chooseFilesButtonMarkup, /onClick=\{\(event\) => \{\s*event\.stopPropagation\(\);\s*open\(\);/);
-  assert.match(chooseFilesButtonMarkup, /Choose Up to 5 PDFs/);
+  assert.match(
+    chooseFilesButtonMarkup,
+    /files\.length === 0 \? 'Choose Files' : `Add More Files \(\$\{files\.length\}\/\$\{MAX_FILES\}\)`/
+  );
   assert.match(chooseFilesButtonMarkup, /disabled=\{isValidating \|\| isMerging \|\| files\.length >= MAX_FILES\}/);
   assert.doesNotMatch(uploadZoneMarkup, /getInputProps|open\(\)/, 'the empty-state dropzone does not own the persistent picker inputs');
   assert.match(uploadInputsMarkup, /getInputProps\(/, 'the add-files picker input stays mounted after selection');
@@ -137,10 +166,51 @@ test('Merge output fields have a Select pages-style Choose Settings introduction
 
   assert.match(
     merger,
-    /<div className="merge-section-heading merge-output-settings-heading">\s*<div>\s*<h3 className="merge-section-heading-title merge-output-settings-title">Choose Settings<\/h3>\s*<p>Set the output name and page size, and choose optional bookmarks or blank pages\.<\/p>/
+    /<div className="merge-section-heading merge-output-settings-heading">\s*<div>\s*<h3 className="merge-section-heading-title merge-output-settings-title">Choose Settings<\/h3>\s*<p>Choose page sizing and optional bookmarks or blank pages\.<\/p>/
   );
   assert.ok(settingsHeadingIndex >= 0, 'Choose Settings heading is present');
-  assert.ok(outputSettingsIndex > settingsHeadingIndex, 'settings heading appears before output filename');
+  assert.ok(outputSettingsIndex > settingsHeadingIndex, 'settings heading appears before page-size and optional settings');
+});
+
+test('Merge Choose Settings presents its controls as an even responsive card grid', () => {
+  const optionsStart = merger.indexOf('className="merge-output-settings"');
+  const optionsEnd = merger.indexOf('{mergeMode === \'select\' &&', optionsStart);
+  const options = merger.slice(optionsStart, optionsEnd);
+  const settingsGrid = styles.match(/\.merge-output-settings\s*\{([^}]*)\}/)?.[1];
+  const optionCards = styles.match(/\.merge-output-option-card\s*\{([^}]*)\}/)?.[1];
+
+  assert.ok(optionsStart >= 0 && optionsEnd > optionsStart, 'the settings grid contains its controls');
+  assert.equal((options.match(/merge-output-option-card/g) || []).length, 3, 'all three settings use the shared card styling');
+  assert.ok(settingsGrid, 'the settings grid has a dedicated layout');
+  assert.match(settingsGrid, /grid-template-columns:\s*repeat\(3,\s*minmax\(0,\s*1fr\)\)/);
+  assert.ok(optionCards, 'each setting card has a dedicated style');
+  assert.match(optionCards, /background:\s*var\(--surface-muted\)\s*;/);
+  assert.match(optionCards, /border:\s*1px solid var\(--border-color\)\s*;/);
+  assert.match(styles, /@media \(max-width:\s*900px\)\s*\{[\s\S]*?\.merge-output-settings\s*\{[^}]*grid-template-columns:\s*repeat\(2,\s*minmax\(0,\s*1fr\)\)/);
+  assert.match(styles, /@media \(max-width:\s*640px\)\s*\{[\s\S]*?\.merge-output-settings\s*\{[^}]*grid-template-columns:\s*minmax\(0,\s*1fr\)/);
+});
+
+test('Merge output filename sits beside the Merge PDFs action and setting descriptions stay concise', () => {
+  const settingsStart = merger.indexOf('className="merge-output-settings-panel"');
+  const settingsEnd = merger.indexOf('{mergeMode === \'select\' &&', settingsStart);
+  const settingsMarkup = merger.slice(settingsStart, settingsEnd);
+  const outputNameIndex = merger.indexOf('id="merge-output-filename"');
+  const mergeActionIndex = merger.indexOf('className="merge-output-actions"');
+  const mergeButtonIndex = merger.indexOf('className={`merge-process-button', mergeActionIndex);
+
+  assert.ok(settingsMarkup, 'Choose Settings markup is present');
+  assert.ok(!settingsMarkup.includes('merge-output-filename'), 'output filename is outside Choose Settings');
+  assert.ok(mergeActionIndex > settingsEnd, 'output name and action follow Settings and page selection');
+  assert.ok(outputNameIndex > mergeActionIndex && outputNameIndex < mergeButtonIndex, 'filename field appears beside and before the merge action');
+  assert.match(merger, /id="merge-output-filename"[\s\S]*?<p>Adds \.pdf automatically\.<\/p>/);
+  assert.match(merger, /<p>Letter\/A4 fitting centers and scales content without cropping; some interactive features may not carry over\.<\/p>/);
+  assert.match(merger, /<small>Adds an outline entry at each source PDF's first output page\.<\/small>/);
+  assert.match(merger, /<small>In Select Pages mode, inserts a blank when output switches source PDFs\.<\/small>/);
+  assert.match(styles, /\.merge-output-actions\s*\{[^}]*grid-template-columns:\s*minmax\(0,\s*1fr\)\s+auto/);
+  assert.match(styles, /\.merge-output-actions\s*\{[^}]*align-items:\s*center/);
+  assert.match(styles, /\.merge-output-actions\s*\{[^}]*grid-template-areas:\s*"label \."\s*"input action"\s*"help \."/s);
+  assert.match(styles, /@media \(max-width:\s*600px\)\s*\{[\s\S]*?\.merge-output-actions\s*\{[^}]*grid-template-areas:\s*"label"\s*"input"\s*"help"\s*"action"/);
+  assert.match(styles, /@media \(max-width:\s*600px\)\s*\{[\s\S]*?\.merge-output-actions\s*\{[^}]*grid-template-columns:\s*minmax\(0,\s*1fr\)/);
 });
 
 test('Merge Choose Settings and its controls share one dark panel with a blue title accent', () => {
@@ -249,18 +319,15 @@ test('Merge section headings carry the highlight while their explanations stay u
   assert.doesNotMatch(headingTitleStyle, /border-left\s*:/);
 });
 
-test('Merge settings and preview controls have matching heading and guidance', () => {
+test('Merge settings guidance precedes mode selection without duplicate per-file preview guidance', () => {
   const settingsIntro = merger.match(
-    /<div className="merge-control-intro">\s*<h3 className="merge-selected-files-title">Settings &gt; Selection &gt; Preview<\/h3>\s*<p>Choose how to combine your PDFs and customize the output\.<\/p>\s*<\/div>/
+    /<div className="merge-control-intro">\s*<h3 className="merge-selected-files-title">Merge Setup &amp; Preview<\/h3>\s*<p>Choose how to combine your PDFs and customize the output\.<\/p>\s*<\/div>/
   );
   const settingsButtons = merger.indexOf('className="merge-mode-switch"');
-  const previewControls = picker.match(
-    /<div className="merge-page-source-action-group">\s*<h5 className="merge-selected-files-title">Preview<\/h5>\s*<p>Choose which pages to include in the output\.<\/p>\s*<div className="merge-page-source-actions">/
-  );
 
-  assert.ok(settingsIntro, 'The Settings > Selection > Preview heading and guidance appear above the merge-mode buttons');
+  assert.ok(settingsIntro, 'The Merge Setup & Preview heading and guidance appear above the merge-mode buttons');
   assert.ok(settingsButtons > merger.indexOf('className="merge-control-intro"'), 'Settings guidance precedes its buttons');
-  assert.ok(previewControls, 'Preview heading and guidance appear above Select All and Clear');
+  assert.doesNotMatch(picker, /Choose which pages to include in the output/);
 });
 
 test('Merge output options occupy their own panel and live output has no outer box', () => {

@@ -13,7 +13,11 @@ test('PDF ↔ Markdown has a registered route and direction-specific controls', 
   assert.match(page, /markdown: \{[\s\S]*?title: 'PDF ↔ Markdown'/);
   assert.match(component, /Markdown to PDF/);
   assert.match(component, /PDF to Markdown/);
-  assert.match(component, /type="file"[^>]*\.md/);
+  assert.match(component, /image-pdf-direction-switch conversion-direction-switch/);
+  assert.equal((component.match(/className="markdown-file-picker pdf-workflow-upload merge-pdf-upload-zone"/g) || []).length, 2);
+  assert.match(component, /id="markdown-pdf-input"/);
+  assert.match(component, /id="markdown-upload-pdf"/);
+  assert.doesNotMatch(component, /id="markdown-upload"/);
   assert.match(component, /textarea/);
   assert.match(component, /pageSelection/);
 });

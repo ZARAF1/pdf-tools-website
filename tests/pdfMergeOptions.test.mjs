@@ -24,6 +24,10 @@ test('output filename is safe and has one PDF extension', () => {
   assert.throws(() => normalizePdfFileName('   '), /filename/i);
 });
 
+test('output filename replaces a non-PDF extension with PDF', () => {
+  assert.equal(normalizePdfFileName('quarterly report.docx'), 'quarterly report.pdf');
+});
+
 test('fit sizing preserves each page aspect ratio inside the chosen paper size', () => {
   const portrait = getFitPageDimensions(600, 800, 'letter');
   const landscape = getFitPageDimensions(800, 600, 'a4');

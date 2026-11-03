@@ -16,6 +16,8 @@ import { createPdfImageDownload } from '../lib/pdfImageOutput.mjs';
 import { normalizeOutputFileName } from '../lib/outputFileName.mjs';
 import { AttachedFileActions, AttachedFileIcon } from './AttachedFileControls';
 import DownloadReadyCard from './DownloadReadyCard';
+import { getLocalizedTool } from '../i18n/toolTranslations.mjs';
+import { useLanguage } from '../i18n/useLanguage';
 
 const MAX_PAGES = 50;
 const MAX_PAGE_PIXELS = 16_000_000;
@@ -81,6 +83,12 @@ const cropCanvasToContent = (canvas, context) => {
 };
 
 const PdfToImages = () => {
+  const { language, translate } = useLanguage();
+  const localizedTool = getLocalizedTool(language, {
+    id: 'pdf-images',
+    name: 'PDF to Images',
+    description: 'Export PDF pages as image files.'
+  });
   const [file, setFile] = useState(null);
   const [pageCount, setPageCount] = useState(0);
   const [format, setFormat] = useState('png');
@@ -429,15 +437,29 @@ const PdfToImages = () => {
   }, []);
 
   return (
-    <div className="pdf-tool-workflow pdf-to-images-workflow mx-auto max-w-4xl space-y-6">
+    <div className="pdf-tool-workflow pdf-to-images-workflow space-y-6">
       <input {...getInputProps()} aria-label="Choose a PDF to convert to images" />
-      <section className="pdf-images-file-section" aria-labelledby="pdf-images-file-heading">
-        <header className="pdf-images-file-section-header">
+      <section className="tool-attachment-section image-pdf-attachment-section pdf-images-attachment-section" aria-labelledby="pdf-images-attachment-heading">
+        <div className="tool-attachment-heading">
+          <span className="tool-attachment-icon" aria-hidden="true">
+            <Upload className="h-5 w-5" />
+          </span>
           <div>
-            <h3 id="pdf-images-file-heading" className="merge-selected-files-title">PDF to convert</h3>
-            <p>Attach one PDF to export its pages as images.</p>
+            <h2 id="pdf-images-attachment-heading">{translate('attachPdfHere')}</h2>
+            <p>One unencrypted PDF · up to {MAX_PAGES} pages</p>
           </div>
-        </header>
+        </div>
+        <aside className="tool-attachment-guidance" aria-labelledby="pdf-images-attachment-guidance-heading">
+          <h3 id="pdf-images-attachment-guidance-heading">{localizedTool.name}</h3>
+          <p>Export PDF pages as PNG, JPG, or BMP images. One-page PDFs download as a single image; multi-page PDFs are bundled in a ZIP. Blank margins can be cropped automatically.</p>
+        </aside>
+        <div className="tool-attachment-content">
+          <section className="pdf-images-file-section" aria-label="PDF attachment">
+            {file && (
+              <header className="pdf-images-file-section-header">
+                <h3 id="pdf-images-file-heading" className="merge-selected-files-title">PDF to convert</h3>
+              </header>
+            )}
       {!file && (
       <section
         {...getRootProps({
@@ -462,7 +484,6 @@ const PdfToImages = () => {
                   ? 'Drop the PDF here'
                   : 'Choose or drop a PDF to convert to images'}
             </h3>
-            <p>Trim blank page margins automatically, then save one image or a ZIP of all pages.</p>
           </div>
           <button
             type="button"
@@ -496,6 +517,8 @@ const PdfToImages = () => {
           />
         </section>
       )}
+          </section>
+        </div>
       </section>
 
       {file && (
@@ -550,7 +573,7 @@ const PdfToImages = () => {
             />
             <div>
               <label htmlFor="pdf-images-auto-crop" className="font-semibold text-slate-800">Automatically crop blank page margins</label>
-              <p id="pdf-images-auto-crop-help" className="mt-1 text-sm text-slate-600">Keep the page content and a small border; blank pages remain full size.</p>
+              <p id="pdf-images-auto-crop-help" className="mt-1 text-sm text-slate-600">Removes blank space around page content. Pages without visible content are left unchanged.</p>
             </div>
           </div>
 

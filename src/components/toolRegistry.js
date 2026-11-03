@@ -4,7 +4,6 @@ import {
   FileStack,
   FileType,
   FileText,
-  FileImage as FileImageIcon,
   Image as ImageIcon,
   Lock,
   PenLine,
@@ -104,24 +103,14 @@ export const TOOL_REGISTRY = [
     color: 'bg-blue-500'
   },
   {
-    id: 'image',
-    name: 'Image to PDF',
-    path: '/image-to-pdf',
+    id: 'image-pdf',
+    name: 'Images ↔ PDF',
+    path: '/image-pdf',
     category: 'convert',
-    description: 'Arrange images and create a PDF.',
-    keywords: 'jpg jpeg png bmp photo pictures',
+    description: 'Create a PDF from images or export PDF pages as PNG, JPG, or BMP images.',
+    keywords: 'jpg jpeg png bmp photo pictures export pages zip convert',
     icon: ImageIcon,
     color: 'bg-emerald-500'
-  },
-  {
-    id: 'pdf-images',
-    name: 'PDF to Images',
-    path: '/pdf-to-images',
-    category: 'convert',
-    description: 'Convert PDF pages to PNG, JPG, or BMP images in a ZIP.',
-    keywords: 'export pages png jpg jpeg bmp zip convert',
-    icon: FileImageIcon,
-    color: 'bg-sky-500'
   },
   {
     id: 'word',

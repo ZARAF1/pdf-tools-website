@@ -284,6 +284,52 @@ const documentUploadTitles = {
   'zh-CN': '在此处添加 PDF 或 Word 文件'
 };
 
+const wordUploadTitles = {
+  en: 'Attach a Word file here',
+  es: 'Adjunta aquí un archivo de Word',
+  fr: 'Ajoutez ici un fichier Word',
+  de: 'Word-Datei hier anhängen',
+  pt: 'Anexe um arquivo do Word aqui',
+  it: 'Allega qui un file Word',
+  nl: 'Voeg hier een Word-bestand toe',
+  pl: 'Dodaj tutaj plik Word',
+  sv: 'Bifoga en Word-fil här',
+  fi: 'Liitä Word-tiedosto tähän',
+  da: 'Vedhæft en Word-fil her',
+  nb: 'Legg ved en Word-fil her',
+  tr: 'Buraya bir Word dosyası ekleyin',
+  ru: 'Добавьте сюда файл Word',
+  uk: 'Додайте сюди файл Word',
+  ar: 'أرفق ملف Word هنا',
+  hi: 'यहाँ Word फ़ाइल जोड़ें',
+  ja: 'Word ファイルをここに添付',
+  ko: '여기에 Word 파일 첨부',
+  'zh-CN': '在此处添加 Word 文件'
+};
+
+const markdownUploadTitles = {
+  en: 'Attach a Markdown file here',
+  es: 'Adjunta aquí un archivo Markdown',
+  fr: 'Ajoutez ici un fichier Markdown',
+  de: 'Markdown-Datei hier anhängen',
+  pt: 'Anexe um arquivo Markdown aqui',
+  it: 'Allega qui un file Markdown',
+  nl: 'Voeg hier een Markdown-bestand toe',
+  pl: 'Dodaj tutaj plik Markdown',
+  sv: 'Bifoga en Markdown-fil här',
+  fi: 'Liitä Markdown-tiedosto tähän',
+  da: 'Vedhæft en Markdown-fil her',
+  nb: 'Legg ved en Markdown-fil her',
+  tr: 'Buraya bir Markdown dosyası ekleyin',
+  ru: 'Добавьте сюда файл Markdown',
+  uk: 'Додайте сюди файл Markdown',
+  ar: 'أرفق ملف Markdown هنا',
+  hi: 'यहाँ Markdown फ़ाइल जोड़ें',
+  ja: 'Markdown ファイルをここに添付',
+  ko: '여기에 Markdown 파일 첨부',
+  'zh-CN': '在此处添加 Markdown 文件'
+};
+
 const powerpointUploadTitles = {
   en: 'Attach a PDF or PowerPoint file here',
   es: 'Adjunta aquí un PDF o archivo de PowerPoint',
@@ -316,6 +362,8 @@ const messagesByLanguage = Object.fromEntries(
       ...Object.entries(descriptionToggleTranslations[code]),
       ...workflowKeys.map((key, index) => [key, workflowTranslations[code][index]]),
       ['attachDocumentHere', documentUploadTitles[code]],
+      ['attachWordFileHere', wordUploadTitles[code]],
+      ['attachMarkdownFileHere', markdownUploadTitles[code]],
       ['attachPdfOrPowerPointHere', powerpointUploadTitles[code]],
       ['loadingTool', routeLoadingTranslations[code]],
       ...Object.entries(routeErrorTranslations[code]),

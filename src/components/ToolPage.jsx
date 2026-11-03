@@ -142,44 +142,25 @@ const TOOL_CONTENT = {
       ['Will all PDF features be preserved?', 'The document is rewritten to remove encryption. The tool checks that the output opens without a password and retains the page count, but you should review forms, signatures, annotations, attachments, and specialized features in your downloaded copy.']
     ]
   },
-  image: {
-    title: 'Image to PDF',
-    description: 'Create a PDF from up to 10 images with custom pages, rotation, orientation, background, alignment, and resizing.',
+  'image-pdf': {
+    title: 'Images ↔ PDF',
+    description: 'Create PDFs from images or export PDF pages as PNG, JPG, or BMP images.',
     detailPoints: {
-      what: `Turn up to 10 JPEG, PNG, or BMP images into a multi-page PDF.`,
-      how: `Arrange and rotate images, then set page size, orientation, background, fit, alignment, and resizing.`,
-      result: `A PDF with one image per page, created locally without changing the source images.`
+      what: `Create a multi-page PDF from up to 10 JPEG, PNG, or BMP images, or export up to 50 PDF pages as images.`,
+      how: `Choose a direction, arrange images and adjust page layout, or select an image format and optional blank-margin trimming.`,
+      result: `A PDF, a single image, or a ZIP of page images, generated in your browser without changing the source files.`
     },
-    intro: 'Turn up to 10 JPEG, PNG, or BMP images into a PDF, with one image per page. Arrange the pages and rotate individual images before creating the document. Choose A4, Letter, image-fit, or custom page dimensions in millimeters; use a fixed portrait or landscape orientation, or automatically orient each page to its image. Set the page background color, image fit, margins, and horizontal and vertical alignment. Resize bounds, scale, aspect ratio, and JPEG quality let you adjust image output; Fill can crop the image, while Contain keeps the full image visible. The page color shows through transparent areas in PNG and BMP images. The converter creates a separate PDF and leaves your original image files unchanged. Image decoding and PDF creation happen in your browser; selected images are not uploaded to an external conversion server.',
-    mechanism: 'The browser decodes each selected image, applies its requested quarter-turn rotation, creates a resized canvas copy, and embeds JPEG or PNG data into a new PDF with pdf-lib. Page dimensions, orientation, background, fit, and alignment are applied independently to each output page. PNG and BMP inputs are encoded as PNG; JPEG inputs use the selected JPEG quality. BMP decoding depends on browser image support; source files are not changed.',
-    steps: ['Choose up to 10 JPEG, PNG, or BMP images.', 'Arrange or rotate images and set page size, orientation, fit, alignment, background, and resize options.', 'Create and download your PDF.'],
+    intro: 'Choose Images to PDF to turn up to 10 JPEG, PNG, or BMP files into a PDF with one image per page. Reorder and rotate images, then set page size, custom dimensions, orientation, background, fit, margins, alignment, resizing, and JPEG quality. Contain keeps the whole image visible; Fill may crop it, and the page color shows through transparent PNG and BMP areas. Choose PDF to Images to export a PDF with 1–50 pages as PNG, JPG, or BMP. Set image quality, output name, and optional automatic trimming of near-white page margins. A single page downloads as an image; multiple pages are packaged in a ZIP. Both directions run in your browser, create separate outputs, and leave the source files unchanged.',
+    mechanism: 'For Images to PDF, the browser decodes each image, applies rotation and resize settings, then embeds image data into a PDF with pdf-lib. For PDF to Images, PDF.js renders pages sequentially, optionally detects and trims near-white margins, and encodes the pages in the selected image format. A single-page export is one image; multiple pages are packaged into a ZIP. No selected files are sent to an external conversion server.',
+    steps: ['Choose Images to PDF or PDF to Images.', 'Add up to 10 JPEG, PNG, or BMP images, or one unencrypted PDF with 1–50 pages.', 'Adjust the available image, page, quality, output-name, and margin options.', 'Create the output and review it.', 'Download the PDF, image, or ZIP file.'],
     faqs: [
-      ['Which image types are supported?', 'JPEG and PNG are embedded directly. BMP files are decoded by the browser and converted to PNG data before embedding. WebP is not supported.'],
-      ['Can I change page order and rotate images?', 'Yes. Use the move controls to arrange pages and each image card’s rotation buttons to turn that image by 90 degrees.'],
-      ['What do Contain and Fill mean?', 'Contain keeps the entire image visible; Fill scales to fill the available area and may crop parts outside it.'],
-      ['Can I set custom page dimensions or orientation?', 'Yes. Choose Custom dimensions and enter a width and height in millimeters. You can apply one portrait or landscape orientation to all pages, or enable automatic orientation to match each page to its rotated image.'],
-      ['What is the page background color for?', 'The selected color fills each page behind the image and is visible through transparent areas in PNG or BMP images.'],
-      ['Are image resizing settings destructive?', 'No. The converter creates temporary, resized copies for its output and leaves the original selected files unchanged.']
-    ]
-  },
-  'pdf-images': {
-    title: 'PDF to Images',
-    description: 'Trim blank page margins and save PDF pages as PNG, JPG, or BMP images.',
-    detailPoints: {
-      what: `Save each PDF page as a PNG, JPG, or BMP image, with optional automatic trimming of blank margins.`,
-      how: `Choose format, quality, crop preference, and output name before rendering pages in your browser.`,
-      result: `One page downloads as an image; multiple pages are delivered in a ZIP. The source PDF is unchanged.`
-    },
-    intro: 'Convert every page of a PDF into a PNG, JPG, or BMP image. Select one unencrypted PDF with 1–50 pages, choose an image format and Standard or High quality, and decide whether to trim blank margins automatically. You can set the output filename before converting. If the PDF has one page, the image downloads directly; multiple pages are bundled as a ZIP with numbered images in page order. Automatic cropping detects near-white page margins around visible content and keeps a small border; blank pages remain full size. It does not extract original photos embedded inside the PDF or edit text. Higher quality and large pages can require more memory and take longer. The original PDF is unchanged. Pages are rendered in your browser and are not sent to an external conversion server; the site still makes ordinary hosting and third-party resource requests.',
-    mechanism: 'Your browser renders PDF pages one at a time, optionally detects and trims blank near-white margins, and encodes each page in the selected image format. A single-page PDF produces one image; multiple pages are packaged into a ZIP. The PDF is not sent to an external conversion server. Larger pages and High quality can use more browser memory.',
-    steps: ['Choose one PDF with 1–50 pages.', 'Select PNG, JPG, or BMP and choose Standard or High quality.', 'Set the output name and choose whether to automatically crop blank margins.', 'Convert and download the image or ZIP.'],
-    faqs: [
-      ['How many pages can I convert?', 'The tool accepts PDFs with 1–50 pages. It checks the actual document page count and rejects larger files.'],
-      ['Which image formats are available?', 'PNG is lossless, JPG is usually smaller and has an adjustable quality setting, and BMP is uncompressed and may create large files. The file contents are encoded in the selected format.'],
-      ['What does automatic cropping do?', 'When enabled, it trims near-white margins around visible page content and keeps a small border. A blank page remains full size. It does not extract original photos embedded inside a PDF.'],
-      ['When do I get a ZIP?', 'A one-page PDF downloads directly as an image. PDFs with multiple pages download as a ZIP containing one numbered image for each page.'],
-      ['Can I convert a password-protected PDF?', 'No. Password-protected PDFs are rejected.'],
-      ['Does conversion change or upload my PDF?', 'No. Pages are rendered in your browser and the original file is left unchanged. The website can still make ordinary hosting and third-party resource requests.']
+      ['Which directions can I use?', 'Create a PDF from images or export PDF pages as images. Use the direction buttons above the workspace to switch between the two workflows.'],
+      ['Which image files can I turn into a PDF?', 'JPEG, PNG, and BMP are supported, up to 10 images. WebP is not supported. You can reorder and rotate images, and configure page size, orientation, fit, alignment, background, and resizing.'],
+      ['Which formats can I export PDF pages to?', 'Choose PNG, JPG, or BMP. PNG is lossless, JPG quality is adjustable, and BMP is uncompressed and may create large files.'],
+      ['How many PDF pages can I export?', 'The PDF-to-images direction accepts one unencrypted PDF with 1–50 pages. A single page downloads as an image; multiple pages are packaged in a ZIP.'],
+      ['What does automatic margin trimming do?', 'It trims near-white blank margins around visible page content and keeps a small border. Pages without visible content are left unchanged.'],
+      ['Does converting PDF pages keep searchable text?', 'No. Exported pages are images, so text, links, and PDF form behavior are not retained. The original PDF is not changed.'],
+      ['Are my images or PDF uploaded?', 'No. Both conversion directions process files in your browser and do not send them to an external conversion server.']
     ]
   },
   word: {
@@ -398,13 +379,6 @@ const ATTACHMENT_RULES = {
     infoTitle: 'Try to reduce PDF file size',
     info: 'Higher compression rasterizes pages and can reduce image quality and remove selectable text; larger outputs are not offered.'
   },
-  image: {
-    title: 'Attach Images Here',
-    ruleKey: 'images10',
-    rule: 'Up to 10 JPEG, PNG, or BMP images',
-    infoTitle: 'Create a PDF from images',
-    info: 'Arrange and rotate images, then adjust page size, background, fit, alignment, and resizing.'
-  },
   edit: {
     title: 'Attach PDF Here',
     ruleKey: 'pdfOne',
@@ -489,13 +463,6 @@ const ATTACHMENT_RULES = {
     infoTitle: 'Add a visible signature to PDF pages',
     info: 'Use a typed, drawn, or image signature; this is not a certificate-based digital signature.'
   },
-  'pdf-images': {
-    title: 'Attach PDF Here',
-    ruleKey: 'pdf50',
-    rule: 'One unencrypted PDF · up to 50 pages',
-    infoTitle: 'Convert PDF pages to images',
-    info: 'Export each page as PNG, JPG, or BMP; optionally trim blank margins. One page downloads as an image, multiple pages as a ZIP.'
-  },
   remove: {
     title: 'Attach PDF Here',
     ruleKey: 'pdf50',
@@ -532,22 +499,20 @@ const ToolPage = ({ tool, children }) => {
   const attachmentTitleKey = tool === 'powerpoint'
     ? 'attachPdfOrPowerPointHere'
     : tool === 'word'
-    ? 'attachDocumentHere'
+    ? 'attachWordFileHere'
     : tool === 'image'
       ? 'attachImagesHere'
       : tool === 'merge' || tool === 'compress'
         ? 'attachPdfsHere'
         : 'attachPdfHere';
-  const attachmentRule = ATTACHMENT_RULES[tool] || (
-    tool === 'excel' || tool === 'powerpoint'
-      ? null
-      : {
-          title: translate(attachmentTitleKey),
-          rule: 'One unencrypted PDF · no fixed page cap',
-          infoTitle: pageTitleText,
-          info: pageDescription
-        }
-  );
+  const attachmentRule = tool === 'image-pdf' || tool === 'excel' || tool === 'powerpoint'
+    ? null
+    : ATTACHMENT_RULES[tool] || {
+        title: translate(attachmentTitleKey),
+        rule: 'One unencrypted PDF · no fixed page cap',
+        infoTitle: pageTitleText,
+        info: pageDescription
+      };
   const localizedContent = getLocalizedToolPage(
     language,
     tool,
@@ -609,7 +574,7 @@ const ToolPage = ({ tool, children }) => {
 
       <section aria-labelledby="tool-workspace-heading">
         <h2 id="tool-workspace-heading" className="sr-only">{pageTitleText} {translate('toolWorkspace')}</h2>
-        {attachmentRule ? (
+        {attachmentRule && tool !== 'word' && tool !== 'markdown' ? (
           <div className="tool-attachment-section">
             <div className="tool-attachment-heading">
               <span className="tool-attachment-icon" aria-hidden="true">

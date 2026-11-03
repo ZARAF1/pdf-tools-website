@@ -10,9 +10,12 @@ export function addPageToMergeOrder(order, page) {
 }
 
 export function normalizePdfFileName(value) {
-  const baseName = String(value)
-    .trim()
-    .replace(/\.pdf$/i, '')
+  const enteredName = String(value).trim();
+  const nameWithoutExtension = enteredName.replace(
+    /\.pdf$/i.test(enteredName) ? /\.pdf$/i : /\.[^.]*$/,
+    ''
+  );
+  const baseName = nameWithoutExtension
     .replace(/[<>:"/\\|?*\u0000-\u001f]/g, '_')
     .replace(/_+/g, '_')
     .replace(/[. ]+$/g, '')

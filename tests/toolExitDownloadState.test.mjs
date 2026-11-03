@@ -1,6 +1,9 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { createDownloadStateTracker } from '../src/lib/toolExitDownloadState.mjs';
+import {
+  createDownloadStateTracker,
+  createToolExitStateTracker
+} from '../src/lib/toolExitDownloadState.mjs';
 
 test('a generated output stays pending until its matching download is started', () => {
   const tracker = createDownloadStateTracker();
@@ -45,4 +48,25 @@ test('regenerating the same output id makes the new file pending again', () => {
   tracker.update({ id: 'result', bytes: new Uint8Array([2]) });
 
   assert.equal(tracker.getPendingCount(), 1);
+});
+
+test('independent mounted workflows retain attachment and download state', () => {
+  const tracker = createToolExitStateTracker();
+  const imageOutput = { name: 'result.zip', bytes: new Uint8Array([1]) };
+  const pdfOutput = { name: 'result.zip', bytes: new Uint8Array([2]) };
+
+  tracker.update(1, true, imageOutput);
+  tracker.update(2, false, pdfOutput);
+  assert.equal(tracker.hasAttachedFiles(), true);
+  assert.equal(tracker.getPendingCount(), 2);
+
+  tracker.markDownloaded(1, 'result.zip');
+  assert.equal(tracker.getPendingCount(), 1);
+
+  tracker.update(2, false, null);
+  assert.equal(tracker.getPendingCount(), 0);
+  assert.equal(tracker.hasAttachedFiles(), true);
+
+  tracker.update(1, false, null);
+  assert.equal(tracker.hasAttachedFiles(), false);
 });

@@ -22,8 +22,7 @@ const PdfMerger = lazy(() => import('./components/PdfMerger'));
 const PdfSplitter = lazy(() => import('./components/PdfSplitter'));
 const PdfRotator = lazy(() => import('./components/PdfRotator'));
 const PdfProtector = lazy(() => import('./components/PdfProtector'));
-const ImageToPdf = lazy(() => import('./components/ImageToPdf'));
-const PdfToImages = lazy(() => import('./components/PdfToImages'));
+const ImagePdf = lazy(() => import('./components/ImagePdf'));
 const UnlockPdf = lazy(() => import('./components/UnlockPdf'));
 const PdfToWord = lazy(() => import('./components/PdfToWord'));
 const PdfPowerPoint = lazy(() => import('./components/PdfPowerPoint'));
@@ -654,8 +653,11 @@ function App() {
                 <Route path="/rotate" element={<ToolPage tool="rotate"><PdfRotator /></ToolPage>} />
                 <Route path="/protect" element={<ToolPage tool="protect"><PdfProtector /></ToolPage>} />
                 <Route path="/unlock" element={<ToolPage tool="unlock"><UnlockPdf /></ToolPage>} />
-                <Route path="/image-to-pdf" element={<ToolPage tool="image"><ImageToPdf /></ToolPage>} />
-                <Route path="/pdf-to-images" element={<ToolPage tool="pdf-images"><PdfToImages /></ToolPage>} />
+                <Route path="/image-pdf" element={<ToolPage tool="image-pdf"><ImagePdf /></ToolPage>} />
+                <Route path="/image-to-pdf" element={<Navigate to="/image-pdf?direction=images-to-pdf" replace />} />
+                <Route path="/pdf-to-images" element={<Navigate to="/image-pdf?direction=pdf-to-images" replace />} />
+                <Route path="/resources/tools/image" element={<Navigate to="/resources/tools/image-pdf" replace />} />
+                <Route path="/resources/tools/pdf-images" element={<Navigate to="/resources/tools/image-pdf" replace />} />
                 <Route path="/pdf-to-word" element={<ToolPage tool="word"><PdfToWord /></ToolPage>} />
                 <Route path="/pdf-to-powerpoint" element={<ToolPage tool="powerpoint"><PdfPowerPoint /></ToolPage>} />
                 <Route path="/pdf-to-markdown" element={<ToolPage tool="markdown"><PdfMarkdown /></ToolPage>} />

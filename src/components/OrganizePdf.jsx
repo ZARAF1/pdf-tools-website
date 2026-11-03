@@ -342,66 +342,58 @@ const OrganizePdf = () => {
   return (
     <div className="pdf-tool-workflow organize-pdf-workflow space-y-6">
       <input {...getInputProps()} />
-      <section className="organize-pdf-file-section" aria-labelledby="organize-pdf-file-heading">
-        <header className="organize-pdf-file-section-header">
-          <div>
-            <h3 id="organize-pdf-file-heading" className="merge-selected-files-title">Files to Organize</h3>
-            <p>Select one PDF to reorder, rotate, or remove pages.</p>
-          </div>
-        </header>
-        {file ? (
-          <section
-            {...getRootProps({
-              role: 'group',
-              'aria-label': `Selected PDF ${file.name}`
-            })}
-            className={`pdf-workflow-selected pdf-attached-file-card organize-pdf-attached-file-card flex items-center justify-between gap-4 p-4 ${isDragActive ? 'is-drag-active' : ''}`}
-          >
-            <div className="organize-pdf-file-details">
-              <AttachedFileIcon />
-              <div>
-                <strong className="truncate">{file.name}</strong>
-                <span>{formatBytes(file.size)} · {pages.length} {pages.length === 1 ? 'page' : 'pages'}</span>
-              </div>
+      {file ? (
+        <section
+          {...getRootProps({
+            role: 'group',
+            'aria-label': `Selected PDF ${file.name}`
+          })}
+          className={`pdf-workflow-selected pdf-attached-file-card organize-pdf-attached-file-card flex items-center justify-between gap-4 p-4 ${isDragActive ? 'is-drag-active' : ''}`}
+        >
+          <div className="organize-pdf-file-details">
+            <AttachedFileIcon />
+            <div>
+              <strong className="truncate">{file.name}</strong>
+              <span>{formatBytes(file.size)} · {pages.length} {pages.length === 1 ? 'page' : 'pages'}</span>
             </div>
-            <AttachedFileActions
-              fileName={file.name}
-              onReplace={open}
-              onRemove={clearFile}
+          </div>
+          <AttachedFileActions
+            fileName={file.name}
+            onReplace={open}
+            onRemove={clearFile}
+            disabled={isLoading || isProcessing}
+          />
+        </section>
+      ) : (
+        <div
+          {...getRootProps({
+            role: 'group',
+            'aria-label': 'Choose a PDF to organize'
+          })}
+          className={`organize-pdf-upload pdf-workflow-upload pdf-upload-zone merge-pdf-upload-zone ${isDragActive ? 'is-drag-active' : ''}`}
+        >
+          <div className="merge-pdf-upload-content">
+            <div className="pdf-upload-icon" aria-hidden="true">
+              {isLoading ? <Loader2 className="h-6 w-6 animate-spin text-blue-600" aria-hidden="true" /> : <Upload className="h-6 w-6 text-blue-600" aria-hidden="true" />}
+            </div>
+            <div className="merge-pdf-upload-copy">
+              <h3 aria-live="polite">{isLoading ? 'Reading PDF…' : isDragActive ? 'Drop the PDF here' : 'Choose or drop a PDF to organize'}</h3>
+              <p>Reorder, rotate, or remove PDF pages.</p>
+            </div>
+            <button
+              type="button"
+              className="pdf-editor-primary-button merge-pdf-upload-button"
+              onClick={(event) => {
+                event.stopPropagation();
+                open();
+              }}
               disabled={isLoading || isProcessing}
-            />
-          </section>
-        ) : (
-          <div
-            {...getRootProps({
-              role: 'group',
-              'aria-label': 'Choose a PDF to organize'
-            })}
-            className={`organize-pdf-upload pdf-workflow-upload pdf-upload-zone merge-pdf-upload-zone ${isDragActive ? 'is-drag-active' : ''}`}
-          >
-            <div className="merge-pdf-upload-content">
-              <div className="pdf-upload-icon" aria-hidden="true">
-                {isLoading ? <Loader2 className="h-6 w-6 animate-spin text-blue-600" aria-hidden="true" /> : <Upload className="h-6 w-6 text-blue-600" aria-hidden="true" />}
-              </div>
-              <div className="merge-pdf-upload-copy">
-                <h3 aria-live="polite">{isLoading ? 'Reading PDF…' : isDragActive ? 'Drop the PDF here' : 'Choose or drop a PDF to organize'}</h3>
-                <p>Reorder, rotate, or remove PDF pages.</p>
-              </div>
-              <button
-                type="button"
-                className="pdf-editor-primary-button merge-pdf-upload-button"
-                onClick={(event) => {
-                  event.stopPropagation();
-                  open();
-                }}
-                disabled={isLoading || isProcessing}
-              >
-                Choose PDF
-              </button>
-            </div>
+            >
+              Choose PDF
+            </button>
           </div>
-        )}
-      </section>
+        </div>
+      )}
 
       {previewError && <p className="text-sm text-amber-700" role="status">{previewError}</p>}
       {error && <p className="rounded-lg bg-red-50 p-3 text-sm text-red-700" role="alert">{error}</p>}

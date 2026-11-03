@@ -440,7 +440,7 @@ const PdfRotator = () => {
 
           <div className="rotate-settings-shell">
             <div className="merge-control-intro">
-              <h3 className="merge-selected-files-title">Settings &gt; Preview</h3>
+              <h3 className="merge-selected-files-title">Rotation Setup &amp; Preview</h3>
               <p>Choose a rotation, select pages, and review each page before processing.</p>
             </div>
 
@@ -548,24 +548,6 @@ const PdfRotator = () => {
                   </button>
                 </div>
               </fieldset>
-
-              <div className="merge-option-field">
-                <label htmlFor="rotate-output-filename">Output filename</label>
-                <input
-                  id="rotate-output-filename"
-                  type="text"
-                  value={outputFileName}
-                  disabled={isProcessing}
-                  onChange={(event) => {
-                    setOutputFileName(event.target.value);
-                    setError(null);
-                    clearResult();
-                  }}
-                  maxLength={120}
-                  autoComplete="off"
-                />
-                <p>The .pdf extension is added automatically when needed.</p>
-              </div>
             </section>
 
             <section className="rotate-page-preview-panel" aria-labelledby="rotate-page-preview-heading">
@@ -684,27 +666,45 @@ const PdfRotator = () => {
             </section>
           </div>
 
-            <button
-              type="button"
-              onClick={handleRotate}
-              disabled={isLoading || isProcessing || !canRotate}
-              className={`
-                w-full flex items-center justify-center gap-2 py-4 px-6 rounded-xl font-bold text-white transition-all
-                ${isProcessing || !canRotate ? 'bg-slate-300 cursor-not-allowed' : 'bg-amber-600 hover:bg-amber-700 shadow-lg shadow-amber-200 active:scale-[0.98]'}
-              `}
-            >
-              {isProcessing ? (
-                <>
-                  <Loader2 className="w-5 h-5 animate-spin" />
-                  Processing...
-                </>
-              ) : (
-                <>
-                  <RotateCw className="w-5 h-5" />
-                  Rotate PDF
-                </>
-              )}
-            </button>
+            <div className="rotate-output-actions">
+              <div className="merge-option-field">
+                <label htmlFor="rotate-output-filename">Output filename</label>
+                <input
+                  id="rotate-output-filename"
+                  type="text"
+                  value={outputFileName}
+                  disabled={isProcessing}
+                  onChange={(event) => {
+                    setOutputFileName(event.target.value);
+                    setError(null);
+                    clearResult();
+                  }}
+                  maxLength={120}
+                  autoComplete="off"
+                />
+                <p>The .pdf extension is added automatically when needed.</p>
+              </div>
+              <button
+                type="button"
+                onClick={handleRotate}
+                disabled={isLoading || isProcessing || !canRotate}
+                className={`rotate-process-button flex items-center justify-center gap-2 py-4 px-6 rounded-xl font-bold text-white transition-all
+                  ${isProcessing || !canRotate ? 'bg-slate-300 cursor-not-allowed' : 'bg-amber-600 hover:bg-amber-700 shadow-lg shadow-amber-200 active:scale-[0.98]'}
+                `}
+              >
+                {isProcessing ? (
+                  <>
+                    <Loader2 className="w-5 h-5 animate-spin" />
+                    Processing...
+                  </>
+                ) : (
+                  <>
+                    <RotateCw className="w-5 h-5" />
+                    Rotate PDF
+                  </>
+                )}
+              </button>
+            </div>
             {isProcessing && <p className="sr-only" role="status">Rotating your PDF.</p>}
         </div>
       )}

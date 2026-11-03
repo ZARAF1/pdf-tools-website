@@ -97,11 +97,6 @@ const PdfMergePagePicker = ({ fileEntry, selectedPages, onTogglePage, onSelectVi
       <div className="merge-page-source-header">
         <div className="min-w-0">
           <h4 id={`merge-source-${fileEntry.id}`} className="merge-page-source-title">{fileEntry.name}</h4>
-          <p>{fileEntry.pageCount} pages · {selectedCount} selected</p>
-        </div>
-        <div className="merge-page-source-action-group">
-          <h5 className="merge-selected-files-title">Preview</h5>
-          <p>Choose which pages to include in the output.</p>
           <div className="merge-page-source-actions">
             <button type="button" onClick={() => onSelectVisible(fileEntry.id, previews.length)} disabled={!previews.length || disabled}>
               Select All
@@ -111,6 +106,9 @@ const PdfMergePagePicker = ({ fileEntry, selectedPages, onTogglePage, onSelectVi
             </button>
           </div>
         </div>
+        <span className="merge-page-source-count image-to-pdf-image-count" aria-live="polite">
+          Pages: {selectedCount}/{fileEntry.pageCount}
+        </span>
       </div>
 
       {previewError && <p className="merge-page-preview-error" role="status">{previewError}</p>}

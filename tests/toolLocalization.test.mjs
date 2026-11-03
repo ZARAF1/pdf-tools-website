@@ -6,7 +6,7 @@ import { readFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 
 const toolIds = [
-  'merge', 'split', 'rotate', 'protect', 'unlock', 'image', 'pdf-images',
+  'merge', 'split', 'rotate', 'protect', 'unlock', 'image-pdf',
   'word', 'powerpoint', 'compress', 'edit', 'watermark', 'remove', 'ocr',
   'crop', 'organize-pages', 'redact', 'sign'
 ];
@@ -51,6 +51,18 @@ test('tool translations are bundled locally and cover the active locale catalog'
   assert.deepEqual(Object.keys(TOOL_TRANSLATIONS).sort(), SUPPORTED_LANGUAGES.map(({ code }) => code).sort());
 });
 
+test('Images ↔ PDF translations describe both conversion directions', () => {
+  for (const { code } of SUPPORTED_LANGUAGES) {
+    const tool = getLocalizedTool(code, {
+      id: 'image-pdf',
+      name: 'Images ↔ PDF',
+      description: 'Create a PDF from images or export PDF pages as image files.'
+    });
+    assert.match(tool.name, /↔/, `${code} tool label should include the bidirectional arrow`);
+    assert.ok(tool.description.trim(), `${code} tool description should not be empty`);
+  }
+});
+
 test('Spanish OCR description uses Spanish wording for searchable output', () => {
   const ocrDescription = getLocalizedTool('es', { id: 'ocr', name: 'OCR PDF', description: 'OCR PDF' }).description;
   assert.doesNotMatch(ocrDescription, /\bsearchable\b/i);
@@ -84,7 +96,7 @@ test('mobile tool detail pages retain the concise three-point presentation', () 
 });
 
 test('tool page shared guidance headings follow the selected language', () => {
-  const keys = ['howToUse', 'howItWorks', 'frequentlyAskedQuestions', 'attachPdfHere', 'attachDocumentHere', 'attachPdfOrPowerPointHere', 'toolWorkspace'];
+  const keys = ['howToUse', 'howItWorks', 'frequentlyAskedQuestions', 'attachPdfHere', 'attachDocumentHere', 'attachWordFileHere', 'attachMarkdownFileHere', 'attachPdfOrPowerPointHere', 'toolWorkspace'];
   for (const { code } of SUPPORTED_LANGUAGES) {
     for (const key of keys) {
       assert.notEqual(getMessage(code, key), key, `${code} is missing ${key}`);

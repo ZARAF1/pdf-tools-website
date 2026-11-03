@@ -9,9 +9,10 @@ import React, {
 } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useLanguage } from '../i18n/useLanguage';
-import { createDownloadStateTracker } from '../lib/toolExitDownloadState.mjs';
+import { createToolExitStateTracker } from '../lib/toolExitDownloadState.mjs';
 
 const ToolExitContext = createContext(null);
+let nextToolStateId = 0;
 let popStateGuard = null;
 let historyListenerInstalled = false;
 
@@ -26,20 +27,28 @@ export const installToolExitHistoryListener = () => {
 
 export const useToolExitGuard = (hasAttachedFiles, downloadableOutputs = null) => {
   const context = useContext(ToolExitContext);
-
   if (!context) {
     throw new Error('useToolExitGuard must be used within ToolExitGuardProvider.');
   }
 
+  const toolStateIdRef = useRef(null);
+  if (toolStateIdRef.current === null) {
+    toolStateIdRef.current = nextToolStateId;
+    nextToolStateId += 1;
+  }
+
   useLayoutEffect(() => {
-    context.setToolState(Boolean(hasAttachedFiles), downloadableOutputs);
+    context.setToolState(toolStateIdRef.current, Boolean(hasAttachedFiles), downloadableOutputs);
   }, [context.setToolState, hasAttachedFiles, downloadableOutputs]);
 
   useLayoutEffect(() => (
-    () => context.setToolState(false, null)
+    () => context.setToolState(toolStateIdRef.current, false, null)
   ), [context.setToolState]);
 
-  return context.markOutputDownloaded;
+  return useCallback(
+    (outputId) => context.markOutputDownloaded(toolStateIdRef.current, outputId),
+    [context.markOutputDownloaded]
+  );
 };
 
 export const useToolExitControls = () => {
@@ -57,8 +66,7 @@ export const ToolExitGuardProvider = ({ children }) => {
   const location = useLocation();
   const { translate } = useLanguage();
   const [pendingNavigation, setPendingNavigation] = useState(null);
-  const attachedFilesRef = useRef(false);
-  const downloadTrackerRef = useRef(createDownloadStateTracker());
+  const toolExitStateRef = useRef(createToolExitStateTracker());
   const historyIndexRef = useRef(window.history.state?.idx ?? 0);
   const historyRestoreRef = useRef(false);
   const popDeltaRef = useRef(-1);
@@ -68,22 +76,21 @@ export const ToolExitGuardProvider = ({ children }) => {
   const locationRef = useRef(location);
   locationRef.current = location;
 
-  const reportToolState = useCallback((attached, outputs) => {
-    attachedFilesRef.current = attached;
-    downloadTrackerRef.current.update(outputs);
+  const reportToolState = useCallback((toolId, attached, outputs) => {
+    toolExitStateRef.current.update(toolId, attached, outputs);
   }, []);
 
-  const markOutputDownloaded = useCallback((outputId) => {
-    downloadTrackerRef.current.markDownloaded(outputId);
+  const markOutputDownloaded = useCallback((toolId, outputId) => {
+    toolExitStateRef.current.markDownloaded(toolId, outputId);
   }, []);
 
   const hasPendingChanges = () => (
-    attachedFilesRef.current || downloadTrackerRef.current.getPendingCount() > 0
+    toolExitStateRef.current.hasAttachedFiles() || toolExitStateRef.current.getPendingCount() > 0
   );
 
   const createPendingNavigation = (action) => ({
     action,
-    undownloadedOutputCount: downloadTrackerRef.current.getPendingCount()
+    undownloadedOutputCount: toolExitStateRef.current.getPendingCount()
   });
 
   const requestNavigation = useCallback((action, focusTarget = document.activeElement) => {

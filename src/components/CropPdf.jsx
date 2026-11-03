@@ -526,71 +526,63 @@ const CropPdf = () => {
   return (
     <div className="crop-pdf-tool">
       <input {...getInputProps()} />
-      <section className="crop-pdf-file-section" aria-labelledby="crop-pdf-file-heading">
-        <header className="crop-pdf-file-section-header">
-          <div>
-            <h3 id="crop-pdf-file-heading" className="merge-selected-files-title">File to crop</h3>
-            <p>Select one PDF to adjust its visible page boundaries.</p>
-          </div>
-        </header>
-        {file ? (
-          <section
-            {...getRootProps({
-              role: 'group',
-              'aria-label': `Selected PDF ${file.name}`
-            })}
-            className={`pdf-workflow-selected pdf-attached-file-card crop-pdf-attached-file-card flex items-center justify-between gap-4 p-4 ${isDragActive ? 'is-drag-active' : ''}`}
-          >
-            <div className="crop-pdf-file-details">
-              <AttachedFileIcon />
-              <div>
-                <strong className="truncate">{file.name}</strong>
-                <span>{formatBytes(file.size)} · {pageCount} {pageCount === 1 ? 'page' : 'pages'}</span>
-              </div>
+      {file ? (
+        <section
+          {...getRootProps({
+            role: 'group',
+            'aria-label': `Selected PDF ${file.name}`
+          })}
+          className={`pdf-workflow-selected pdf-attached-file-card crop-pdf-attached-file-card flex items-center justify-between gap-4 p-4 ${isDragActive ? 'is-drag-active' : ''}`}
+        >
+          <div className="crop-pdf-file-details">
+            <AttachedFileIcon />
+            <div>
+              <strong className="truncate">{file.name}</strong>
+              <span>{formatBytes(file.size)} · {pageCount} {pageCount === 1 ? 'page' : 'pages'}</span>
             </div>
-            <AttachedFileActions
-              fileName={file.name}
-              onReplace={open}
-              onRemove={removeFile}
+          </div>
+          <AttachedFileActions
+            fileName={file.name}
+            onReplace={open}
+            onRemove={removeFile}
+            disabled={isLoading || isProcessing}
+          />
+        </section>
+      ) : (
+        <div
+          {...getRootProps({
+            role: 'group',
+            'aria-label': 'Choose a PDF to crop'
+          })}
+          className={`crop-pdf-upload pdf-workflow-upload pdf-upload-zone merge-pdf-upload-zone ${isDragActive ? 'is-drag-active' : ''}`}
+        >
+          <div className="merge-pdf-upload-content">
+            <div className="pdf-upload-icon" aria-hidden="true">
+              {isLoading ? <Loader2 className="h-6 w-6 animate-spin text-blue-600" /> : <Upload className="h-6 w-6 text-blue-600" />}
+            </div>
+            <div className="merge-pdf-upload-copy">
+              <h3>{isLoading ? 'Loading and validating PDF…' : isDragActive ? 'Drop the PDF here' : 'Choose or drop a PDF to crop'}</h3>
+              <p>Crop PDF pages to adjust the visible page area.</p>
+            </div>
+            <button
+              type="button"
+              className="pdf-editor-primary-button merge-pdf-upload-button"
+              onClick={(event) => {
+                event.stopPropagation();
+                open();
+              }}
               disabled={isLoading || isProcessing}
-            />
-          </section>
-        ) : (
-          <div
-            {...getRootProps({
-              role: 'group',
-              'aria-label': 'Choose a PDF to crop'
-            })}
-            className={`crop-pdf-upload pdf-workflow-upload pdf-upload-zone merge-pdf-upload-zone ${isDragActive ? 'is-drag-active' : ''}`}
-          >
-            <div className="merge-pdf-upload-content">
-              <div className="pdf-upload-icon" aria-hidden="true">
-                {isLoading ? <Loader2 className="h-6 w-6 animate-spin text-blue-600" /> : <Upload className="h-6 w-6 text-blue-600" />}
-              </div>
-              <div className="merge-pdf-upload-copy">
-                <h3>{isLoading ? 'Loading and validating PDF…' : isDragActive ? 'Drop the PDF here' : 'Choose or drop a PDF to crop'}</h3>
-                <p>Crop PDF pages to adjust the visible page area.</p>
-              </div>
-              <button
-                type="button"
-                className="pdf-editor-primary-button merge-pdf-upload-button"
-                onClick={(event) => {
-                  event.stopPropagation();
-                  open();
-                }}
-                disabled={isLoading || isProcessing}
-              >
-                Choose PDF
-              </button>
-            </div>
+            >
+              Choose PDF
+            </button>
           </div>
-        )}
+        </div>
+      )}
 
-        {isLoading && (
-          <p className="crop-pdf-message" role="status"><Loader2 className="crop-pdf-spinner" aria-hidden="true" size={17} /> Loading and checking PDF pages...</p>
-        )}
-        {error && <p className="crop-pdf-message crop-pdf-error" role="alert">{error}</p>}
-      </section>
+      {isLoading && (
+        <p className="crop-pdf-message" role="status"><Loader2 className="crop-pdf-spinner" aria-hidden="true" size={17} /> Loading and checking PDF pages...</p>
+      )}
+      {error && <p className="crop-pdf-message crop-pdf-error" role="alert">{error}</p>}
       {file && pdfjsDocument && (
         <div className="crop-pdf-workspace">
           <section className="crop-pdf-settings-shell" aria-labelledby="crop-pdf-workflow-heading">

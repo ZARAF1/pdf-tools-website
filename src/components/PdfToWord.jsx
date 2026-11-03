@@ -17,6 +17,7 @@ import {
 import { AttachedFileActions, AttachedFileIcon } from './AttachedFileControls';
 import DownloadReadyCard from './DownloadReadyCard';
 import { createPdfFromRenderedPages, validateDocxFile } from '../lib/docxToPdf.mjs';
+import { useLanguage } from '../i18n/useLanguage';
 
 const OCR_NOTICE =
   'No readable text was found in this PDF. It may be blank or too low quality to recognize.';
@@ -63,6 +64,7 @@ const groupItemsIntoLines = (items) => {
 };
 
 const PdfToWord = () => {
+  const { translate } = useLanguage();
   const [direction, setDirection] = useState('pdf-to-word');
   const [file, setFile] = useState(null);
   const [isProcessing, setIsProcessing] = useState(false);
@@ -423,98 +425,115 @@ const PdfToWord = () => {
   };
 
   return (
-    <div className="max-w-3xl mx-auto">
-      <input {...getInputProps()} />
+    <div className="word-conversion-workspace">
+      <input {...getInputProps()} className="sr-only" />
 
-      <div className="mb-5 flex flex-wrap gap-2" role="group" aria-label="Choose conversion direction">
+      <div className="image-pdf-direction-switch conversion-direction-switch" role="group" aria-label="Choose conversion direction">
         <button
           type="button"
           disabled={isProcessing}
           aria-pressed={direction === 'pdf-to-word'}
           onClick={() => changeDirection('pdf-to-word')}
-          className={`flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-50 ${
-            direction === 'pdf-to-word' ? 'bg-blue-50 text-blue-700' : 'text-slate-600 hover:bg-slate-50'
-          }`}
+          className="conversion-direction-option disabled:cursor-not-allowed disabled:opacity-50"
         >
-          PDF <ArrowLeftRight className="h-4 w-4" aria-hidden="true" /> Word
+          PDF to Word
         </button>
         <button
           type="button"
           disabled={isProcessing}
           aria-pressed={direction === 'word-to-pdf'}
           onClick={() => changeDirection('word-to-pdf')}
-          className={`flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-50 ${
-            direction === 'word-to-pdf' ? 'bg-blue-50 text-blue-700' : 'text-slate-600 hover:bg-slate-50'
-          }`}
+          className="conversion-direction-option disabled:cursor-not-allowed disabled:opacity-50"
         >
-          Word <ArrowLeftRight className="h-4 w-4" aria-hidden="true" /> PDF
+          Word to PDF
         </button>
       </div>
 
-      {/* Upload Zone */}
-      {!file ? (
-        <div
-          {...getRootProps({
-            role: 'group',
-            'aria-label': direction === 'pdf-to-word'
-              ? 'Choose a PDF to convert to Word'
-              : 'Choose a Word DOCX file to convert to PDF'
-          })}
-          className={`pdf-workflow-upload merge-pdf-upload-zone cursor-pointer transition-all
-            ${isDragActive ? 'border-blue-500 bg-blue-50' : 'border-slate-300 hover:border-blue-400 hover:bg-slate-50'}
-          `}
-        >
-          <div className="merge-pdf-upload-content">
-            <div className="pdf-upload-icon" aria-hidden="true">
-              {direction === 'pdf-to-word'
-                ? <Upload className="h-6 w-6 text-blue-600" />
-                : <ArrowLeftRight className="h-6 w-6 text-blue-600" />}
+      <div className="word-file-workspace">
+        <section className="tool-attachment-section conversion-attachment-shell word-attachment-section" aria-labelledby="word-attachment-heading">
+          <div className="tool-attachment-heading">
+            <span className="tool-attachment-icon" aria-hidden="true">
+              <Upload className="h-5 w-5" />
+            </span>
+            <div>
+              <h2 id="word-attachment-heading">
+                {direction === 'pdf-to-word' ? translate('attachPdfHere') : translate('attachWordFileHere')}
+              </h2>
+              <p>{direction === 'pdf-to-word' ? 'One unencrypted PDF · no fixed page cap' : 'One unprotected .docx file'}</p>
             </div>
-            <div className="merge-pdf-upload-copy">
-              <h3>
-                {isDragActive
-                  ? direction === 'pdf-to-word' ? 'Drop the PDF here' : 'Drop the DOCX file here'
-                  : direction === 'pdf-to-word'
-                    ? 'Choose or drop a PDF to convert to Word'
-                    : 'Choose or drop a Word .docx file to convert to PDF'}
-              </h3>
-              <p>
-                {direction === 'pdf-to-word'
-                  ? 'Convert text-based and scanned PDFs into editable Word documents.'
-                  : 'Render DOCX pages as images in a PDF; the output text will not be searchable or selectable.'}
-              </p>
-            </div>
-            <button
-              type="button"
-              className="pdf-editor-primary-button merge-pdf-upload-button"
-              onClick={(event) => {
-                event.stopPropagation();
-                open();
-              }}
-            >
-              {direction === 'pdf-to-word' ? 'Choose PDF' : 'Choose Word file'}
-            </button>
           </div>
-        </div>
-      ) : (
-        <div>
-          <div className="pdf-attached-file-card flex items-center justify-between bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
-            <div className="flex items-center gap-4">
-              <AttachedFileIcon />
-              <div className="truncate max-w-[200px] md:max-w-sm">
-                <p className="text-sm font-medium text-slate-700 truncate">{file.name}</p>
-                <p className="text-xs text-slate-400">{(file.size / 1024 / 1024).toFixed(2)} MB</p>
+          <aside className="tool-attachment-guidance" aria-labelledby="word-attachment-guidance-heading">
+            <h3 id="word-attachment-guidance-heading">{direction === 'pdf-to-word' ? 'PDF to Word' : 'Word to PDF'}</h3>
+            <p>
+              {direction === 'pdf-to-word'
+                ? 'Convert text-based PDFs into editable Word documents. Scanned pages use English OCR and may require an internet connection to load OCR data.'
+                : 'Convert a .docx file to an image-based PDF. The output text is not searchable or selectable.'}
+            </p>
+          </aside>
+          <div className="tool-attachment-content">
+            <section className="word-file-panel" aria-label="File to convert">
+          {!file ? (
+            <div
+              {...getRootProps({
+                role: 'group',
+                'aria-label': direction === 'pdf-to-word'
+                  ? 'Choose a PDF to convert to Word'
+                  : 'Choose a Word DOCX file to convert to PDF'
+              })}
+              className={`pdf-workflow-upload merge-pdf-upload-zone cursor-pointer transition-all
+                ${isDragActive ? 'border-blue-500 bg-blue-50' : 'border-slate-300 hover:border-blue-400 hover:bg-slate-50'}
+              `}
+            >
+              <div className="merge-pdf-upload-content">
+                <div className="pdf-upload-icon" aria-hidden="true">
+                  {direction === 'pdf-to-word'
+                    ? <Upload className="h-6 w-6 text-blue-600" />
+                    : <ArrowLeftRight className="h-6 w-6 text-blue-600" />}
+                </div>
+                <div className="merge-pdf-upload-copy">
+                  <h3>
+                    {isDragActive
+                      ? direction === 'pdf-to-word' ? 'Drop the PDF here' : 'Drop the DOCX file here'
+                      : direction === 'pdf-to-word'
+                        ? 'Choose or drop a PDF to convert to Word'
+                        : 'Choose or drop a Word .docx file to convert to PDF'}
+                  </h3>
+                </div>
+                <button
+                  type="button"
+                  className="pdf-editor-primary-button merge-pdf-upload-button"
+                  onClick={(event) => {
+                    event.stopPropagation();
+                    open();
+                  }}
+                >
+                  {direction === 'pdf-to-word' ? 'Choose PDF' : 'Choose Word file'}
+                </button>
               </div>
             </div>
-            <AttachedFileActions
-              fileName={file.name}
-              onReplace={open}
-              onRemove={removeFile}
-              disabled={isProcessing}
-            />
+          ) : (
+            <div className="pdf-attached-file-card word-attached-file-card">
+              <div className="word-attached-file-main">
+                <AttachedFileIcon />
+                <div className="word-attached-file-details">
+                  <p className="word-attached-file-name" title={file.name}>{file.name}</p>
+                  <p className="word-attached-file-meta">{(file.size / 1024 / 1024).toFixed(2)} MB</p>
+                </div>
+              </div>
+              <AttachedFileActions
+                fileName={file.name}
+                onReplace={open}
+                onRemove={removeFile}
+                disabled={isProcessing}
+              />
+            </div>
+          )}
+            </section>
           </div>
+        </section>
 
-          <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-6">
+        {file && (
+          <div className="word-conversion-panel bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-6">
             {isProcessing && (
               <div className="space-y-2">
                 <div className="flex justify-between text-sm text-slate-500">
@@ -579,8 +598,8 @@ const PdfToWord = () => {
               )}
             </button>
           </div>
-        </div>
-      )}
+        )}
+      </div>
 
       {error && (
         <motion.div

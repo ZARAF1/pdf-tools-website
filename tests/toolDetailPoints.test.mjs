@@ -13,8 +13,8 @@ const readSource = (path) => readFile(
 const content = await readSource('../src/components/ToolPage.jsx');
 const sitePages = await readSource('../src/components/SitePages.jsx');
 const expectedTools = [
-  'crop', 'edit', 'merge', 'split', 'rotate', 'protect', 'unlock', 'image',
-  'pdf-images', 'word', 'ocr', 'compress', 'watermark', 'remove',
+  'crop', 'edit', 'merge', 'split', 'rotate', 'protect', 'unlock', 'image-pdf',
+  'word', 'ocr', 'compress', 'watermark', 'remove',
   'organize-pages', 'redact', 'sign', 'excel', 'powerpoint', 'markdown'
 ];
 
@@ -74,8 +74,8 @@ test('every locale localizes the three point labels and retains tool-page specif
   for (const { code } of SUPPORTED_LANGUAGES) {
     const localized = getLocalizedToolPage(
       code,
-      'image',
-      { name: 'Image to PDF', description: 'Create a PDF from images.' },
+      'image-pdf',
+      { name: 'Images ↔ PDF', description: 'Create PDFs from images or export PDF pages as images.' },
       image,
       { ruleKey: 'images10', rule: 'Images', info: 'Guidance.' }
     );
@@ -89,9 +89,12 @@ test('every locale localizes the three point labels and retains tool-page specif
 
 test('PDF password limitations stay in the input guidance instead of descriptions', async () => {
   assert.match(content, /rule: 'One unencrypted PDF/);
-  const imageRule = content.match(/  image: \{\r?\n([\s\S]*?)\r?\n  \},/);
-  assert.ok(imageRule);
-  assert.doesNotMatch(imageRule[1], /unencrypted|password-protected/i);
+  const imageTool = content.match(/  'image-pdf': \{([\s\S]*?)\r?\n  \},/);
+  assert.ok(imageTool);
+  const imageDescriptions = imageTool[1].match(/detailPoints: \{([\s\S]*?)\r?\n    \}/)?.[1];
+  assert.ok(imageDescriptions);
+  assert.doesNotMatch(imageDescriptions, /unencrypted|password-protected/i);
+  assert.match(content, /tool === 'image-pdf'[\s\S]*?\? null/);
 });
 
 test('only the Merge Home icon receives the larger tool-fan treatment', async () => {

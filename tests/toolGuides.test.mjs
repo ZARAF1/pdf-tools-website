@@ -35,6 +35,8 @@ test('every active tool and the unavailable Excel page has a detailed guide', ()
   }
   assert.equal(GUIDE_ONLY_TOOLS.length, 1);
   assert.equal(GUIDE_ONLY_TOOLS[0].id, 'excel');
+  assert.match(TOOL_GUIDES['image-pdf'].what, /create a PDF.*export the pages/is);
+  assert.match(TOOL_GUIDES['image-pdf'].how, /images to PDF.*PDF to images/is);
 });
 
 test('tool guides have a specific route and are grouped under tool categories', () => {

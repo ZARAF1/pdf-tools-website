@@ -48,19 +48,32 @@ test('Organize PDF separates the selected-file card from its empty-state upload 
   assert.ok(emptyUploadZone > attachedCard, 'the empty-state upload zone is distinct from the selected card');
 });
 
-test('Organize PDF uses the Crop PDF attachment section layout', () => {
-  const sectionStart = organizePdf.indexOf('className="organize-pdf-file-section"');
-  const headingIndex = organizePdf.indexOf('Files to Organize', sectionStart);
-  const attachedCardIndex = organizePdf.indexOf('pdf-workflow-selected pdf-attached-file-card', sectionStart);
-  const uploadIndex = organizePdf.indexOf('pdf-workflow-upload pdf-upload-zone merge-pdf-upload-zone', sectionStart);
+test('Organize PDF uses the Merge-style empty chooser without a Files to Organize panel', () => {
+  const workflowStart = organizePdf.indexOf('<div className="pdf-tool-workflow organize-pdf-workflow space-y-6">');
+  const pickerInput = organizePdf.indexOf('<input {...getInputProps()} />', workflowStart);
+  const attachedCardIndex = organizePdf.indexOf('pdf-workflow-selected pdf-attached-file-card', workflowStart);
+  const uploadIndex = organizePdf.indexOf(
+    'className={`organize-pdf-upload pdf-workflow-upload pdf-upload-zone merge-pdf-upload-zone',
+    workflowStart
+  );
   const previewsIndex = organizePdf.indexOf('className="pdf-workflow-controls space-y-4"');
 
-  assert.ok(sectionStart >= 0, 'a dedicated Organize PDF attachment section is present');
-  assert.ok(headingIndex > sectionStart, 'the section is labelled Files to Organize');
-  assert.ok(attachedCardIndex > headingIndex, 'the selected PDF card follows the section heading');
-  assert.ok(uploadIndex > headingIndex, 'the empty-state upload card follows the section heading');
-  assert.ok(previewsIndex > sectionStart, 'page previews follow the attachment section');
-  assert.match(styles, /\.crop-pdf-file-section,\s*\.organize-pdf-file-section,\s*\.image-to-pdf-file-section,\s*\.crop-pdf-settings-shell\s*\{[^}]*background:\s*var\(--surface-muted\)/s);
+  assert.ok(workflowStart >= 0, 'the Organize PDF workflow is present');
+  assert.ok(pickerInput > workflowStart && pickerInput < attachedCardIndex, 'the file input precedes the selected card');
+  assert.ok(attachedCardIndex > pickerInput, 'the selected PDF card remains available');
+  assert.ok(uploadIndex > pickerInput, 'the empty-state upload card remains available');
+  assert.ok(previewsIndex > attachedCardIndex, 'page previews follow the attachment');
+  assert.doesNotMatch(organizePdf, /organize-pdf-file-section|Files to Organize/, 'the extra attachment subpanel is removed');
+  assert.match(styles, /\.image-to-pdf-file-section,\s*\.crop-pdf-settings-shell\s*\{[^}]*background:\s*var\(--surface-muted\)/s);
+});
+
+test('Organize PDF empty chooser does not inherit the workflow top margin', () => {
+  const uploadSpacing = styles.match(
+    /\.tool-attachment-content \.organize-pdf-workflow\.space-y-6 > \.organize-pdf-upload\s*\{([^}]*)\}/
+  )?.[1];
+
+  assert.ok(uploadSpacing, 'Organize PDF empty chooser has a scoped spacing rule');
+  assert.match(uploadSpacing, /margin-block-start:\s*0\s*;/);
 });
 
 test('Organize PDF page tiles are compact and provide an accessible larger preview', () => {

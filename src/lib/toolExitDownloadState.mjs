@@ -46,3 +46,41 @@ export const createDownloadStateTracker = () => {
     getPendingCount: () => outputs.filter(({ id }) => !downloadedIds.has(id)).length
   };
 };
+
+export const createToolExitStateTracker = () => {
+  const downloadTracker = createDownloadStateTracker();
+  const toolStates = new Map();
+
+  const update = (toolId, attached, outputs) => {
+    const normalizedOutputs = normalizeOutputs(outputs);
+    if (!attached && normalizedOutputs.length === 0) {
+      toolStates.delete(toolId);
+    } else {
+      toolStates.set(toolId, { attached: Boolean(attached), outputs: normalizedOutputs });
+    }
+
+    downloadTracker.update(
+      [...toolStates.entries()].flatMap(([id, state]) => (
+        state.outputs.map((output) => ({
+          id: `${String(id)}:${output.id}`,
+          token: output.token
+        }))
+      ))
+    );
+  };
+
+  const markDownloaded = (toolId, outputId) => {
+    const outputs = toolStates.get(toolId)?.outputs || [];
+    const targetId = outputId === undefined && outputs.length === 1
+      ? outputs[0].id
+      : String(outputId);
+    downloadTracker.markDownloaded(`${String(toolId)}:${targetId}`);
+  };
+
+  return {
+    update,
+    markDownloaded,
+    hasAttachedFiles: () => [...toolStates.values()].some(({ attached }) => attached),
+    getPendingCount: downloadTracker.getPendingCount
+  };
+};

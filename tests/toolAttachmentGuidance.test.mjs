@@ -10,8 +10,6 @@ const expectedAttachments = new Map([
   ['rotate', ['One unencrypted PDF · no fixed page cap', 'Rotate PDF pages', 'Rotate every page or only the pages and ranges you select.']],
   ['protect', ['One unencrypted PDF · no fixed page cap', 'Protect a PDF with a password', 'Add an opening password to a new copy; keep the password because it cannot be recovered here.']],
   ['unlock', ['One password-protected PDF · AES-256 R6 or RC4 R2/R3 only', 'Unlock a PDF with its password', 'A correct password is required; password guessing and recovery are not supported.']],
-  ['image', ['Up to 10 JPEG, PNG, or BMP images', 'Create a PDF from images', 'Arrange and rotate images, then adjust page size, background, fit, alignment, and resizing.']],
-  ['pdf-images', ['One unencrypted PDF · up to 50 pages', 'Convert PDF pages to images', 'Export each page as PNG, JPG, or BMP; optionally trim blank margins. One page downloads as an image, multiple pages as a ZIP.']],
   ['word', ['One unencrypted PDF or unprotected .docx file · no fixed page cap', 'Convert PDF ↔ Word', 'Create editable DOCX text from PDFs, or image-based PDFs from DOCX. Reverse-conversion text is not searchable; .doc files are unsupported.']],
   ['powerpoint', ['One unencrypted PDF or unprotected .pptx file · page count depends on available browser memory', 'Convert PDF ↔ PowerPoint', 'Select pages or slides, name the output, and choose image quality and page or slide sizing. Results are image-based and may not be editable.']],
   ['markdown', ['One unencrypted PDF, .md, or plain-text file', 'Convert PDF ↔ Markdown', 'Extract selectable PDF text or create a PDF from editable Markdown. Scanned pages need OCR first.']],
@@ -25,8 +23,8 @@ const expectedAttachments = new Map([
 ]);
 const expectedRuleKeys = new Map([
   ['crop', 'pdfOne'], ['edit', 'pdfOne'], ['merge', 'pdf2To5'], ['split', 'pdfOne'],
-  ['rotate', 'pdfOne'], ['protect', 'pdfOne'], ['unlock', 'passwordPdf'], ['image', 'images10'],
-  ['pdf-images', 'pdf50'], ['word', 'docxPdfOne'], ['powerpoint', 'powerpointPdfOne'], ['markdown', 'markdownFileOne'], ['compress', 'pdfUpTo5'], ['watermark', 'pdfOne'],
+  ['rotate', 'pdfOne'], ['protect', 'pdfOne'], ['unlock', 'passwordPdf'],
+  ['word', 'docxPdfOne'], ['powerpoint', 'powerpointPdfOne'], ['markdown', 'markdownFileOne'], ['compress', 'pdfUpTo5'], ['watermark', 'pdfOne'],
   ['remove', 'pdf50'], ['ocr', 'pdf50'], ['organize-pages', 'pdf30'],
   ['redact', 'pdf15'], ['sign', 'pdfOne']
 ]);
@@ -64,4 +62,8 @@ test('shared attachment section renders the guidance panel and redact copy is no
 
   const redactComponent = await readFile(new URL('../src/components/RedactPdf.jsx', import.meta.url), 'utf8');
   assert.doesNotMatch(redactComponent, /Permanently redact page content/);
+});
+
+test('the combined image and PDF tool uses each direction’s own attachment workflow', () => {
+  assert.match(source, /tool === 'image-pdf'[\s\S]*?\? null/);
 });

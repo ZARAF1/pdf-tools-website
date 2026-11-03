@@ -321,7 +321,7 @@ const PdfMerger = () => {
       }}
       disabled={isValidating || isMerging || files.length >= MAX_FILES}
     >
-      Choose Up to 5 PDFs
+      {files.length === 0 ? 'Choose Files' : `Add More Files (${files.length}/${MAX_FILES})`}
     </button>
   );
 
@@ -529,7 +529,7 @@ const PdfMerger = () => {
 
         <section className="merge-pdf-settings space-y-6" aria-label="Merge Options">
           <div className="merge-control-intro">
-            <h3 className="merge-selected-files-title">Settings &gt; Selection &gt; Preview</h3>
+            <h3 className="merge-selected-files-title">Merge Setup &amp; Preview</h3>
             <p>Choose how to combine your PDFs and customize the output.</p>
           </div>
 
@@ -556,29 +556,12 @@ const PdfMerger = () => {
             <div className="merge-section-heading merge-output-settings-heading">
               <div>
                 <h3 className="merge-section-heading-title merge-output-settings-title">Choose Settings</h3>
-                <p>Set the output name and page size, and choose optional bookmarks or blank pages.</p>
+                <p>Choose page sizing and optional bookmarks or blank pages.</p>
               </div>
             </div>
 
             <div className="merge-output-settings">
-              <div className="merge-option-field">
-                <label htmlFor="merge-output-filename">Output Filename</label>
-                <input
-                  id="merge-output-filename"
-                  type="text"
-                  value={outputFileName}
-                  disabled={isMerging}
-                  onChange={(event) => {
-                    setOutputFileName(event.target.value);
-                    setOutputBytes(null);
-                    setSuccess(false);
-                  }}
-                  maxLength={120}
-                  autoComplete="off"
-                />
-                <p>The .pdf extension is added automatically when needed.</p>
-              </div>
-              <div className="merge-option-field">
+              <div className="merge-option-field merge-output-option-card">
                 <label htmlFor="merge-page-size">Page Size</label>
                 <select
                   id="merge-page-size"
@@ -594,9 +577,9 @@ const PdfMerger = () => {
                   <option value="letter">Fit to US Letter</option>
                   <option value="a4">Fit to A4</option>
                 </select>
-                <p>Fitting centers and scales page content proportionally without cropping. Some interactive PDF features may not carry over; preserve original sizes when they matter.</p>
+                <p>Letter/A4 fitting centers and scales content without cropping; some interactive features may not carry over.</p>
               </div>
-              <label className="merge-option-checkbox">
+              <label className="merge-option-checkbox merge-output-option-card">
                 <input
                   type="checkbox"
                   checked={addSourceBookmarks}
@@ -609,10 +592,10 @@ const PdfMerger = () => {
                 />
                 <span>
                   <strong>Bookmark Each Source File</strong>
-                  <small>Add a PDF outline entry at the first page from each source document.</small>
+                  <small>Adds an outline entry at each source PDF's first output page.</small>
                 </span>
               </label>
-              <label className="merge-option-checkbox">
+              <label className="merge-option-checkbox merge-output-option-card">
                 <input
                   type="checkbox"
                   checked={addBlankPages}
@@ -625,7 +608,7 @@ const PdfMerger = () => {
                 />
                 <span>
                   <strong>Insert a Blank Page Between Source Files</strong>
-                  <small>In Select pages mode, a blank is inserted whenever the output switches to a different source file.</small>
+                  <small>In Select Pages mode, inserts a blank when output switches source PDFs.</small>
                 </span>
               </label>
             </div>
@@ -743,12 +726,27 @@ const PdfMerger = () => {
         </section>
 
         <div className="pdf-workflow-actions pt-4">
+          <div className="merge-output-actions">
+            <label htmlFor="merge-output-filename">Output Filename</label>
+            <input
+              id="merge-output-filename"
+              type="text"
+              value={outputFileName}
+              disabled={isMerging}
+              onChange={(event) => {
+                setOutputFileName(event.target.value);
+                setOutputBytes(null);
+                setSuccess(false);
+              }}
+              maxLength={120}
+              autoComplete="off"
+            />
+            <p>Adds .pdf automatically.</p>
             <button
               type="button"
               onClick={mergePdfs}
               disabled={isMerging || files.length < 2 || (mergeMode === 'select' && selectedPages.length === 0)}
-              className={`
-                w-full flex items-center justify-center gap-2 py-4 px-6 rounded-xl font-bold text-white transition-all
+              className={`merge-process-button flex items-center justify-center gap-2 py-4 px-6 rounded-xl font-bold text-white transition-all
                 ${isMerging || files.length < 2 
                   ? 'bg-slate-300 cursor-not-allowed' 
                   : 'bg-blue-600 hover:bg-blue-700 shadow-lg shadow-blue-200 active:scale-[0.98]'}
@@ -766,16 +764,17 @@ const PdfMerger = () => {
                 </>
               )}
             </button>
-            {isMerging && <p className="sr-only" role="status">Merging the selected PDFs.</p>}
-            {success && outputBytes && (
-              <DownloadReadyCard
-                fileName={normalizePdfFileName(outputFileName)}
-                sizeBytes={outputBytes.length}
-                onDownload={downloadMergedPdf}
-                downloadLabel="Download PDF"
-              />
-            )}
           </div>
+          {isMerging && <p className="sr-only" role="status">Merging the selected PDFs.</p>}
+          {success && outputBytes && (
+            <DownloadReadyCard
+              fileName={normalizePdfFileName(outputFileName)}
+              sizeBytes={outputBytes.length}
+              onDownload={downloadMergedPdf}
+              downloadLabel="Download PDF"
+            />
+          )}
+        </div>
         </>
       )}
 

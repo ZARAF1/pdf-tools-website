@@ -31,16 +31,21 @@ test('Image to PDF groups settings and composed image tiles in matching preview 
   assert.match(component, /image\.name[\s\S]*image\.width[\s\S]*formatBytes\(image\.file\.size\)/);
   assert.match(settingsSection, /className="image-to-pdf-settings-panel"/);
   assert.match(settingsSection, /<h3 className="merge-selected-files-title">\{imageUi\.settingsTitle\}<\/h3>\s*<p>\{imageUi\.settingsDescription\}<\/p>/);
-  assert.match(settingsSection, /className="merge-section-heading-title merge-output-settings-title">\{imageUi\.settingsScope\}<\/h3>/);
-  assert.match(settingsSection, /className="merge-section-heading merge-output-settings-heading"[\s\S]*?<\/div>\s*<p className="image-to-pdf-choose-settings-description">/);
+  assert.match(settingsSection, /id="image-to-pdf-scope-toggle-label"[^>]*>\s*\{imageUi\.scopeToggleLabel\}\s*<\/p>/);
   assert.match(settingsSection, /imageUi\.pageSize/);
   assert.match(settingsSection, /imageUi\.jpegQuality/);
   assert.match(settingsSection, /imageUi\.encodingNote/);
   assert.match(settingsSection, /imageUi\.settingsDescription/);
-  assert.match(settingsSection, /aria-pressed=\{settingsScope === 'all'\}/);
-  assert.match(settingsSection, /aria-pressed=\{settingsScope === 'select'\}/);
+  assert.match(settingsSection, /role="switch"[\s\S]*aria-checked=\{settingsScope === 'select'\}[\s\S]*aria-labelledby="image-to-pdf-scope-toggle-label"/);
+  assert.equal((settingsSection.match(/role="switch"/g) || []).length, 1, 'setting scope is controlled by one toggle');
+  assert.doesNotMatch(settingsSection, /aria-pressed=\{settingsScope ===/);
+  assert.ok(
+    settingsSection.indexOf('image-to-pdf-output-mode-setting') < settingsSection.indexOf('image-to-pdf-scope-toggle-setting')
+      && settingsSection.indexOf('image-to-pdf-scope-toggle-setting') < settingsSection.indexOf('image-to-pdf-settings-controls'),
+    'the scope toggle follows PDF output choices and precedes image settings'
+  );
   assert.match(previewSection, /className="merge-section-heading merge-page-selection-heading"[\s\S]*className="merge-section-heading-title merge-page-selection-title">\{imageUi\.pagePreview\}/);
-  assert.match(previewSection, /className="image-to-pdf-page-preview-description"/);
+  assert.match(previewSection, /className="image-to-pdf-page-preview-description"[\s\S]*?\{imageUi\.selectImagesHint\}/);
   assert.match(previewSection, /image-to-pdf-preview-panel/);
   assert.match(previewSection, /image-to-pdf-page-card/);
   assert.match(previewSection, /className="merge-page-source-select image-to-pdf-page-select"[\s\S]*onClick=\{\(\) => toggleImageSelection\(image\.id\)\}[\s\S]*aria-pressed=\{isSelected\}/);

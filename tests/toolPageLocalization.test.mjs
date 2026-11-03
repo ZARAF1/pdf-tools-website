@@ -16,47 +16,39 @@ const toolPageSource = await readFile(
 );
 
 const imageTool = {
-  id: 'image',
-  name: 'Image to PDF',
-  description: 'Create a PDF from images.'
+  id: 'image-pdf',
+  name: 'Images ↔ PDF',
+  description: 'Create PDFs from images or export PDF pages as images.'
 };
 
 const imageContent = {
-  intro: 'Turn images into a PDF with multiple options.',
+  intro: 'Create PDFs from images or export PDF pages as images.',
   detailPoints: {
-    what: 'Create a PDF from images.',
-    how: 'Arrange images and adjust page settings.',
-    result: 'A separate PDF with one image per page.'
+    what: 'Create PDFs from images or export PDF pages as images.',
+    how: 'Choose a direction and adjust its settings.',
+    result: 'A separate PDF, image, or ZIP of images.'
   },
-  steps: ['Choose images.', 'Configure options.', 'Create the PDF.'],
-  faqs: [['Does this tool upload my PDF?', 'No. The file is processed in your browser.']]
-};
-
-const imageAttachment = {
-  ruleKey: 'images10',
-  rule: 'Up to 10 JPEG, PNG, or BMP images',
-  info: 'Arrange images and adjust the page settings.'
+  steps: ['Choose a direction.', 'Add images or a PDF.', 'Configure options.', 'Create and download the output.'],
+  faqs: [['Which directions can I use?', 'Create a PDF from images or export PDF pages as images.']]
 };
 const ruleKeys = ['pdfOne', 'docxPdfOne', 'powerpointPdfOne', 'pdf15', 'pdf30', 'pdf50', 'pdfUpTo5', 'pdf2To5', 'images10', 'passwordPdf'];
 
 test('tool page intro, attachment details, and guide update to the selected language', () => {
   const localizedTool = getLocalizedTool('es', imageTool);
-  const localized = getLocalizedToolPage('es', 'image', localizedTool, imageContent, imageAttachment);
+  const localized = getLocalizedToolPage('es', 'image-pdf', localizedTool, imageContent, null);
 
   assert.notEqual(localized.intro, imageContent.intro);
   assert.equal(localized.intro, TOOL_PAGE_TRANSLATIONS.es.introSuffix);
-  assert.notEqual(localized.attachment.rule, imageAttachment.rule);
-  assert.match(localized.attachment.rule, /10/);
-  assert.notEqual(localized.attachment.info, imageAttachment.info);
+  assert.equal(localized.attachment, null);
   assert.equal(localized.steps.length, 4);
   assert.ok(localized.steps.every((step) => !imageContent.steps.includes(step)));
 });
 
 test('English tool-page content remains unchanged', () => {
-  const english = getLocalizedToolPage('en', 'image', imageTool, imageContent, imageAttachment);
+  const english = getLocalizedToolPage('en', 'image-pdf', imageTool, imageContent, null);
   assert.equal(english.intro, imageContent.intro);
   assert.deepEqual(english.steps, imageContent.steps);
-  assert.deepEqual(english.attachment, imageAttachment);
+  assert.equal(english.attachment, null);
   assert.deepEqual(english.faqs, imageContent.faqs);
 });
 
@@ -65,10 +57,10 @@ test('tool FAQs update questions and answers for every supported language', () =
     if (code === 'en') continue;
     const localized = getLocalizedToolPage(
       code,
-      'image',
+      'image-pdf',
       getLocalizedTool(code, imageTool),
       imageContent,
-      imageAttachment
+      null
     );
     assert.equal(localized.faqs.length, 5, `${code} is missing localized FAQs`);
     assert.ok(TOOL_PAGE_FAQ_TRANSLATIONS[code], `${code} is missing FAQ translations`);
@@ -94,15 +86,14 @@ test('all supported languages have translated tool page guides and attachment li
     if (code === 'en') continue;
     const localized = getLocalizedToolPage(
       code,
-      'image',
+      'image-pdf',
       getLocalizedTool(code, imageTool),
       imageContent,
-      imageAttachment
+      null
     );
     assert.ok(localized.intro, `${code} is missing the localized introduction`);
     assert.equal(localized.steps.length, 4, `${code} is missing guide steps`);
-    assert.notEqual(localized.attachment.rule, imageAttachment.rule, `${code} leaves attachment limits in English`);
-    assert.ok(localized.attachment.info, `${code} is missing attachment guidance`);
+    assert.equal(localized.attachment, null, `${code} should leave direction-specific attachment guidance to each workflow`);
     for (const ruleKey of ruleKeys) {
       assert.ok(TOOL_PAGE_TRANSLATIONS[code].rules[ruleKey], `${code} is missing ${ruleKey}`);
     }

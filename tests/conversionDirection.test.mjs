@@ -38,8 +38,9 @@ test('PDF ↔ Word workspace offers PDF-to-DOCX and DOCX-to-PDF workflows', () =
   assert.match(pdfToWordSource, /word-to-pdf/);
   assert.match(pdfToWordSource, /application\/vnd\.openxmlformats-officedocument\.wordprocessingml\.document/);
   assert.match(pdfToWordSource, /createPdfFromRenderedPages/);
-  assert.match(pdfToWordSource, /PDF <ArrowLeftRight[\s\S]*?\/> Word/);
-  assert.match(pdfToWordSource, /Word <ArrowLeftRight[\s\S]*?\/> PDF/);
+  assert.match(pdfToWordSource, /className="image-pdf-direction-switch conversion-direction-switch"/);
+  assert.match(pdfToWordSource, />\s*PDF to Word\s*<\/button>/);
+  assert.match(pdfToWordSource, />\s*Word to PDF\s*<\/button>/);
   assert.match(pdfToWordSource, /disabled=\{isProcessing\}[\s\S]*?aria-pressed=\{direction === 'pdf-to-word'\}/);
   assert.match(pdfToWordSource, /disabled=\{isProcessing\}[\s\S]*?aria-pressed=\{direction === 'word-to-pdf'\}/);
   assert.match(pdfToWordSource, /direction === 'pdf-to-word' \? 'Choose PDF' : 'Choose Word file'/);

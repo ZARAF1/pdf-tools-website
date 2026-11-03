@@ -265,6 +265,59 @@ for (const [language, [name, description]] of Object.entries(markdownToolTransla
   TOOL_TRANSLATIONS[language].markdown = { name, description };
 }
 
+const imagePdfToolNames = {
+  en: 'Images ↔ PDF',
+  es: 'Imágenes ↔ PDF',
+  fr: 'Images ↔ PDF',
+  de: 'Bilder ↔ PDF',
+  pt: 'Imagens ↔ PDF',
+  it: 'Immagini ↔ PDF',
+  nl: 'Afbeeldingen ↔ PDF',
+  pl: 'Obrazy ↔ PDF',
+  sv: 'Bilder ↔ PDF',
+  fi: 'Kuvat ↔ PDF',
+  da: 'Billeder ↔ PDF',
+  nb: 'Bilder ↔ PDF',
+  tr: 'Görseller ↔ PDF',
+  ru: 'Изображения ↔ PDF',
+  uk: 'Зображення ↔ PDF',
+  ar: 'صور ↔ PDF',
+  hi: 'छवियाँ ↔ PDF',
+  ja: '画像 ↔ PDF',
+  ko: '이미지 ↔ PDF',
+  'zh-CN': '图像 ↔ PDF'
+};
+
+const imagePdfToolDescriptions = {
+  en: 'Create a PDF from images or export PDF pages as image files.',
+  es: 'Crea un PDF a partir de imágenes o exporta páginas PDF como archivos de imagen.',
+  fr: 'Créez un PDF à partir d’images ou exportez les pages PDF en fichiers image.',
+  de: 'Erstelle ein PDF aus Bildern oder exportiere PDF-Seiten als Bilddateien.',
+  pt: 'Crie um PDF a partir de imagens ou exporte páginas de PDF como arquivos de imagem.',
+  it: 'Crea PDF da immagini o esporta le pagine PDF come file immagine.',
+  nl: 'Maak een PDF van afbeeldingen of exporteer PDF-pagina’s als afbeeldingsbestanden.',
+  pl: 'Twórz pliki PDF z obrazów lub eksportuj strony PDF jako pliki graficzne.',
+  sv: 'Skapa PDF-filer från bilder eller exportera PDF-sidor som bildfiler.',
+  fi: 'Luo PDF kuvista tai vie PDF-sivut kuvatiedostoina.',
+  da: 'Opret en PDF fra billeder, eller eksportér PDF-sider som billedfiler.',
+  nb: 'Opprett PDF fra bilder eller eksporter PDF-sider som bildefiler.',
+  tr: 'Görsellerden PDF oluşturun veya PDF sayfalarını görsel dosyaları olarak dışa aktarın.',
+  ru: 'Создавайте PDF из изображений или экспортируйте страницы PDF в файлы изображений.',
+  uk: 'Створюйте PDF із зображень або експортуйте сторінки PDF як файли зображень.',
+  ar: 'أنشئ ملف PDF من الصور أو صدّر صفحات PDF كملفات صور.',
+  hi: 'छवियों से PDF बनाएँ या PDF पृष्ठों को छवि फ़ाइलों के रूप में निर्यात करें।',
+  ja: '画像からPDFを作成、またはPDFページを画像ファイルとして書き出します。',
+  ko: '이미지로 PDF를 만들거나 PDF 페이지를 이미지 파일로 내보냅니다.',
+  'zh-CN': '从图像创建 PDF，或将 PDF 页面导出为图像文件。'
+};
+
+for (const [language, name] of Object.entries(imagePdfToolNames)) {
+  TOOL_TRANSLATIONS[language]['image-pdf'] = {
+    name,
+    description: imagePdfToolDescriptions[language]
+  };
+}
+
 export const getLocalizedTool = (language, tool) => {
   const translation = TOOL_TRANSLATIONS[language]?.[tool.id];
   return translation ? { ...tool, ...translation } : tool;

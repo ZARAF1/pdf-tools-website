@@ -31,17 +31,11 @@ export const TOOL_GUIDES = {
     result: 'A separate PDF that no longer asks for the supplied opening password, when processing succeeds. Confirm you have permission to remove the protection and review the resulting document before sharing it.',
     applications: 'Prepare your own password-protected report for a workflow that cannot open encrypted files, or remove a password from a document you are authorized to manage.'
   },
-  image: {
-    what: 'Create a PDF from JPEG, PNG, or BMP images, placing images on pages in the order you choose. Page size, background, fit, alignment, and image resizing options help make a consistent document.',
-    how: 'Add supported images, reorder or rotate them, choose the page and image settings, and create the PDF in the browser. The tool uses a separate output and does not change the image files.',
-    result: 'The output is a PDF containing the selected images on pages with your chosen layout. Since each page is image-based, the content is not selectable text; review image orientation, margins, and legibility before sharing.',
-    applications: 'Turn photographed receipts into a single archive, assemble scanned paper forms for submission, or package product photos into a simple printable catalog.'
-  },
-  'pdf-images': {
-    what: 'Export PDF pages as PNG, JPG, or BMP image files, optionally trimming blank page margins. This is a visual export rather than a way to extract original embedded photos or editable text.',
-    how: 'Select the PDF, choose an image format and quality, set an output name, and optionally enable automatic margin cropping. Pages render sequentially in the browser.',
-    result: 'A one-page PDF downloads as an image; multiple pages are packaged in a ZIP. Images can be larger than the original PDF and do not retain selectable text, links, or PDF form behavior.',
-    applications: 'Create page previews for a presentation, share a single page in an image-only workflow, or prepare visual references for a design or review process.'
+  'image-pdf': {
+    what: 'Create a PDF from up to 10 JPEG, PNG, or BMP images, or export the pages of a 1–50 page PDF as PNG, JPG, or BMP images. Each direction keeps the original files unchanged.',
+    how: 'Choose a direction in the shared workspace. For images to PDF, arrange and rotate the images and set page layout and resizing options. For PDF to images, set the format, quality, output name, and optional blank-margin trimming.',
+    result: 'Images-to-PDF creates an image-based PDF with one image per page. PDF-to-images downloads one image for a single-page file or a ZIP for multiple pages; exported images do not retain selectable text, links, or PDF form behavior.',
+    applications: 'Assemble receipts or scanned forms into a PDF, create a simple printable image catalog, or export PDF pages as visual previews for a presentation or review.'
   },
   word: {
     what: 'Convert selectable PDF text into an editable Word document, and render supported DOCX documents into image-based PDFs. The two directions serve different needs: editing text versus preserving page appearance.',
