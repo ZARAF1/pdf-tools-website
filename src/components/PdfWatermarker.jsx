@@ -1,15 +1,23 @@
-import React, { useCallback, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useToolExitGuard } from './ToolExitGuard';
 import useAccessibleDropzone from '../lib/useAccessibleDropzone';
 import { PDFDocument, StandardFonts, degrees, rgb } from 'pdf-lib';
 import { validateUnencryptedPdf } from '../lib/pdfValidation';
+import pdfjsLib from '../lib/pdfjsClient';
+import {
+  getWatermarkPositionOnPage,
+  getWatermarkTextOrigin
+} from '../lib/watermarkPlacement.mjs';
 import { motion } from 'framer-motion';
 import {
   Upload,
   Loader2,
   AlertCircle,
   Stamp,
-  Settings2
+  Settings2,
+  Eye,
+  ChevronLeft,
+  ChevronRight
 } from 'lucide-react';
 import { AttachedFileActions, AttachedFileIcon } from './AttachedFileControls';
 import DownloadReadyCard from './DownloadReadyCard';
@@ -21,6 +29,8 @@ const DEFAULT_SETTINGS = {
   color: '#64748b',
   rotation: -45,
   opacity: 0.3,
+  positionX: 0.5,
+  positionY: 0.5,
   pageMode: 'all',
   pageRanges: '',
   numberingEnabled: false,
@@ -81,35 +91,6 @@ const parsePageRanges = (input, pageCount) => {
   return [...pages].sort((a, b) => a - b);
 };
 
-const getCenteredTextOrigin = (pageWidth, pageHeight, textWidth, textHeight, angle) => {
-  const radians = (angle * Math.PI) / 180;
-  const cosine = Math.cos(radians);
-  const sine = Math.sin(radians);
-  const corners = [
-    [0, 0],
-    [textWidth * cosine, textWidth * sine],
-    [-textHeight * sine, textHeight * cosine],
-    [textWidth * cosine - textHeight * sine, textWidth * sine + textHeight * cosine]
-  ];
-  const xs = corners.map(([x]) => x);
-  const ys = corners.map(([, y]) => y);
-  const minX = Math.min(...xs);
-  const maxX = Math.max(...xs);
-  const minY = Math.min(...ys);
-  const maxY = Math.max(...ys);
-  const boundsWidth = maxX - minX;
-  const boundsHeight = maxY - minY;
-
-  if (boundsWidth > pageWidth || boundsHeight > pageHeight) {
-    throw new Error('The watermark text is too large for this page. Reduce its size or shorten the text.');
-  }
-
-  return {
-    x: (pageWidth - boundsWidth) / 2 - minX,
-    y: (pageHeight - boundsHeight) / 2 - minY
-  };
-};
-
 const downloadBlob = (bytes, filename) => {
   const blob = new Blob([bytes], { type: 'application/pdf' });
   const url = URL.createObjectURL(blob);
@@ -122,9 +103,141 @@ const downloadBlob = (bytes, filename) => {
   setTimeout(() => URL.revokeObjectURL(url), 10000);
 };
 
+function WatermarkPageThumbnail({
+  document,
+  pageNumber,
+  selected,
+  onSelect,
+  settings,
+  watermarkText,
+  pageNumberText
+}) {
+  const thumbnailRef = useRef(null);
+  const canvasRef = useRef(null);
+  const [isVisible, setIsVisible] = useState(false);
+  const [previewScale, setPreviewScale] = useState(0);
+  const [pageRotation, setPageRotation] = useState(0);
+  const [renderError, setRenderError] = useState('');
+
+  useEffect(() => {
+    const thumbnail = thumbnailRef.current;
+    if (!thumbnail) return undefined;
+    if (typeof IntersectionObserver === 'undefined') {
+      setIsVisible(true);
+      return undefined;
+    }
+
+    const observer = new IntersectionObserver(([entry]) => {
+      if (entry.isIntersecting) setIsVisible(true);
+    }, { rootMargin: '160px' });
+    observer.observe(thumbnail);
+    return () => observer.disconnect();
+  }, []);
+
+  useEffect(() => {
+    if (!document || !isVisible) return undefined;
+    let active = true;
+    let renderTask;
+
+    const renderThumbnail = async () => {
+      try {
+        setRenderError('');
+        const page = await document.getPage(pageNumber);
+        if (!active) return;
+        const baseViewport = page.getViewport({ scale: 1 });
+        const scale = Math.min(1, 144 / baseViewport.width, 180 / baseViewport.height);
+        const viewport = page.getViewport({ scale });
+        const canvas = canvasRef.current;
+        if (!canvas) return;
+        canvas.width = Math.ceil(viewport.width);
+        canvas.height = Math.ceil(viewport.height);
+        const context = canvas.getContext('2d', { alpha: false });
+        if (!context) throw new Error('Your browser could not render this page thumbnail.');
+
+        setPageRotation(page.rotate);
+        setPreviewScale(scale);
+        renderTask = page.render({ canvasContext: context, viewport, intent: 'display' });
+        await renderTask.promise;
+      } catch (thumbnailError) {
+        if (active && thumbnailError?.name !== 'RenderingCancelledException') {
+          console.error(`Unable to render watermark thumbnail for page ${pageNumber}:`, thumbnailError);
+          setRenderError('Preview unavailable');
+        }
+      }
+    };
+
+    renderThumbnail();
+    return () => {
+      active = false;
+      renderTask?.cancel();
+    };
+  }, [document, isVisible, pageNumber]);
+
+  return (
+    <button
+      ref={thumbnailRef}
+      type="button"
+      className="watermark-preview-page-thumbnail"
+      aria-label={`Preview page ${pageNumber}`}
+      aria-pressed={selected}
+      onClick={onSelect}
+    >
+      <span className="watermark-page-thumbnail-canvas-wrap">
+        <canvas
+          ref={canvasRef}
+          className="watermark-page-thumbnail-canvas"
+          role="img"
+          aria-label={`Thumbnail of PDF page ${pageNumber}`}
+        />
+        {watermarkText && previewScale > 0 && (
+          <span
+            className="watermark-page-thumbnail-mark"
+            style={{
+              left: `${settings.positionX * 100}%`,
+              top: `${(1 - settings.positionY) * 100}%`,
+              color: settings.color,
+              opacity: settings.opacity,
+              fontSize: `${Math.max(1, settings.fontSize * previewScale)}px`,
+              transform: `translate(-50%, -50%) rotate(${pageRotation - settings.rotation}deg)`
+            }}
+          >
+            {settings.text}
+          </span>
+        )}
+        {pageNumberText && previewScale > 0 && (
+          <span
+            className="watermark-page-thumbnail-number"
+            style={{
+              [settings.numberPlacement]: `${settings.numberMargin * previewScale}px`,
+              ...(settings.numberAlign === 'left'
+                ? { left: `${settings.numberMargin * previewScale}px` }
+                : settings.numberAlign === 'right'
+                  ? { right: `${settings.numberMargin * previewScale}px` }
+                  : { left: '50%', transform: 'translateX(-50%)' }),
+              fontSize: `${Math.max(1, settings.numberFontSize * previewScale)}px`,
+              color: settings.numberColor
+            }}
+          >
+            {pageNumberText}
+          </span>
+        )}
+        {renderError && <span className="watermark-page-thumbnail-error">{renderError}</span>}
+      </span>
+      <span className="watermark-page-thumbnail-label">Page {pageNumber}</span>
+    </button>
+  );
+}
+
 const PdfWatermarker = () => {
   const [file, setFile] = useState(null);
   const [pageCount, setPageCount] = useState(null);
+  const [previewDocument, setPreviewDocument] = useState(null);
+  const [previewPage, setPreviewPage] = useState(1);
+  const [previewWidth, setPreviewWidth] = useState(720);
+  const [previewScale, setPreviewScale] = useState(1);
+  const [previewRotation, setPreviewRotation] = useState(0);
+  const [isLoadingPreview, setIsLoadingPreview] = useState(false);
+  const [previewError, setPreviewError] = useState('');
   const [isLoadingPages, setIsLoadingPages] = useState(false);
   const [settings, setSettings] = useState(DEFAULT_SETTINGS);
   const [isProcessing, setIsProcessing] = useState(false);
@@ -133,6 +246,9 @@ const PdfWatermarker = () => {
   const [outputBytes, setOutputBytes] = useState(null);
   const markOutputDownloaded = useToolExitGuard(Boolean(file), outputBytes);
   const fileRequestId = useRef(0);
+  const previewContainerRef = useRef(null);
+  const previewCanvasRef = useRef(null);
+  const previewRenderTaskRef = useRef(null);
 
   const onDrop = useCallback(async (acceptedFiles, fileRejections) => {
     if (fileRejections.length > 0) {
@@ -160,6 +276,7 @@ const PdfWatermarker = () => {
       if (fileRequestId.current === requestId) {
         setFile(selectedFile);
         setPageCount(count);
+        setPreviewPage(1);
         setIsLoadingPages(false);
       }
     } catch (loadError) {
@@ -175,6 +292,118 @@ const PdfWatermarker = () => {
       }
     }
   }, []);
+
+  useEffect(() => {
+    if (!file) {
+      setPreviewDocument(null);
+      setPreviewError('');
+      setIsLoadingPreview(false);
+      return undefined;
+    }
+
+    let active = true;
+    let loadingTask;
+    let document;
+    setPreviewDocument(null);
+    setPreviewError('');
+    setIsLoadingPreview(true);
+
+    const loadPreviewDocument = async () => {
+      try {
+        loadingTask = pdfjsLib.getDocument({
+          data: new Uint8Array(await file.arrayBuffer())
+        });
+        document = await loadingTask.promise;
+        if (active) {
+          setPreviewDocument({ file, document });
+        } else {
+          document.destroy();
+        }
+      } catch (loadError) {
+        if (active) {
+          console.error('Unable to load PDF watermark preview:', loadError);
+          setPreviewError('The PDF page preview could not be loaded.');
+          setIsLoadingPreview(false);
+        }
+      }
+    };
+
+    loadPreviewDocument();
+    return () => {
+      active = false;
+      previewRenderTaskRef.current?.cancel();
+      if (document) document.destroy();
+      else loadingTask?.destroy();
+    };
+  }, [file]);
+
+  useEffect(() => {
+    if (!file) return undefined;
+    const container = previewContainerRef.current;
+    if (!container) return undefined;
+
+    const updateWidth = () => {
+      const width = Math.floor(container.clientWidth);
+      if (width > 0) setPreviewWidth(width);
+    };
+    updateWidth();
+
+    if (typeof ResizeObserver === 'undefined') {
+      window.addEventListener('resize', updateWidth);
+      return () => window.removeEventListener('resize', updateWidth);
+    }
+
+    const observer = new ResizeObserver(updateWidth);
+    observer.observe(container);
+    return () => observer.disconnect();
+  }, [file]);
+
+  useEffect(() => {
+    const document = previewDocument?.file === file ? previewDocument.document : null;
+    const canvas = previewCanvasRef.current;
+    if (!document || !canvas || !previewWidth) return undefined;
+
+    let active = true;
+    let renderTask;
+    setIsLoadingPreview(true);
+
+    const renderPreviewPage = async () => {
+      try {
+        const page = await document.getPage(previewPage);
+        if (!active) return;
+        setPreviewRotation(page.rotate);
+        const baseViewport = page.getViewport({ scale: 1 });
+        const scale = Math.min(1.25, previewWidth / baseViewport.width);
+        const viewport = page.getViewport({ scale });
+        canvas.width = Math.ceil(viewport.width);
+        canvas.height = Math.ceil(viewport.height);
+        const context = canvas.getContext('2d', { alpha: false });
+        if (!context) throw new Error('Your browser could not render a PDF page preview.');
+
+        renderTask = page.render({ canvasContext: context, viewport, intent: 'print' });
+        previewRenderTaskRef.current = renderTask;
+        await renderTask.promise;
+        if (active) {
+          setPreviewScale(scale);
+          setPreviewError('');
+        }
+      } catch (renderError) {
+        if (active && renderError?.name !== 'RenderingCancelledException') {
+          console.error('Unable to render PDF watermark preview:', renderError);
+          setPreviewError('This PDF page preview could not be rendered.');
+        }
+      } finally {
+        if (active) setIsLoadingPreview(false);
+        if (previewRenderTaskRef.current === renderTask) previewRenderTaskRef.current = null;
+      }
+    };
+
+    renderPreviewPage();
+    return () => {
+      active = false;
+      renderTask?.cancel();
+    };
+  }, [file, previewDocument, previewPage, previewWidth]);
 
   const { getRootProps, getInputProps, isDragActive, open } = useAccessibleDropzone({
     onDrop,
@@ -193,6 +422,8 @@ const PdfWatermarker = () => {
     fileRequestId.current += 1;
     setFile(null);
     setPageCount(null);
+    setPreviewPage(1);
+    setPreviewDocument(null);
     setIsLoadingPages(false);
     clearResult();
   };
@@ -206,6 +437,70 @@ const PdfWatermarker = () => {
     setSettings((current) => ({ ...current, ...update }));
     clearResult();
   };
+
+  const updateWatermarkPositionFromPointer = (event) => {
+    const canvas = previewCanvasRef.current;
+    if (!canvas) return;
+    const bounds = canvas.getBoundingClientRect();
+    if (!bounds.width || !bounds.height) return;
+    const positionX = Math.min(1, Math.max(0, (event.clientX - bounds.left) / bounds.width));
+    const positionY = Math.min(1, Math.max(0, 1 - (event.clientY - bounds.top) / bounds.height));
+    updateSettings({ positionX, positionY });
+  };
+
+  const handleWatermarkPointerDown = (event) => {
+    if (event.button !== 0) return;
+    event.preventDefault();
+    event.currentTarget.setPointerCapture(event.pointerId);
+    updateWatermarkPositionFromPointer(event);
+  };
+
+  const handleWatermarkPointerMove = (event) => {
+    if (event.currentTarget.hasPointerCapture(event.pointerId)) {
+      updateWatermarkPositionFromPointer(event);
+    }
+  };
+
+  const handleWatermarkPositionKeyDown = (event) => {
+    const step = event.shiftKey ? 0.05 : 0.01;
+    const changes = {
+      ArrowLeft: { positionX: Math.max(0, settings.positionX - step) },
+      ArrowRight: { positionX: Math.min(1, settings.positionX + step) },
+      ArrowUp: { positionY: Math.min(1, settings.positionY + step) },
+      ArrowDown: { positionY: Math.max(0, settings.positionY - step) }
+    };
+    if (changes[event.key]) {
+      event.preventDefault();
+      updateSettings(changes[event.key]);
+    }
+  };
+
+  const watermarkPages = settings.pageMode === 'all'
+    ? Array.from({ length: pageCount || 0 }, (_, index) => index + 1)
+    : (() => {
+      try {
+        return pageCount ? parsePageRanges(settings.pageRanges, pageCount) : [];
+      } catch {
+        return [];
+      }
+    })();
+  const numberingPages = settings.numberPageMode === 'all'
+    ? Array.from({ length: pageCount || 0 }, (_, index) => index + 1)
+    : (() => {
+      try {
+        return pageCount ? parsePageRanges(settings.numberPageRanges, pageCount) : [];
+      } catch {
+        return [];
+      }
+    })();
+  const showPreviewWatermark = settings.watermarkEnabled
+    && Boolean(settings.text.trim())
+    && watermarkPages.includes(previewPage);
+  const showPreviewPageNumber = settings.numberingEnabled && numberingPages.includes(previewPage);
+  const previewNumber = showPreviewPageNumber
+    ? String(settings.numberStart + numberingPages.indexOf(previewPage))
+    : '';
+  const thumbnailDocument = previewDocument?.file === file ? previewDocument.document : null;
 
   const addWatermark = async () => {
     setError('');
@@ -307,12 +602,19 @@ const PdfWatermarker = () => {
         selectedPages.forEach((pageNumber) => {
           const page = pdfDoc.getPage(pageNumber - 1);
           const { width, height } = page.getSize();
-          const position = getCenteredTextOrigin(
+          const pagePosition = getWatermarkPositionOnPage(
+            page.getRotation().angle,
+            settings.positionX,
+            settings.positionY
+          );
+          const position = getWatermarkTextOrigin(
             width,
             height,
             textWidth,
             settings.fontSize,
-            settings.rotation
+            settings.rotation,
+            pagePosition.x,
+            pagePosition.y
           );
           page.drawText(text, {
             ...position,
@@ -418,31 +720,35 @@ const PdfWatermarker = () => {
           </div>
         </div>
       ) : (
-        <div className="pdf-attached-file-card flex items-center justify-between gap-4 bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
-          <div className="flex items-center gap-4 min-w-0">
-            <AttachedFileIcon />
-            <div className="truncate min-w-0">
-              <p className="text-sm font-medium text-slate-700 truncate">{file.name}</p>
-              <p className="text-xs text-slate-400">
-                {formatBytes(file.size)} · {isLoadingPages ? 'Checking pages...' : pageCount ? `${pageCount} pages` : 'Page count unavailable'}
-              </p>
+        <section className="watermark-selected-file-section" aria-labelledby="watermark-attachment-heading">
+          <h3 id="watermark-attachment-heading">Attached PDF</h3>
+          <div className="pdf-attached-file-card flex items-center justify-between gap-4 p-4 rounded-xl border shadow-sm">
+            <div className="flex items-center gap-4 min-w-0">
+              <AttachedFileIcon />
+              <div className="truncate min-w-0">
+                <p className="text-sm font-medium truncate">{file.name}</p>
+                <p className="text-xs text-slate-400">
+                  {formatBytes(file.size)} · {isLoadingPages ? 'Checking pages...' : pageCount ? `${pageCount} pages` : 'Page count unavailable'}
+                </p>
+              </div>
             </div>
+            <AttachedFileActions
+              fileName={file.name}
+              onReplace={open}
+              onRemove={removeFile}
+              disabled={isLoadingPages || isProcessing}
+            />
           </div>
-          <AttachedFileActions
-            fileName={file.name}
-            onReplace={open}
-            onRemove={removeFile}
-            disabled={isLoadingPages || isProcessing}
-          />
-        </div>
+        </section>
       )}
 
       {file && (
-        <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-6">
-          <div className="flex items-center justify-between gap-4 border-b border-slate-100 pb-4">
-            <div className="flex items-center gap-3">
-              <Settings2 className="w-5 h-5 text-slate-400" />
-              <h2 className="text-lg font-semibold text-slate-800">Watermark Settings</h2>
+        <div className="watermark-tool-sections">
+        <section className="watermark-settings-panel" aria-labelledby="watermark-settings-heading">
+          <div className="watermark-section-heading">
+            <div className="watermark-section-title">
+              <Settings2 aria-hidden="true" />
+              <h2 id="watermark-settings-heading">Watermark Settings</h2>
             </div>
             <button
               type="button"
@@ -480,7 +786,7 @@ const PdfWatermarker = () => {
               />
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="watermark-primary-settings-grid">
             <div className="space-y-2">
               <label htmlFor="watermark-size" className="text-sm font-semibold text-slate-700">Text size</label>
               <div className="flex items-center gap-3">
@@ -598,7 +904,7 @@ const PdfWatermarker = () => {
 
           </fieldset>
 
-          <section className="space-y-5 rounded-xl border border-slate-200 p-4" aria-labelledby="page-number-options">
+          <section className="watermark-numbering-options" aria-labelledby="page-number-options">
             <label className="inline-flex cursor-pointer items-center gap-3 text-sm font-semibold text-slate-700">
               <input
                 type="checkbox"
@@ -609,7 +915,7 @@ const PdfWatermarker = () => {
               />
               Add page numbers
             </label>
-            <fieldset disabled={!settings.numberingEnabled || isProcessing} className="grid grid-cols-1 gap-4 disabled:opacity-60 md:grid-cols-2">
+            <fieldset disabled={!settings.numberingEnabled || isProcessing} className="watermark-numbering-grid disabled:opacity-60">
               <legend id="page-number-options" className="sr-only">Page-number options</legend>
               <div className="space-y-2">
                 <label htmlFor="number-start" className="text-sm font-semibold text-slate-700">Starting number</label>
@@ -658,6 +964,145 @@ const PdfWatermarker = () => {
               )}
             </fieldset>
           </section>
+        </section>
+
+        <section className="watermark-preview-panel" aria-labelledby="watermark-preview-heading">
+          <div className="watermark-section-heading">
+            <div className="watermark-section-title">
+              <Eye aria-hidden="true" />
+              <h2 id="watermark-preview-heading">Watermark Preview</h2>
+            </div>
+          </div>
+
+          <p className="watermark-preview-guidance">
+            Drag the watermark or focus it and use the arrow keys to reposition it. Page-range settings control which pages receive it.
+          </p>
+
+          <div className="watermark-preview-layout">
+            <div className="watermark-preview-main">
+              <div className="watermark-preview-canvas-wrap" ref={previewContainerRef}>
+                <canvas
+                  ref={previewCanvasRef}
+                  className="watermark-preview-canvas"
+                  role="img"
+                  aria-label={`Preview of PDF page ${previewPage}`}
+                />
+                {showPreviewWatermark && (
+                  <button
+                    type="button"
+                    className="watermark-preview-mark"
+                    aria-label="Move watermark preview. Use arrow keys to reposition."
+                    onPointerDown={handleWatermarkPointerDown}
+                    onPointerMove={handleWatermarkPointerMove}
+                    onKeyDown={handleWatermarkPositionKeyDown}
+                    style={{
+                      left: `${settings.positionX * 100}%`,
+                      top: `${(1 - settings.positionY) * 100}%`,
+                      color: settings.color,
+                      opacity: settings.opacity,
+                      fontSize: `${Math.max(1, settings.fontSize * previewScale)}px`,
+                      transform: `translate(-50%, -50%) rotate(${previewRotation - settings.rotation}deg)`
+                    }}
+                  >
+                    {settings.text}
+                  </button>
+                )}
+                {showPreviewPageNumber && (
+                  <span
+                    className={`watermark-preview-page-number is-${settings.numberPlacement} is-${settings.numberAlign}`}
+                    aria-label={`Page number preview: ${previewNumber}`}
+                    style={{
+                      [settings.numberPlacement]: `${settings.numberMargin * previewScale}px`,
+                      ...(settings.numberAlign === 'left'
+                        ? { left: `${settings.numberMargin * previewScale}px` }
+                        : settings.numberAlign === 'right'
+                          ? { right: `${settings.numberMargin * previewScale}px` }
+                          : { left: '50%', transform: 'translateX(-50%)' }),
+                      fontSize: `${Math.max(1, settings.numberFontSize * previewScale)}px`,
+                      color: settings.numberColor
+                    }}
+                  >
+                    {previewNumber}
+                  </span>
+                )}
+                {isLoadingPreview && (
+                  <div className="watermark-preview-loading" role="status" aria-live="polite">
+                    <Loader2 aria-hidden="true" className="animate-spin" />
+                    Rendering page preview…
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <div className="watermark-preview-page-rail">
+              <div className="watermark-preview-controls">
+                <p>Preview page</p>
+                <div className="watermark-preview-page-navigation">
+                  <button
+                    type="button"
+                    aria-label="Preview previous page"
+                    onClick={() => setPreviewPage((current) => Math.max(1, current - 1))}
+                    disabled={previewPage <= 1 || isLoadingPreview}
+                  >
+                    <ChevronLeft aria-hidden="true" />
+                  </button>
+                  <span id="watermark-preview-page" aria-live="polite">Page {previewPage} of {pageCount}</span>
+                  <button
+                    type="button"
+                    aria-label="Preview next page"
+                    onClick={() => setPreviewPage((current) => Math.min(pageCount, current + 1))}
+                    disabled={previewPage >= pageCount || isLoadingPreview}
+                  >
+                    <ChevronRight aria-hidden="true" />
+                  </button>
+                </div>
+              </div>
+
+              <div className="watermark-preview-page-thumbnails" role="group" aria-label="PDF page thumbnails">
+                {Array.from({ length: pageCount }, (_, index) => index + 1).map((pageNumber) => {
+                  const showThumbnailWatermark = settings.watermarkEnabled
+                    && Boolean(settings.text.trim())
+                    && watermarkPages.includes(pageNumber);
+                  const showThumbnailPageNumber = settings.numberingEnabled && numberingPages.includes(pageNumber);
+                  const thumbnailPageNumber = showThumbnailPageNumber
+                    ? String(settings.numberStart + numberingPages.indexOf(pageNumber))
+                    : '';
+
+                  return (
+                    <WatermarkPageThumbnail
+                      key={pageNumber}
+                      document={thumbnailDocument}
+                      pageNumber={pageNumber}
+                      selected={pageNumber === previewPage}
+                      onSelect={() => setPreviewPage(pageNumber)}
+                      settings={settings}
+                      watermarkText={showThumbnailWatermark ? settings.text.trim() : ''}
+                      pageNumberText={thumbnailPageNumber}
+                    />
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+
+          <p className="watermark-preview-status" aria-live="polite">
+            {previewError || (showPreviewWatermark
+              ? settings.pageMode === 'all'
+                ? `Watermark is shown on page ${previewPage}; it will be applied to all ${pageCount} pages.`
+                : `Watermark is shown on selected page ${previewPage} of ${watermarkPages.length} selected pages.`
+              : showPreviewPageNumber
+                ? `Page number ${previewNumber} is shown on page ${previewPage}.`
+                : settings.watermarkEnabled && settings.text.trim() && settings.pageMode === 'selected'
+                  ? watermarkPages.length
+                    ? `Page ${previewPage} is not in the selected watermark range.`
+                    : 'Enter a valid page number or range to preview the selected pages.'
+                  : settings.watermarkEnabled && settings.text.trim()
+                    ? `Watermark is not applied on page ${previewPage}.`
+                    : settings.numberingEnabled
+                      ? `Page numbering is not applied on page ${previewPage}.`
+                      : 'Enter watermark text or enable page numbering to preview this page.')}
+          </p>
+        </section>
 
           <div className="p-4 bg-cyan-50 rounded-xl border border-cyan-100 text-cyan-900 text-sm">
             Text watermarks and page numbers are drawn into a new PDF while preserving original content. Processing stays in your browser.
