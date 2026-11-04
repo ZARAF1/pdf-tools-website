@@ -3,6 +3,8 @@ import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 
 const component = await readFile(new URL('../src/components/PageSelectionTool.jsx', import.meta.url), 'utf8');
+const toolPage = await readFile(new URL('../src/components/ToolPage.jsx', import.meta.url), 'utf8');
+const toolGuide = await readFile(new URL('../src/components/toolGuides.mjs', import.meta.url), 'utf8');
 const styles = await readFile(new URL('../src/index.css', import.meta.url), 'utf8');
 
 test('Remove PDF presents its attachment, settings, and preview in workflow order', () => {
@@ -10,13 +12,13 @@ test('Remove PDF presents its attachment, settings, and preview in workflow orde
   const settingsShell = component.indexOf('className="remove-pdf-settings-shell"');
   const settingsPanel = component.indexOf('className="remove-pdf-settings-panel"');
   const previewPanel = component.indexOf('className="remove-pdf-page-preview-panel"');
-  const confirmation = component.indexOf('className="space-y-3 rounded-xl border border-amber-200');
+  const outputActions = component.indexOf('className="rotate-output-actions remove-pdf-output-actions"');
 
   assert.ok(attachment >= 0, 'Remove PDF should have a dedicated selected-file section');
   assert.ok(attachment < settingsShell, 'the selected file should appear before settings');
   assert.ok(settingsShell < settingsPanel, 'the settings shell should contain its settings panel');
   assert.ok(settingsPanel < previewPanel, 'page previews should follow settings');
-  assert.ok(previewPanel < confirmation, 'the removal confirmation should follow page review');
+  assert.ok(previewPanel < outputActions, 'processing and output naming should follow page review');
 });
 
 test('Remove PDF keeps page selection controls in settings and real page tiles in preview', () => {
@@ -32,6 +34,21 @@ test('Remove PDF keeps page selection controls in settings and real page tiles i
   assert.match(preview, /<PdfPageGrid\b/);
   assert.match(preview, /showPreviewButton=\{isRemoving\}/);
   assert.match(preview, /Selected pages:/);
+});
+
+test('Remove PDF supports synchronized page ranges, output naming, and a Rotate-style action', () => {
+  assert.match(component, /Select Pages &amp; Preview/);
+  assert.match(component, /import \{ formatPageRanges, parsePageRanges, parsePageRangesWhileTyping \} from '\.\.\/lib\/pageSelection\.mjs'/);
+  assert.match(component, /id="remove-page-ranges"/);
+  assert.match(component, /parsePageRangesWhileTyping\(value, pageCount\)/);
+  assert.match(component, /setRangeInput\(formatPageRanges\(\[\.\.\.updated\]\)\)/);
+  assert.match(component, /parsePageRanges\(rangeInput, pageCount\)/);
+  assert.match(component, /selectedPages\.size >= pageCount/);
+  assert.match(component, /id="remove-output-filename"/);
+  assert.match(component, /className="rotate-output-actions remove-pdf-output-actions"/);
+  assert.match(component, /className=\{`rotate-process-button[\s\S]*?Remove Selected Pages/);
+  assert.match(component, /normalizeOutputFileName\(outputFileName, [^)]*_pages_removed\.pdf/);
+  assert.match(component, /showFilenameEditor=\{false\}/);
 });
 
 test('Remove PDF workflow panels use bounded responsive surfaces and theme-aware colors', () => {
@@ -64,12 +81,31 @@ test('Remove PDF controls and page tiles keep dark-theme surfaces and contrast',
   assert.match(styles, /:root\[data-theme='dark'\] \.remove-pdf-page-preview-panel \.pdf-page-grid-select\[aria-pressed='true'\]\s*\{[^}]*background(?:-color)?:\s*color-mix\([^;]*\)\s*!important/s);
 });
 
-test('Remove PDF redesign retains confirmation and last-page removal safeguards', () => {
-  assert.match(component, /if \(isRemoving && selectedPages\.size >= pageCount\)/);
+test('Remove PDF skips confirmation and offers a ready-to-download verified output', () => {
+  assert.match(component, /if \(isRemoving && pagesToProcess\.size >= pageCount\)/);
   assert.match(component, /At least one page must remain in the output PDF\./);
-  assert.match(component, /if \(isRemoving && !confirmRemoval\)/);
-  assert.match(component, /Confirm Remove Pages/);
+  assert.doesNotMatch(component, /confirmRemoval|Confirm Remove Pages|Remove \{selectedPages\.size\} selected/);
+  assert.match(component, /const downloadOutput = \(downloadFileName, bytes = outputBytes, fileName = outputName\)/);
+  assert.match(component, /\{outputBytes && \(/);
   assert.match(component, /isRemoving \? 'pages_removed' : 'pages_extracted'/);
+});
+
+test('Remove PDF shows a Download PDF action without a duplicate filename editor', () => {
+  assert.match(component, /\{outputBytes && \(/);
+  assert.match(component, /<DownloadReadyCard[\s\S]*?fileName=\{outputName\}[\s\S]*?showFilenameEditor=\{false\}[\s\S]*?onDownload=\{downloadOutput\}/);
+  assert.doesNotMatch(component, /downloadOutput\(normalizedOutputName, bytes\)/);
+});
+
+test('Remove PDF instructions describe its result-card download flow', () => {
+  const removeToolCopy = toolPage.slice(toolPage.indexOf('remove: {'), toolPage.indexOf('redact: {'));
+  const removeGuideCopy = toolGuide.slice(toolGuide.indexOf('remove: {'), toolGuide.indexOf('ocr: {'));
+
+  assert.match(removeToolCopy, /Download PDF/);
+  assert.doesNotMatch(removeToolCopy, /download(?:s| automatically)[^.]*automatically/i);
+  assert.doesNotMatch(removeToolCopy, /confirm removal|confirm that at least one page remains|download the generated PDF manually/i);
+  assert.match(removeGuideCopy, /click Remove Selected Pages[\s\S]*Download PDF/);
+  assert.doesNotMatch(removeGuideCopy, /downloads automatically/i);
+  assert.doesNotMatch(removeGuideCopy, /confirm the remaining page sequence/i);
 });
 
 test('Remove PDF page previews offer an accessible larger-view action', async () => {

@@ -17,15 +17,14 @@ test('Compress PDF keeps its add-files chooser after selected files and before s
 test('Image to PDF shows a top-right image count and keeps Add more in the attachment panel', async () => {
   const component = await readSource('../src/components/ImageToPdf.jsx');
   const fileSection = component.indexOf('className="image-to-pdf-file-section"');
-  const fileSectionEnd = component.indexOf('</section>', fileSection);
+  const settings = component.indexOf('className="image-to-pdf-settings-shell"', fileSection);
   const count = component.indexOf('className="image-to-pdf-image-count"', fileSection);
   const addImages = component.indexOf('imageUi.addMoreImages', fileSection);
-  const settings = component.indexOf('className="image-to-pdf-settings-shell"', fileSection);
 
   assert.ok(fileSection >= 0, 'the image picker should remain in a dedicated attachment panel');
-  assert.ok(count > fileSection && count < fileSectionEnd, 'the selected-image count should remain in the attachment heading');
-  assert.ok(addImages > count && addImages < fileSectionEnd, 'the add-images action should remain in the attachment panel');
-  assert.ok(settings > fileSectionEnd, 'settings should follow the attachment panel');
+  assert.ok(count > fileSection && count < settings, 'the selected-image count should remain in the attachment heading');
+  assert.ok(addImages > count && addImages < settings, 'the add-images action should remain in the attachment panel');
+  assert.ok(settings > fileSection, 'settings should follow the attachment panel');
 });
 
 test('Image to PDF attachment content has a descriptive heading and a neutral nested panel', async () => {
@@ -34,8 +33,8 @@ test('Image to PDF attachment content has a descriptive heading and a neutral ne
     readSource('../src/index.css')
   ]);
   const panelStart = component.indexOf('className="image-to-pdf-file-section"');
-  const panelEnd = component.indexOf('</section>', panelStart);
-  const panel = component.slice(panelStart, panelEnd);
+  const settingsStart = component.indexOf('className="image-to-pdf-settings-shell"', panelStart);
+  const panel = component.slice(panelStart, settingsStart);
 
   assert.match(panel, /aria-label=\{imageUi\.uploadLabel\}/);
   assert.match(panel, /<h3 id="image-to-pdf-file-heading"[^>]*>\{imageUi\.uploadLabel\}<\/h3>/);
@@ -44,20 +43,21 @@ test('Image to PDF attachment content has a descriptive heading and a neutral ne
   assert.match(styles, /\.image-to-pdf-file-section,\s*\.crop-pdf-settings-shell\s*\{[^}]*background:\s*var\(--surface-muted\)/s);
 });
 
-test('Image to PDF page tiles keep their previews and controls within narrow panels', async () => {
+test('Image to PDF keeps page previews focused and action controls in attached image rows', async () => {
   const [component, styles] = await Promise.all([
     readSource('../src/components/ImageToPdf.jsx'),
     readSource('../src/index.css')
   ]);
 
   assert.match(component, /className={`image-to-pdf-page-card/);
-  assert.match(component, /className="image-to-pdf-page-actions"/);
+  assert.match(component, /className="image-to-pdf-attached-image-actions"/);
+  assert.doesNotMatch(component, /className="image-to-pdf-page-actions"/);
   assert.match(component, /className="image-to-pdf-page-thumbnail-wrap"/);
   assert.match(styles, /\.image-to-pdf-file-section\s*\{[^}]*grid-template-columns:\s*minmax\(0,\s*1fr\)/s);
   assert.match(styles, /\.image-to-pdf-page-grid\s*\{[^}]*grid-template-columns:\s*repeat\(2,\s*minmax\(0,\s*1fr\)\)/s);
   assert.match(styles, /\.image-to-pdf-page-card\s*\{[^}]*min-width:\s*0/s);
-  assert.match(styles, /\.image-to-pdf-page-actions\s*\{[^}]*grid-template-columns:\s*repeat\(5,\s*minmax\(0,\s*1fr\)\)/s);
-  assert.match(styles, /@media \(max-width: 600px\) \{[\s\S]*?\.image-to-pdf-page-actions\s*\{/s);
+  assert.match(styles, /\.image-to-pdf-attached-image-actions\s*\{[^}]*display:\s*flex/s);
+  assert.match(styles, /\.image-to-pdf-attached-image-reorder\s*\{[^}]*border-radius/s);
 });
 
 test('PDF and Markdown file pickers use the shared attachment upload card', async () => {

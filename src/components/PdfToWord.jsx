@@ -17,10 +17,18 @@ import {
 import { AttachedFileActions, AttachedFileIcon } from './AttachedFileControls';
 import DownloadReadyCard from './DownloadReadyCard';
 import { createPdfFromRenderedPages, validateDocxFile } from '../lib/docxToPdf.mjs';
+import { normalizeOutputFileName } from '../lib/outputFileName.mjs';
 import { useLanguage } from '../i18n/useLanguage';
+import { getLocalizedToolUi } from '../i18n/toolUiLocalization.mjs';
 
 const OCR_NOTICE =
   'No readable text was found in this PDF. It may be blank or too low quality to recognize.';
+
+const getDefaultOutputFileName = (file, direction) => (
+  direction === 'pdf-to-word'
+    ? 'document_converted.docx'
+    : `${file.name.replace(/\.docx$/i, '')}_converted.pdf`
+);
 
 const groupItemsIntoLines = (items) => {
   const rows = [];
@@ -64,7 +72,7 @@ const groupItemsIntoLines = (items) => {
 };
 
 const PdfToWord = () => {
-  const { translate } = useLanguage();
+  const { translate, language } = useLanguage();
   const [direction, setDirection] = useState('pdf-to-word');
   const [file, setFile] = useState(null);
   const [isProcessing, setIsProcessing] = useState(false);
@@ -99,6 +107,7 @@ const PdfToWord = () => {
         validateDocxFile(selectedFile);
       }
       setFile(selectedFile);
+      setOutputFileName(getDefaultOutputFileName(selectedFile, direction));
       setProgress(0);
       setStatus('');
     } catch (validationError) {
@@ -375,25 +384,25 @@ const PdfToWord = () => {
     setError(null);
     setSuccess(false);
     setOutputBlob(null);
-    setOutputFileName('');
     setProgress(0);
     setStatus(direction === 'pdf-to-word' ? 'Reading PDF pages...' : 'Preparing Word document...');
 
     try {
       const arrayBuffer = await file.arrayBuffer();
       let result;
-      let outputName;
       if (direction === 'pdf-to-word') {
         const pages = await extractTextFromPdf(arrayBuffer, setProgress, setStatus);
         setStatus('Building Word document...');
         setProgress(95);
         result = await buildDocx(pages);
-        outputName = 'document_converted.docx';
       } else {
         const pdfBytes = await convertWordToPdf(arrayBuffer);
         result = new Blob([pdfBytes], { type: 'application/pdf' });
-        outputName = `${file.name.replace(/\.docx$/i, '')}_converted.pdf`;
       }
+      const outputName = normalizeOutputFileName(
+        outputFileName,
+        getDefaultOutputFileName(file, direction)
+      );
       setOutputBlob(result);
       setOutputFileName(outputName);
       setProgress(100);
@@ -512,21 +521,33 @@ const PdfToWord = () => {
               </div>
             </div>
           ) : (
-            <div className="pdf-attached-file-card word-attached-file-card">
-              <div className="word-attached-file-main">
-                <AttachedFileIcon />
-                <div className="word-attached-file-details">
-                  <p className="word-attached-file-name" title={file.name}>{file.name}</p>
-                  <p className="word-attached-file-meta">{(file.size / 1024 / 1024).toFixed(2)} MB</p>
+            <section className="conversion-selected-file-section word-selected-file-section" aria-labelledby="word-selected-file-heading">
+              <header>
+                <h3 id="word-selected-file-heading" className="merge-selected-files-title">
+                  {direction === 'pdf-to-word' ? 'PDF to convert' : 'Word file to convert'}
+                </h3>
+                <p>
+                  {direction === 'pdf-to-word'
+                    ? 'One PDF selected. Replace it or remove it to choose another.'
+                    : 'One Word file selected. Replace it or remove it to choose another.'}
+                </p>
+              </header>
+              <div className="pdf-attached-file-card word-attached-file-card">
+                <div className="word-attached-file-main">
+                  <AttachedFileIcon />
+                  <div className="word-attached-file-details">
+                    <p className="word-attached-file-name" title={file.name}>{file.name}</p>
+                    <p className="word-attached-file-meta">{(file.size / 1024 / 1024).toFixed(2)} MB</p>
+                  </div>
                 </div>
+                <AttachedFileActions
+                  fileName={file.name}
+                  onReplace={open}
+                  onRemove={removeFile}
+                  disabled={isProcessing}
+                />
               </div>
-              <AttachedFileActions
-                fileName={file.name}
-                onReplace={open}
-                onRemove={removeFile}
-                disabled={isProcessing}
-              />
-            </div>
+            </section>
           )}
             </section>
           </div>
@@ -577,26 +598,39 @@ const PdfToWord = () => {
               </div>
             </div>
 
-            <button
-              onClick={handleConvert}
-              disabled={isProcessing}
-              className={`
-                w-full flex items-center justify-center gap-2 py-4 px-6 rounded-xl font-bold text-white transition-all
-                ${isProcessing ? 'bg-slate-300 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700 shadow-lg shadow-blue-200 active:scale-[0.98]'}
-              `}
-            >
-              {isProcessing ? (
-                <>
-                  <Loader2 className="w-5 h-5 animate-spin" />
-                  Converting...
-                </>
-              ) : (
-                <>
-                  <Download className="w-5 h-5" />
-                  {direction === 'pdf-to-word' ? 'Convert to Word' : 'Convert to PDF'}
-                </>
-              )}
-            </button>
+            <div className="word-conversion-actions">
+              <label className="word-output-filename" htmlFor="word-output-filename">
+                <span>{getLocalizedToolUi(language).fileActions.outputFilename}</span>
+                <input
+                  id="word-output-filename"
+                  type="text"
+                  value={outputFileName}
+                  onChange={(event) => setOutputFileName(event.target.value)}
+                  aria-label={getLocalizedToolUi(language).fileActions.outputFilename}
+                  disabled={isProcessing}
+                />
+              </label>
+              <button
+                onClick={handleConvert}
+                disabled={isProcessing}
+                className={`
+                  pdf-conversion-action-button flex items-center justify-center gap-2 rounded-xl font-bold text-white transition-all
+                  ${isProcessing ? 'bg-slate-300 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700 shadow-lg shadow-blue-200 active:scale-[0.98]'}
+                `}
+              >
+                {isProcessing ? (
+                  <>
+                    <Loader2 className="w-5 h-5 animate-spin" />
+                    Converting...
+                  </>
+                ) : (
+                  <>
+                    <Download className="w-5 h-5" />
+                    {direction === 'pdf-to-word' ? 'Convert to Word' : 'Convert to PDF'}
+                  </>
+                )}
+              </button>
+            </div>
           </div>
         )}
       </div>
@@ -620,6 +654,7 @@ const PdfToWord = () => {
             sizeBytes={outputBlob.size}
             onDownload={downloadWordDocument}
             downloadLabel={direction === 'pdf-to-word' ? 'Download Word file' : 'Download PDF'}
+            showFilenameEditor={false}
           />
         )
       )}

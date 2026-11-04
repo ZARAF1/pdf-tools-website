@@ -1,19 +1,24 @@
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { AlertCircle, FileText, Loader2, Upload } from 'lucide-react';
 import { useToolExitGuard } from './ToolExitGuard';
 import DownloadReadyCard from './DownloadReadyCard';
 import { validateUnencryptedPdf } from '../lib/pdfValidation';
+import { normalizeOutputFileName } from '../lib/outputFileName.mjs';
 import pdfjsLib from '../lib/pdfjsClient';
 import {
   buildMarkdownFromPages,
   createPdfFromMarkdown,
   parseMarkdownPageSelection
 } from '../lib/markdownConversion.mjs';
-import { AttachedFileIcon } from './AttachedFileControls';
+import { AttachedFileActions, AttachedFileIcon } from './AttachedFileControls';
 import { useLanguage } from '../i18n/useLanguage';
+import { getLocalizedToolUi } from '../i18n/toolUiLocalization.mjs';
 
 const PdfMarkdown = () => {
-  const { translate } = useLanguage();
+  const { translate, language } = useLanguage();
+  const { fileActions } = getLocalizedToolUi(language);
+  const pdfInputRef = useRef(null);
+  const markdownInputRef = useRef(null);
   const [direction, setDirection] = useState('pdf-to-markdown');
   const [file, setFile] = useState(null);
   const [markdown, setMarkdown] = useState('');
@@ -27,20 +32,22 @@ const PdfMarkdown = () => {
   const [isProcessing, setIsProcessing] = useState(false);
   const [error, setError] = useState('');
   const markOutputDownloaded = useToolExitGuard(Boolean(file || markdown.trim()), outputBlob);
+  const defaultOutputName = direction === 'pdf-to-markdown'
+    ? `${file?.name.replace(/\.pdf$/i, '') || 'document'}_converted.md`
+    : `${(file?.name || 'document.md').replace(/\.md$/i, '')}_converted.pdf`;
 
   const clearOutput = () => {
     setOutputBlob(null);
-    setOutputName('');
     setError('');
   };
 
   const selectPdf = async (selectedFile) => {
-    clearOutput();
-    setFile(null);
     if (!selectedFile) return;
     try {
       await validateUnencryptedPdf(selectedFile);
       setFile(selectedFile);
+      setOutputName(`${selectedFile.name.replace(/\.pdf$/i, '')}_converted.md`);
+      clearOutput();
       setDirection('pdf-to-markdown');
     } catch (validationError) {
       console.error('Unable to validate PDF for Markdown conversion:', validationError);
@@ -49,8 +56,6 @@ const PdfMarkdown = () => {
   };
 
   const selectMarkdownFile = async (selectedFile) => {
-    clearOutput();
-    setFile(null);
     if (!selectedFile) return;
     if (!/\.md$/i.test(selectedFile.name) && !['text/markdown', 'text/plain'].includes(selectedFile.type)) {
       setError('Choose a Markdown (.md) or plain-text file.');
@@ -59,6 +64,8 @@ const PdfMarkdown = () => {
     try {
       setMarkdown(await selectedFile.text());
       setFile(selectedFile);
+      setOutputName(`${selectedFile.name.replace(/\.md$/i, '')}_converted.pdf`);
+      clearOutput();
       setDirection('markdown-to-pdf');
     } catch (readError) {
       console.error('Unable to read Markdown file:', readError);
@@ -113,13 +120,15 @@ const PdfMarkdown = () => {
       if (direction === 'pdf-to-markdown') {
         if (!file) throw new Error('Choose a PDF before converting.');
         const extracted = await extractPdfText();
+        const normalizedOutputName = normalizeOutputFileName(outputName, defaultOutputName);
         setMarkdown(extracted);
         setOutputBlob(new Blob([extracted], { type: 'text/markdown;charset=utf-8' }));
-        setOutputName(`${file.name.replace(/\.pdf$/i, '')}_converted.md`);
+        setOutputName(normalizedOutputName);
       } else {
         const bytes = await createPdfFromMarkdown(markdown, { pageSize, orientation, fontSize });
+        const normalizedOutputName = normalizeOutputFileName(outputName, defaultOutputName);
         setOutputBlob(new Blob([bytes], { type: 'application/pdf' }));
-        setOutputName(`${(file?.name || 'document.md').replace(/\.md$/i, '')}_converted.pdf`);
+        setOutputName(normalizedOutputName);
       }
     } catch (conversionError) {
       console.error('Unable to convert PDF and Markdown:', conversionError);
@@ -143,8 +152,17 @@ const PdfMarkdown = () => {
   const changeDirection = (nextDirection) => {
     setDirection(nextDirection);
     setFile(null);
+    setOutputName('');
     clearOutput();
     setPageSelection('');
+  };
+
+  const removeFile = () => {
+    setFile(null);
+    setOutputName('');
+    clearOutput();
+    if (pdfInputRef.current) pdfInputRef.current.value = '';
+    if (markdownInputRef.current) markdownInputRef.current.value = '';
   };
 
   return (
@@ -179,26 +197,38 @@ const PdfMarkdown = () => {
             <div className="tool-attachment-content">
               <section className="pdf-markdown-attachment-panel" aria-label="PDF file selection">
                 <div>
-                  <div className="markdown-file-picker pdf-workflow-upload merge-pdf-upload-zone">
-                    <div className="merge-pdf-upload-content">
-                      <div className="pdf-upload-icon" aria-hidden="true">
-                        <FileText className="h-6 w-6 text-blue-600" />
+                  <input ref={pdfInputRef} id="markdown-pdf-input" className="markdown-file-input sr-only" type="file" accept="application/pdf,.pdf"
+                    aria-label="Choose a PDF to convert"
+                    onChange={(event) => { selectPdf(event.target.files?.[0]); event.currentTarget.value = ''; }} />
+                  {!file ? (
+                    <div className="markdown-file-picker pdf-workflow-upload merge-pdf-upload-zone">
+                      <div className="merge-pdf-upload-content">
+                        <div className="pdf-upload-icon" aria-hidden="true">
+                          <FileText className="h-6 w-6 text-blue-600" />
+                        </div>
+                        <div className="merge-pdf-upload-copy">
+                          <h3>Choose a PDF to convert</h3>
+                          <p>Extract selectable text and optionally choose pages.</p>
+                        </div>
+                        <label htmlFor="markdown-pdf-input" className="pdf-editor-primary-button merge-pdf-upload-button cursor-pointer">Choose PDF</label>
                       </div>
-                      <div className="merge-pdf-upload-copy">
-                        <h3>Choose a PDF to convert</h3>
-                        <p>Extract selectable text and optionally choose pages.</p>
+                    </div>
+                  ) : (
+                    <section className="conversion-selected-file-section markdown-selected-file-section" aria-labelledby="markdown-selected-pdf-heading">
+                      <header>
+                        <h3 id="markdown-selected-pdf-heading" className="merge-selected-files-title">PDF to convert</h3>
+                        <p>One PDF selected. Its selectable text will be extracted into Markdown.</p>
+                      </header>
+                      <div className="pdf-attached-file-card flex min-w-0 items-center gap-3 p-4">
+                        <AttachedFileIcon />
+                        <p className="min-w-0 truncate text-sm font-semibold text-slate-800">{file.name}</p>
+                        <AttachedFileActions
+                          fileName={file.name}
+                          onReplace={() => pdfInputRef.current?.click()}
+                          onRemove={removeFile}
+                        />
                       </div>
-                      <input id="markdown-pdf-input" className="markdown-file-input sr-only" type="file" accept="application/pdf,.pdf"
-                        aria-label="Choose a PDF to convert"
-                        onChange={(event) => selectPdf(event.target.files?.[0])} />
-                      <label htmlFor="markdown-pdf-input" className="pdf-editor-primary-button merge-pdf-upload-button cursor-pointer">Choose PDF</label>
-                    </div>
-                  </div>
-                  {file && (
-                    <div className="pdf-attached-file-card flex min-w-0 items-center gap-3 p-4">
-                      <AttachedFileIcon />
-                      <p className="min-w-0 truncate text-sm font-semibold text-slate-800">{file.name}</p>
-                    </div>
+                    </section>
                   )}
                 </div>
               </section>
@@ -243,26 +273,38 @@ const PdfMarkdown = () => {
             <div className="tool-attachment-content">
               <section className="pdf-markdown-attachment-panel" aria-label="Markdown file selection">
                 <div className="space-y-4">
-                  <div className="markdown-file-picker pdf-workflow-upload merge-pdf-upload-zone">
-                    <div className="merge-pdf-upload-content">
-                      <div className="pdf-upload-icon" aria-hidden="true">
-                        <FileText className="h-6 w-6 text-blue-600" />
+                  <input ref={markdownInputRef} id="markdown-upload-pdf" className="markdown-file-input sr-only" type="file" accept=".md,text/markdown,text/plain"
+                    aria-label="Choose a Markdown file"
+                    onChange={(event) => { selectMarkdownFile(event.target.files?.[0]); event.currentTarget.value = ''; }} />
+                  {!file ? (
+                    <div className="markdown-file-picker pdf-workflow-upload merge-pdf-upload-zone">
+                      <div className="merge-pdf-upload-content">
+                        <div className="pdf-upload-icon" aria-hidden="true">
+                          <FileText className="h-6 w-6 text-blue-600" />
+                        </div>
+                        <div className="merge-pdf-upload-copy">
+                          <h3>Upload a Markdown file, or paste and edit below</h3>
+                          <p>Choose an existing Markdown file or enter content directly.</p>
+                        </div>
+                        <label htmlFor="markdown-upload-pdf" className="pdf-editor-primary-button merge-pdf-upload-button cursor-pointer">Choose Markdown file</label>
                       </div>
-                      <div className="merge-pdf-upload-copy">
-                        <h3>Upload a Markdown file, or paste and edit below</h3>
-                        <p>Choose an existing Markdown file or enter content directly.</p>
+                    </div>
+                  ) : (
+                    <section className="conversion-selected-file-section markdown-selected-file-section" aria-labelledby="markdown-selected-file-heading">
+                      <header>
+                        <h3 id="markdown-selected-file-heading" className="merge-selected-files-title">Markdown file to convert</h3>
+                        <p>Optional Markdown file selected. Its text is loaded into the editor below.</p>
+                      </header>
+                      <div className="pdf-attached-file-card flex min-w-0 items-center gap-3 p-4">
+                        <AttachedFileIcon />
+                        <p className="min-w-0 truncate text-sm font-semibold text-slate-800">{file.name}</p>
+                        <AttachedFileActions
+                          fileName={file.name}
+                          onReplace={() => markdownInputRef.current?.click()}
+                          onRemove={removeFile}
+                        />
                       </div>
-                      <input id="markdown-upload-pdf" className="markdown-file-input sr-only" type="file" accept=".md,text/markdown,text/plain"
-                        aria-label="Choose a Markdown file"
-                        onChange={(event) => selectMarkdownFile(event.target.files?.[0])} />
-                      <label htmlFor="markdown-upload-pdf" className="pdf-editor-primary-button merge-pdf-upload-button cursor-pointer">Choose Markdown file</label>
-                    </div>
-                  </div>
-                  {file && (
-                    <div className="pdf-attached-file-card flex min-w-0 items-center gap-3 p-4">
-                      <AttachedFileIcon />
-                      <p className="min-w-0 truncate text-sm font-semibold text-slate-800">{file.name}</p>
-                    </div>
+                    </section>
                   )}
                 </div>
               </section>
@@ -305,13 +347,20 @@ const PdfMarkdown = () => {
       {error && <div role="alert" className="flex items-start gap-2 rounded-xl border border-red-200 bg-red-50 p-4 text-red-700">
         <AlertCircle aria-hidden="true" className="mt-0.5 h-5 w-5 shrink-0" /><span>{error}</span>
       </div>}
-      <button type="button" onClick={convert} disabled={isProcessing || (direction === 'pdf-to-markdown' && !file)}
-        className="pdf-editor-primary-button inline-flex items-center gap-2 disabled:cursor-not-allowed disabled:opacity-60">
-        {isProcessing ? <Loader2 className="h-5 w-5 animate-spin" aria-hidden="true" /> : <FileText className="h-5 w-5" aria-hidden="true" />}
-        {isProcessing ? 'Converting…' : 'Convert'}
-      </button>
+      <div className="pdf-markdown-conversion-actions">
+        <label className="word-output-filename pdf-markdown-output-filename" htmlFor="markdown-output-filename">
+          <span>{fileActions.outputFilename}</span>
+          <input id="markdown-output-filename" type="text" value={outputName || defaultOutputName}
+            onChange={(event) => setOutputName(event.target.value)} disabled={isProcessing} />
+        </label>
+        <button type="button" onClick={convert} disabled={isProcessing || (direction === 'pdf-to-markdown' && !file)}
+          className="pdf-editor-primary-button pdf-conversion-action-button inline-flex items-center justify-center gap-2 disabled:cursor-not-allowed disabled:opacity-60">
+          {isProcessing ? <Loader2 className="h-5 w-5 animate-spin" aria-hidden="true" /> : <FileText className="h-5 w-5" aria-hidden="true" />}
+          {isProcessing ? 'Converting…' : 'Convert'}
+        </button>
+      </div>
       {outputBlob && <DownloadReadyCard fileName={outputName} sizeBytes={outputBlob.size}
-        onDownload={downloadOutput} downloadLabel="Download" />}
+        onDownload={downloadOutput} downloadLabel="Download" showFilenameEditor={false} />}
       <p className="flex items-start gap-2 text-sm text-slate-600">
         <Upload className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
         Files are processed in your browser. PDF text extraction does not include scanned image text; use OCR first.

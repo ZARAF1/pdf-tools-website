@@ -13,6 +13,7 @@ import {
   Loader2, 
   AlertCircle,
   CheckCircle2,
+  Check,
   RotateCw,
   Eye,
   X
@@ -612,6 +613,11 @@ const PdfRotator = () => {
                           >
                             <Eye className="h-4 w-4" aria-hidden="true" />
                           </button>
+                          {mode === 'selected' && isSelected && (
+                            <span className="rotate-page-selected-indicator" aria-hidden="true">
+                              <Check className="h-4 w-4" aria-hidden="true" />
+                            </span>
+                          )}
                         </div>
                         <button
                           type="button"
@@ -667,28 +673,26 @@ const PdfRotator = () => {
           </div>
 
             <div className="rotate-output-actions">
-              <div className="merge-option-field">
-                <label htmlFor="rotate-output-filename">Output filename</label>
-                <input
-                  id="rotate-output-filename"
-                  type="text"
-                  value={outputFileName}
-                  disabled={isProcessing}
-                  onChange={(event) => {
-                    setOutputFileName(event.target.value);
-                    setError(null);
-                    clearResult();
-                  }}
-                  maxLength={120}
-                  autoComplete="off"
-                />
-                <p>The .pdf extension is added automatically when needed.</p>
-              </div>
+              <label htmlFor="rotate-output-filename">Output filename</label>
+              <input
+                id="rotate-output-filename"
+                type="text"
+                value={outputFileName}
+                disabled={isProcessing}
+                onChange={(event) => {
+                  setOutputFileName(event.target.value);
+                  setError(null);
+                  clearResult();
+                }}
+                maxLength={120}
+                autoComplete="off"
+              />
+              <p>The .pdf extension is added automatically when needed.</p>
               <button
                 type="button"
                 onClick={handleRotate}
                 disabled={isLoading || isProcessing || !canRotate}
-                className={`rotate-process-button flex items-center justify-center gap-2 py-4 px-6 rounded-xl font-bold text-white transition-all
+                className={`rotate-process-button flex items-center justify-center gap-2 px-6 rounded-xl font-bold text-white transition-all
                   ${isProcessing || !canRotate ? 'bg-slate-300 cursor-not-allowed' : 'bg-amber-600 hover:bg-amber-700 shadow-lg shadow-amber-200 active:scale-[0.98]'}
                 `}
               >
@@ -725,6 +729,7 @@ const PdfRotator = () => {
         <DownloadReadyCard
           fileName={outputName}
           sizeBytes={outputBytes.length}
+          showFilenameEditor={false}
           onDownload={downloadRotatedPdf}
         />
       )}

@@ -10,7 +10,6 @@ import {
   Eye,
   Image as ImageIcon,
   Loader2,
-  RotateCcw,
   RotateCw,
   RefreshCw,
   Trash2,
@@ -29,6 +28,7 @@ import {
 } from '../lib/imagePdfLayout.mjs';
 import {
   getEffectiveImagePdfSettings,
+  resetImagePdfSettings,
   updateImagePdfSettingsForScope
 } from '../lib/imagePdfSettings.mjs';
 import { createImagePdfArchive } from '../lib/imagePdfArchive.mjs';
@@ -396,20 +396,14 @@ const ImageToPdf = () => {
     clearOutput();
   };
 
-  const reset = () => {
-    selectionGenerationRef.current += 1;
-    pendingImageCountRef.current = 0;
-    setPendingImageCount(0);
-    previewUrls.current.forEach((url) => URL.revokeObjectURL(url));
-    previewUrls.current.clear();
-    setImages([]);
+  const resetSettings = () => {
+    setImages((current) => resetImagePdfSettings(current));
     setSelectedImageIds(new Set());
     setSettingsScope('all');
     setOutputMode('single');
-    closeLargePreview();
+    setSettings(INITIAL_SETTINGS);
     setError('');
     clearOutput();
-    setSettings(INITIAL_SETTINGS);
   };
 
   const updateSetting = (settingKey, value) => {
@@ -618,17 +612,18 @@ const ImageToPdf = () => {
         <div className="tool-attachment-content">
           <section className="image-to-pdf-file-section" aria-label={imageUi.uploadLabel}>
             {images.length > 0 && (
-              <header className="image-to-pdf-file-section-header">
-                <div>
-                  <h3 id="image-to-pdf-file-heading" className="merge-selected-files-title">{imageUi.uploadLabel}</h3>
-                </div>
-                <span className="image-to-pdf-image-count" aria-live="polite">
-                  {formatToolUiMessage(imageUi.imageCount, { count: images.length, max: MAX_IMAGES })}
-                </span>
-              </header>
-            )}
-            {images.length > 0 && (
-              <>
+              <section
+                className="conversion-selected-file-section image-to-pdf-selected-file-section"
+                aria-labelledby="image-to-pdf-file-heading"
+              >
+                <header className="image-to-pdf-file-section-header">
+                  <div>
+                    <h3 id="image-to-pdf-file-heading" className="merge-selected-files-title">{imageUi.uploadLabel}</h3>
+                  </div>
+                  <span className="image-to-pdf-image-count" aria-live="polite">
+                    {formatToolUiMessage(imageUi.imageCount, { count: images.length, max: MAX_IMAGES })}
+                  </span>
+                </header>
                 <h4 className="image-to-pdf-attached-images-title">{imageUi.attachedImages}</h4>
                 <ol className="image-to-pdf-attached-image-list" aria-label={imageUi.attachedImages}>
                   {images.map((image, index) => (
@@ -645,17 +640,59 @@ const ImageToPdf = () => {
                           <span>{formatBytes(image.file.size)}</span>
                         </p>
                       </div>
+                      <div className="image-to-pdf-attached-image-actions">
+                        <div className="image-to-pdf-attached-image-reorder">
+                          <button
+                            type="button"
+                            onClick={() => moveImage(index, -1)}
+                            disabled={index === 0 || isProcessing}
+                            aria-label={`${imageUi.moveUp}: ${image.name}`}
+                            title={imageUi.moveUp}
+                            className="organize-pdf-page-action image-to-pdf-attached-image-action"
+                          >
+                            <ArrowUp className="h-4 w-4" aria-hidden="true" />
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => moveImage(index, 1)}
+                            disabled={index === images.length - 1 || isProcessing}
+                            aria-label={`${imageUi.moveDown}: ${image.name}`}
+                            title={imageUi.moveDown}
+                            className="organize-pdf-page-action image-to-pdf-attached-image-action"
+                          >
+                            <ArrowDown className="h-4 w-4" aria-hidden="true" />
+                          </button>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => rotateImage(image.id, 90)}
+                          disabled={isProcessing}
+                          aria-label={`${imageUi.rotateClockwise}: ${image.name}`}
+                          title={imageUi.rotateClockwise}
+                          className="organize-pdf-page-action image-to-pdf-attached-image-action"
+                        >
+                          <RotateCw className="h-4 w-4" aria-hidden="true" />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => removeImage(image.id)}
+                          disabled={isProcessing}
+                          aria-label={formatToolUiMessage(fileActions.remove, { fileName: image.name })}
+                          title={formatToolUiMessage(fileActions.remove, { fileName: image.name })}
+                          className="organize-pdf-page-action image-to-pdf-attached-image-action image-to-pdf-page-remove"
+                        >
+                          <Trash2 className="h-4 w-4" aria-hidden="true" />
+                        </button>
+                      </div>
                     </li>
                   ))}
                 </ol>
-              </>
-            )}
-            {images.length > 0 && (
-              <div className="image-to-pdf-file-actions">
-                <div className="flex justify-end">
-                  <button type="button" onClick={open} disabled={isProcessing || images.length >= MAX_IMAGES} className="pdf-upload-trigger rounded-xl border px-5 py-3 font-semibold transition disabled:cursor-not-allowed disabled:opacity-50">{formatToolUiMessage(imageUi.addMoreImages, { count: images.length, max: MAX_IMAGES })}</button>
+                <div className="image-to-pdf-file-actions">
+                  <div className="flex justify-end">
+                    <button type="button" onClick={open} disabled={isProcessing || images.length >= MAX_IMAGES} className="pdf-upload-trigger rounded-xl border px-5 py-3 font-semibold transition disabled:cursor-not-allowed disabled:opacity-50">{formatToolUiMessage(imageUi.addMoreImages, { count: images.length, max: MAX_IMAGES })}</button>
+                  </div>
                 </div>
-              </div>
+              </section>
             )}
 
             <div
@@ -844,6 +881,16 @@ const ImageToPdf = () => {
                   {imageUi.encodingNote}
                 </p>
               </fieldset>
+              <div className="flex justify-end pt-4">
+                <button
+                  type="button"
+                  onClick={resetSettings}
+                  disabled={isProcessing}
+                  className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-5 py-3 font-semibold text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  <RefreshCw className="h-4 w-4" aria-hidden="true" /> {imageUi.reset}
+                </button>
+              </div>
             </section>
           </div>
 
@@ -917,23 +964,6 @@ const ImageToPdf = () => {
                       <p className="image-to-pdf-page-details">
                         {image.width} × {image.height} px · {formatBytes(image.file.size)} · {image.rotation}°
                       </p>
-                      <div className="image-to-pdf-page-actions">
-                        <button type="button" onClick={() => moveImage(index, -1)} disabled={index === 0 || isProcessing} aria-label={`${imageUi.moveUp}: ${image.name}`} className="organize-pdf-page-action">
-                          <ArrowUp className="h-4 w-4" aria-hidden="true" />
-                        </button>
-                        <button type="button" onClick={() => moveImage(index, 1)} disabled={index === images.length - 1 || isProcessing} aria-label={`${imageUi.moveDown}: ${image.name}`} className="organize-pdf-page-action">
-                          <ArrowDown className="h-4 w-4" aria-hidden="true" />
-                        </button>
-                        <button type="button" onClick={() => rotateImage(image.id, -90)} disabled={isProcessing} aria-label={`${imageUi.rotateCounterclockwise}: ${image.name}`} title={imageUi.rotateCounterclockwise} className="organize-pdf-page-action">
-                          <RotateCcw className="h-4 w-4" aria-hidden="true" />
-                        </button>
-                        <button type="button" onClick={() => rotateImage(image.id, 90)} disabled={isProcessing} aria-label={`${imageUi.rotateClockwise}: ${image.name}`} title={imageUi.rotateClockwise} className="organize-pdf-page-action">
-                          <RotateCw className="h-4 w-4" aria-hidden="true" />
-                        </button>
-                        <button type="button" onClick={() => removeImage(image.id)} disabled={isProcessing} aria-label={formatToolUiMessage(fileActions.remove, { fileName: image.name })} title={formatToolUiMessage(fileActions.remove, { fileName: image.name })} className="organize-pdf-page-action image-to-pdf-page-remove">
-                          <Trash2 className="h-4 w-4" aria-hidden="true" />
-                        </button>
-                      </div>
                       <AttachedFileActions
                         fileName={image.name}
                         onReplace={() => replaceImage(image.id)}
@@ -983,18 +1013,15 @@ const ImageToPdf = () => {
       )}
 
       {images.length > 0 && (
-          <div className="pdf-workflow-actions image-to-pdf-action-row flex flex-row justify-end gap-3 pt-2">
-            <button type="button" onClick={generatePdf} disabled={isProcessing} className="inline-flex min-w-0 flex-1 items-center justify-center gap-2 rounded-xl bg-blue-600 px-6 py-3 font-bold text-white shadow-md transition hover:bg-blue-700 active:scale-[0.99] disabled:cursor-not-allowed disabled:bg-slate-300">
-              {isProcessing ? <Loader2 className="h-5 w-5 animate-spin" aria-hidden="true" /> : <ImageIcon className="h-5 w-5" aria-hidden="true" />}
-              {isProcessing
-                ? imageUi.creatingPdf
-                : formatToolUiMessage(imageUi.createPdf, {
-                  count: images.length,
-                  pageUnit: images.length === 1 ? imageUi.page : imageUi.pages
-                })}
-            </button>
-            <button type="button" onClick={reset} disabled={isProcessing} className="inline-flex shrink-0 items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-5 py-3 font-semibold text-slate-700 transition hover:bg-slate-50 disabled:opacity-50">
-              <RefreshCw className="h-4 w-4" aria-hidden="true" /> {imageUi.reset}
+          <div className="pdf-workflow-actions image-to-pdf-action-row flex flex-row flex-wrap justify-end gap-3 pt-2">
+              <button type="button" onClick={generatePdf} disabled={isProcessing} className="inline-flex shrink-0 items-center justify-center gap-2 rounded-xl bg-blue-600 px-5 py-2.5 font-bold text-white shadow-md transition hover:bg-blue-700 active:scale-[0.99] disabled:cursor-not-allowed disabled:bg-slate-300">
+                {isProcessing ? <Loader2 className="h-5 w-5 animate-spin" aria-hidden="true" /> : <ImageIcon className="h-5 w-5" aria-hidden="true" />}
+                {isProcessing
+                  ? imageUi.creatingPdf
+                  : formatToolUiMessage(imageUi.createPdf, {
+                    count: images.length,
+                    pageUnit: images.length === 1 ? imageUi.page : imageUi.pages
+                  })}
             </button>
           </div>
       )}
@@ -1007,6 +1034,7 @@ const ImageToPdf = () => {
           sizeBytes={outputArchive?.blob.size ?? outputBytes.length}
           onDownload={downloadOutput}
           downloadLabel={outputArchive ? imageUi.downloadZip : imageUi.downloadPdf}
+          showFilenameEditor={false}
         />
       )}
     </div>

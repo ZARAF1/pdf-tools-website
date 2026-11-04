@@ -17,7 +17,7 @@ const expectedDescriptions = new Map([
   ['PdfWatermarker.jsx', 'Add a text watermark and page numbers to selected PDF pages.'],
   ['PageSelectionTool.jsx', 'Remove selected pages from a PDF. Extract selected pages into a new PDF.'],
   ['OcrPdf.jsx', 'Recognize scanned text and add a searchable text layer to PDF pages.'],
-  ['OrganizePdf.jsx', 'Reorder, rotate, or remove PDF pages.'],
+  ['OrganizePdf.jsx', 'Reorder, rotate, crop, or remove PDF pages.'],
   ['RedactPdf.jsx', 'Permanently cover selected content on PDF pages.'],
   ['SignPdf.jsx', 'Add a visible typed, drawn, or image signature to PDF pages.']
 ]);

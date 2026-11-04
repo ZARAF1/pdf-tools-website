@@ -29,6 +29,12 @@ test('Image to PDF groups settings and composed image tiles in matching preview 
   assert.match(component, /className="merge-selected-file-position image-to-pdf-attached-image-position"/);
   assert.match(component, /String\(index \+ 1\)\.padStart\(2, '0'\)/);
   assert.match(component, /image\.name[\s\S]*image\.width[\s\S]*formatBytes\(image\.file\.size\)/);
+  const attachedImageRows = component.slice(attachedImagesIndex, component.indexOf('</ol>', attachedImagesIndex));
+  assert.match(attachedImageRows, /className="image-to-pdf-attached-image-actions"/);
+  assert.match(attachedImageRows, /onClick=\{\(\) => moveImage\(index, -1\)\}/);
+  assert.match(attachedImageRows, /onClick=\{\(\) => moveImage\(index, 1\)\}/);
+  assert.match(attachedImageRows, /onClick=\{\(\) => rotateImage\(image\.id, 90\)\}/);
+  assert.match(attachedImageRows, /onClick=\{\(\) => removeImage\(image\.id\)\}/);
   assert.match(settingsSection, /className="image-to-pdf-settings-panel"/);
   assert.match(settingsSection, /<h3 className="merge-selected-files-title">\{imageUi\.settingsTitle\}<\/h3>\s*<p>\{imageUi\.settingsDescription\}<\/p>/);
   assert.match(settingsSection, /id="image-to-pdf-scope-toggle-label"[^>]*>\s*\{imageUi\.scopeToggleLabel\}\s*<\/p>/);
@@ -56,20 +62,64 @@ test('Image to PDF groups settings and composed image tiles in matching preview 
   assert.match(previewSection, /imageUi\.viewLargerPreview/);
   assert.match(previewSection, /Eye className=/);
   assert.match(previewSection, /image-to-pdf-page-preview-dialog/);
-  assert.match(previewSection, /moveImage\(index, -1\)/);
-  assert.match(previewSection, /moveImage\(index, 1\)/);
-  assert.match(previewSection, /rotateImage\(image\.id, 90\)/);
-  assert.match(previewSection, /removeImage\(image\.id\)/);
+  assert.doesNotMatch(previewSection, /className="image-to-pdf-page-actions"/, 'reorder, rotate, and remove controls are kept in the attached image rows rather than duplicated on preview tiles');
   assert.match(styles, /\.image-to-pdf-settings-shell,\s*\.image-to-pdf-preview-shell\s*\{[^}]*background:\s*var\(--surface-muted\)/s);
   assert.match(styles, /\.image-to-pdf-settings-panel,\s*\.image-to-pdf-preview-panel\s*\{[^}]*background:\s*var\(--surface-background\)/s);
   assert.match(styles, /\.image-to-pdf-workflow \.image-to-pdf-setting\s*\{[^}]*padding:\s*0\.625rem/s);
   assert.match(styles, /\.image-to-pdf-workflow \.image-to-pdf-settings-controls\s*\{[^}]*gap:\s*0\.75rem/s);
   assert.match(styles, /\.image-to-pdf-attached-image-list\s*\{[^}]*gap:\s*0\.625rem/s);
   assert.match(styles, /\.image-to-pdf-attached-image-position\s*\{[^}]*width:\s*1\.875rem/s);
-  const actionRow = component.slice(component.indexOf('className="pdf-workflow-actions'), component.indexOf('{error &&'));
-  assert.ok(actionRow.indexOf('imageUi.createPdf') < actionRow.indexOf('imageUi.reset'), 'Create PDF should precede Reset in the action row');
+  const mobileStyles = styles.slice(styles.lastIndexOf('@media (max-width: 600px)'));
+  assert.match(mobileStyles, /\.image-to-pdf-attached-image-card\s*\{[^}]*grid-template-columns:\s*1\.875rem 2\.5rem minmax\(0, 1fr\);/s);
+  assert.match(mobileStyles, /\.image-to-pdf-attached-image-actions\s*\{[^}]*grid-column:\s*3\s*\/\s*-1;[^}]*justify-self:\s*end;/s);
+  assert.match(mobileStyles, /\.image-to-pdf-attached-image-action\s*\{[^}]*width:\s*1\.5rem;[^}]*height:\s*1\.5rem;/s);
+  const actionStart = component.indexOf('className="pdf-workflow-actions image-to-pdf-action-row');
+  const actionEnd = component.indexOf('{error &&', actionStart);
+  const actionRow = component.slice(actionStart, actionEnd);
+  const settingsShell = component.slice(settingsStart, previewStart);
+  assert.match(settingsShell, /onClick=\{resetSettings\}[\s\S]*?\{imageUi\.reset\}/, 'settings reset should be inside the Settings panel');
+  assert.doesNotMatch(actionRow, /imageUi\.reset/, 'the action row should not reset or remove attached images');
   assert.match(actionRow, /className="pdf-workflow-actions[^"]*justify-end/);
   assert.match(component, /imageUi\.outputMode/);
   assert.match(component, /outputMode === 'separate'/);
   assert.match(component, /createImagePdfArchive/);
+  assert.match(component, /const resetSettings = \(\) => \{[\s\S]*?setImages\(\(current\) => resetImagePdfSettings\(current\)\);[\s\S]*?setSettings\(INITIAL_SETTINGS\);[\s\S]*?clearOutput\(\);[\s\S]*?\};/);
+});
+
+test('Image to PDF places selected images in their own muted attachment section', async () => {
+  const [component, styles] = await Promise.all([
+    readSource('../src/components/ImageToPdf.jsx'),
+    readSource('../src/index.css')
+  ]);
+  const selectedSection = component.match(
+    /className="conversion-selected-file-section image-to-pdf-selected-file-section"[\s\S]*?<\/section>/
+  )?.[0];
+
+  assert.ok(selectedSection, 'selected images have a dedicated section');
+  assert.match(selectedSection, /imageUi\.uploadLabel/);
+  assert.match(selectedSection, /imageUi\.imageCount/);
+  assert.match(selectedSection, /image-to-pdf-attached-image-list/);
+  assert.match(selectedSection, /imageUi\.addMoreImages/);
+  assert.match(styles, /\.conversion-selected-file-section\s*\{[^}]*background:\s*var\(--surface-muted\)/s);
+});
+
+test('Image to PDF uses a compact right-aligned action and places its result afterward', async () => {
+  const [component, styles] = await Promise.all([
+    readSource('../src/components/ImageToPdf.jsx'),
+    readSource('../src/index.css')
+  ]);
+  const actionStart = component.indexOf('className="pdf-workflow-actions image-to-pdf-action-row');
+  const actionEnd = component.indexOf('{error &&', actionStart);
+  const actionRow = component.slice(actionStart, actionEnd);
+  const createButton = actionRow.match(/<button[^>]*onClick=\{generatePdf\}[\s\S]*?<\/button>/)?.[0];
+
+  assert.ok(actionStart >= 0, 'the image workflow action row is present');
+  assert.match(actionRow, /flex flex-row flex-wrap justify-end/, 'actions remain right-aligned and can wrap on narrow screens');
+  assert.doesNotMatch(createButton, /\bflex-1\b/, 'Create PDF should size to its content');
+  assert.match(createButton, /\bshrink-0\b/, 'Create PDF should retain its compact width on narrow screens');
+  assert.match(createButton, /px-5 py-2\.5/, 'Create PDF should use compact button padding');
+  assert.ok(actionRow.indexOf('imageUi.reset') < actionRow.indexOf('imageUi.createPdf'), 'Create PDF is the rightmost action');
+  assert.match(styles, /\.image-to-pdf-workflow \.pdf-workflow-actions\s*\{[^}]*order:\s*4/s);
+  assert.match(styles, /\.image-to-pdf-workflow > \.download-ready-card,\s*\.pdf-to-images-workflow > \.download-ready-card\s*\{\s*order:\s*5;/s);
+  assert.match(component, /<DownloadReadyCard[\s\S]*?showFilenameEditor=\{false\}/);
 });

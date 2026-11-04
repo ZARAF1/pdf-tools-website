@@ -1017,6 +1017,57 @@ const EditPdf = () => {
     strokeWidth: draftItem.strokeWidth || strokeWidth
   } : null;
 
+  const uploadZone = (
+    <div
+      {...getRootProps({
+        role: 'group',
+        'aria-label': file ? `Selected PDF ${file.name}` : 'PDF upload area'
+      })}
+      className={`pdf-editor-upload-zone merge-pdf-upload-zone edit-sign-upload-zone ${isDragActive ? 'is-dragging' : ''} ${file ? 'has-file' : ''}`}
+    >
+      {file ? (
+        <div className="flex min-w-0 flex-1 items-center gap-3">
+          <AttachedFileIcon />
+          <div className="min-w-0">
+            <p className="truncate font-semibold pdf-editor-text">{file.name}</p>
+            <p className="text-sm pdf-editor-secondary">{formatBytes(file.size)} · {pageCount} {pageCount === 1 ? 'page' : 'pages'} · {visiblePageIds.length} remaining</p>
+          </div>
+        </div>
+      ) : (
+        <div className="merge-pdf-upload-content">
+          <div className="pdf-upload-icon shrink-0" aria-hidden="true">
+            {isLoading
+              ? <Loader2 className="h-6 w-6 animate-spin text-blue-600" />
+              : <Upload className="h-6 w-6 text-blue-600" />}
+          </div>
+          <div className="merge-pdf-upload-copy">
+            <h3>{isLoading ? 'Loading and validating PDF…' : isDragActive ? 'Drop the PDF to open it' : 'Choose or drop a PDF to edit'}</h3>
+            <p>Add text, images, drawings, highlights, and shapes to a PDF copy.</p>
+          </div>
+          <button
+            type="button"
+            onClick={(event) => {
+              event.stopPropagation();
+              open();
+            }}
+            disabled={isLoading || isSaving}
+            className="pdf-editor-primary-button merge-pdf-upload-button"
+          >
+            Choose PDF
+          </button>
+        </div>
+      )}
+      {file && (
+        <AttachedFileActions
+          fileName={file.name}
+          onReplace={open}
+          onRemove={clearWorkspace}
+          disabled={isLoading || isSaving}
+        />
+      )}
+    </div>
+  );
+
   return (
     <div className="pdf-editor-shell">
       <input {...getInputProps()} aria-label="Choose a PDF to edit" />
@@ -1029,54 +1080,17 @@ const EditPdf = () => {
         onChange={onImageSelected}
       />
 
-      <div
-        {...getRootProps({
-          role: 'group',
-          'aria-label': file ? `Selected PDF ${file.name}` : 'PDF upload area'
-        })}
-        className={`pdf-editor-upload-zone merge-pdf-upload-zone edit-sign-upload-zone ${isDragActive ? 'is-dragging' : ''} ${file ? 'has-file' : ''}`}
-      >
-        {file ? (
-          <div className="flex min-w-0 flex-1 items-center gap-3">
-            <AttachedFileIcon />
-            <div className="min-w-0">
-              <p className="truncate font-semibold pdf-editor-text">{file.name}</p>
-              <p className="text-sm pdf-editor-secondary">{formatBytes(file.size)} · {pageCount} {pageCount === 1 ? 'page' : 'pages'} · {visiblePageIds.length} remaining</p>
+      {file ? (
+        <section className="pdf-editor-attachment-panel merge-selected-files" aria-label="PDF attachment">
+          <header className="merge-selected-files-header">
+            <div>
+              <h3 className="merge-selected-files-title">File to Edit</h3>
+              <p>Replace or remove the attached PDF.</p>
             </div>
-          </div>
-        ) : (
-          <div className="merge-pdf-upload-content">
-            <div className="pdf-upload-icon shrink-0" aria-hidden="true">
-              {isLoading
-                ? <Loader2 className="h-6 w-6 animate-spin text-blue-600" />
-                : <Upload className="h-6 w-6 text-blue-600" />}
-            </div>
-            <div className="merge-pdf-upload-copy">
-              <h3>{isLoading ? 'Loading and validating PDF…' : isDragActive ? 'Drop the PDF to open it' : 'Choose or drop a PDF to edit'}</h3>
-              <p>Add text, images, drawings, highlights, and shapes to a PDF copy.</p>
-            </div>
-            <button
-              type="button"
-              onClick={(event) => {
-                event.stopPropagation();
-                open();
-              }}
-              disabled={isLoading || isSaving}
-              className="pdf-editor-primary-button merge-pdf-upload-button"
-            >
-              Choose PDF
-            </button>
-          </div>
-        )}
-        {file && (
-          <AttachedFileActions
-            fileName={file.name}
-            onReplace={open}
-            onRemove={clearWorkspace}
-            disabled={isLoading || isSaving}
-          />
-        )}
-      </div>
+          </header>
+          {uploadZone}
+        </section>
+      ) : uploadZone}
 
       {isLoading && file && <p className="pdf-editor-secondary text-sm" role="status">Validating replacement. Your current document and edits are preserved until the new PDF loads.</p>}
       {error && <p className="pdf-editor-message is-error" role="alert">{error}</p>}
@@ -1084,6 +1098,14 @@ const EditPdf = () => {
 
       {file && (
         <>
+          <section className="pdf-editor-section merge-selected-files" aria-labelledby="edit-pdf-editor-heading">
+            <header className="merge-selected-files-header pdf-editor-section-header">
+              <div>
+                <h3 id="edit-pdf-editor-heading" className="merge-selected-files-title">Editor</h3>
+                <p>Choose an editing tool, then make changes on the page preview.</p>
+              </div>
+            </header>
+
           <section aria-label="PDF editing controls" className="pdf-editor-toolbar">
             <div className="pdf-editor-tool-group" role="toolbar" aria-label="Editing tools">
               {TOOL_OPTIONS.map(({ id, label, icon: Icon }) => (
@@ -1353,6 +1375,7 @@ const EditPdf = () => {
               </div>
             </section>
           </div>
+          </section>
 
           <div className="pdf-editor-save-row">
             {!output && (

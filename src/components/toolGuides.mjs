@@ -75,8 +75,8 @@ export const TOOL_GUIDES = {
   },
   remove: {
     what: 'Choose pages to omit from a PDF and create a shorter document. At least one page must remain, so this tool is for removing unwanted pages rather than producing an empty file.',
-    how: 'Load the document, select the page thumbnails to remove, confirm the remaining page sequence, and create the output in the browser. The source document is not modified.',
-    result: 'A separate PDF contains the pages that were not selected for removal. Verify the remaining page count and sequence, especially for documents where references or page numbering depend on removed material.',
+    how: 'Load the document, enter page numbers and ranges such as 1-3, 5 or select thumbnails; both selection methods stay synchronized. Review the pages to remove, choose an output filename, and click Remove Selected Pages. Once the PDF is verified, use Download PDF on the result card to save it; the source document is not modified.',
+    result: 'A separate PDF contains the pages that were not selected for removal and is offered on a result card with a Download PDF button. Verify the remaining page count and sequence, especially for documents where references or page numbering depend on removed material.',
     applications: 'Remove duplicate scans, omit blank pages from a packet, or prepare a shorter sharing copy that excludes irrelevant sections.'
   },
   ocr: {
@@ -92,10 +92,10 @@ export const TOOL_GUIDES = {
     applications: 'Trim excess white margins around scans, make a chart more prominent in a reading copy, or standardize the visible framing of a document before printing.'
   },
   'organize-pages': {
-    what: 'Reorder, rotate, or remove PDF pages in one workflow. The page overview helps you check the new sequence before creating a document copy.',
-    how: 'Load a PDF, move pages into the desired order, rotate pages when needed, and remove pages you do not want. The browser creates a separate output from those choices.',
-    result: 'A new PDF reflects the selected page order, rotations, and removals. Review the full sequence and check signatures, bookmarks, forms, and other features after the document is rewritten.',
-    applications: 'Move a signed form to the front of a packet, group related pages together, correct a sideways scan, or remove a page while arranging a final submission.'
+    what: 'Reorder, rotate, crop, or remove PDF pages in one workflow. The page overview helps you check the new sequence and each page crop before creating a document copy.',
+    how: 'Load a PDF, drag pages into the desired order or use each page\'s move controls, crop a page from its tile, rotate pages when needed, and remove pages you do not want. Crop selections stay with their page as you reorder or rotate it. The browser creates a separate output from those choices.',
+    result: 'A new PDF reflects the selected page order, rotations, crops, and removals. Cropping changes the visible page boundary but does not permanently remove content outside it. Review the full sequence and check signatures, bookmarks, forms, and other features after the document is rewritten.',
+    applications: 'Move a signed form to the front of a packet, crop a page to focus on its content, group related pages together, correct a sideways scan, or remove a page while arranging a final submission.'
   },
   redact: {
     what: 'Permanently cover selected areas of a PDF page to remove sensitive visual content from the generated copy. This is different from drawing a movable black shape over text.',

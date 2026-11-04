@@ -772,6 +772,7 @@ const PdfMerger = () => {
               sizeBytes={outputBytes.length}
               onDownload={downloadMergedPdf}
               downloadLabel="Download PDF"
+              showFilenameEditor={false}
             />
           )}
         </div>

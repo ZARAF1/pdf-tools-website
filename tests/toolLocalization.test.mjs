@@ -69,6 +69,35 @@ test('Spanish OCR description uses Spanish wording for searchable output', () =>
   assert.match(ocrDescription, /buscable/i);
 });
 
+test('Organize PDF descriptions mention the per-page crop action in every supported language', () => {
+  const cropTerms = {
+    en: /crop/i,
+    es: /recortar/i,
+    fr: /recadrer/i,
+    de: /zuschneiden/i,
+    pt: /recortar/i,
+    it: /ritagliare/i,
+    nl: /bijsnijden/i,
+    pl: /przycinać/i,
+    sv: /beskära/i,
+    fi: /rajata/i,
+    da: /beskære/i,
+    nb: /beskjære/i,
+    tr: /kırp/i,
+    ru: /обрез/i,
+    uk: /обріз/i,
+    ar: /قص/,
+    hi: /क्रॉप/,
+    ja: /トリミング/,
+    ko: /자르기/,
+    'zh-CN': /裁剪/
+  };
+  for (const { code } of SUPPORTED_LANGUAGES) {
+    const tool = getLocalizedTool(code, { id: 'organize-pages', name: 'Organize PDF', description: '' });
+    assert.match(tool.description, cropTerms[code], `${code} Organize PDF description should mention cropping`);
+  }
+});
+
 test('tool cards render metadata from the selected language', () => {
   assert.match(toolCardSource, /getLocalizedTool\(language, tool\)/);
   assert.match(toolCardSource, /\{localizedTool\.name\}/);

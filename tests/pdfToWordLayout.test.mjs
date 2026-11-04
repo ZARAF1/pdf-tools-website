@@ -79,3 +79,40 @@ test('PDF to Word keeps the muted attachment surface and shared blue glow', () =
     /:root\[data-theme='dark'\] \.tool-attachment-section\.word-attachment-section\s*\{[^}]*box-shadow:\s*none/s
   );
 });
+
+test('PDF and Word attachments use a dedicated muted selected-file section', () => {
+  const selectedSection = component.match(
+    /className="conversion-selected-file-section word-selected-file-section"[\s\S]*?<\/section>/
+  )?.[0];
+
+  assert.ok(selectedSection, 'the selected PDF or Word file has a dedicated section');
+  assert.match(selectedSection, /PDF to convert/);
+  assert.match(selectedSection, /Word file to convert/);
+  assert.match(selectedSection, /One PDF selected\./);
+  assert.match(selectedSection, /One Word file selected\./);
+  assert.match(selectedSection, /pdf-attached-file-card word-attached-file-card/);
+  assert.match(selectedSection, /<AttachedFileActions/);
+  assert.match(styles, /\.conversion-selected-file-section\s*\{[^}]*background:\s*var\(--surface-muted\)/s);
+});
+
+test('places the editable output filename beside Convert and hides the duplicate result-card editor', () => {
+  const actionRow = component.match(
+    /className="word-conversion-actions"[\s\S]*?<\/div>/
+  )?.[0];
+
+  assert.ok(actionRow, 'conversion action row is present');
+  assert.match(actionRow, /className="word-output-filename"/);
+  assert.match(actionRow, /id="word-output-filename"/);
+  assert.match(actionRow, /value=\{outputFileName\}/);
+  assert.match(actionRow, /setOutputFileName\(event\.target\.value\)/);
+  assert.ok(
+    actionRow.indexOf('word-output-filename') < actionRow.indexOf('onClick={handleConvert}'),
+    'filename field appears before the conversion button'
+  );
+  assert.match(component, /<DownloadReadyCard[\s\S]*?showFilenameEditor=\{false\}/);
+  assert.match(component, /const outputName = normalizeOutputFileName\(\s*outputFileName/);
+  assert.match(component, /direction === 'pdf-to-word'\s*\?\s*'document_converted\.docx'/);
+  assert.match(component, /file\.name\.replace\(\/\\\.docx\$\/i, ''\).*_converted\.pdf/);
+  assert.match(styles, /\.word-conversion-actions\s*\{[^}]*display:\s*flex/s);
+  assert.match(styles, /\.word-output-filename\s*\{[^}]*min-width:\s*0/s);
+});

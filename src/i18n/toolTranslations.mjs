@@ -172,6 +172,29 @@ const toolCopyOverrides = {
   }
 };
 
+const organizePageActions = {
+  en: 'reorder, rotate, crop, or remove PDF pages',
+  es: 'reordenar, girar, recortar o quitar páginas del PDF',
+  fr: 'réorganiser, faire pivoter, recadrer ou retirer des pages PDF',
+  de: 'PDF-Seiten neu anordnen, drehen, zuschneiden oder entfernen',
+  pt: 'reordenar, girar, recortar ou remover páginas do PDF',
+  it: 'riordinare, ruotare, ritagliare o rimuovere pagine PDF',
+  nl: 'PDF-pagina’s herordenen, draaien, bijsnijden of verwijderen',
+  pl: 'zmieniać kolejność, obracać, przycinać lub usuwać strony PDF',
+  sv: 'ordna om, rotera, beskära eller ta bort PDF-sidor',
+  fi: 'järjestää, kiertää, rajata tai poistaa PDF-sivuja',
+  da: 'omarrangere, rotere, beskære eller fjerne PDF-sider',
+  nb: 'omorganisere, rotere, beskjære eller fjerne PDF-sider',
+  tr: 'PDF sayfalarını yeniden sıralama, döndürme, kırpma veya kaldırma',
+  ru: 'переупорядочивать, поворачивать, обрезать или удалять страницы PDF',
+  uk: 'переставляти, повертати, обрізати або видаляти сторінки PDF',
+  ar: 'إعادة ترتيب صفحات PDF أو تدويرها أو قصها أو إزالتها',
+  hi: 'PDF पृष्ठों का क्रम बदलना, घुमाना, क्रॉप करना या हटाना',
+  ja: 'PDFページの順序変更、回転、トリミング、削除を行う',
+  ko: 'PDF 페이지 순서 변경, 회전, 자르기 또는 제거하기',
+  'zh-CN': '重新排序、旋转、裁剪或删除 PDF 页面'
+};
+
 const descriptionPrefixes = {
   en: 'Use this tool to ',
   es: 'Usa esta herramienta para ',
@@ -200,11 +223,14 @@ export const TOOL_TRANSLATIONS = Object.fromEntries(
     language,
     Object.fromEntries(toolIds.map((id, index) => {
       const override = toolCopyOverrides[language]?.[id];
+      const action = id === 'organize-pages'
+        ? organizePageActions[language]
+        : override?.action || actions[index];
       return [
         id,
         {
           name: override?.name || names[index],
-          description: `${descriptionPrefixes[language]}${override?.action || actions[index]}${language === 'ja' || language === 'zh-CN' ? '' : language === 'ar' ? '' : '.'}`
+          description: `${descriptionPrefixes[language]}${action}${language === 'ja' || language === 'zh-CN' ? '' : language === 'ar' ? '' : '.'}`
         }
       ];
     }))

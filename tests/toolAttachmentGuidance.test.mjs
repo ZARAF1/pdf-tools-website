@@ -17,7 +17,7 @@ const expectedAttachments = new Map([
   ['watermark', ['One unencrypted PDF · no fixed page cap', 'Add watermarks to PDF pages', 'Add text watermarks and optional page numbers to all or selected pages.']],
   ['remove', ['One unencrypted PDF · up to 50 pages', 'Remove selected PDF pages', 'Choose pages to omit; at least one page must remain in the output.']],
   ['ocr', ['One unencrypted PDF · up to 50 pages', 'Make scanned PDF text searchable', 'English OCR adds an invisible text layer to pages without readable text.']],
-  ['organize-pages', ['One unencrypted PDF · up to 30 pages', 'Organize PDF pages', 'Reorder, rotate, or remove pages; at least one page must remain.']],
+  ['organize-pages', ['One unencrypted PDF · up to 30 pages', 'Organize PDF pages', 'Reorder, rotate, crop, or remove pages; cropping changes visible bounds only, and at least one page must remain.']],
   ['redact', ['One unencrypted PDF · up to 15 pages', 'Permanently redact page content', 'Drag over sensitive text or images to mark them. Every page is rasterized in the output so the original text beneath a redaction is not retained.']],
   ['sign', ['One unencrypted PDF · no fixed page cap', 'Add a visible signature to PDF pages', 'Use a typed, drawn, or image signature; this is not a certificate-based digital signature.']]
 ]);

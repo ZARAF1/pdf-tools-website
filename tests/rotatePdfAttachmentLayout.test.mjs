@@ -48,11 +48,21 @@ test('Rotate PDF places page tabs, rotation settings, and previews in order', ()
     component,
     /className="rotate-settings-panel">[\s\S]*?className="rotate-page-range-controls"[\s\S]*?Page numbers or ranges[\s\S]*?className="rotate-angle-fieldset"[\s\S]*?<\/fieldset>[\s\S]*?<\/section>[\s\S]*?className="rotate-page-preview-panel"/
   );
-  assert.match(component, /className="merge-option-field"[\s\S]*?<label htmlFor="rotate-output-filename">Output filename<\/label>/);
+  assert.match(
+    component,
+    /className="rotate-output-actions">[\s\S]*?<label htmlFor="rotate-output-filename">Output filename<\/label>[\s\S]*?<input[\s\S]*?id="rotate-output-filename"/
+  );
   assert.match(component, /<p>The \.pdf extension is added automatically when needed\.<\/p>/);
   assert.match(
     component,
     /className="rotate-output-actions">[\s\S]*?id="rotate-output-filename"[\s\S]*?className=\{`rotate-process-button[\s\S]*?Rotate PDF/
+  );
+  assert.match(styles, /\.rotate-output-actions\s*\{[^}]*grid-template-areas:\s*"label action"\s*"input action"\s*"help action"/);
+  assert.match(styles, /\.rotate-process-button\s*\{[^}]*grid-row:\s*2;[^}]*align-self:\s*center/);
+  assert.match(
+    component,
+    /<DownloadReadyCard[\s\S]*?fileName=\{outputName\}[\s\S]*?showFilenameEditor=\{false\}/,
+    'the ready card does not show a second editable filename field'
   );
   assert.ok(settingsPanelMarkup, 'the settings panel markup is available');
   assert.ok(!settingsPanelMarkup.includes('rotate-output-filename'), 'the output filename field is not inside Choose Settings');
@@ -100,7 +110,10 @@ test('Rotate PDF attachment panels use theme-aware surfaces and section accents'
   assert.match(styles, /:root\[data-theme='dark'\] \.merge-section-heading h3\.merge-output-settings-title/);
   assert.doesNotMatch(styles, /rotate-section-title|rotate-section-heading/);
   assert.match(styles, /\.rotate-output-actions\s*\{[^}]*grid-template-columns:\s*minmax\(0,\s*1fr\)\s+auto/);
-  assert.match(styles, /@media \(max-width:\s*600px\)\s*\{[\s\S]*?\.rotate-output-actions\s*\{[^}]*grid-template-columns:\s*minmax\(0,\s*1fr\)/);
+  assert.match(
+    styles,
+    /@media \(max-width:\s*600px\)\s*\{[\s\S]*?\.rotate-output-actions\s*\{[^}]*grid-template-columns:\s*minmax\(0,\s*1fr\)[^}]*grid-template-areas:\s*"label"\s*"input"\s*"help"\s*"action"/
+  );
 });
 
 test('Rotate page tabs use Merge button styling and page tiles stay within the preview panel', () => {
@@ -124,6 +137,10 @@ test('Rotate page tabs use Merge button styling and page tiles stay within the p
   assert.match(pageGridStyles || '', /width:\s*100%/);
   assert.doesNotMatch(pageGridStyles || '', /margin-inline:\s*-/);
   assert.doesNotMatch(pageGridStyles || '', /width:\s*calc\(/);
+  assert.match(
+    styles,
+    /@media \(min-width:\s*1024px\)\s*\{\s*\.rotate-page-grid\s*\{[^}]*grid-template-columns:\s*repeat\(6,\s*minmax\(0,\s*1fr\)\)/
+  );
 });
 
 test('Rotate pages provide an eye action that opens and closes an accessible larger preview', () => {
@@ -143,4 +160,17 @@ test('Rotate pages provide an eye action that opens and closes an accessible lar
   assert.match(previewButtonStyles || '', /top:\s*0\.5rem/);
   assert.match(previewButtonStyles || '', /left:\s*0\.5rem/);
   assert.match(styles, /\.rotate-page-preview-button:focus-visible\s*\{[^}]*outline:\s*2px solid #2563eb/);
+});
+
+test('Rotate selected pages show a blue checkmark on their page tiles', () => {
+  const selectionIndicatorStyles = styles.match(/\.rotate-page-selected-indicator\s*\{([^}]*)\}/)?.[1];
+
+  assert.match(component, /import \{[\s\S]*?\bCheck\b[\s\S]*?\} from 'lucide-react'/);
+  assert.match(
+    component,
+    /\{mode === 'selected' && isSelected && \(\s*<span className="rotate-page-selected-indicator" aria-hidden="true">\s*<Check className="h-4 w-4" aria-hidden="true" \/>\s*<\/span>\s*\)\}/
+  );
+  assert.match(selectionIndicatorStyles || '', /position:\s*absolute/);
+  assert.match(selectionIndicatorStyles || '', /background:\s*#2563eb/);
+  assert.match(selectionIndicatorStyles || '', /color:\s*#fff/);
 });

@@ -20,7 +20,7 @@ const attachedControlsSource = await readFile(
 
 const imageControlKeys = [
   'uploadLabel', 'uploadPrompt', 'dropPrompt', 'uploadDescription', 'chooseImages',
-  'moveUp', 'moveDown', 'rotateCounterclockwise', 'rotateClockwise', 'pageSize',
+  'moveUp', 'moveDown', 'rotateClockwise', 'pageSize',
   'fitImageDimensions', 'customDimensions', 'orientation', 'portrait', 'landscape',
   'autoOrient', 'customWidth', 'customHeight', 'imageFit', 'contain', 'fill',
   'margin', 'horizontalAlignment', 'left', 'center', 'right', 'verticalAlignment',
@@ -41,8 +41,8 @@ const powerpointControlKeys = [
   'pageSelection', 'pageSelectionHint', 'outputFilename', 'imageQuality',
   'standardQuality', 'highQuality', 'slideSize', 'wideSlides', 'matchPdfPages',
   'pdfPageSize', 'matchSlides', 'a4', 'letter', 'imageBasedWarning',
-  'fontNetworkWarning', 'fontNameDisclosure', 'countPages', 'countSlides', 'convert', 'converting',
-  'renderingPage', 'renderingSlide'
+  'fontNetworkWarning', 'fontNameDisclosure', 'countPages', 'countSlides', 'convert',
+  'convertToPowerPoint', 'convertToPdf', 'converting', 'renderingPage', 'renderingSlide'
 ];
 const powerpointToolSource = await readFile(
   new URL('../src/components/PdfPowerPoint.jsx', import.meta.url),
@@ -101,7 +101,7 @@ test('every bundled language has localized PowerPoint conversion controls', asyn
     }
 
     if (code !== 'en') {
-      for (const key of ['choosePdf', 'pageSelection', 'imageQuality', 'convert']) {
+      for (const key of ['choosePdf', 'pageSelection', 'imageQuality', 'convert', 'convertToPowerPoint', 'convertToPdf']) {
         assert.notEqual(
           localized[key],
           TOOL_UI_TRANSLATIONS.en.powerpoint[key],
@@ -112,11 +112,14 @@ test('every bundled language has localized PowerPoint conversion controls', asyn
   }
 });
 
-test('PowerPoint conversion controls render through the selected language', () => {
+test('PowerPoint conversion controls render through the selected language', async () => {
+  const { TOOL_UI_TRANSLATIONS } = await import('../src/i18n/toolUiLocalization.mjs');
   assert.match(powerpointToolSource, /getLocalizedToolUi\(language\)/);
   for (const key of powerpointControlKeys) {
     assert.match(powerpointToolSource, new RegExp(`powerpointUi\\.${key}\\b`), `PowerPoint conversion does not render ${key}`);
   }
+  assert.equal(TOOL_UI_TRANSLATIONS.en.powerpoint.convertToPowerPoint, 'Convert to PowerPoint');
+  assert.equal(TOOL_UI_TRANSLATIONS.en.powerpoint.convertToPdf, 'Convert to PDF');
 });
 
 test('image attachment prompts and settings render through the selected language', () => {

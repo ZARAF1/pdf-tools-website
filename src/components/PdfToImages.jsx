@@ -214,7 +214,7 @@ const PdfToImages = () => {
     setDownloadLabel(output.downloadLabel);
     generatedFilesRef.current = null;
     generatedFormatRef.current = null;
-    setProgress(images.length === 1 ? 'Image ready for download.' : `ZIP ready with ${images.length} images.`);
+    setProgress('');
   };
 
   const convert = async () => {
@@ -422,6 +422,19 @@ const PdfToImages = () => {
     setError('');
   };
 
+  const resetSettings = () => {
+    setFormat('png');
+    setQuality('standard');
+    setJpegQuality(0.85);
+    setAutoCrop(true);
+    setOutputBaseName(file ? getBaseName(file.name) : '');
+    generatedFilesRef.current = null;
+    generatedFormatRef.current = null;
+    clearOutput();
+    setProgress('');
+    setError('');
+  };
+
   useEffect(() => () => {
     generationRef.current += 1;
     renderTaskRef.current?.cancel();
@@ -456,9 +469,27 @@ const PdfToImages = () => {
         <div className="tool-attachment-content">
           <section className="pdf-images-file-section" aria-label="PDF attachment">
             {file && (
-              <header className="pdf-images-file-section-header">
-                <h3 id="pdf-images-file-heading" className="merge-selected-files-title">PDF to convert</h3>
-              </header>
+              <section className="conversion-selected-file-section pdf-images-selected-file-section" aria-labelledby="pdf-images-file-heading">
+                <header className="pdf-images-file-section-header">
+                  <h3 id="pdf-images-file-heading" className="merge-selected-files-title">PDF to convert</h3>
+                  <p>One PDF selected. Replace it or remove it to choose another.</p>
+                </header>
+                <section className="pdf-attached-file-card pdf-workflow-selected flex flex-col gap-3 rounded-xl border border-slate-200 bg-white p-4 sm:flex-row sm:items-center sm:justify-between">
+                  <div className="flex min-w-0 items-center gap-3">
+                    <AttachedFileIcon />
+                    <div className="min-w-0">
+                      <p className="truncate font-semibold text-slate-800">{file.name}</p>
+                      <p className="text-sm text-slate-500">{formatBytes(file.size)} · {pageCount} {pageCount === 1 ? 'page' : 'pages'}</p>
+                    </div>
+                  </div>
+                  <AttachedFileActions
+                    fileName={file.name}
+                    onReplace={open}
+                    onRemove={reset}
+                    disabled={isValidating || isProcessing}
+                  />
+                </section>
+              </section>
             )}
       {!file && (
       <section
@@ -498,24 +529,6 @@ const PdfToImages = () => {
           </button>
         </div>
       </section>
-      )}
-
-      {file && (
-        <section className="pdf-attached-file-card pdf-workflow-selected flex flex-col gap-3 rounded-xl border border-slate-200 bg-white p-4 sm:flex-row sm:items-center sm:justify-between">
-          <div className="flex min-w-0 items-center gap-3">
-            <AttachedFileIcon />
-            <div className="min-w-0">
-              <p className="truncate font-semibold text-slate-800">{file.name}</p>
-              <p className="text-sm text-slate-500">{formatBytes(file.size)} · {pageCount} {pageCount === 1 ? 'page' : 'pages'}</p>
-            </div>
-          </div>
-          <AttachedFileActions
-            fileName={file.name}
-            onReplace={open}
-            onRemove={reset}
-            disabled={isValidating || isProcessing}
-          />
-        </section>
       )}
           </section>
         </div>
@@ -689,6 +702,16 @@ const PdfToImages = () => {
           </p>
         )}
 
+          <div className="flex justify-end pt-4">
+            <button
+              type="button"
+              onClick={resetSettings}
+              disabled={isProcessing || isValidating}
+              className="rounded-xl border border-slate-200 px-5 py-3 font-semibold text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
+            >
+              Reset
+            </button>
+          </div>
         </section>
       </section>
       )}
@@ -699,10 +722,10 @@ const PdfToImages = () => {
             type="button"
             onClick={convert}
             disabled={isValidating || isProcessing}
-            className="inline-flex items-center justify-center gap-2 rounded-xl bg-blue-600 px-5 py-3 font-semibold text-white shadow-sm transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
+            className="pdf-conversion-action-button inline-flex items-center justify-center gap-2 rounded-xl bg-blue-600 font-semibold text-white shadow-sm transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
           >
             {isProcessing ? <Loader2 className="h-5 w-5 animate-spin" aria-hidden="true" /> : <FileImage className="h-5 w-5" aria-hidden="true" />}
-            Convert PDF to Images
+            PDF to Images
           </button>
           {isProcessing && (
             <button
@@ -713,14 +736,6 @@ const PdfToImages = () => {
               Cancel conversion
             </button>
           )}
-          <button
-            type="button"
-            onClick={reset}
-            disabled={isProcessing || isValidating}
-            className="rounded-xl border border-slate-200 px-5 py-3 font-semibold text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
-          >
-            Reset
-          </button>
         </div>
       )}
 
@@ -749,6 +764,7 @@ const PdfToImages = () => {
           href={outputUrl}
           onDownload={markOutputDownloaded}
           downloadLabel={downloadLabel}
+          showFilenameEditor={false}
         />
       )}
     </div>

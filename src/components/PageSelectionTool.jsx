@@ -3,6 +3,8 @@ import { useToolExitGuard } from './ToolExitGuard';
 import useAccessibleDropzone from '../lib/useAccessibleDropzone';
 import { PDFDocument } from 'pdf-lib';
 import { validateUnencryptedPdf } from '../lib/pdfValidation';
+import { formatPageRanges, parsePageRanges, parsePageRangesWhileTyping } from '../lib/pageSelection.mjs';
+import { normalizeOutputFileName } from '../lib/outputFileName.mjs';
 import { AlertCircle, Loader2, Upload } from 'lucide-react';
 import PdfPageGrid from './PdfPageGrid';
 import { AttachedFileActions, AttachedFileIcon } from './AttachedFileControls';
@@ -22,19 +24,19 @@ const PageSelectionTool = ({ mode }) => {
   const [file, setFile] = useState(null);
   const [pageCount, setPageCount] = useState(0);
   const [selectedPages, setSelectedPages] = useState(new Set());
+  const [rangeInput, setRangeInput] = useState('');
   const [outputBytes, setOutputBytes] = useState(null);
   const markOutputDownloaded = useToolExitGuard(Boolean(file), outputBytes);
   const [outputName, setOutputName] = useState('');
+  const [outputFileName, setOutputFileName] = useState('');
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
-  const [confirmRemoval, setConfirmRemoval] = useState(false);
   const requestId = useRef(0);
 
   const resetResult = () => {
     setOutputBytes(null);
     setOutputName('');
-    setConfirmRemoval(false);
   };
 
   const onDrop = useCallback(async (acceptedFiles, rejections) => {
@@ -62,6 +64,8 @@ const PageSelectionTool = ({ mode }) => {
         setFile(selectedFile);
         setPageCount(count);
         setSelectedPages(new Set());
+        setRangeInput('');
+        setOutputFileName(isRemoving ? `${selectedFile.name.replace(/\.pdf$/i, '')}_pages_removed.pdf` : '');
       }
     } catch (loadError) {
       console.error('Unable to load PDF page selection:', loadError);
@@ -71,7 +75,7 @@ const PageSelectionTool = ({ mode }) => {
     } finally {
       if (requestId.current === currentRequestId) setIsLoading(false);
     }
-  }, []);
+  }, [isRemoving]);
 
   const { getRootProps, getInputProps, isDragActive, open } = useAccessibleDropzone({
     onDrop,
@@ -87,48 +91,65 @@ const PageSelectionTool = ({ mode }) => {
     setFile(null);
     setPageCount(0);
     setSelectedPages(new Set());
+    setRangeInput('');
+    setOutputFileName('');
     setError('');
     setIsLoading(false);
     resetResult();
   };
 
   const togglePage = (pageNumber) => {
-    setSelectedPages((current) => {
-      const updated = new Set(current);
-      if (updated.has(pageNumber)) updated.delete(pageNumber);
-      else updated.add(pageNumber);
-      return updated;
-    });
+    const updated = new Set(selectedPages);
+    if (updated.has(pageNumber)) updated.delete(pageNumber);
+    else updated.add(pageNumber);
+    setSelectedPages(updated);
+    if (isRemoving) setRangeInput(formatPageRanges([...updated]));
     setError('');
     resetResult();
   };
 
   const selectAll = () => {
-    setSelectedPages(new Set(Array.from({ length: pageCount }, (_, index) => index + 1)));
+    const updated = new Set(Array.from({ length: pageCount }, (_, index) => index + 1));
+    setSelectedPages(updated);
+    if (isRemoving) setRangeInput(formatPageRanges([...updated]));
     setError('');
     resetResult();
   };
 
   const clearSelection = () => {
     setSelectedPages(new Set());
+    if (isRemoving) setRangeInput('');
+    setError('');
+    resetResult();
+  };
+
+  const handleRangeChange = (value) => {
+    setRangeInput(value);
+    const updatedSelection = parsePageRangesWhileTyping(value, pageCount);
+    if (updatedSelection !== null) setSelectedPages(new Set(updatedSelection));
     setError('');
     resetResult();
   };
 
   const processSelection = async () => {
-    if (!file || selectedPages.size === 0) {
+    let pagesToProcess = selectedPages;
+    if (isRemoving && rangeInput.trim()) {
+      try {
+        pagesToProcess = new Set(parsePageRanges(rangeInput, pageCount));
+      } catch (rangeError) {
+        setError(rangeError.message);
+        return;
+      }
+    }
+
+    if (!file || pagesToProcess.size === 0) {
       setError(`Select at least one page ${actionLabel}.`);
       return;
     }
-    if (isRemoving && selectedPages.size >= pageCount) {
+    if (isRemoving && pagesToProcess.size >= pageCount) {
       setError('At least one page must remain in the output PDF.');
       return;
     }
-    if (isRemoving && !confirmRemoval) {
-      setConfirmRemoval(true);
-      return;
-    }
-
     setIsProcessing(true);
     setError('');
     resetResult();
@@ -136,7 +157,7 @@ const PageSelectionTool = ({ mode }) => {
       const source = await PDFDocument.load(await file.arrayBuffer(), { ignoreEncryption: false });
       if (source.isEncrypted) throw new Error('Password-protected PDFs are not supported.');
 
-      const selectedIndices = [...selectedPages].sort((a, b) => a - b).map((page) => page - 1);
+      const selectedIndices = [...pagesToProcess].sort((a, b) => a - b).map((page) => page - 1);
       const indices = isRemoving
         ? source.getPageIndices().filter((index) => !selectedIndices.includes(index))
         : selectedIndices;
@@ -152,29 +173,51 @@ const PageSelectionTool = ({ mode }) => {
       }
 
       const baseName = file.name.replace(/\.pdf$/i, '');
+      const defaultOutputName = `${baseName}_${isRemoving ? 'pages_removed' : 'pages_extracted'}.pdf`;
+      const normalizedOutputName = isRemoving
+        ? normalizeOutputFileName(outputFileName, `${baseName}_pages_removed.pdf`)
+        : defaultOutputName;
       setOutputBytes(bytes);
-      setOutputName(`${baseName}_${isRemoving ? 'pages_removed' : 'pages_extracted'}.pdf`);
+      setOutputFileName(isRemoving ? normalizedOutputName : '');
+      setOutputName(normalizedOutputName);
     } catch (processingError) {
       console.error('Unable to process selected PDF pages:', processingError);
       setError(processingError.message || 'The selected pages could not be processed.');
     } finally {
       setIsProcessing(false);
-      setConfirmRemoval(false);
     }
   };
 
-  const downloadOutput = (downloadFileName) => {
-    if (!outputBytes || !outputName) return;
-    const url = URL.createObjectURL(new Blob([outputBytes], { type: 'application/pdf' }));
+  const downloadOutput = (downloadFileName, bytes = outputBytes, fileName = outputName) => {
+    if (!bytes || !(downloadFileName || fileName)) return;
+    const url = URL.createObjectURL(new Blob([bytes], { type: 'application/pdf' }));
     const link = window.document.createElement('a');
     link.href = url;
-    link.download = downloadFileName || outputName;
+    link.download = downloadFileName || fileName;
+    link.style.display = 'none';
+    window.document.body.appendChild(link);
     link.click();
+    link.remove();
     markOutputDownloaded();
     window.setTimeout(() => URL.revokeObjectURL(url), 10000);
   };
 
   const selectedSummary = [...selectedPages].sort((a, b) => a - b);
+  const trimmedRangeInput = rangeInput.trim();
+  const hasInvalidPageRange = isRemoving
+    && Boolean(trimmedRangeInput)
+    && (
+      parsePageRangesWhileTyping(rangeInput, pageCount) === null
+      || /(?:,|-)$/.test(trimmedRangeInput)
+    );
+  const handleOutputFileNameChange = (value) => {
+    setOutputFileName(value);
+    if (isRemoving && outputBytes && file) {
+      const defaultOutputName = `${file.name.replace(/\.pdf$/i, '')}_pages_removed.pdf`;
+      setOutputName(normalizeOutputFileName(value, defaultOutputName));
+    }
+    setError('');
+  };
 
   return (
     <div className="space-y-6">
@@ -266,8 +309,8 @@ const PageSelectionTool = ({ mode }) => {
           {isRemoving ? (
             <div className="remove-pdf-settings-shell">
               <div className="merge-control-intro">
-                <h3 id="remove-pdf-workspace-heading" className="merge-selected-files-title">Settings &gt; Preview</h3>
-                <p>Select pages to remove, then review and confirm your changes.</p>
+                <h3 id="remove-pdf-workspace-heading" className="merge-selected-files-title">Select Pages &amp; Preview</h3>
+                <p>Select pages to remove, choose an output name, and download the result.</p>
               </div>
 
               <section className="remove-pdf-settings-panel" aria-labelledby="remove-pdf-settings-heading">
@@ -280,6 +323,34 @@ const PageSelectionTool = ({ mode }) => {
                 <p className="remove-pdf-selection-count" aria-live="polite">
                   {selectedPages.size} {selectedPages.size === 1 ? 'page' : 'pages'} selected for removal.
                 </p>
+                <div className="rotate-page-range-controls">
+                  <label htmlFor="remove-page-ranges">Page numbers or ranges</label>
+                  <input
+                    id="remove-page-ranges"
+                    type="text"
+                    inputMode="text"
+                    placeholder="e.g. 1-3, 5"
+                    aria-describedby={hasInvalidPageRange
+                      ? 'remove-page-ranges-help remove-page-ranges-error'
+                      : 'remove-page-ranges-help'}
+                    aria-invalid={hasInvalidPageRange}
+                    value={rangeInput}
+                    onChange={(event) => handleRangeChange(event.target.value)}
+                  />
+                  <p id="remove-page-ranges-help">
+                    Enter page numbers or ranges to remove, separated by commas.
+                  </p>
+                  {hasInvalidPageRange && (
+                    <p id="remove-page-ranges-error" className="rotate-page-range-error" role="status">
+                      Enter valid page numbers and ascending ranges from 1 to {pageCount}.
+                    </p>
+                  )}
+                  {selectedPages.size >= pageCount && pageCount > 0 && (
+                    <p className="rotate-page-range-error" role="status">
+                      At least one page must remain in the output PDF.
+                    </p>
+                  )}
+                </div>
                 <div className="remove-pdf-selection-actions">
                   <button type="button" onClick={selectAll} className="remove-pdf-selection-action">Select All</button>
                   <button type="button" onClick={clearSelection} disabled={!selectedPages.size} className="remove-pdf-selection-action">Clear Selection</button>
@@ -338,21 +409,36 @@ const PageSelectionTool = ({ mode }) => {
             </>
           )}
 
-          {confirmRemoval && isRemoving && (
-            <div className="space-y-3 rounded-xl border border-amber-200 bg-amber-50 p-4" role="alert">
-              <p className="text-sm font-medium text-amber-900">
-                Remove {selectedPages.size} selected {selectedPages.size === 1 ? 'page' : 'pages'}? The original PDF will remain unchanged.
-              </p>
-              <div className="flex flex-wrap gap-2">
-                <button type="button" onClick={processSelection} disabled={isProcessing || selectedPages.size >= pageCount} className="rounded-lg bg-rose-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-rose-700 disabled:opacity-50">
-                  Confirm Remove Pages
-                </button>
-                <button type="button" onClick={() => setConfirmRemoval(false)} className="rounded-lg border border-amber-300 px-4 py-2 text-sm font-semibold text-amber-900 transition hover:bg-amber-100">Cancel</button>
-              </div>
+          {isRemoving && (
+            <div className="rotate-output-actions remove-pdf-output-actions">
+              <label htmlFor="remove-output-filename">Output filename</label>
+              <input
+                id="remove-output-filename"
+                type="text"
+                value={outputFileName}
+                disabled={isProcessing}
+                onChange={(event) => handleOutputFileNameChange(event.target.value)}
+                maxLength={120}
+                autoComplete="off"
+              />
+              <p>The .pdf extension is added automatically when needed.</p>
+              <button
+                type="button"
+                onClick={processSelection}
+                disabled={isLoading || isProcessing || selectedPages.size === 0 || selectedPages.size >= pageCount || hasInvalidPageRange}
+                className={`rotate-process-button flex items-center justify-center gap-2 px-6 rounded-xl font-bold text-white transition-all
+                  ${isLoading || isProcessing || !selectedPages.size || selectedPages.size >= pageCount || hasInvalidPageRange
+                    ? 'bg-slate-300 cursor-not-allowed'
+                    : 'bg-amber-600 hover:bg-amber-700 shadow-lg shadow-amber-200 active:scale-[0.98]'}
+                `}
+              >
+                {isProcessing ? <Loader2 className="h-5 w-5 animate-spin" aria-hidden="true" /> : null}
+                {isProcessing ? 'Processing...' : 'Remove Selected Pages'}
+              </button>
             </div>
           )}
 
-          {!confirmRemoval && (
+          {!isRemoving && (
             <button
               type="button"
               onClick={processSelection}
@@ -377,6 +463,7 @@ const PageSelectionTool = ({ mode }) => {
         <DownloadReadyCard
           fileName={outputName}
           sizeBytes={outputBytes.length}
+          showFilenameEditor={false}
           onDownload={downloadOutput}
         />
       )}

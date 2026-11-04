@@ -373,21 +373,33 @@ const PdfPowerPoint = () => {
           </div>
         </div>
       ) : (
-        <div className="pdf-attached-file-card powerpoint-attached-file-card">
-          <div className="powerpoint-attached-file-main">
-            <AttachedFileIcon />
-            <div className="powerpoint-attached-file-details">
-              <p className="powerpoint-attached-file-name" title={file.name}>{file.name}</p>
-              <p className="powerpoint-attached-file-meta">{countLabel} · {(file.size / 1024 / 1024).toFixed(2)} MB</p>
+        <section className="conversion-selected-file-section powerpoint-selected-file-section" aria-labelledby="powerpoint-selected-file-heading">
+          <header>
+            <h3 id="powerpoint-selected-file-heading" className="merge-selected-files-title">
+              {isPdfToPowerPoint ? 'PDF to convert' : 'PowerPoint file to convert'}
+            </h3>
+            <p>
+              {isPdfToPowerPoint
+                ? 'One PDF selected. Replace it or remove it to choose another.'
+                : 'One PowerPoint file selected. Replace it or remove it to choose another.'}
+            </p>
+          </header>
+          <div className="pdf-attached-file-card powerpoint-attached-file-card">
+            <div className="powerpoint-attached-file-main">
+              <AttachedFileIcon />
+              <div className="powerpoint-attached-file-details">
+                <p className="powerpoint-attached-file-name" title={file.name}>{file.name}</p>
+                <p className="powerpoint-attached-file-meta">{countLabel} · {(file.size / 1024 / 1024).toFixed(2)} MB</p>
+              </div>
             </div>
+            <AttachedFileActions
+              fileName={file.name}
+              onReplace={open}
+              onRemove={resetFile}
+              disabled={isProcessing || isLoadingFile}
+            />
           </div>
-          <AttachedFileActions
-            fileName={file.name}
-            onReplace={open}
-            onRemove={resetFile}
-            disabled={isProcessing || isLoadingFile}
-          />
-        </div>
+        </section>
       )}
           </section>
         </div>
@@ -396,11 +408,11 @@ const PdfPowerPoint = () => {
       {file && (
         <section className="powerpoint-settings-panel" aria-labelledby="powerpoint-settings-heading">
           <header className="conversion-panel-header">
-            <h3 id="powerpoint-settings-heading" className="merge-selected-files-title">Settings &gt; Selection &gt; Preview</h3>
-            <p>Choose pages or slides, output name, image quality, and page or slide size.</p>
+            <h3 id="powerpoint-settings-heading" className="merge-selected-files-title">Conversion Settings</h3>
+            <p>Choose pages or slides, image quality, and page or slide size.</p>
           </header>
           <div className="powerpoint-settings-controls">
-            <label className="block space-y-2">
+            <label className="powerpoint-setting-field">
               <span className="text-sm font-semibold text-slate-700">{powerpointUi.pageSelection}</span>
               <input
                 type="text"
@@ -412,9 +424,72 @@ const PdfPowerPoint = () => {
               />
             </label>
 
-            <label className="block space-y-2">
+            <label className="powerpoint-setting-field">
+              <span className="text-sm font-semibold text-slate-700">{powerpointUi.imageQuality}</span>
+              <select
+                value={quality}
+                onChange={(event) => setQuality(event.target.value)}
+                disabled={isProcessing}
+                className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-800 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-100"
+              >
+                <option value="standard">{powerpointUi.standardQuality}</option>
+                <option value="high">{powerpointUi.highQuality}</option>
+              </select>
+            </label>
+
+            {isPdfToPowerPoint ? (
+              <label className="powerpoint-setting-field">
+                <span className="text-sm font-semibold text-slate-700">{powerpointUi.slideSize}</span>
+                <select
+                  value={slideSize}
+                  onChange={(event) => setSlideSize(event.target.value)}
+                  disabled={isProcessing}
+                  className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-800 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-100"
+                >
+                  <option value="original">{powerpointUi.matchPdfPages}</option>
+                  <option value="wide">{powerpointUi.wideSlides}</option>
+                </select>
+              </label>
+            ) : (
+              <label className="powerpoint-setting-field">
+                <span className="text-sm font-semibold text-slate-700">{powerpointUi.pdfPageSize}</span>
+                <select
+                  value={pdfPageSize}
+                  onChange={(event) => setPdfPageSize(event.target.value)}
+                  disabled={isProcessing}
+                  className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-800 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-100"
+                >
+                  <option value="match">{powerpointUi.matchSlides}</option>
+                  <option value="a4">{powerpointUi.a4}</option>
+                  <option value="letter">{powerpointUi.letter}</option>
+                </select>
+              </label>
+            )}
+          </div>
+
+          {isProcessing && (
+            <div className="space-y-2">
+              <div className="flex justify-between gap-3 text-sm text-slate-500">
+                <span role="status" aria-atomic="true">{status || powerpointUi.converting}</span>
+                <span>{progress}%</span>
+              </div>
+              <div
+                className="h-2 w-full overflow-hidden rounded-full bg-slate-100"
+                role="progressbar"
+                aria-label={powerpointUi.converting}
+                aria-valuemin={0}
+                aria-valuemax={100}
+                aria-valuenow={progress}
+              >
+                <div className="h-full bg-blue-600 transition-all duration-200" style={{ width: `${progress}%` }} />
+              </div>
+            </div>
+          )}
+
+          <div className="powerpoint-conversion-actions">
+            <label className="powerpoint-output-filename">
               <span className="text-sm font-semibold text-slate-700">{powerpointUi.outputFilename}</span>
-              <div className="flex items-center gap-2">
+              <span className="flex min-w-0 items-center gap-2">
                 <input
                   type="text"
                   value={outputName}
@@ -423,77 +498,13 @@ const PdfPowerPoint = () => {
                   className="min-w-0 flex-1 rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-800 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-100"
                 />
                 <span className="text-sm text-slate-500">{outputExtension}</span>
-              </div>
+              </span>
             </label>
-
-            <div className="grid gap-4 sm:grid-cols-2">
-              <label className="block space-y-2">
-                <span className="text-sm font-semibold text-slate-700">{powerpointUi.imageQuality}</span>
-                <select
-                  value={quality}
-                  onChange={(event) => setQuality(event.target.value)}
-                  disabled={isProcessing}
-                  className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-800 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-100"
-                >
-                  <option value="standard">{powerpointUi.standardQuality}</option>
-                  <option value="high">{powerpointUi.highQuality}</option>
-                </select>
-              </label>
-
-              {isPdfToPowerPoint ? (
-                <label className="block space-y-2">
-                  <span className="text-sm font-semibold text-slate-700">{powerpointUi.slideSize}</span>
-                  <select
-                    value={slideSize}
-                    onChange={(event) => setSlideSize(event.target.value)}
-                    disabled={isProcessing}
-                    className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-800 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-100"
-                  >
-                    <option value="original">{powerpointUi.matchPdfPages}</option>
-                    <option value="wide">{powerpointUi.wideSlides}</option>
-                  </select>
-                </label>
-              ) : (
-                <label className="block space-y-2">
-                  <span className="text-sm font-semibold text-slate-700">{powerpointUi.pdfPageSize}</span>
-                  <select
-                    value={pdfPageSize}
-                    onChange={(event) => setPdfPageSize(event.target.value)}
-                    disabled={isProcessing}
-                    className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-800 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-100"
-                  >
-                    <option value="match">{powerpointUi.matchSlides}</option>
-                    <option value="a4">{powerpointUi.a4}</option>
-                    <option value="letter">{powerpointUi.letter}</option>
-                  </select>
-                </label>
-              )}
-            </div>
-
-            {isProcessing && (
-              <div className="space-y-2">
-                <div className="flex justify-between gap-3 text-sm text-slate-500">
-                  <span role="status" aria-atomic="true">{status || powerpointUi.converting}</span>
-                  <span>{progress}%</span>
-                </div>
-                <div
-                  className="h-2 w-full overflow-hidden rounded-full bg-slate-100"
-                  role="progressbar"
-                  aria-label={powerpointUi.converting}
-                  aria-valuemin={0}
-                  aria-valuemax={100}
-                  aria-valuenow={progress}
-                >
-                  <div className="h-full bg-blue-600 transition-all duration-200" style={{ width: `${progress}%` }} />
-                </div>
-              </div>
-            )}
-
             <button
               type="button"
               onClick={handleConvert}
               disabled={isProcessing || isLoadingFile}
-              className={`flex w-full items-center justify-center gap-2 rounded-xl px-6 py-4 font-bold text-white transition-all ${
+              className={`pdf-conversion-action-button flex items-center justify-center gap-2 rounded-xl font-bold text-white transition-all ${
                 isProcessing || isLoadingFile
                   ? 'cursor-not-allowed bg-slate-300'
                   : 'bg-blue-600 shadow-lg shadow-blue-200 hover:bg-blue-700 active:scale-[0.98]'
@@ -501,7 +512,7 @@ const PdfPowerPoint = () => {
             >
               {isProcessing
                 ? <><Loader2 className="h-5 w-5 animate-spin" />{powerpointUi.converting}</>
-                : <><Download className="h-5 w-5" />{powerpointUi.convert}</>}
+                : <><Download className="h-5 w-5" />{isPdfToPowerPoint ? powerpointUi.convertToPowerPoint : powerpointUi.convertToPdf}</>}
             </button>
           </div>
         </section>
@@ -520,6 +531,7 @@ const PdfPowerPoint = () => {
           sizeBytes={outputBlob.size}
           onDownload={downloadOutput}
           downloadLabel={translate('download')}
+          showFilenameEditor={false}
         />
       )}
     </div>

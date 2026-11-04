@@ -477,6 +477,30 @@ const powerpointLabels = {
   'zh-CN': ['PDF 转 PowerPoint', 'PowerPoint 转 PDF', '选择 PDF', '选择 PowerPoint', '选择或拖放要转换的 PDF', '选择或拖放 PowerPoint .pptx 文件', '将 PDF 拖放到此处', '将 .pptx 文件拖放到此处', '要包含的页面或幻灯片', '留空以包含全部；例如 1-3, 5', '输出文件名', '图像质量', '标准', '高', '幻灯片尺寸', '宽屏 16:9', '匹配第一个所选 PDF 页面', 'PDF 页面尺寸', '匹配幻灯片尺寸', 'A4', 'Letter', '输出为图像，无法编辑或搜索文本。', '渲染 PPTX 时可能会向 Google Fonts 请求替代字体；演示文稿本身始终留在浏览器中。', 'PDF 页面：{count}', 'PowerPoint 幻灯片：{count}', '转换', '正在转换…', '正在渲染 PDF 页面 {current}/{total}…', '正在渲染幻灯片 {current}/{total}…']
 };
 
+const powerpointActionKeys = ['convertToPowerPoint', 'convertToPdf'];
+const powerpointActionLabels = {
+  en: ['Convert to PowerPoint', 'Convert to PDF'],
+  es: ['Convertir a PowerPoint', 'Convertir a PDF'],
+  fr: ['Convertir en PowerPoint', 'Convertir en PDF'],
+  de: ['In PowerPoint umwandeln', 'In PDF umwandeln'],
+  pt: ['Converter para PowerPoint', 'Converter para PDF'],
+  it: ['Converti in PowerPoint', 'Converti in PDF'],
+  nl: ['Converteren naar PowerPoint', 'Converteren naar PDF'],
+  pl: ['Konwertuj do PowerPoint', 'Konwertuj do PDF'],
+  sv: ['Konvertera till PowerPoint', 'Konvertera till PDF'],
+  fi: ['Muunna PowerPointiksi', 'Muunna PDF:ksi'],
+  da: ['Konvertér til PowerPoint', 'Konvertér til PDF'],
+  nb: ['Konverter til PowerPoint', 'Konverter til PDF'],
+  tr: ["PowerPoint'e dönüştür", "PDF'ye dönüştür"],
+  ru: ['Конвертировать в PowerPoint', 'Конвертировать в PDF'],
+  uk: ['Перетворити на PowerPoint', 'Перетворити на PDF'],
+  ar: ['تحويل إلى PowerPoint', 'تحويل إلى PDF'],
+  hi: ['PowerPoint में बदलें', 'PDF में बदलें'],
+  ja: ['PowerPoint に変換', 'PDF に変換'],
+  ko: ['PowerPoint로 변환', 'PDF로 변환'],
+  'zh-CN': ['转换为 PowerPoint', '转换为 PDF']
+};
+
 const powerpointFontPrivacyDisclosures = {
   en: 'Font-family names from slides may be included in those requests; the presentation file and its contents are not.',
   es: 'Esos avisos pueden incluir los nombres de las fuentes de las diapositivas; no incluyen el archivo ni su contenido.',
@@ -508,13 +532,15 @@ for (const { code } of SUPPORTED_LANGUAGES) {
   const imagePreviewInvalidLabel = imagePreviewInvalidLabels[code];
   const actionLabels = fileActionLabels[code];
   const powerpointLabelsForLanguage = powerpointLabels[code];
+  const powerpointActionLabelsForLanguage = powerpointActionLabels[code];
   if (!imageLabels || imageLabels.length !== imageToPdfKeys.length
     || !imageWorkflowLabelsForLanguage || imageWorkflowLabelsForLanguage.length !== imageWorkflowKeys.length
     || !imageSettingsScopeLabels[code] || imageSettingsScopeLabels[code].length !== imageSettingsScopeKeys.length
     || !imageOutputLabelsForLanguage || imageOutputLabelsForLanguage.length !== imageOutputKeys.length
     || !imagePreviewInvalidLabel
     || !actionLabels || actionLabels.length !== 3
-    || !powerpointLabelsForLanguage || powerpointLabelsForLanguage.length !== powerpointKeys.length) {
+    || !powerpointLabelsForLanguage || powerpointLabelsForLanguage.length !== powerpointKeys.length
+    || !powerpointActionLabelsForLanguage || powerpointActionLabelsForLanguage.length !== powerpointActionKeys.length) {
     throw new Error(`Tool UI translations are incomplete for "${code}".`);
   }
   translations[code] = {
@@ -524,7 +550,10 @@ for (const { code } of SUPPORTED_LANGUAGES) {
       ...Object.fromEntries(imageSettingsScopeKeys.map((key, index) => [key, imageSettingsScopeLabels[code][index]])),
       ...Object.fromEntries(imageOutputKeys.map((key, index) => [key, imageOutputLabelsForLanguage[index]]))
     },
-    powerpoint: Object.fromEntries(powerpointKeys.map((key, index) => [key, powerpointLabelsForLanguage[index]])),
+    powerpoint: {
+      ...Object.fromEntries(powerpointKeys.map((key, index) => [key, powerpointLabelsForLanguage[index]])),
+      ...Object.fromEntries(powerpointActionKeys.map((key, index) => [key, powerpointActionLabelsForLanguage[index]]))
+    },
     fileActions: {
       replace: actionLabels[0],
       remove: actionLabels[1],

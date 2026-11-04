@@ -207,8 +207,8 @@ export const TOOL_REGISTRY = [
     name: 'Organize PDF',
     path: '/organize',
     category: 'organize',
-    description: 'Reorder, rotate, or remove PDF pages.',
-    keywords: 'rearrange reorder move rotate delete pages',
+    description: 'Reorder, rotate, crop, or remove PDF pages.',
+    keywords: 'rearrange reorder move rotate crop delete pages',
     icon: StretchHorizontal,
     color: 'bg-teal-500'
   },

@@ -71,7 +71,10 @@ test('Images to PDF uses the shared attachment shell, guidance card, and direct 
     'the guidance card should precede the image upload workflow'
   );
   assert.match(attachment, /pdf-workflow-upload pdf-upload-zone merge-pdf-upload-zone/);
-  assert.match(imageToPdf, /\{images\.length > 0 && \(\s*<header className="image-to-pdf-file-section-header"/);
+  assert.match(
+    imageToPdf,
+    /\{images\.length > 0 && \(\s*<section\s+className="conversion-selected-file-section image-to-pdf-selected-file-section"[\s\S]*?<header className="image-to-pdf-file-section-header"/
+  );
   assert.match(imageToPdf, /className="image-to-pdf-image-count"[^>]*>[\s\S]*imageUi\.imageCount/);
   assert.match(styles, /\.tool-attachment-section\.image-pdf-attachment-section[\s\S]*background:\s*var\(--surface-muted\)/);
   assert.match(styles, /\.image-pdf-attachment-section\s+\.tool-attachment-guidance\s*\{\s*background:\s*var\(--surface-background\)/);

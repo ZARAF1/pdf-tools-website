@@ -242,12 +242,12 @@ const TOOL_CONTENT = {
     description: 'Select and remove pages from a PDF of up to 50 pages.',
     detailPoints: {
       what: `Remove selected pages while keeping the remaining pages together in one PDF.`,
-      how: `Review page previews, select pages to omit, and confirm that at least one page remains.`,
-      result: `A separate PDF in the original order, containing only the pages you kept.`
+      how: `Review page previews, select pages to omit, and remove them in one step; at least one page must remain.`,
+      result: `A separate PDF in the original order, ready to download with only the pages you kept.`
     },
-    intro: 'Remove unwanted pages while keeping the remaining document together as a new PDF. Choose a file with no more than 50 pages and review the page previews in the grid. Select the pages you want to omit, then double-check the selection before creating the result; at least one page must remain. The output follows the original document order, regardless of the order in which you selected pages. The original PDF is not changed, so you can start again if you remove the wrong page. When the new document is ready, download it and verify that the pages you wanted to keep are present. Page selection and PDF creation happen in your browser; the selected file is not sent to an external server.',
+    intro: 'Remove unwanted pages while keeping the remaining document together as a new PDF. Choose a file with no more than 50 pages and select pages to omit by clicking previews or entering page numbers and ranges such as 1-3, 5. At least one page must remain. Choose an output filename, then click Remove Selected Pages to create and verify the remaining pages in their original order. A result card appears with a Download PDF button so you can save the output when you are ready. The original PDF is not changed, so you can start again if you remove the wrong page. Page selection and PDF creation happen in your browser; the selected file is not sent to an external server.',
     mechanism: 'PDF.js renders local page thumbnails and pdf-lib copies the unselected pages into a separate PDF. Page order is preserved and the source file is not changed.',
-    steps: ['Choose a PDF with no more than 50 pages.', 'Select pages to remove in the thumbnail grid.', 'Review the selection and confirm removal; at least one page must remain.', 'Download the generated PDF manually.'],
+    steps: ['Choose a PDF with no more than 50 pages.', 'Enter page numbers or ranges, or select page thumbnails to remove; both selection methods stay synchronized.', 'Review the selection and set the output filename; at least one page must remain.', 'Click Remove Selected Pages to create the new PDF, then click Download PDF on the result card.'],
     faqs: [
       ['How many pages can I select?', 'This tool accepts PDFs with up to 50 pages and rejects larger files rather than truncating them.'],
       ['Can I remove every page?', 'No. The output must contain at least one page.'],
@@ -256,15 +256,15 @@ const TOOL_CONTENT = {
   },
   'organize-pages': {
     title: 'Organize PDF',
-    description: 'Reorder, rotate, and remove pages from a PDF.',
+    description: 'Reorder, rotate, crop, and remove pages from a PDF.',
     detailPoints: {
-      what: `Reorder, rotate, or remove PDF pages.`,
-      how: `Use page previews and move controls to arrange pages; rotate or remove any pages you do not need.`,
-      result: `A separate PDF following the displayed order, with at least one page retained.`
+      what: `Reorder, rotate, crop, or remove PDF pages.`,
+      how: `Use page previews and move controls to arrange pages; crop individual pages, rotate them, or remove pages you do not need.`,
+      result: `A separate PDF following the displayed order, with at least one page retained. Cropping changes visible bounds but does not permanently remove content outside them.`
     },
-    intro: 'Arrange the pages of a PDF to create a cleaner, better-ordered document. Select one PDF with up to 30 pages and review its page previews. Drag the page cards or use the move controls to place pages in the order you want; you can also rotate pages in 90-degree steps or remove pages that are not needed. At least one page must remain. The final document follows the order shown in the workspace and retains the original page content where supported. The source PDF is not changed, so you can reset or select it again if you want to start over. When the arrangement is ready, choose Organize PDF and download the separate result. Your file is processed in your browser, not sent to an external server.',
-    mechanism: 'PDF.js renders page previews in your browser. pdf-lib copies the chosen pages in the displayed order and applies their rotations to a separate output PDF without rasterizing page content.',
-    steps: ['Choose a pdf and review its pages.', 'Drag pages or use the move controls to reorder them; rotate or remove pages as needed.', 'Select Organize PDF and download the generated document.'],
+    intro: 'Arrange the pages of a PDF to create a cleaner, better-ordered document. Select one PDF with up to 30 pages and review its page previews. Drag the page cards or use the move controls to place pages in the order you want; rotate pages in 90-degree steps, crop individual pages from their tile, or remove pages that are not needed. A crop selection follows its page when you rotate or reorder it. At least one page must remain. Cropping changes the visible boundary only; it does not permanently remove content outside that area. The final document follows the order shown in the workspace and retains the original page content where supported. The source PDF is not changed, so you can reset or select it again if you want to start over. When the arrangement is ready, choose Organize PDF and download the separate result. Your file is processed in your browser, not sent to an external server.',
+    mechanism: 'PDF.js renders page previews in your browser. pdf-lib copies the chosen pages in the displayed order and applies their rotations and CropBox boundaries to a separate output PDF without rasterizing page content. CropBox boundaries change what is visible; they do not delete content outside them.',
+    steps: ['Choose a PDF and review its pages.', 'Drag pages or use the move controls to reorder them; crop pages individually, rotate or remove pages as needed.', 'Select Organize PDF and download the generated document.'],
     faqs: [
       ['Can I change the order of pages?', 'Yes. Drag page cards or use the move controls; the output follows the displayed order.'],
       ['How many pages are supported?', 'The tool accepts documents with up to 30 pages.'],
@@ -447,7 +447,7 @@ const ATTACHMENT_RULES = {
     ruleKey: 'pdf30',
     rule: 'One unencrypted PDF · up to 30 pages',
     infoTitle: 'Organize PDF pages',
-    info: 'Reorder, rotate, or remove pages; at least one page must remain.'
+    info: 'Reorder, rotate, crop, or remove pages; cropping changes visible bounds only, and at least one page must remain.'
   },
   redact: {
     title: 'Attach PDF Here',

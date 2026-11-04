@@ -5,6 +5,7 @@ import { ArrowLeft, ArrowRight, Loader2, RotateCcw, Upload, ZoomIn, ZoomOut } fr
 import { PDFDocument } from 'pdf-lib';
 import pdfjsLib from '../lib/pdfjsClient';
 import { validateUnencryptedPdf } from '../lib/pdfValidation';
+import { normalizeOutputFileName } from '../lib/outputFileName.mjs';
 import { AttachedFileActions, AttachedFileIcon } from './AttachedFileControls';
 import DownloadReadyCard from './DownloadReadyCard';
 
@@ -87,6 +88,7 @@ const CropPdf = () => {
   const [draftCrops, setDraftCrops] = useState({});
   const [pageCrops, setPageCrops] = useState({});
   const [scope, setScope] = useState('current');
+  const [outputFileName, setOutputFileName] = useState('');
   const [previewWidth, setPreviewWidth] = useState(680);
   const [zoom, setZoom] = useState(1);
   const [renderInfo, setRenderInfo] = useState(null);
@@ -171,6 +173,7 @@ const CropPdf = () => {
       }
 
       setFile(selectedFile);
+      setOutputFileName(`${selectedFile.name.replace(/\.pdf$/i, '') || 'document'}_cropped.pdf`);
       setPdfjsDocument(document);
       setPageCount(count);
       setCurrentPage(0);
@@ -275,6 +278,7 @@ const CropPdf = () => {
       console.error('Unable to cancel PDF loading:', destroyError);
     });
     setFile(null);
+    setOutputFileName('');
     setPdfjsDocument(null);
     setPageCount(0);
     setCurrentPage(0);
@@ -431,6 +435,10 @@ const CropPdf = () => {
     setError('');
     clearOutput();
     try {
+      const normalizedOutputFileName = normalizeOutputFileName(
+        outputFileName,
+        `${file.name.replace(/\.pdf$/i, '') || 'document'}_cropped.pdf`
+      );
       const source = await PDFDocument.load(await file.arrayBuffer(), {
         ignoreEncryption: false,
         updateMetadata: false
@@ -491,6 +499,7 @@ const CropPdf = () => {
       }
 
       setOutput(new Blob([bytes], { type: 'application/pdf' }));
+      setOutputFileName(normalizedOutputFileName);
       setPageCrops(cropMap);
       setDraftCrops((current) => ({ ...current, ...cropMap }));
     } catch (processError) {
@@ -506,7 +515,7 @@ const CropPdf = () => {
     const url = URL.createObjectURL(output);
     const anchor = window.document.createElement('a');
     anchor.href = url;
-    anchor.download = downloadFileName || `${file.name.replace(/\.pdf$/i, '') || 'document'}_cropped.pdf`;
+    anchor.download = downloadFileName || outputFileName;
     anchor.style.display = 'none';
     window.document.body.appendChild(anchor);
     anchor.click();
@@ -527,26 +536,32 @@ const CropPdf = () => {
     <div className="crop-pdf-tool">
       <input {...getInputProps()} />
       {file ? (
-        <section
-          {...getRootProps({
-            role: 'group',
-            'aria-label': `Selected PDF ${file.name}`
-          })}
-          className={`pdf-workflow-selected pdf-attached-file-card crop-pdf-attached-file-card flex items-center justify-between gap-4 p-4 ${isDragActive ? 'is-drag-active' : ''}`}
-        >
-          <div className="crop-pdf-file-details">
-            <AttachedFileIcon />
-            <div>
-              <strong className="truncate">{file.name}</strong>
-              <span>{formatBytes(file.size)} · {pageCount} {pageCount === 1 ? 'page' : 'pages'}</span>
+        <section className="crop-pdf-file-section" aria-labelledby="crop-pdf-file-heading">
+          <header>
+            <h3 id="crop-pdf-file-heading" className="merge-selected-files-title">PDF to crop</h3>
+            <p>One PDF selected. Replace it or remove it to choose another.</p>
+          </header>
+          <section
+            {...getRootProps({
+              role: 'group',
+              'aria-label': `Selected PDF ${file.name}`
+            })}
+            className={`pdf-workflow-selected pdf-attached-file-card crop-pdf-attached-file-card flex items-center justify-between gap-4 p-3 ${isDragActive ? 'is-drag-active' : ''}`}
+          >
+            <div className="crop-pdf-file-details">
+              <AttachedFileIcon />
+              <div>
+                <strong className="truncate">{file.name}</strong>
+                <span>{formatBytes(file.size)} · {pageCount} {pageCount === 1 ? 'page' : 'pages'}</span>
+              </div>
             </div>
-          </div>
-          <AttachedFileActions
-            fileName={file.name}
-            onReplace={open}
-            onRemove={removeFile}
-            disabled={isLoading || isProcessing}
-          />
+            <AttachedFileActions
+              fileName={file.name}
+              onReplace={open}
+              onRemove={removeFile}
+              disabled={isLoading || isProcessing}
+            />
+          </section>
         </section>
       ) : (
         <div
@@ -766,21 +781,34 @@ const CropPdf = () => {
                 Adjust current page crop
               </button>
             )}
-            <button type="button" className="crop-pdf-button crop-pdf-button-primary" onClick={applyCrop} disabled={isProcessing || isRendering || isLoading}>
-              {isProcessing ? <Loader2 className="crop-pdf-spinner" aria-hidden="true" size={17} /> : null}
-              {isProcessing ? 'Applying crop...' : 'Apply crop'}
-            </button>
+            <div className="crop-pdf-output-actions">
+              <label htmlFor="crop-pdf-output-filename">Output filename</label>
+              <input
+                id="crop-pdf-output-filename"
+                type="text"
+                value={outputFileName}
+                disabled={isProcessing}
+                onChange={(event) => {
+                  setOutputFileName(event.target.value);
+                }}
+                maxLength={120}
+                autoComplete="off"
+              />
+              <p>The .pdf extension is added automatically when needed.</p>
+              <button type="button" className="crop-pdf-button crop-pdf-button-primary" onClick={applyCrop} disabled={isProcessing || isRendering || isLoading}>
+                {isProcessing ? <Loader2 className="crop-pdf-spinner" aria-hidden="true" size={17} /> : null}
+                {isProcessing ? 'Applying crop...' : 'Apply crop'}
+              </button>
+            </div>
           </div>
           {output && file && (
             <DownloadReadyCard
-              fileName={`${file.name.replace(/\.pdf$/i, '') || 'document'}_cropped.pdf`}
+              fileName={outputFileName}
               sizeBytes={output.size}
+              showFilenameEditor={false}
               onDownload={downloadPdf}
             />
           )}
-          <p className="crop-pdf-disclosure">
-            Cropping changes each page&apos;s visible CropBox boundary; it does not erase content outside that boundary. Hidden content may be recovered by changing the PDF page box. Your original file is left untouched.
-          </p>
         </div>
       )}
     </div>

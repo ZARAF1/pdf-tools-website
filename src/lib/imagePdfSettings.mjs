@@ -24,3 +24,10 @@ export const updateImagePdfSettingsForScope = (images, {
       }
   ));
 };
+
+export const resetImagePdfSettings = (images) => images.map((image) => {
+  if (!image.settings) return image;
+  const imageWithoutSettings = { ...image };
+  delete imageWithoutSettings.settings;
+  return imageWithoutSettings;
+});

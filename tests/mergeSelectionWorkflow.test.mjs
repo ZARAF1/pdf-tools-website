@@ -17,6 +17,11 @@ test('Merge PDF keeps merge-all as the default and offers selective page mode', 
   assert.match(picker, /Larger preview/);
 });
 
+test('Merge PDF keeps the pre-merge filename field without duplicating it beside Download PDF', () => {
+  assert.match(merger, /<label htmlFor="merge-output-filename">Output Filename<\/label>[\s\S]*?value=\{outputFileName\}/);
+  assert.match(merger, /<DownloadReadyCard[\s\S]*?fileName=\{normalizePdfFileName\(outputFileName\)\}[\s\S]*?showFilenameEditor=\{false\}/);
+});
+
 test('Merge labels use title case for modes, settings, selection, and output preview', () => {
   for (const label of [
     'Files to Merge',

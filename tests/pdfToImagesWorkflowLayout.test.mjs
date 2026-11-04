@@ -50,16 +50,46 @@ test('conversion trims page margins and routes one image separately from multi-p
   assert.match(source, /useToolExitGuard\(Boolean\(file\),\s*outputUrl\)/);
   assert.match(source, /href=\{outputUrl\}/);
   assert.match(source, /downloadLabel=\{downloadLabel\}/);
+  const createOutput = source.slice(source.indexOf('const createOutput ='), source.indexOf('const convert ='));
+  assert.doesNotMatch(createOutput, /ZIP ready with/);
+  assert.match(createOutput, /setProgress\(''\);/, 'the completed output should not leave a redundant ZIP-ready status');
 });
 
-test('PDF to Images keeps Convert and Reset right-aligned', () => {
+test('PDF to Images keeps the conversion action right-aligned and resets settings in Settings', () => {
   const actionRowStart = source.indexOf('className="pdf-workflow-actions');
   const actionRowEnd = source.indexOf('{progress &&', actionRowStart);
   const actionRow = source.slice(actionRowStart, actionRowEnd);
+  const settingsStart = source.indexOf('className="pdf-images-settings-shell');
+  const settingsEnd = source.indexOf('{file && (', settingsStart + 1);
+  const settings = source.slice(settingsStart, settingsEnd);
 
   assert.match(actionRow, /className="pdf-workflow-actions[^"]*justify-end/);
-  assert.ok(
-    actionRow.indexOf('Convert PDF to Images') < actionRow.indexOf('Reset'),
-    'Reset follows the conversion action'
-  );
+  assert.match(actionRow, /PDF to Images/);
+  assert.doesNotMatch(actionRow, />\s*Reset\s*</, 'the action row should not include a settings reset');
+  assert.match(settings, /onClick=\{resetSettings\}[\s\S]*?>\s*Reset\s*</, 'Reset should be inside Settings');
+  assert.match(source, /const resetSettings = \(\) => \{[\s\S]*?setFormat\('png'\);[\s\S]*?setQuality\('standard'\);[\s\S]*?setJpegQuality\(0\.85\);[\s\S]*?setAutoCrop\(true\);[\s\S]*?setOutputBaseName\(file \? getBaseName\(file\.name\) : ''\);[\s\S]*?clearOutput\(\);[\s\S]*?\};/);
+  const resetSettings = source.match(/const resetSettings = \(\) => \{([\s\S]*?)\n  \};/)?.[1];
+  assert.ok(resetSettings);
+  assert.doesNotMatch(resetSettings, /setFile\(null\)|setPageCount\(0\)/, 'settings reset should retain the selected PDF');
+});
+
+test('PDF to Images places its selected PDF in a separate muted file section', () => {
+  const selectedSection = source.match(
+    /className="conversion-selected-file-section pdf-images-selected-file-section"[\s\S]*?<\/section>/
+  )?.[0];
+
+  assert.ok(selectedSection, 'the selected PDF has a dedicated section');
+  assert.match(selectedSection, /PDF to convert/);
+  assert.match(selectedSection, /One PDF selected\./);
+  assert.match(selectedSection, /pdf-attached-file-card/);
+  assert.match(selectedSection, /<AttachedFileActions/);
+  assert.match(styles, /\.conversion-selected-file-section\s*\{[^}]*background:\s*var\(--surface-muted\)/s);
+});
+
+test('PDF to Images places its download result after the conversion actions', () => {
+  assert.match(styles, /\.pdf-tool-workflow \.pdf-workflow-actions\s*\{\s*order:\s*4;/s);
+  assert.match(styles, /\.image-to-pdf-workflow > \.download-ready-card,\s*\.pdf-to-images-workflow > \.download-ready-card\s*\{\s*order:\s*5;/s);
+  assert.match(styles, /\.pdf-to-images-workflow\.space-y-6 > \.pdf-workflow-actions\s*\{\s*margin-block-start:\s*0\.75rem;/s);
+  assert.match(source, /\{outputUrl && \(\s*<DownloadReadyCard/);
+  assert.match(source, /<DownloadReadyCard[\s\S]*?showFilenameEditor=\{false\}/);
 });

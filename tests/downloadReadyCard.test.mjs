@@ -25,6 +25,7 @@ const toolComponents = [
   'SignPdf.jsx',
   'UnlockPdf.jsx'
 ];
+const sharedStyles = await readFile(new URL('../src/index.css', import.meta.url), 'utf8');
 const filenameAwareComponents = [
   'CropPdf.jsx',
   'EditPdf.jsx',
@@ -61,10 +62,26 @@ test('every PDF workflow uses the shared download-ready card', async () => {
   }
 });
 
-test('the shared result card lets users name every generated file before download', async () => {
+test('the shared result card supports an optional output filename editor', async () => {
   const component = await readFile(new URL('../src/components/DownloadReadyCard.jsx', import.meta.url), 'utf8');
   assert.match(component, /aria-label=\{[^}]*outputFilename/i);
   assert.match(component, /onDownload\?\.\(safeDownloadName\)/);
+  assert.match(component, /showFilenameEditor = true/);
+  assert.match(component, /\{showFilenameEditor && \(/);
+});
+
+test('download-ready cards stay compact and use restrained success color', () => {
+  const cardStyles = sharedStyles.match(/\.download-ready-card\s*\{([^}]*)\}/)?.[1];
+  const controlsStyles = sharedStyles.match(/\.download-ready-card-controls\s*\{([^}]*)\}/)?.[1];
+  const actionStyles = sharedStyles.match(/\.download-ready-card-action\s*\{([^}]*)\}/)?.[1];
+
+  assert.ok(cardStyles, 'shared download-ready card styles exist');
+  assert.match(cardStyles, /background:\s*var\(--surface-muted\)/);
+  assert.match(cardStyles, /border:\s*1px solid var\(--border-color\)/);
+  assert.ok(controlsStyles, 'shared download controls styles exist');
+  assert.match(controlsStyles, /flex:\s*0 1 auto/);
+  assert.ok(actionStyles, 'shared download action styles exist');
+  assert.match(actionStyles, /background:\s*#2563eb/);
 });
 
 test('download handlers accept the filename selected in the shared result card', async () => {

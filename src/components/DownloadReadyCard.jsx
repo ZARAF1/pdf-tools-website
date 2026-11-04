@@ -11,7 +11,8 @@ const DownloadReadyCard = ({
   downloadLabel = 'Download PDF',
   onDownload,
   href,
-  details
+  details,
+  showFilenameEditor = true
 }) => {
   const { language } = useLanguage();
   const nameInputId = useId();
@@ -33,16 +34,18 @@ const DownloadReadyCard = ({
         </div>
       </div>
       <div className="download-ready-card-controls">
-        <label className="download-ready-card-name" htmlFor={nameInputId}>
-          <span>{outputFilenameLabel}</span>
-          <input
-            id={nameInputId}
-            type="text"
-            value={downloadName}
-            onChange={(event) => setDownloadName(event.target.value)}
-            aria-label={outputFilenameLabel}
-          />
-        </label>
+        {showFilenameEditor && (
+          <label className="download-ready-card-name" htmlFor={nameInputId}>
+            <span>{outputFilenameLabel}</span>
+            <input
+              id={nameInputId}
+              type="text"
+              value={downloadName}
+              onChange={(event) => setDownloadName(event.target.value)}
+              aria-label={outputFilenameLabel}
+            />
+          </label>
+        )}
         {href ? (
           <a
             href={href}
