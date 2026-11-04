@@ -21,6 +21,7 @@ import {
 } from 'lucide-react';
 import { AttachedFileActions, AttachedFileIcon } from './AttachedFileControls';
 import DownloadReadyCard from './DownloadReadyCard';
+import { normalizeOutputFileName } from '../lib/outputFileName.mjs';
 
 const DEFAULT_SETTINGS = {
   watermarkEnabled: true,
@@ -244,6 +245,7 @@ const PdfWatermarker = () => {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
   const [outputBytes, setOutputBytes] = useState(null);
+  const [outputFileName, setOutputFileName] = useState(null);
   const markOutputDownloaded = useToolExitGuard(Boolean(file), outputBytes);
   const fileRequestId = useRef(0);
   const previewContainerRef = useRef(null);
@@ -275,6 +277,7 @@ const PdfWatermarker = () => {
       }
       if (fileRequestId.current === requestId) {
         setFile(selectedFile);
+        setOutputFileName(null);
         setPageCount(count);
         setPreviewPage(1);
         setIsLoadingPages(false);
@@ -421,6 +424,7 @@ const PdfWatermarker = () => {
   const removeFile = () => {
     fileRequestId.current += 1;
     setFile(null);
+    setOutputFileName(null);
     setPageCount(null);
     setPreviewPage(1);
     setPreviewDocument(null);
@@ -577,6 +581,7 @@ const PdfWatermarker = () => {
       return;
     }
 
+    setOutputFileName(outputName);
     setIsProcessing(true);
     try {
       const pdfDoc = await PDFDocument.load(await file.arrayBuffer(), {
@@ -677,11 +682,12 @@ const PdfWatermarker = () => {
     }
   };
 
-  const outputName = file
+  const defaultOutputName = file
     ? `${file.name.replace(/\.pdf$/i, '')}_${settings.watermarkEnabled
       ? settings.numberingEnabled ? 'watermarked_numbered' : 'watermarked'
       : 'numbered'}.pdf`
     : 'watermarked.pdf';
+  const outputName = normalizeOutputFileName(outputFileName ?? defaultOutputName, defaultOutputName);
 
   return (
     <div className="watermark-tool-workspace space-y-8">
@@ -760,147 +766,156 @@ const PdfWatermarker = () => {
             </button>
           </div>
 
-          <label className="inline-flex cursor-pointer items-center gap-3 text-sm font-semibold text-slate-700">
-            <input
-              type="checkbox"
-              checked={settings.watermarkEnabled}
-              onChange={(event) => updateSettings({ watermarkEnabled: event.target.checked })}
+          <fieldset
               disabled={isProcessing}
-              className="h-4 w-4 accent-cyan-600"
-            />
-            Add text watermark
-          </label>
+              className={`watermark-settings-control-grid${settings.watermarkEnabled ? '' : ' is-watermark-disabled'} disabled:opacity-60`}
+          >
+              <legend className="sr-only">Text watermark options</legend>
+              <div className="watermark-primary-settings-grid">
+                <div className="watermark-setting-control watermark-text-setting">
+                  <label htmlFor="watermark-text" className="text-sm font-semibold text-slate-700">Watermark text</label>
+                  <input
+                    id="watermark-text"
+                    type="text"
+                    maxLength={300}
+                    value={settings.text}
+                    onChange={(event) => updateSettings({ text: event.target.value })}
+                    placeholder="e.g. CONFIDENTIAL"
+                    disabled={!settings.watermarkEnabled}
+                    className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-cyan-500 focus:border-transparent outline-none transition-all disabled:bg-slate-50"
+                  />
+                </div>
 
-          <fieldset disabled={!settings.watermarkEnabled || isProcessing} className="space-y-6 disabled:opacity-60">
-            <legend className="sr-only">Text watermark options</legend>
-            <div className="space-y-2">
-              <label htmlFor="watermark-text" className="text-sm font-semibold text-slate-700">Watermark text</label>
-              <input
-                id="watermark-text"
-                type="text"
-                maxLength={300}
-                value={settings.text}
-                onChange={(event) => updateSettings({ text: event.target.value })}
-                placeholder="e.g. CONFIDENTIAL"
-                className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-cyan-500 focus:border-transparent outline-none transition-all disabled:bg-slate-50"
-              />
-            </div>
+                <div className="watermark-setting-control watermark-rotation-setting">
+                  <label htmlFor="watermark-rotation" className="text-sm font-semibold text-slate-700">Rotation</label>
+                  <div className="flex items-center gap-3">
+                    <input
+                      id="watermark-rotation"
+                      type="number"
+                      min="-180"
+                      max="180"
+                      step="1"
+                      value={settings.rotation}
+                      onChange={(event) => updateSettings({
+                        rotation: event.target.value === '' ? '' : Number(event.target.value)
+                      })}
+                      disabled={!settings.watermarkEnabled}
+                      className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-cyan-500 focus:border-transparent outline-none transition-all disabled:bg-slate-50"
+                    />
+                    <span className="text-sm text-slate-500">degrees</span>
+                  </div>
+                  <p className="text-xs text-slate-500">Use 0° for horizontal text or another angle from -180° to 180°.</p>
+                </div>
 
-            <div className="watermark-primary-settings-grid">
-            <div className="space-y-2">
-              <label htmlFor="watermark-size" className="text-sm font-semibold text-slate-700">Text size</label>
-              <div className="flex items-center gap-3">
-                <input
-                  id="watermark-size"
-                  type="number"
-                  min="8"
-                  max="96"
-                  step="1"
-                  value={settings.fontSize}
-                  onChange={(event) => updateSettings({
-                    fontSize: event.target.value === '' ? '' : Number(event.target.value)
-                  })}
-                  className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-cyan-500 focus:border-transparent outline-none transition-all disabled:bg-slate-50"
-                />
-                <span className="text-sm text-slate-500">pt</span>
+                <div className="watermark-setting-control watermark-size-setting">
+                  <label htmlFor="watermark-size" className="text-sm font-semibold text-slate-700">Text size</label>
+                  <div className="flex items-center gap-3">
+                    <input
+                      id="watermark-size"
+                      type="number"
+                      min="8"
+                      max="96"
+                      step="1"
+                      value={settings.fontSize}
+                      onChange={(event) => updateSettings({
+                        fontSize: event.target.value === '' ? '' : Number(event.target.value)
+                      })}
+                      disabled={!settings.watermarkEnabled}
+                      className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-cyan-500 focus:border-transparent outline-none transition-all disabled:bg-slate-50"
+                    />
+                    <span className="text-sm text-slate-500">pt</span>
+                  </div>
+                  <p className="text-xs text-slate-500">Choose 8 to 96 points.</p>
+                </div>
+
+                <div className="watermark-setting-control watermark-color-setting">
+                  <label htmlFor="watermark-color" className="text-sm font-semibold text-slate-700">Text colour</label>
+                  <div className="flex items-center gap-3">
+                    <input
+                      id="watermark-color"
+                      type="color"
+                      value={settings.color}
+                      onChange={(event) => updateSettings({ color: event.target.value })}
+                      disabled={!settings.watermarkEnabled}
+                      className="h-12 w-16 cursor-pointer rounded-lg border border-slate-200 bg-white p-1 disabled:cursor-not-allowed"
+                    />
+                    <span className="text-sm text-slate-600 uppercase">{settings.color}</span>
+                  </div>
+                </div>
+
+                <div className="watermark-setting-control watermark-opacity-setting">
+                  <label htmlFor="watermark-opacity" className="text-sm font-semibold text-slate-700">
+                    Opacity <span className="font-normal text-slate-500">{Math.round(settings.opacity * 100)}%</span>
+                  </label>
+                  <input
+                    id="watermark-opacity"
+                    type="range"
+                    min="0"
+                    max="1"
+                    step="0.05"
+                    value={settings.opacity}
+                    onChange={(event) => updateSettings({ opacity: Number(event.target.value) })}
+                    disabled={!settings.watermarkEnabled}
+                    className="w-full accent-cyan-600"
+                  />
+                </div>
+
+                <label className="watermark-toggle-setting inline-flex cursor-pointer items-center gap-3 text-sm font-semibold text-slate-700">
+                  <input
+                    type="checkbox"
+                    checked={settings.watermarkEnabled}
+                    onChange={(event) => updateSettings({ watermarkEnabled: event.target.checked })}
+                    className="h-4 w-4 accent-cyan-600"
+                  />
+                  Add text watermark
+                </label>
               </div>
-              <p className="text-xs text-slate-500">Choose 8 to 96 points.</p>
-            </div>
 
-            <div className="space-y-2">
-              <label htmlFor="watermark-color" className="text-sm font-semibold text-slate-700">Text colour</label>
-              <div className="flex items-center gap-3">
-                <input
-                  id="watermark-color"
-                  type="color"
-                  value={settings.color}
-                  onChange={(event) => updateSettings({ color: event.target.value })}
-                  className="h-12 w-16 cursor-pointer rounded-lg border border-slate-200 bg-white p-1 disabled:cursor-not-allowed"
-                />
-                <span className="text-sm text-slate-600 uppercase">{settings.color}</span>
+              <div className="watermark-setting-control watermark-apply-settings">
+                <label className="text-sm font-semibold text-slate-700">Apply to</label>
+                <div className="flex flex-col sm:flex-row gap-2">
+                  {[
+                    { value: 'all', label: 'All Pages' },
+                    { value: 'selected', label: 'Selected Pages' }
+                  ].map((mode) => (
+                    <button
+                      key={mode.value}
+                      type="button"
+                      onClick={() => updateSettings({ pageMode: mode.value })}
+                      disabled={!settings.watermarkEnabled}
+                      className={`flex-1 py-2 rounded-lg text-sm font-medium transition-all disabled:opacity-50 ${
+                        settings.pageMode === mode.value
+                          ? 'bg-cyan-50 text-cyan-700 border border-cyan-200'
+                          : 'bg-slate-50 text-slate-500 hover:bg-slate-100'
+                      }`}
+                    >
+                      {mode.label}
+                    </button>
+                  ))}
+                </div>
               </div>
-            </div>
 
-            <div className="space-y-2">
-              <label htmlFor="watermark-rotation" className="text-sm font-semibold text-slate-700">Rotation</label>
-              <div className="flex items-center gap-3">
-                <input
-                  id="watermark-rotation"
-                  type="number"
-                  min="-180"
-                  max="180"
-                  step="1"
-                  value={settings.rotation}
-                  onChange={(event) => updateSettings({
-                    rotation: event.target.value === '' ? '' : Number(event.target.value)
-                  })}
-                  className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-cyan-500 focus:border-transparent outline-none transition-all disabled:bg-slate-50"
-                />
-                <span className="text-sm text-slate-500">degrees</span>
-              </div>
-              <p className="text-xs text-slate-500">Use 0° for horizontal text or another angle from -180° to 180°.</p>
-            </div>
-
-            <div className="space-y-2">
-              <label htmlFor="watermark-opacity" className="text-sm font-semibold text-slate-700">
-                Opacity <span className="font-normal text-slate-500">{Math.round(settings.opacity * 100)}%</span>
-              </label>
-              <input
-                id="watermark-opacity"
-                type="range"
-                min="0"
-                max="1"
-                step="0.05"
-                value={settings.opacity}
-                onChange={(event) => updateSettings({ opacity: Number(event.target.value) })}
-                className="w-full accent-cyan-600"
-              />
-            </div>
-            </div>
-
-            <div className="space-y-3">
-            <label className="text-sm font-semibold text-slate-700">Apply to</label>
-            <div className="flex flex-col sm:flex-row gap-2">
-              {[
-                { value: 'all', label: 'All Pages' },
-                { value: 'selected', label: 'Selected Pages' }
-              ].map((mode) => (
-                <button
-                  key={mode.value}
-                  type="button"
-                  onClick={() => updateSettings({ pageMode: mode.value })}
-                  className={`flex-1 py-2 rounded-lg text-sm font-medium transition-all disabled:opacity-50 ${
-                    settings.pageMode === mode.value
-                      ? 'bg-cyan-50 text-cyan-700 border border-cyan-200'
-                      : 'bg-slate-50 text-slate-500 hover:bg-slate-100'
-                  }`}
+              {settings.pageMode === 'selected' && (
+                <motion.div
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: 'auto' }}
+                  className="watermark-setting-control watermark-page-ranges"
                 >
-                  {mode.label}
-                </button>
-              ))}
-              </div>
-          </div>
-
-          {settings.pageMode === 'selected' && (
-            <motion.div
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: 'auto' }}
-              className="space-y-2"
-            >
-              <label htmlFor="watermark-pages" className="text-sm font-semibold text-slate-700">Page numbers / ranges</label>
-              <input
-                id="watermark-pages"
-                type="text"
-                value={settings.pageRanges}
-                onChange={(event) => updateSettings({ pageRanges: event.target.value })}
-                placeholder="e.g. 1,3,5-7"
-                className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-cyan-500 focus:border-transparent outline-none transition-all disabled:bg-slate-50"
-              />
-              <p className="text-xs text-slate-500">
-                Enter page numbers starting at 1, separated by commas. This PDF has {pageCount} pages.
-              </p>
-            </motion.div>
-          )}
+                  <label htmlFor="watermark-pages" className="text-sm font-semibold text-slate-700">Page numbers / ranges</label>
+                  <input
+                    id="watermark-pages"
+                    type="text"
+                    value={settings.pageRanges}
+                    onChange={(event) => updateSettings({ pageRanges: event.target.value })}
+                    placeholder="e.g. 1,3,5-7"
+                    disabled={!settings.watermarkEnabled}
+                    className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-cyan-500 focus:border-transparent outline-none transition-all disabled:bg-slate-50"
+                  />
+                  <p className="text-xs text-slate-500">
+                    Enter page numbers starting at 1, separated by commas. This PDF has {pageCount} pages.
+                  </p>
+                </motion.div>
+              )}
 
           </fieldset>
 
@@ -941,22 +956,22 @@ const PdfWatermarker = () => {
                 <input id="number-size" type="number" min="6" max="72" step="1" value={settings.numberFontSize} onChange={(event) => updateSettings({ numberFontSize: event.target.value === '' ? '' : Number(event.target.value) })} className="w-full rounded-xl border border-slate-200 px-4 py-3" />
               </div>
               <div className="space-y-2">
-                <label htmlFor="number-color" className="text-sm font-semibold text-slate-700">Number colour</label>
-                <input id="number-color" type="color" value={settings.numberColor} onChange={(event) => updateSettings({ numberColor: event.target.value })} className="h-12 w-16 cursor-pointer rounded-lg border border-slate-200 bg-white p-1" />
-              </div>
-              <div className="space-y-2">
                 <label htmlFor="number-margin" className="text-sm font-semibold text-slate-700">Margin (0–1440 pt)</label>
                 <input id="number-margin" type="number" min="0" max="1440" step="1" value={settings.numberMargin} onChange={(event) => updateSettings({ numberMargin: event.target.value === '' ? '' : Number(event.target.value) })} className="w-full rounded-xl border border-slate-200 px-4 py-3" />
               </div>
-              <div className="space-y-2 md:col-span-2">
+              <div className="space-y-2 watermark-number-pages-mode-setting">
                 <label htmlFor="number-pages-mode" className="text-sm font-semibold text-slate-700">Number pages</label>
                 <select id="number-pages-mode" value={settings.numberPageMode} onChange={(event) => updateSettings({ numberPageMode: event.target.value })} className="w-full rounded-xl border border-slate-200 px-4 py-3">
                   <option value="all">All pages</option>
                   <option value="selected">Selected pages / ranges</option>
                 </select>
               </div>
+              <div className="space-y-2">
+                <label htmlFor="number-color" className="text-sm font-semibold text-slate-700">Number colour</label>
+                <input id="number-color" type="color" value={settings.numberColor} onChange={(event) => updateSettings({ numberColor: event.target.value })} className="h-12 w-full cursor-pointer rounded-lg border border-slate-200 bg-white p-1" />
+              </div>
               {settings.numberPageMode === 'selected' && (
-                <div className="space-y-2 md:col-span-2">
+                <div className="space-y-2 watermark-number-pages-range-setting">
                   <label htmlFor="number-pages" className="text-sm font-semibold text-slate-700">Page numbers / ranges</label>
                   <input id="number-pages" type="text" value={settings.numberPageRanges} onChange={(event) => updateSettings({ numberPageRanges: event.target.value })} placeholder="e.g. 1,3,5-7" className="w-full rounded-xl border border-slate-200 px-4 py-3" />
                   <p className="text-xs text-slate-500">The sequence starts at {settings.numberStart} and increments for each selected page in document order.</p>
@@ -1108,28 +1123,41 @@ const PdfWatermarker = () => {
             Text watermarks and page numbers are drawn into a new PDF while preserving original content. Processing stays in your browser.
           </div>
 
-          <button
-            type="button"
-            onClick={addWatermark}
-            disabled={isProcessing || isLoadingPages || pageCount === null}
-            className={`w-full flex items-center justify-center gap-2 py-4 px-6 rounded-xl font-bold text-white transition-all ${
-              isProcessing || isLoadingPages || pageCount === null
-                ? 'bg-slate-300 cursor-not-allowed'
-                : 'bg-cyan-600 hover:bg-cyan-700 shadow-lg shadow-cyan-200 active:scale-[0.98]'
-            }`}
-          >
-            {isProcessing ? (
-              <>
-                <Loader2 className="w-5 h-5 animate-spin" />
-                Processing PDF...
-              </>
-            ) : (
-              <>
-                <Stamp className="w-5 h-5" />
-                Apply PDF Options
-              </>
-            )}
-          </button>
+          <div className="watermark-output-actions">
+            <label htmlFor="watermark-output-filename">Output Filename</label>
+            <input
+              id="watermark-output-filename"
+              className="watermark-output-filename"
+              type="text"
+              value={outputFileName ?? defaultOutputName}
+              onChange={(event) => setOutputFileName(event.target.value)}
+              maxLength={120}
+              autoComplete="off"
+              disabled={isProcessing}
+            />
+            <button
+              type="button"
+              onClick={addWatermark}
+              disabled={isProcessing || isLoadingPages || pageCount === null}
+              className={`watermark-apply-button flex items-center justify-center gap-2 py-4 px-6 rounded-xl font-bold text-white transition-all ${
+                isProcessing || isLoadingPages || pageCount === null
+                  ? 'bg-slate-300 cursor-not-allowed'
+                  : 'bg-cyan-600 hover:bg-cyan-700 shadow-lg shadow-cyan-200 active:scale-[0.98]'
+              }`}
+            >
+              {isProcessing ? (
+                <>
+                  <Loader2 className="w-5 h-5 animate-spin" />
+                  Applying Watermark...
+                </>
+              ) : (
+                <>
+                  <Stamp className="w-5 h-5" />
+                  Apply Watermark
+                </>
+              )}
+            </button>
+          </div>
         </div>
       )}
 
@@ -1149,6 +1177,7 @@ const PdfWatermarker = () => {
         <DownloadReadyCard
           fileName={outputName}
           sizeBytes={outputBytes.length}
+          showFilenameEditor={false}
           onDownload={(downloadFileName) => {
             downloadBlob(outputBytes, downloadFileName || outputName);
             markOutputDownloaded();
