@@ -11,7 +11,7 @@ import {
   selectionToPdfRectangle
 } from '../lib/organizePdfCrop.mjs';
 import useAccessibleDropzone from '../lib/useAccessibleDropzone';
-import { ArrowDown, ArrowUp, CheckCircle2, Crop as CropIcon, Eye, Loader2, RotateCw, Trash2, Upload, X } from 'lucide-react';
+import { ArrowDown, ArrowUp, CheckCircle2, Crop as CropIcon, Eye, FileText, Loader2, RotateCw, Trash2, Upload, X } from 'lucide-react';
 import pdfjsLib from '../lib/pdfjsClient';
 import { AttachedFileActions, AttachedFileIcon } from './AttachedFileControls';
 import DownloadReadyCard from './DownloadReadyCard';
@@ -586,7 +586,10 @@ const OrganizePdf = () => {
       {file ? (
       <section className="organize-pdf-file-section" aria-labelledby="organize-pdf-file-heading">
         <header>
-          <h3 id="organize-pdf-file-heading" className="merge-selected-files-title">PDF to organize</h3>
+          <div className="merge-panel-title">
+            <FileText aria-hidden="true" />
+            <h3 id="organize-pdf-file-heading" className="merge-selected-files-title">PDF to organize</h3>
+          </div>
           <p>One PDF selected. Replace it or remove it to choose another.</p>
         </header>
         <section
@@ -649,7 +652,10 @@ const OrganizePdf = () => {
         <div className="pdf-workflow-controls space-y-4">
           <div className="organize-pdf-preview-shell">
             <div className="merge-control-intro">
-              <h3 className="merge-selected-files-title">Preview</h3>
+              <div className="merge-panel-title">
+                <Eye aria-hidden="true" />
+                <h3 className="merge-selected-files-title">Preview</h3>
+              </div>
               <p>Review, reorder, rotate, and remove pages before creating your organized PDF.</p>
             </div>
             <section className="merge-page-selection-panel organize-pdf-page-preview-panel" aria-labelledby="organize-pdf-page-preview-heading">

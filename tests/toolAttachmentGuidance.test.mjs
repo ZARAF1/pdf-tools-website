@@ -18,7 +18,7 @@ const expectedAttachments = new Map([
   ['remove', ['One unencrypted PDF · up to 50 pages', 'Remove selected PDF pages', 'Choose pages to omit; at least one page must remain in the output.']],
   ['ocr', ['One unencrypted PDF · up to 50 pages', 'Make scanned PDF text searchable', 'English OCR adds an invisible text layer to pages without readable text.']],
   ['organize-pages', ['One unencrypted PDF · up to 30 pages', 'Organize PDF pages', 'Reorder, rotate, crop, or remove pages; cropping changes visible bounds only, and at least one page must remain.']],
-  ['redact', ['One unencrypted PDF · up to 15 pages', 'Permanently redact page content', 'Drag over sensitive text or images to mark them. Every page is rasterized in the output so the original text beneath a redaction is not retained.']],
+  ['redact', ['One unencrypted PDF · up to 30 pages', 'Permanently redact page content', 'Drag over sensitive text or images to mark them. Every page is rasterized in the output so the original text beneath a redaction is not retained.']],
   ['sign', ['One unencrypted PDF · no fixed page cap', 'Add a visible signature to PDF pages', 'Use a typed, drawn, or image signature; this is not a certificate-based digital signature.']]
 ]);
 const expectedRuleKeys = new Map([
@@ -26,7 +26,7 @@ const expectedRuleKeys = new Map([
   ['rotate', 'pdfOne'], ['protect', 'pdfOne'], ['unlock', 'passwordPdf'],
   ['word', 'docxPdfOne'], ['powerpoint', 'powerpointPdfOne'], ['markdown', 'markdownFileOne'], ['compress', 'pdfUpTo5'], ['watermark', 'pdfOne'],
   ['remove', 'pdf50'], ['ocr', 'pdf50'], ['organize-pages', 'pdf30'],
-  ['redact', 'pdf15'], ['sign', 'pdfOne']
+  ['redact', 'pdf30'], ['sign', 'pdfOne']
 ]);
 
 const source = await readFile(new URL('../src/components/ToolPage.jsx', import.meta.url), 'utf8');

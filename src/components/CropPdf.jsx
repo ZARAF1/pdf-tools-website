@@ -1,13 +1,14 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useToolExitGuard } from './ToolExitGuard';
 import useAccessibleDropzone from '../lib/useAccessibleDropzone';
-import { ArrowLeft, ArrowRight, Loader2, RotateCcw, Upload, ZoomIn, ZoomOut } from 'lucide-react';
+import { Eye, FileText, Loader2, RotateCcw, Settings2, Upload, ZoomIn, ZoomOut } from 'lucide-react';
 import { PDFDocument } from 'pdf-lib';
 import pdfjsLib from '../lib/pdfjsClient';
 import { validateUnencryptedPdf } from '../lib/pdfValidation';
 import { normalizeOutputFileName } from '../lib/outputFileName.mjs';
 import { AttachedFileActions, AttachedFileIcon } from './AttachedFileControls';
 import DownloadReadyCard from './DownloadReadyCard';
+import PdfPageThumbnailRail from './PdfPageThumbnailRail';
 
 const MIN_CROP_SIZE = 0.05;
 const clamp = (value, min, max) => Math.min(max, Math.max(min, value));
@@ -538,7 +539,10 @@ const CropPdf = () => {
       {file ? (
         <section className="crop-pdf-file-section" aria-labelledby="crop-pdf-file-heading">
           <header>
-            <h3 id="crop-pdf-file-heading" className="merge-selected-files-title">PDF to crop</h3>
+            <div className="merge-panel-title">
+              <FileText aria-hidden="true" />
+              <h3 id="crop-pdf-file-heading" className="merge-selected-files-title">PDF to crop</h3>
+            </div>
             <p>One PDF selected. Replace it or remove it to choose another.</p>
           </header>
           <section
@@ -602,14 +606,17 @@ const CropPdf = () => {
         <div className="crop-pdf-workspace">
           <section className="crop-pdf-settings-shell" aria-labelledby="crop-pdf-workflow-heading">
             <div className="merge-control-intro">
-              <h3 id="crop-pdf-workflow-heading" className="merge-selected-files-title">Settings &gt; Selection &gt; Preview</h3>
+              <h3 id="crop-pdf-workflow-heading" className="merge-selected-files-title">Crop Settings &amp; Preview</h3>
               <p>Choose pages, set the crop area, and review the result before applying.</p>
             </div>
 
             <section className="crop-pdf-settings-panel" aria-labelledby="crop-pdf-settings-heading">
               <div className="merge-section-heading merge-output-settings-heading">
                 <div>
-                  <h3 id="crop-pdf-settings-heading" className="merge-section-heading-title merge-output-settings-title">Choose Settings</h3>
+                  <div className="merge-panel-title">
+                    <Settings2 aria-hidden="true" />
+                    <h3 id="crop-pdf-settings-heading" className="merge-section-heading-title merge-output-settings-title">Settings</h3>
+                  </div>
                   <p id="crop-pdf-settings-description">Set bounds as percentages from the page&apos;s top-left. Current-page crops preserve earlier crops.</p>
                 </div>
               </div>
@@ -670,22 +677,18 @@ const CropPdf = () => {
             <section className="crop-pdf-page-preview-panel" aria-labelledby="crop-pdf-preview-heading">
               <div className="merge-section-heading merge-output-settings-heading">
                 <div>
-                  <h3 id="crop-pdf-preview-heading" className="merge-section-heading-title merge-output-settings-title">Page preview</h3>
+                  <div className="merge-panel-title">
+                    <Eye aria-hidden="true" />
+                    <h3 id="crop-pdf-preview-heading" className="merge-section-heading-title merge-output-settings-title">Preview</h3>
+                  </div>
                   <p>Review and adjust the current page before applying your crop.</p>
                 </div>
               </div>
 
-              <div className="crop-pdf-toolbar">
-                <div className="crop-pdf-page-navigation" aria-label="PDF page navigation">
-                  <button type="button" className="crop-pdf-icon-button" onClick={() => navigatePage(currentPage - 1)} disabled={currentPage === 0 || isProcessing} aria-label="Previous page">
-                    <ArrowLeft aria-hidden="true" size={18} />
-                  </button>
-                  <span aria-live="polite">Page {currentPage + 1} of {pageCount}</span>
-                  <button type="button" className="crop-pdf-icon-button" onClick={() => navigatePage(currentPage + 1)} disabled={currentPage >= pageCount - 1 || isProcessing} aria-label="Next page">
-                    <ArrowRight aria-hidden="true" size={18} />
-                  </button>
-                </div>
-                <div className="crop-pdf-zoom-controls" aria-label="Preview zoom">
+              <div className="crop-pdf-preview-layout">
+                <div className="crop-pdf-preview-main">
+                  <div className="crop-pdf-preview-toolbar">
+                    <div className="crop-pdf-zoom-controls" aria-label="Preview zoom">
                   <button type="button" className="crop-pdf-icon-button" onClick={() => setZoom((value) => Math.max(0.75, Math.round((value - 0.25) * 100) / 100))} disabled={zoom <= 0.75 || isProcessing} aria-label="Zoom out">
                     <ZoomOut aria-hidden="true" size={18} />
                   </button>
@@ -693,84 +696,92 @@ const CropPdf = () => {
                   <button type="button" className="crop-pdf-icon-button" onClick={() => setZoom((value) => Math.min(1.5, Math.round((value + 0.25) * 100) / 100))} disabled={zoom >= 1.5 || isProcessing} aria-label="Zoom in">
                     <ZoomIn aria-hidden="true" size={18} />
                   </button>
-                </div>
-              </div>
-
-              <div className="crop-pdf-preview-area" ref={previewAreaRef}>
-                {isRendering && <p className="crop-pdf-preview-status" role="status"><Loader2 className="crop-pdf-spinner" aria-hidden="true" size={16} /> Rendering page preview...</p>}
-                {previewMessage && <p className="crop-pdf-message crop-pdf-error" role="alert">{previewMessage}</p>}
-                {pdfjsDocument && (
-                  <div
-                    ref={stageRef}
-                    className={`crop-pdf-page-stage ${displayedCrop ? 'is-cropped-preview' : ''}`}
-                    style={{ width: renderInfo ? stageWidth : 1, height: renderInfo ? stageHeight : 1 }}
-                    onPointerDown={handlePointerDown}
-                    onPointerMove={handlePointerMove}
-                    onPointerUp={finishPointer}
-                    onPointerCancel={finishPointer}
-                  >
-                    <canvas
-                      ref={canvasRef}
-                      className="crop-pdf-canvas"
-                      role="img"
-                      aria-label={`Preview of page ${currentPage + 1}`}
-                      aria-describedby="crop-pdf-page-description"
-                      style={{
-                        width: renderInfo?.width ?? 0,
-                        height: renderInfo?.height ?? 0,
-                        left: displayedCrop && renderInfo ? -displayedCrop.x * renderInfo.width : 0,
-                        top: displayedCrop && renderInfo ? -displayedCrop.y * renderInfo.height : 0
-                      }}
-                    />
-                    <p id="crop-pdf-page-description" className="sr-only">
-                      {pageTextSummary || 'This is a visual preview of the PDF page; extracted text is not available yet.'}
-                    </p>
-                    {renderInfo && !displayedCrop && (
-                      <>
-                        <svg className="crop-pdf-shade" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
-                          <path
-                            d={`M0 0H100V100H0Z M${crop.x * 100} ${crop.y * 100}h${crop.width * 100}v${crop.height * 100}h${-crop.width * 100}Z`}
-                            fillRule="evenodd"
-                          />
-                        </svg>
-                        <div
-                          className="crop-pdf-selection"
+                    </div>
+                  </div>
+                  <div className="crop-pdf-preview-area" ref={previewAreaRef}>
+                    {isRendering && <p className="crop-pdf-preview-status" role="status"><Loader2 className="crop-pdf-spinner" aria-hidden="true" size={16} /> Rendering page preview...</p>}
+                    {previewMessage && <p className="crop-pdf-message crop-pdf-error" role="alert">{previewMessage}</p>}
+                    {pdfjsDocument && (
+                      <div
+                        ref={stageRef}
+                        className={`crop-pdf-page-stage ${displayedCrop ? 'is-cropped-preview' : ''}`}
+                        style={{ width: renderInfo ? stageWidth : 1, height: renderInfo ? stageHeight : 1 }}
+                        onPointerDown={handlePointerDown}
+                        onPointerMove={handlePointerMove}
+                        onPointerUp={finishPointer}
+                        onPointerCancel={finishPointer}
+                      >
+                        <canvas
+                          ref={canvasRef}
+                          className="crop-pdf-canvas"
+                          role="img"
+                          aria-label={`Preview of page ${currentPage + 1}`}
+                          aria-describedby="crop-pdf-page-description"
                           style={{
-                            left: `${crop.x * 100}%`,
-                            top: `${crop.y * 100}%`,
-                            width: `${crop.width * 100}%`,
-                            height: `${crop.height * 100}%`
+                            width: renderInfo?.width ?? 0,
+                            height: renderInfo?.height ?? 0,
+                            left: displayedCrop && renderInfo ? -displayedCrop.x * renderInfo.width : 0,
+                            top: displayedCrop && renderInfo ? -displayedCrop.y * renderInfo.height : 0
                           }}
                         />
-                        {cropHandles.map((handle) => (
-                          <button
-                            key={handle.id}
-                            type="button"
-                            className={`crop-pdf-handle crop-pdf-handle-${handle.id}`}
-                            style={handleStyle(handle)}
-                            data-crop-handle={handle.id}
-                            aria-label={`Resize crop from ${handle.label}; use arrow keys to adjust`}
-                            title={`Resize from ${handle.label}`}
-                            disabled={isProcessing || isRendering}
-                            onKeyDown={(event) => resizeByKeyboard(event, handle.id)}
-                          />
-                        ))}
+                        <p id="crop-pdf-page-description" className="sr-only">
+                          {pageTextSummary || 'This is a visual preview of the PDF page; extracted text is not available yet.'}
+                        </p>
+                        {renderInfo && !displayedCrop && (
+                          <>
+                            <svg className="crop-pdf-shade" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
+                              <path
+                                d={`M0 0H100V100H0Z M${crop.x * 100} ${crop.y * 100}h${crop.width * 100}v${crop.height * 100}h${-crop.width * 100}Z`}
+                                fillRule="evenodd"
+                              />
+                            </svg>
+                            <div
+                              className="crop-pdf-selection"
+                              style={{
+                                left: `${crop.x * 100}%`,
+                                top: `${crop.y * 100}%`,
+                                width: `${crop.width * 100}%`,
+                                height: `${crop.height * 100}%`
+                              }}
+                            />
+                            {cropHandles.map((handle) => (
+                              <button
+                                key={handle.id}
+                                type="button"
+                                className={`crop-pdf-handle crop-pdf-handle-${handle.id}`}
+                                style={handleStyle(handle)}
+                                data-crop-handle={handle.id}
+                                aria-label={`Resize crop from ${handle.label}; use arrow keys to adjust`}
+                                title={`Resize from ${handle.label}`}
+                                disabled={isProcessing || isRendering}
+                                onKeyDown={(event) => resizeByKeyboard(event, handle.id)}
+                              />
+                            ))}
+                          </>
+                        )}
+                      </div>
+                    )}
+                    {renderInfo && (
+                      <>
+                        <p className="crop-pdf-measurement">
+                          {displayedCrop
+                            ? `Cropped preview: ${Math.round(displayedCrop.width * 100)}% × ${Math.round(displayedCrop.height * 100)}% of the original page.`
+                            : `Crop area: ${Math.round(crop.width * 100)}% × ${Math.round(crop.height * 100)}% of the visible page.`}
+                        </p>
+                        {output && !displayedCrop && (
+                          <p className="crop-pdf-message">The current page was not included in the last crop. The source page is shown here.</p>
+                        )}
                       </>
                     )}
                   </div>
-                )}
-                {renderInfo && (
-                  <>
-                    <p className="crop-pdf-measurement">
-                      {displayedCrop
-                        ? `Cropped preview: ${Math.round(displayedCrop.width * 100)}% × ${Math.round(displayedCrop.height * 100)}% of the original page.`
-                        : `Crop area: ${Math.round(crop.width * 100)}% × ${Math.round(crop.height * 100)}% of the visible page.`}
-                    </p>
-                    {output && !displayedCrop && (
-                      <p className="crop-pdf-message">The current page was not included in the last crop. The source page is shown here.</p>
-                    )}
-                  </>
-                )}
+                </div>
+                <PdfPageThumbnailRail
+                  document={pdfjsDocument}
+                  pageNumbers={Array.from({ length: pageCount }, (_, index) => index + 1)}
+                  currentPage={currentPage + 1}
+                  disabled={isProcessing}
+                  onSelectPage={(pageNumber) => navigatePage(pageNumber - 1)}
+                />
               </div>
             </section>
           </section>

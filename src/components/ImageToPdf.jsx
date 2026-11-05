@@ -12,6 +12,7 @@ import {
   Loader2,
   RotateCw,
   RefreshCw,
+  Settings2,
   Trash2,
   Upload,
   X
@@ -618,13 +619,16 @@ const ImageToPdf = () => {
               >
                 <header className="image-to-pdf-file-section-header">
                   <div>
-                    <h3 id="image-to-pdf-file-heading" className="merge-selected-files-title">{imageUi.uploadLabel}</h3>
+                    <div className="merge-panel-title">
+                      <ImageIcon aria-hidden="true" />
+                      <h3 id="image-to-pdf-file-heading" className="merge-selected-files-title">{imageUi.uploadLabel}</h3>
+                    </div>
+                    <p>{imageUi.chooseImagesDescription}</p>
                   </div>
                   <span className="image-to-pdf-image-count" aria-live="polite">
                     {formatToolUiMessage(imageUi.imageCount, { count: images.length, max: MAX_IMAGES })}
                   </span>
                 </header>
-                <h4 className="image-to-pdf-attached-images-title">{imageUi.attachedImages}</h4>
                 <ol className="image-to-pdf-attached-image-list" aria-label={imageUi.attachedImages}>
                   {images.map((image, index) => (
                     <li key={image.id} className="pdf-attached-file-card image-to-pdf-attached-image-card">
@@ -740,7 +744,10 @@ const ImageToPdf = () => {
         <div className="pdf-workflow-controls space-y-4">
           <div className="image-to-pdf-settings-shell">
             <header className="merge-control-intro">
-              <h3 className="merge-selected-files-title">{imageUi.settingsTitle}</h3>
+              <div className="merge-panel-title">
+                <Settings2 aria-hidden="true" />
+                <h3 className="merge-selected-files-title">{imageUi.settingsTitle}</h3>
+              </div>
               <p>{imageUi.settingsDescription}</p>
             </header>
             <section className="image-to-pdf-settings-panel" aria-labelledby="image-to-pdf-settings-heading">
@@ -896,13 +903,13 @@ const ImageToPdf = () => {
 
           <div className="image-to-pdf-preview-shell">
             <header className="merge-control-intro">
-              <h3 className="merge-selected-files-title">{imageUi.previewTitle}</h3>
+              <div className="merge-panel-title">
+                <Eye aria-hidden="true" />
+                <h3 className="merge-selected-files-title">{imageUi.previewTitle}</h3>
+              </div>
               <p>{imageUi.previewDescription}</p>
             </header>
-            <section className="image-to-pdf-preview-panel" aria-labelledby="image-to-pdf-preview-heading">
-              <div className="merge-section-heading merge-page-selection-heading">
-                <h3 id="image-to-pdf-preview-heading" className="merge-section-heading-title merge-page-selection-title">{imageUi.pagePreview}</h3>
-              </div>
+            <section className="image-to-pdf-preview-panel" aria-label={imageUi.previewTitle}>
               {settingsScope === 'select' && (
                 <p className="image-to-pdf-page-preview-description">{imageUi.selectImagesHint}</p>
               )}

@@ -5,14 +5,46 @@ import { readFile } from 'node:fs/promises';
 const component = await readFile(new URL('../src/components/PdfRotator.jsx', import.meta.url), 'utf8');
 const styles = await readFile(new URL('../src/index.css', import.meta.url), 'utf8');
 
+test('Rotate headings use decorative icons and neutral typography', () => {
+  assert.match(
+    component,
+    /className="rotate-selected-file-section"[\s\S]*?<div className="merge-panel-title">\s*<FileText aria-hidden="true" \/>\s*<h3 id="rotate-selected-file-heading"[^>]*>File to Rotate<\/h3>/
+  );
+  assert.match(component, /<h3 className="merge-selected-files-title">Rotation Settings &amp; Preview<\/h3>/);
+  assert.match(
+    component,
+    /className="rotate-settings-panel">[\s\S]*?<div className="merge-panel-title">\s*<Settings2 aria-hidden="true" \/>\s*<h3 className="merge-section-heading-title merge-output-settings-title">Settings<\/h3>/
+  );
+  assert.match(
+    component,
+    /className="rotate-page-preview-panel"[\s\S]*?<div className="merge-panel-title">\s*<Eye aria-hidden="true" \/>\s*<h3 id="rotate-page-preview-heading" className="merge-section-heading-title merge-output-settings-title">Preview<\/h3>/
+  );
+  const headingStyle = styles.match(
+    /\.rotate-settings-shell \.merge-section-heading h3\.merge-output-settings-title\s*\{([^}]*)\}/
+  )?.[1];
+  const darkHeadingStyle = styles.match(
+    /:root\[data-theme='dark'\] \.rotate-settings-shell \.merge-section-heading h3\.merge-output-settings-title\s*\{([^}]*)\}/
+  )?.[1];
+
+  assert.ok(headingStyle, 'Rotate settings and preview labels have scoped typography');
+  assert.match(headingStyle, /font-size:\s*1rem\s*;/);
+  assert.match(headingStyle, /font-weight:\s*750\s*;/);
+  assert.match(headingStyle, /background:\s*transparent\s*;/);
+  assert.match(headingStyle, /border:\s*0\s*;/);
+  assert.match(headingStyle, /padding:\s*0\s*;/);
+  assert.ok(darkHeadingStyle, 'dark theme removes the shared title tint for Rotate');
+  assert.match(darkHeadingStyle, /background:\s*transparent\s*;/);
+  assert.match(darkHeadingStyle, /border:\s*0\s*;/);
+});
+
 test('Rotate PDF places page tabs, rotation settings, and previews in order', () => {
-  const fileHeading = component.indexOf('PDF to rotate');
+  const fileHeading = component.indexOf('File to Rotate');
   const attachmentCard = component.indexOf('className="pdf-attached-file-card rotate-selected-file-card"');
   const workflowShell = component.indexOf('className="rotate-settings-shell"');
-  const overviewHeading = component.indexOf('<h3 className="merge-selected-files-title">Rotation Setup &amp; Preview</h3>');
+  const overviewHeading = component.indexOf('<h3 className="merge-selected-files-title">Rotation Settings &amp; Preview</h3>');
   const pageTabs = component.indexOf('role="tablist" aria-label="Pages to Rotate"');
   const settingsPanel = component.indexOf('className="rotate-settings-panel"');
-  const settingsHeading = component.indexOf('Choose Settings');
+  const settingsHeading = component.indexOf('>Settings</h3>');
   const pageRangeControls = component.indexOf('className="rotate-page-range-controls"');
   const outputFilenameInput = component.indexOf('id="rotate-output-filename"');
   const rotationControls = component.indexOf('className="rotate-angle-fieldset"');
@@ -30,18 +62,18 @@ test('Rotate PDF places page tabs, rotation settings, and previews in order', ()
   assert.ok(pageTabs < settingsPanel, 'page tabs precede the settings and preview panels');
   assert.match(
     component,
-    /<div className="rotate-settings-shell">[\s\S]*?<div className="merge-control-intro">[\s\S]*?<h3 className="merge-selected-files-title">Rotation Setup &amp; Preview<\/h3>[\s\S]*?<div className="rotate-page-tabs"[\s\S]*?role="tablist" aria-label="Pages to Rotate"[\s\S]*?<section[\s\S]*?className="rotate-page-workspace"[\s\S]*?className="rotate-settings-panel"[\s\S]*?className="rotate-page-preview-panel"[\s\S]*?<\/section>[\s\S]*?<\/section>\s*<\/div>/
+    /<div className="rotate-settings-shell">[\s\S]*?<div className="merge-control-intro">[\s\S]*?<h3 className="merge-selected-files-title">Rotation Settings &amp; Preview<\/h3>[\s\S]*?<div className="rotate-page-tabs"[\s\S]*?role="tablist" aria-label="Pages to Rotate"[\s\S]*?<section[\s\S]*?className="rotate-page-workspace"[\s\S]*?className="rotate-settings-panel"[\s\S]*?className="rotate-page-preview-panel"[\s\S]*?<\/section>[\s\S]*?<\/section>\s*<\/div>/
   );
   assert.ok(settingsPanel > pageTabs, 'rotation settings follow the page tabs');
-  assert.ok(settingsHeading > settingsPanel, 'rotation panel is labelled Choose Settings');
+  assert.ok(settingsHeading > settingsPanel, 'rotation panel is labelled Settings');
   assert.ok(pageRangeControls > settingsHeading, 'selected page range controls are inside settings');
   assert.ok(rotationControls > pageRangeControls, 'rotation controls follow page selection settings');
   assert.ok(outputFilenameInput > pageGrid, 'output filename follows the page previews');
-  assert.ok(rotationControls > settingsHeading, 'rotation controls are grouped under Choose Settings');
+  assert.ok(rotationControls > settingsHeading, 'rotation controls are grouped under Settings');
   assert.ok(previewPanel > rotationControls, 'page previews follow rotation settings');
   assert.ok(pageGrid > previewPanel, 'page tiles are rendered inside the preview panel');
   assert.ok(processButton > outputFilenameInput, 'processing follows the output filename field');
-  assert.match(component, /className="rotate-selected-file-section"[\s\S]*?<h3 id="rotate-selected-file-heading"[^>]*>PDF to rotate<\/h3>[\s\S]*?<AttachedFileIcon \/>[\s\S]*?<AttachedFileActions/);
+  assert.match(component, /className="rotate-selected-file-section"[\s\S]*?<h3 id="rotate-selected-file-heading"[^>]*>File to Rotate<\/h3>[\s\S]*?<AttachedFileIcon \/>[\s\S]*?<AttachedFileActions/);
   assert.match(component, /role="tablist" aria-label="Pages to Rotate"[\s\S]*?All Pages[\s\S]*?Select Pages/);
   assert.match(component, /className="rotate-angle-fieldset"[\s\S]*?\[90, 180, 270\][\s\S]*?setTargetRotation\(0\)/);
   assert.match(
@@ -70,13 +102,13 @@ test('Rotate PDF places page tabs, rotation settings, and previews in order', ()
   assert.match(component, /setOutputFileName\(`rotated_\$\{selectedFile\.name\}`\)/);
   assert.match(
     component,
-    /className="rotate-settings-panel">[\s\S]*?<div className="merge-section-heading merge-output-settings-heading">[\s\S]*?<h3 className="merge-section-heading-title merge-output-settings-title">Choose Settings<\/h3>[\s\S]*?<p>Angles preview immediately and apply to all or selected pages; rotate individual pages with their buttons\.<\/p>/
+    /className="rotate-settings-panel">[\s\S]*?<div className="merge-section-heading merge-output-settings-heading">[\s\S]*?<h3 className="merge-section-heading-title merge-output-settings-title">Settings<\/h3>[\s\S]*?<p>Angles preview immediately and apply to all or selected pages; rotate individual pages with their buttons\.<\/p>/
   );
   assert.doesNotMatch(component, /Angle buttons update the page previews immediately/);
   assert.doesNotMatch(component, /className="pdf-preview-instructions">[\s\S]*?rotate page \{pageNumber\} clockwise/i);
   assert.match(
     component,
-    /className="rotate-page-preview-panel"[\s\S]*?<div className="merge-section-heading merge-output-settings-heading">[\s\S]*?<h3 id="rotate-page-preview-heading" className="merge-section-heading-title merge-output-settings-title">Page Preview<\/h3>[\s\S]*?className="rotate-page-grid"/
+    /className="rotate-page-preview-panel"[\s\S]*?<div className="merge-section-heading merge-output-settings-heading">[\s\S]*?<h3 id="rotate-page-preview-heading" className="merge-section-heading-title merge-output-settings-title">Preview<\/h3>[\s\S]*?className="rotate-page-grid"/
   );
 });
 

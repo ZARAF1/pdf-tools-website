@@ -3,12 +3,13 @@ import { useToolExitGuard } from './ToolExitGuard';
 import { PDFDocument } from 'pdf-lib';
 import { validateUnencryptedPdf } from '../lib/pdfValidation';
 import useAccessibleDropzone from '../lib/useAccessibleDropzone';
-import { ArrowLeft, ArrowRight, CheckCircle2, Loader2, RotateCcw, Trash2, Upload } from 'lucide-react';
+import { CheckCircle2, ChevronLeft, ChevronRight, Eye, FileText, Loader2, RotateCcw, Settings2, Trash2, Upload } from 'lucide-react';
 import pdfjsLib from '../lib/pdfjsClient';
 import { AttachedFileActions, AttachedFileIcon } from './AttachedFileControls';
 import DownloadReadyCard from './DownloadReadyCard';
+import { normalizeOutputFileName } from '../lib/outputFileName.mjs';
 
-const MAX_PAGES = 15;
+const MAX_PAGES = 30;
 
 const clamp = (value) => Math.min(1, Math.max(0, value));
 
@@ -31,6 +32,7 @@ const RedactPdf = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const [output, setOutput] = useState(null);
+  const [outputFileName, setOutputFileName] = useState('');
   const markOutputDownloaded = useToolExitGuard(Boolean(file), output);
   const [error, setError] = useState('');
   const [previewError, setPreviewError] = useState('');
@@ -65,6 +67,7 @@ const RedactPdf = () => {
         setMarksByPage({});
         setFile(selectedFile);
         setPageCount(count);
+        setOutputFileName(`${selectedFile.name.replace(/\.pdf$/i, '')}_redacted.pdf`);
       }
     } catch (loadError) {
       console.error('Unable to load PDF for redaction:', loadError);
@@ -157,6 +160,7 @@ const RedactPdf = () => {
     setPageSummaries([]);
     setMarksByPage({});
     setDraft(null);
+    setOutputFileName('');
     setError('');
     setPreviewError('');
     setIsLoading(false);
@@ -349,38 +353,26 @@ const RedactPdf = () => {
   };
 
   const pageMarks = marksByPage[currentPage] || [];
+  const defaultOutputName = file
+    ? `${file.name.replace(/\.pdf$/i, '')}_redacted.pdf`
+    : 'redacted.pdf';
+  const safeOutputFileName = normalizeOutputFileName(outputFileName, defaultOutputName);
 
   return (
-    <div className="space-y-6">
-      <div
-        {...getRootProps({
-          role: 'group',
-          'aria-label': file ? `Selected PDF ${file.name}` : 'Choose a PDF to redact'
-        })}
-        className={`pdf-workflow-upload pdf-upload-zone merge-pdf-upload-zone edit-sign-upload-zone ${file ? 'has-file' : ''} transition-all ${
-          isDragActive
-            ? 'border-blue-500 bg-blue-50'
-            : file
-              ? 'border-slate-300 bg-white'
+    <div className="redact-pdf-workspace space-y-6">
+      <input {...getInputProps()} className="sr-only" />
+      {!file && (
+        <div
+          {...getRootProps({
+            role: 'group',
+            'aria-label': 'Choose a PDF to redact'
+          })}
+          className={`redact-pdf-upload pdf-workflow-upload pdf-upload-zone merge-pdf-upload-zone edit-sign-upload-zone transition-all ${
+            isDragActive
+              ? 'border-blue-500 bg-blue-50'
               : 'cursor-pointer border-slate-300 bg-white hover:border-blue-400 hover:bg-blue-50/50'
-        }`}
-      >
-        <input {...getInputProps()} />
-        {file ? (
-          <div className="merge-pdf-upload-content">
-            <AttachedFileIcon />
-            <div className="merge-pdf-upload-copy">
-              <h3 className="truncate">{file.name}</h3>
-              <p>{(file.size / 1024).toFixed(1)} KB · {pageCount} pages</p>
-            </div>
-            <AttachedFileActions
-              fileName={file.name}
-              onReplace={open}
-              onRemove={clearFile}
-              disabled={isLoading || isProcessing}
-            />
-          </div>
-        ) : (
+          }`}
+        >
           <div className="merge-pdf-upload-content">
             <div className="pdf-upload-icon" aria-hidden="true">
               {isLoading
@@ -403,120 +395,242 @@ const RedactPdf = () => {
               Choose PDF
             </button>
           </div>
-        )}
-      </div>
+        </div>
+      )}
+
+      {file && (
+        <section className="redact-pdf-file-section" aria-labelledby="redact-pdf-file-heading">
+          <header>
+            <div className="redact-pdf-panel-title">
+              <FileText aria-hidden="true" />
+              <h3 id="redact-pdf-file-heading">PDF to redact</h3>
+            </div>
+            <p>One PDF selected. Replace it or remove it to choose another.</p>
+          </header>
+          <div className="pdf-workflow-selected pdf-attached-file-card flex items-center justify-between gap-4 p-3">
+            <div className="flex min-w-0 items-center gap-3">
+              <AttachedFileIcon />
+              <div className="min-w-0">
+                <strong className="block truncate">{file.name}</strong>
+                <span className="block text-sm text-slate-500">{(file.size / 1024).toFixed(1)} KB · {pageCount} pages</span>
+              </div>
+            </div>
+            <AttachedFileActions
+              fileName={file.name}
+              onReplace={open}
+              onRemove={clearFile}
+              disabled={isLoading || isProcessing}
+            />
+          </div>
+        </section>
+      )}
 
       {previewError && <p className="text-sm text-amber-700" role="alert">{previewError}</p>}
       {error && <p className="rounded-lg bg-red-50 p-3 text-sm text-red-700" role="alert">{error}</p>}
 
       {file && pageCount > 0 && (
-        <div className="space-y-4">
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <div className="flex items-center gap-3">
-              <button type="button" onClick={() => setCurrentPage((page) => Math.max(1, page - 1))} disabled={currentPage === 1} aria-label="Previous page" className="rounded-lg border border-slate-200 p-2 text-slate-700 transition hover:bg-slate-50 disabled:opacity-40">
-                <ArrowLeft className="h-4 w-4" aria-hidden="true" />
-              </button>
-              <label className="flex items-center gap-2 text-sm font-semibold text-slate-700">
-                Page
-                <select value={currentPage} onChange={(event) => setCurrentPage(Number(event.target.value))} className="rounded-lg border border-slate-200 bg-white px-2 py-1">
-                  {Array.from({ length: pageCount }, (_, index) => <option key={index + 1} value={index + 1}>{index + 1}</option>)}
-                </select>
-                of {pageCount}
-              </label>
-              <button type="button" onClick={() => setCurrentPage((page) => Math.min(pageCount, page + 1))} disabled={currentPage === pageCount} aria-label="Next page" className="rounded-lg border border-slate-200 p-2 text-slate-700 transition hover:bg-slate-50 disabled:opacity-40">
-                <ArrowRight className="h-4 w-4" aria-hidden="true" />
-              </button>
+        <section className="redact-pdf-settings-panel" aria-labelledby="redact-pdf-settings-heading">
+          <header>
+            <div className="redact-pdf-panel-title">
+              <Settings2 aria-hidden="true" />
+              <h3 id="redact-pdf-settings-heading">Redaction Settings</h3>
             </div>
-            <div className="flex gap-2">
-              <button type="button" onClick={undoMark} disabled={!pageMarks.length} className="inline-flex items-center gap-2 rounded-lg border border-slate-200 px-3 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 disabled:opacity-40">
-                <RotateCcw className="h-4 w-4" aria-hidden="true" /> Undo mark
-              </button>
-              <button type="button" onClick={clearPageMarks} disabled={!pageMarks.length} className="inline-flex items-center gap-2 rounded-lg border border-slate-200 px-3 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 disabled:opacity-40">
-                <Trash2 className="h-4 w-4" aria-hidden="true" /> Clear page
-              </button>
-            </div>
-          </div>
+            <p>Set precise redaction areas, then review each page before creating the redacted PDF.</p>
+          </header>
+          <div className="redact-pdf-settings-content">
+            <fieldset className="redact-pdf-coordinate-controls">
+              <legend>Add redaction by coordinates (percent from top left)</legend>
+              <div className="grid gap-3 sm:grid-cols-4">
+                {[
+                  ['x', 'Left'],
+                  ['y', 'Top'],
+                  ['width', 'Width'],
+                  ['height', 'Height']
+                ].map(([key, label]) => (
+                  <div key={key} className="space-y-1">
+                    <label htmlFor={`redact-${key}`}>{label} (%)</label>
+                    <input
+                      id={`redact-${key}`}
+                      type="number"
+                      min="0"
+                      max="100"
+                      step="1"
+                      value={coordinateBox[key]}
+                      onChange={(event) => setCoordinateBox((current) => ({ ...current, [key]: event.target.value }))}
+                    />
+                  </div>
+                ))}
+              </div>
+              <div className="redact-pdf-mark-actions">
+                <button type="button" onClick={addCoordinateMark} disabled={isProcessing || !previews[currentPage - 1]}>
+                  Add redaction box
+                </button>
+                <span className="redact-pdf-mark-count">{pageMarks.length} mark{pageMarks.length === 1 ? '' : 's'} on this page</span>
+                <button type="button" onClick={undoMark} disabled={!pageMarks.length}>
+                  <RotateCcw aria-hidden="true" /> Undo mark
+                </button>
+                <button type="button" onClick={clearPageMarks} disabled={!pageMarks.length}>
+                  <Trash2 aria-hidden="true" /> Clear page
+                </button>
+              </div>
+              <p className="sr-only" role="status" aria-live="polite" aria-atomic="true">
+                {pageMarks.length} redaction {pageMarks.length === 1 ? 'mark' : 'marks'} on page {currentPage}.
+              </p>
+            </fieldset>
 
-          <div
-            className="relative mx-auto w-full max-w-3xl touch-none select-none overflow-hidden rounded-lg border border-slate-300 bg-slate-100"
-            role="group"
-            aria-label={`Visual preview and redaction drawing area for page ${currentPage}`}
-            aria-describedby={`redact-page-${currentPage}-description`}
-            onPointerDown={startDrawing}
-            onPointerMove={updateDrawing}
-            onPointerUp={finishDrawing}
-            onPointerCancel={cancelDrawing}
-          >
-            {previews[currentPage - 1]
-              ? <img src={previews[currentPage - 1]} alt={`Visual preview of page ${currentPage}`} draggable="false" className="block h-auto w-full" />
-              : <div className="flex aspect-[3/4] items-center justify-center text-sm text-slate-500">Rendering page preview…</div>}
-            {pageMarks.map((mark, index) => (
-              <span
-                key={`${currentPage}-${index}`}
-                aria-label={`Redaction mark ${index + 1}`}
-                className="pointer-events-none absolute bg-black"
-                style={{ left: `${mark.x * 100}%`, top: `${mark.y * 100}%`, width: `${mark.width * 100}%`, height: `${mark.height * 100}%` }}
-              />
-            ))}
-            {draft && <span className="pointer-events-none absolute border-2 border-red-600 bg-black/70" style={{ left: `${draft.x * 100}%`, top: `${draft.y * 100}%`, width: `${draft.width * 100}%`, height: `${draft.height * 100}%` }} />}
-          </div>
-          <p id={`redact-page-${currentPage}-description`} className="sr-only">
-            {pageSummaries[currentPage - 1] || 'No selectable text was found on this page; its preview is visual-only.'}
-          </p>
-          <p className="pdf-preview-instructions">Drag across the page to add an opaque black redaction. You can also enter coordinates below using the keyboard.</p>
-          <p className="text-center text-sm text-slate-500">{pageMarks.length} mark{pageMarks.length === 1 ? '' : 's'} on this page.</p>
-          <fieldset className="space-y-3 rounded-xl border border-slate-200 p-4">
-            <legend className="px-1 text-sm font-semibold text-slate-700">Add redaction by coordinates (percent from top left)</legend>
-            <div className="grid gap-3 sm:grid-cols-4">
-              {[
-                ['x', 'Left'],
-                ['y', 'Top'],
-                ['width', 'Width'],
-                ['height', 'Height']
-              ].map(([key, label]) => (
-                <div key={key} className="space-y-1">
-                  <label htmlFor={`redact-${key}`} className="text-sm font-medium text-slate-700">{label} (%)</label>
-                  <input
-                    id={`redact-${key}`}
-                    type="number"
-                    min="0"
-                    max="100"
-                    step="1"
-                    value={coordinateBox[key]}
-                    onChange={(event) => setCoordinateBox((current) => ({ ...current, [key]: event.target.value }))}
-                    className="w-full rounded-lg border border-slate-300 px-3 py-2"
-                  />
+            <p className="rounded-lg bg-amber-50 p-3 text-sm text-amber-900">
+              Redaction rasterizes every page and removes selectable text, vector content, links, forms, and other interactive features. Inspect the downloaded PDF before sharing it.
+            </p>
+
+            <section className="redact-pdf-preview-panel watermark-preview-panel" aria-labelledby="redact-pdf-preview-heading">
+              <div className="watermark-section-heading">
+                <div className="watermark-section-title">
+                  <Eye aria-hidden="true" />
+                  <h2 id="redact-pdf-preview-heading">Redaction Preview</h2>
                 </div>
-              ))}
-            </div>
-            <button type="button" onClick={addCoordinateMark} disabled={isProcessing || !previews[currentPage - 1]} className="rounded-lg border border-slate-200 px-4 py-2 font-semibold text-slate-700 transition hover:bg-slate-50 disabled:opacity-50">
-              Add redaction box
-            </button>
-          </fieldset>
-          <p className="sr-only" role="status" aria-live="polite" aria-atomic="true">
-            {pageMarks.length} redaction {pageMarks.length === 1 ? 'mark' : 'marks'} on page {currentPage}.
-          </p>
-          <p className="rounded-lg bg-amber-50 p-3 text-sm text-amber-900">
-            Redaction rasterizes every page and removes selectable text, vector content, links, forms, and other interactive features. Inspect the downloaded PDF before sharing it.
-          </p>
-        </div>
+              </div>
+              <p className="watermark-preview-guidance">
+                Review every page. Drag over sensitive content to add opaque redaction marks; use the page tiles or arrows to navigate.
+              </p>
+              <div className="watermark-preview-layout">
+                <div className="watermark-preview-main">
+                  <div
+                    id="redact-pdf-active-page-preview"
+                    className="watermark-preview-canvas-wrap redact-pdf-preview-canvas-wrap"
+                    role="group"
+                    aria-label={`Visual preview and redaction drawing area for page ${currentPage}`}
+                    aria-describedby={`redact-page-${currentPage}-description`}
+                    onPointerDown={startDrawing}
+                    onPointerMove={updateDrawing}
+                    onPointerUp={finishDrawing}
+                    onPointerCancel={cancelDrawing}
+                  >
+                    {previews[currentPage - 1]
+                      ? <img src={previews[currentPage - 1]} alt={`Visual preview of page ${currentPage}`} draggable="false" />
+                      : <div className="redact-pdf-preview-loading">Rendering page preview…</div>}
+                    {pageMarks.map((mark, index) => (
+                      <span
+                        key={`${currentPage}-${index}`}
+                        aria-label={`Redaction mark ${index + 1}`}
+                        className="redact-pdf-preview-mark"
+                        style={{ left: `${mark.x * 100}%`, top: `${mark.y * 100}%`, width: `${mark.width * 100}%`, height: `${mark.height * 100}%` }}
+                      />
+                    ))}
+                    {draft && (
+                      <span
+                        className="redact-pdf-preview-mark is-draft"
+                        style={{ left: `${draft.x * 100}%`, top: `${draft.y * 100}%`, width: `${draft.width * 100}%`, height: `${draft.height * 100}%` }}
+                      />
+                    )}
+                  </div>
+                  <p id={`redact-page-${currentPage}-description`} className="sr-only">
+                    {pageSummaries[currentPage - 1] || 'No selectable text was found on this page; its preview is visual-only.'}
+                  </p>
+                  <p className="pdf-preview-instructions">
+                    Drag across the page to add an opaque black redaction. You can also enter coordinates above using the keyboard.
+                  </p>
+                </div>
+
+                <aside className="watermark-preview-page-rail" aria-label="Page preview navigation">
+                  <div className="watermark-preview-controls">
+                    <p>Preview page</p>
+                    <div className="watermark-preview-page-navigation redact-pdf-preview-page-navigation">
+                      <button
+                        type="button"
+                        aria-label="Preview previous page"
+                        aria-controls="redact-pdf-active-page-preview"
+                        onClick={() => setCurrentPage((page) => Math.max(1, page - 1))}
+                        disabled={currentPage === 1 || isLoading}
+                      >
+                        <ChevronLeft aria-hidden="true" />
+                      </button>
+                      <span aria-live="polite">Page {currentPage} of {pageCount}</span>
+                      <button
+                        type="button"
+                        aria-label="Preview next page"
+                        aria-controls="redact-pdf-active-page-preview"
+                        onClick={() => setCurrentPage((page) => Math.min(pageCount, page + 1))}
+                        disabled={currentPage === pageCount || isLoading}
+                      >
+                        <ChevronRight aria-hidden="true" />
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="watermark-preview-page-thumbnails" role="group" aria-label="PDF page thumbnails">
+                    {Array.from({ length: pageCount }, (_, index) => index + 1).map((pageNumber) => (
+                      <button
+                        key={pageNumber}
+                        type="button"
+                        className="watermark-preview-page-thumbnail redact-pdf-preview-page-thumbnail"
+                        aria-label={`Preview page ${pageNumber}`}
+                        aria-controls="redact-pdf-active-page-preview"
+                        aria-pressed={pageNumber === currentPage}
+                        onClick={() => setCurrentPage(pageNumber)}
+                      >
+                        <span className="watermark-page-thumbnail-canvas-wrap redact-pdf-page-thumbnail-wrap">
+                          {previews[pageNumber - 1]
+                            ? <img src={previews[pageNumber - 1]} alt="" draggable="false" />
+                            : <span className="redact-pdf-page-thumbnail-placeholder">Page preview loading…</span>}
+                          {(marksByPage[pageNumber] || []).map((mark, index) => (
+                            <span
+                              key={`${pageNumber}-${index}`}
+                              className="redact-pdf-page-thumbnail-mark"
+                              aria-hidden="true"
+                              style={{ left: `${mark.x * 100}%`, top: `${mark.y * 100}%`, width: `${mark.width * 100}%`, height: `${mark.height * 100}%` }}
+                            />
+                          ))}
+                          {draft && pageNumber === currentPage && (
+                            <span
+                              className="redact-pdf-page-thumbnail-mark is-draft"
+                              aria-hidden="true"
+                              style={{ left: `${draft.x * 100}%`, top: `${draft.y * 100}%`, width: `${draft.width * 100}%`, height: `${draft.height * 100}%` }}
+                            />
+                          )}
+                        </span>
+                        <span className="watermark-page-thumbnail-label">Page {pageNumber}</span>
+                      </button>
+                    ))}
+                  </div>
+                </aside>
+              </div>
+              <p className="watermark-preview-status" aria-live="polite">
+                {pageMarks.length} mark{pageMarks.length === 1 ? '' : 's'} on page {currentPage}.
+              </p>
+            </section>
+          </div>
+        </section>
       )}
 
       {file && (
-        <div className="flex flex-wrap gap-3">
-          <button type="button" onClick={createRedactedPdf} disabled={isLoading || isProcessing} className="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-5 py-3 font-semibold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-slate-300">
-            {isProcessing ? <Loader2 className="h-5 w-5 animate-spin" aria-hidden="true" /> : <CheckCircle2 className="h-5 w-5" aria-hidden="true" />}
-            {isProcessing ? 'Redacting PDF…' : 'Create Redacted PDF'}
-          </button>
-          <button type="button" onClick={clearFile} disabled={isProcessing} className="rounded-lg border border-slate-200 px-5 py-3 font-semibold text-slate-700 transition hover:bg-slate-50 disabled:opacity-50">Reset</button>
+        <div className="watermark-output-actions redact-pdf-output-actions">
+          <label htmlFor="redact-pdf-output-filename">Output Filename</label>
+          <input
+            id="redact-pdf-output-filename"
+            className="watermark-output-filename redact-pdf-output-filename"
+            type="text"
+            value={outputFileName}
+            onChange={(event) => setOutputFileName(event.target.value)}
+            maxLength={120}
+            autoComplete="off"
+            disabled={isProcessing}
+          />
+          <div className="redact-pdf-output-buttons watermark-apply-button">
+            <button type="button" onClick={createRedactedPdf} disabled={isLoading || isProcessing} className="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-5 py-3 font-semibold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-slate-300">
+              {isProcessing ? <Loader2 className="h-5 w-5 animate-spin" aria-hidden="true" /> : <CheckCircle2 className="h-5 w-5" aria-hidden="true" />}
+              {isProcessing ? 'Redacting PDF…' : 'Create Redacted PDF'}
+            </button>
+            <button type="button" onClick={clearFile} disabled={isProcessing} className="rounded-lg border border-slate-200 px-5 py-3 font-semibold text-slate-700 transition hover:bg-slate-50 disabled:opacity-50">Reset</button>
+          </div>
         </div>
       )}
       {output && file && (
         <DownloadReadyCard
-          fileName={`${file.name.replace(/\.pdf$/i, '')}_redacted.pdf`}
+          fileName={safeOutputFileName}
           sizeBytes={output.size}
           onDownload={downloadPdf}
           downloadLabel="Download Redacted PDF"
+          showFilenameEditor={false}
         />
       )}
       {isProcessing && <p className="sr-only" role="status">Creating the redacted PDF.</p>}

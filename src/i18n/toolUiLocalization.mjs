@@ -398,6 +398,28 @@ const imageWorkflowLabels = {
   ko: ['이미지: {count}/{max}', '설정', '페이지 미리 보기', '설정 선택', '모든 페이지', '페이지 선택', '아래에서 페이지를 선택하세요. 변경 사항은 선택한 이미지에만 적용됩니다.', '미리 보기', '이미지를 확인하고 순서를 바꾸세요. 변경 사항은 각 페이지에 표시됩니다.', '{page}페이지 선택', '{fileName} 크게 미리 보기', '큰 미리 보기 닫기', '페이지 크기와 방향, 맞춤, 정렬, 배경 및 이미지 크기를 설정하세요.', '모든 이미지 또는 선택한 페이지만 변경할지 선택하세요.', '첨부된 이미지'],
   'zh-CN': ['图片：{count}/{max}', '设置', '页面预览', '选择设置', '所有页面', '选择页面', '在下方选择页面；更改仅应用于所选图片。', '预览', '查看并重新排列图片。更改会显示在每个页面中。', '选择第 {page} 页', '查看 {fileName} 的大图预览', '关闭大图预览', '选择页面大小和方向、适配方式、对齐方式、背景及图片缩放。', '选择将更改应用于所有图片还是仅应用于所选页面。', '已附加图片']
 };
+const imageSectionDescriptionLabels = {
+  en: 'Add, arrange, and customize images before creating your PDF.',
+  es: 'Añade, organiza y personaliza imágenes antes de crear tu PDF.',
+  fr: 'Ajoutez, organisez et personnalisez les images avant de créer votre PDF.',
+  de: 'Fügen Sie Bilder hinzu, ordnen und gestalten Sie sie vor dem Erstellen Ihres PDFs.',
+  pt: 'Adicione, organize e personalize imagens antes de criar seu PDF.',
+  it: 'Aggiungi, ordina e personalizza le immagini prima di creare il tuo PDF.',
+  nl: 'Voeg afbeeldingen toe, rangschik ze en pas ze aan voordat je je PDF maakt.',
+  pl: 'Dodaj obrazy, uporządkuj je i dostosuj przed utworzeniem pliku PDF.',
+  sv: 'Lägg till, ordna och anpassa bilder innan du skapar din PDF.',
+  fi: 'Lisää kuvia, järjestä ne ja mukauta niitä ennen PDF-tiedoston luomista.',
+  da: 'Tilføj, arranger og tilpas billeder, før du opretter din PDF.',
+  nb: 'Legg til, organiser og tilpass bilder før du oppretter PDF-en.',
+  tr: 'PDF oluşturmadan önce görseller ekleyin, sıralayın ve özelleştirin.',
+  ru: 'Добавьте изображения, расположите их и настройте перед созданием PDF.',
+  uk: 'Додайте зображення, упорядкуйте та налаштуйте їх перед створенням PDF.',
+  ar: 'أضف الصور ورتبها وخصصها قبل إنشاء ملف PDF.',
+  hi: 'PDF बनाने से पहले चित्र जोड़ें, क्रमबद्ध करें और अनुकूलित करें।',
+  ja: 'PDFを作成する前に、画像を追加、並べ替え、カスタマイズします。',
+  ko: 'PDF를 만들기 전에 이미지를 추가하고 정렬한 뒤 맞춤 설정하세요.',
+  'zh-CN': '创建 PDF 前，可添加、排列和自定义图片。'
+};
 const imagePreviewInvalidLabels = {
   en: 'Preview unavailable until the page settings are valid.',
   es: 'La vista previa no estará disponible hasta que los ajustes de página sean válidos.',
@@ -538,6 +560,7 @@ for (const { code } of SUPPORTED_LANGUAGES) {
     || !imageSettingsScopeLabels[code] || imageSettingsScopeLabels[code].length !== imageSettingsScopeKeys.length
     || !imageOutputLabelsForLanguage || imageOutputLabelsForLanguage.length !== imageOutputKeys.length
     || !imagePreviewInvalidLabel
+    || !imageSectionDescriptionLabels[code]
     || !actionLabels || actionLabels.length !== 3
     || !powerpointLabelsForLanguage || powerpointLabelsForLanguage.length !== powerpointKeys.length
     || !powerpointActionLabelsForLanguage || powerpointActionLabelsForLanguage.length !== powerpointActionKeys.length) {
@@ -563,6 +586,7 @@ for (const { code } of SUPPORTED_LANGUAGES) {
   if (!powerpointFontPrivacyDisclosures[code]) {
     throw new Error(`PowerPoint privacy disclosure is missing for "${code}".`);
   }
+  translations[code].imageToPdf.chooseImagesDescription = imageSectionDescriptionLabels[code];
   translations[code].powerpoint.fontNameDisclosure = powerpointFontPrivacyDisclosures[code];
   translations[code].imageToPdf.previewInvalid = imagePreviewInvalidLabel;
 }

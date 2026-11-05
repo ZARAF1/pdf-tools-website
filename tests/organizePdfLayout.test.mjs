@@ -24,7 +24,7 @@ test('Organize PDF nests Page Preview inside a muted Preview shell', () => {
   const previewPanel = organizePdf.slice(previewPanelStart, previewPanelEnd);
   const previewShell = organizePdf.slice(previewShellStart, previewPanelEnd);
 
-  assert.match(previewShell, /<h3 className="merge-selected-files-title">Preview<\/h3>/);
+  assert.match(previewShell, /<div className="merge-panel-title">\s*<Eye aria-hidden="true" \/>\s*<h3 className="merge-selected-files-title">Preview<\/h3>\s*<\/div>/);
   assert.match(previewShell, /<p>Review, reorder, rotate, and remove pages before creating your organized PDF\.<\/p>/);
   assert.match(previewPanel, /Page Preview/);
   assert.match(previewPanel, /className="merge-section-heading merge-page-selection-heading"/);
@@ -68,8 +68,13 @@ test('Organize PDF uses the Merge-style empty chooser without a Files to Organiz
   assert.ok(attachedCardIndex > fileSectionIndex, 'the selected PDF card is nested inside its section');
   assert.ok(uploadIndex > pickerInput, 'the empty-state upload card remains available');
   assert.ok(previewsIndex > attachedCardIndex, 'page previews follow the attachment');
-  assert.match(organizePdf, /aria-labelledby="organize-pdf-file-heading"[\s\S]*?<h3 id="organize-pdf-file-heading"[^>]*>PDF to organize<\/h3>/);
+  assert.match(organizePdf, /aria-labelledby="organize-pdf-file-heading"[\s\S]*?<div className="merge-panel-title">\s*<FileText aria-hidden="true" \/>\s*<h3 id="organize-pdf-file-heading"[^>]*>PDF to organize<\/h3>/);
   assert.match(styles, /\.image-to-pdf-file-section,\s*\.crop-pdf-settings-shell\s*\{[^}]*background:\s*var\(--surface-muted\)/s);
+});
+
+test('Organize PDF attachment and Preview headings use decorative icons', () => {
+  assert.match(organizePdf, /<div className="merge-panel-title">\s*<FileText aria-hidden="true" \/>\s*<h3 id="organize-pdf-file-heading"[^>]*>PDF to organize<\/h3>\s*<\/div>/);
+  assert.match(organizePdf, /<div className="merge-panel-title">\s*<Eye aria-hidden="true" \/>\s*<h3 className="merge-selected-files-title">Preview<\/h3>\s*<\/div>/);
 });
 
 test('Organize PDF empty chooser does not inherit the workflow top margin', () => {

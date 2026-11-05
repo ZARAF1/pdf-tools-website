@@ -57,3 +57,27 @@ test('Edit PDF groups the editing toolbar and page editor in a grey Editor secti
     /pdf-editor-section merge-selected-files/
   );
 });
+
+test('Edit PDF aligns page thumbnails with the large editor preview', async () => {
+  const component = await readFile(new URL('../src/components/EditPdf.jsx', import.meta.url), 'utf8');
+  const workspaceStart = component.indexOf('<div className="pdf-editor-workspace">');
+  const canvasAreaIndex = component.indexOf('<section className="pdf-editor-canvas-area"', workspaceStart);
+  const thumbnailRailIndex = component.indexOf('<PdfPageThumbnailRail', workspaceStart);
+
+  assert.ok(canvasAreaIndex > workspaceStart && canvasAreaIndex < thumbnailRailIndex, 'the large page editor is the first workspace column');
+  assert.ok(thumbnailRailIndex > canvasAreaIndex, 'the page thumbnail rail is beside the large editor');
+  assert.match(component.slice(workspaceStart, thumbnailRailIndex), /className="pdf-editor-canvas-controls"[\s\S]*?Zoom out[\s\S]*?Zoom in/);
+  assert.match(component.slice(thumbnailRailIndex), /pageNumbers=\{visiblePageIds\.map\(\(pageId\) => pageId \+ 1\)\}/);
+  assert.match(component.slice(thumbnailRailIndex), /currentPage=\{currentPageId \+ 1\}/);
+  assert.match(component.slice(thumbnailRailIndex), /onSelectPage=\{\(pageNumber\) => selectedPage\(pageNumber - 1\)\}/);
+  assert.match(component.slice(workspaceStart), /aria-label="Page preview and editor"/);
+  assert.match(
+    stylesheet,
+    /\.pdf-editor-workspace\s*\{[^}]*grid-template-columns:\s*minmax\(0,\s*1fr\)\s+12\.5rem;[^}]*align-items:\s*start/s
+  );
+  assert.match(
+    stylesheet,
+    /\.pdf-editor-canvas-controls,\s*\.pdf-page-thumbnail-rail-header\s*\{[^}]*min-height:\s*5rem/s
+  );
+  assert.match(stylesheet, /\.pdf-page-thumbnail-list\s*\{[^}]*max-height:\s*min\(70vh,\s*48rem\)/);
+});

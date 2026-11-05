@@ -16,14 +16,16 @@ test('Crop PDF places Reset crop alongside the equal-width bounds fields', () =>
   assert.match(styles, /\.crop-pdf-bounds-grid\s*>\s*\.crop-pdf-button\s*\{[^}]*width:\s*100%/s);
 });
 
-test('Crop PDF places page and zoom controls below the crop bounds', () => {
+test('Crop PDF keeps zoom controls above the page and navigation in its thumbnail rail', () => {
   const boundsEnd = cropPdf.indexOf('</fieldset>', cropPdf.indexOf('<fieldset className="crop-pdf-bounds"'));
-  const toolbarIndex = cropPdf.indexOf('<div className="crop-pdf-toolbar">');
+  const toolbarIndex = cropPdf.indexOf('<div className="crop-pdf-preview-toolbar">');
   const previewIndex = cropPdf.indexOf('<div className="crop-pdf-preview-area"');
+  const railIndex = cropPdf.indexOf('<PdfPageThumbnailRail');
 
   assert.ok(boundsEnd >= 0, 'crop bounds fieldset is present');
-  assert.ok(toolbarIndex > boundsEnd, 'page and zoom controls follow the crop bounds');
-  assert.ok(previewIndex > toolbarIndex, 'page and zoom controls precede the page preview');
+  assert.ok(toolbarIndex > boundsEnd, 'zoom controls follow the crop bounds');
+  assert.ok(previewIndex > toolbarIndex, 'zoom controls precede the large page preview');
+  assert.ok(railIndex > previewIndex, 'page navigation follows the large preview in the thumbnail rail');
 });
 
 test('Crop PDF Apply crop shares an output row with the filename field', () => {
@@ -88,6 +90,40 @@ test('Crop PDF keeps the selected-file section separate from its Merge-style emp
   assert.match(styles, /\.image-to-pdf-file-section,\s*\.crop-pdf-settings-shell\s*\{[^}]*background:\s*var\(--surface-muted\)/s);
 });
 
+test('Crop PDF uses icon-labelled neutral attachment, settings, and preview headings', () => {
+  assert.match(
+    cropPdf,
+    /className="crop-pdf-file-section"[\s\S]*?<div className="merge-panel-title">\s*<FileText aria-hidden="true" \/>\s*<h3 id="crop-pdf-file-heading"[^>]*>PDF to crop<\/h3>/
+  );
+  assert.match(
+    cropPdf,
+    /className="crop-pdf-settings-panel"[\s\S]*?<div className="merge-panel-title">\s*<Settings2 aria-hidden="true" \/>\s*<h3 id="crop-pdf-settings-heading"[^>]*>Settings<\/h3>/
+  );
+  assert.match(
+    cropPdf,
+    /className="crop-pdf-page-preview-panel"[\s\S]*?<div className="merge-panel-title">\s*<Eye aria-hidden="true" \/>\s*<h3 id="crop-pdf-preview-heading"[^>]*>Preview<\/h3>/
+  );
+  assert.match(styles, /\.crop-pdf-settings-shell \.merge-section-heading h3\.merge-output-settings-title\s*\{[^}]*font-weight:\s*750/s);
+  assert.match(styles, /\.crop-pdf-settings-shell \.merge-section-heading h3\.merge-output-settings-title\s*\{[^}]*background:\s*transparent/s);
+});
+
+test('Crop PDF aligns its first thumbnail with the large page and keeps page navigation in the rail', () => {
+  const previewStart = cropPdf.indexOf('className="crop-pdf-page-preview-panel"');
+  const previewMarkup = cropPdf.slice(previewStart);
+  const previewMain = previewMarkup.indexOf('className="crop-pdf-preview-main"');
+  const largePreview = previewMarkup.indexOf('className="crop-pdf-preview-area"');
+  const thumbnailRail = previewMarkup.indexOf('<PdfPageThumbnailRail');
+
+  assert.ok(previewMain >= 0 && previewMain < thumbnailRail, 'large preview is placed before the page rail');
+  assert.ok(largePreview > previewMain && largePreview < thumbnailRail, 'large page canvas is inside the main preview column');
+  assert.ok(thumbnailRail > largePreview, 'the thumbnail rail sits beside the large page');
+  assert.match(previewMarkup, /pageNumbers=\{Array\.from\(\{ length: pageCount \}, \(_, index\) => index \+ 1\)\}/);
+  assert.match(previewMarkup, /currentPage=\{currentPage \+ 1\}/);
+  assert.match(previewMarkup, /onSelectPage=\{\(pageNumber\) => navigatePage\(pageNumber - 1\)\}/);
+  assert.match(styles, /\.crop-pdf-preview-layout\s*\{[^}]*grid-template-columns:\s*minmax\(0,\s*1fr\)\s+12\.5rem/);
+  assert.match(styles, /\.crop-pdf-preview-main,\s*\.pdf-page-thumbnail-rail\s*\{[^}]*grid-template-rows:\s*auto minmax\(0,\s*1fr\)/s);
+});
+
 test('Crop PDF hidden file input does not add grid spacing before its empty chooser', () => {
   const inputSpacing = styles.match(
     /\.tool-attachment-content \.crop-pdf-tool > input\[type="file"\]\s*\{([^}]*)\}/
@@ -99,36 +135,36 @@ test('Crop PDF hidden file input does not add grid spacing before its empty choo
 
 test('Crop PDF groups scope and bounds in Choose Settings before its page preview', () => {
   const settingsShellIndex = cropPdf.indexOf('className="crop-pdf-settings-shell"');
-  const settingsHeadingIndex = cropPdf.indexOf('Settings &gt; Selection &gt; Preview', settingsShellIndex);
+  const settingsHeadingIndex = cropPdf.indexOf('Crop Settings &amp; Preview', settingsShellIndex);
   const settingsPanelIndex = cropPdf.indexOf('className="crop-pdf-settings-panel"', settingsShellIndex);
-  const chooseSettingsIndex = cropPdf.indexOf('Choose Settings', settingsPanelIndex);
+  const chooseSettingsIndex = cropPdf.indexOf('Settings', settingsPanelIndex);
   const scopeIndex = cropPdf.indexOf('Apply crop to', chooseSettingsIndex);
   const boundsIndex = cropPdf.indexOf('className="crop-pdf-bounds"', chooseSettingsIndex);
   const previewPanelIndex = cropPdf.indexOf('className="crop-pdf-page-preview-panel"', boundsIndex);
-  const previewHeadingIndex = cropPdf.indexOf('Page preview', previewPanelIndex);
-  const toolbarIndex = cropPdf.indexOf('className="crop-pdf-toolbar"', previewHeadingIndex);
+  const previewHeadingIndex = cropPdf.indexOf('Preview</h3>', previewPanelIndex);
+  const toolbarIndex = cropPdf.indexOf('className="crop-pdf-preview-toolbar"', previewHeadingIndex);
   const previewAreaIndex = cropPdf.indexOf('className="crop-pdf-preview-area"', previewHeadingIndex);
 
   assert.ok(settingsShellIndex >= 0, 'the Merge-style settings shell is present');
-  assert.ok(settingsHeadingIndex > settingsShellIndex, 'the shell has the Settings > Selection > Preview heading');
-  assert.ok(settingsPanelIndex > settingsHeadingIndex, 'Choose Settings is grouped in its own panel');
-  assert.ok(chooseSettingsIndex > settingsPanelIndex, 'the settings panel has a Choose Settings heading');
+  assert.ok(settingsHeadingIndex > settingsShellIndex, 'the shell has the Crop Settings & Preview heading');
+  assert.ok(settingsPanelIndex > settingsHeadingIndex, 'Settings is grouped in its own panel');
+  assert.ok(chooseSettingsIndex > settingsPanelIndex, 'the settings panel has a Settings heading');
   assert.ok(scopeIndex > chooseSettingsIndex && scopeIndex < boundsIndex, 'page scope precedes crop bounds within settings');
   assert.ok(previewPanelIndex > boundsIndex, 'the page preview panel follows crop settings');
-  assert.ok(previewHeadingIndex > previewPanelIndex && toolbarIndex > previewHeadingIndex, 'the preview heading and page controls follow the settings');
+  assert.ok(previewHeadingIndex > previewPanelIndex && toolbarIndex > previewHeadingIndex, 'the preview heading and zoom controls follow the settings');
   assert.ok(toolbarIndex > boundsIndex && previewAreaIndex > toolbarIndex, 'page and zoom controls follow crop bounds and precede the canvas');
   assert.match(styles, /\.crop-pdf-settings-shell\s*\{[^}]*background:\s*var\(--surface-muted\)/s);
   assert.match(styles, /\.crop-pdf-settings-panel,\s*\.crop-pdf-page-preview-panel\s*\{[^}]*background:\s*var\(--surface-background\)/s);
 });
 
-test('Crop PDF summarizes scope and percentage guidance under Choose Settings', () => {
+test('Crop PDF summarizes scope and percentage guidance under Settings', () => {
   const settingsPanelIndex = cropPdf.indexOf('className="crop-pdf-settings-panel"');
-  const chooseSettingsIndex = cropPdf.indexOf('Choose Settings', settingsPanelIndex);
-  const settingsDescriptionIndex = cropPdf.indexOf('crop-pdf-settings-description', chooseSettingsIndex);
+  const settingsHeadingIndex = cropPdf.indexOf('>Settings</h3>', settingsPanelIndex);
+  const settingsDescriptionIndex = cropPdf.indexOf('crop-pdf-settings-description', settingsHeadingIndex);
   const scopeDescriptionIndex = cropPdf.indexOf('Crops only the current page; previously cropped pages remain included.');
   const boundsInstructionsIndex = cropPdf.indexOf('Set the crop using the keyboard.');
 
-  assert.ok(settingsDescriptionIndex > chooseSettingsIndex, 'the consolidated guidance belongs to Choose Settings');
+  assert.ok(settingsDescriptionIndex > settingsHeadingIndex, 'the consolidated guidance belongs to Settings');
   assert.match(cropPdf.slice(settingsDescriptionIndex, scopeDescriptionIndex), /Set bounds as percentages from the page&apos;s top-left\. Current-page crops preserve earlier crops\./);
   assert.equal(scopeDescriptionIndex, -1, 'the separate current-page explanation is removed');
   assert.equal(boundsInstructionsIndex, -1, 'the separate keyboard instructions are removed');

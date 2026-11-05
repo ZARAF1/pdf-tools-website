@@ -22,10 +22,10 @@ test('Merge PDF keeps the pre-merge filename field without duplicating it beside
   assert.match(merger, /<DownloadReadyCard[\s\S]*?fileName=\{normalizePdfFileName\(outputFileName\)\}[\s\S]*?showFilenameEditor=\{false\}/);
 });
 
-test('Merge labels use title case for modes, settings, selection, and output preview', () => {
+test('Merge labels use title case for modes, settings, selection, and preview', () => {
   for (const label of [
     'Files to Merge',
-    'Merge Setup &amp; Preview',
+    'Merge Settings &amp; Preview',
     'Choose Merge Mode',
     'Merge All',
     'Select Pages',
@@ -34,13 +34,23 @@ test('Merge labels use title case for modes, settings, selection, and output pre
     'Page Size',
     'Bookmark Each Source File',
     'Insert a Blank Page Between Source Files',
-    'Live Output Preview'
+    'Preview'
   ]) {
     assert.ok(merger.includes(label), `Merge UI includes the title-cased label "${label}"`);
   }
+  assert.doesNotMatch(merger, /Live Output Preview/);
   assert.doesNotMatch(merger, />\s*Merge all pages\s*</);
   assert.doesNotMatch(merger, />\s*Select pages\s*</);
   assert.doesNotMatch(merger, />\s*Live output preview\s*</);
+});
+
+test('Merge attachment, settings, selection, and preview headings use decorative icons', () => {
+  assert.match(merger, /<FileText aria-hidden="true" \/>\s*<h3 id="merge-selected-files-heading"/);
+  assert.match(merger, /<Settings2 aria-hidden="true" \/>\s*<h3 className="merge-section-heading-title merge-output-settings-title">Choose Settings/);
+  assert.match(merger, /<ListChecks aria-hidden="true" \/>\s*<h3 className="merge-section-heading-title merge-page-selection-title">Select Pages/);
+  assert.match(merger, /<Eye aria-hidden="true" \/>\s*<h3 id="merge-live-output-heading"[^>]*>Preview<\/h3>/);
+  assert.match(styles, /\.merge-panel-title\s*\{[^}]*display:\s*flex;[^}]*align-items:\s*center;[^}]*gap:\s*0\.625rem;/);
+  assert.match(styles, /\.merge-panel-title svg\s*\{[^}]*flex:\s*0 0 auto;[^}]*color:\s*var\(--text-secondary\);/);
 });
 
 test('Merge PDF keeps a compact gap between its heading and attachment workspace', () => {
@@ -171,7 +181,7 @@ test('Merge output fields have a Select pages-style Choose Settings introduction
 
   assert.match(
     merger,
-    /<div className="merge-section-heading merge-output-settings-heading">\s*<div>\s*<h3 className="merge-section-heading-title merge-output-settings-title">Choose Settings<\/h3>\s*<p>Choose page sizing and optional bookmarks or blank pages\.<\/p>/
+    /<div className="merge-section-heading merge-output-settings-heading">\s*<div>\s*<div className="merge-panel-title">[\s\S]*?<\/div>\s*<p>Choose page sizing and optional bookmarks or blank pages\.<\/p>/
   );
   assert.ok(settingsHeadingIndex >= 0, 'Choose Settings heading is present');
   assert.ok(outputSettingsIndex > settingsHeadingIndex, 'settings heading appears before page-size and optional settings');
@@ -218,7 +228,7 @@ test('Merge output filename sits beside the Merge PDFs action and setting descri
   assert.match(styles, /@media \(max-width:\s*600px\)\s*\{[\s\S]*?\.merge-output-actions\s*\{[^}]*grid-template-columns:\s*minmax\(0,\s*1fr\)/);
 });
 
-test('Merge Choose Settings and its controls share one dark panel with a blue title accent', () => {
+test('Merge Choose Settings shares its panel and matching neutral title style', () => {
   const panelIndex = merger.indexOf('className="merge-output-settings-panel"');
   const headingIndex = merger.indexOf('className="merge-section-heading merge-output-settings-heading"', panelIndex);
   const titleIndex = merger.indexOf('className="merge-section-heading-title merge-output-settings-title"', headingIndex);
@@ -226,12 +236,12 @@ test('Merge Choose Settings and its controls share one dark panel with a blue ti
   const panelStyle = styles.match(/\.merge-output-settings-panel\s*\{([^}]*)\}/)?.[1];
   const headingStyle = styles.match(/\.merge-output-settings-heading,\s*\.merge-page-selection-heading,\s*\.merge-live-output-heading\s*\{([^}]*)\}/)?.[1];
   const titleStyle = styles.match(
-    /\.merge-section-heading h3\.merge-output-settings-title,\s*\.merge-section-heading h3\.merge-page-selection-title,\s*\.merge-section-heading h3\.merge-live-output-title\s*\{([^}]*)\}/
+    /\.merge-pdf-settings \.merge-section-heading h3\.merge-output-settings-title,\s*\.merge-pdf-settings \.merge-section-heading h3\.merge-page-selection-title,\s*\.merge-pdf-settings \.merge-section-heading h3\.merge-live-output-title\s*\{([^}]*)\}/
   )?.[1];
   const controlsStyle = styles.match(/\.merge-output-settings\s*\{([^}]*)\}/)?.[1];
 
   assert.ok(panelIndex >= 0, 'Choose Settings and its controls have one containing panel');
-  assert.ok(headingIndex > panelIndex && titleIndex > headingIndex, 'the highlighted label is inside the panel heading');
+  assert.ok(headingIndex > panelIndex && titleIndex > headingIndex, 'the section label is inside the panel heading');
   assert.ok(controlsIndex > headingIndex, 'the output controls follow the Choose Settings heading in the same panel');
   assert.ok(panelStyle, 'the combined settings panel has a dedicated style');
   assert.match(panelStyle, /background:\s*var\(--surface-background\)\s*;/);
@@ -239,9 +249,14 @@ test('Merge Choose Settings and its controls share one dark panel with a blue ti
   assert.ok(headingStyle, 'the settings heading has a panel-specific style');
   assert.match(headingStyle, /background:\s*transparent\s*;/);
   assert.doesNotMatch(headingStyle, /border-left:\s*4px solid #3b82f6/);
-  assert.ok(titleStyle, 'the Choose Settings label receives the blue tint');
-  assert.match(titleStyle, /background:\s*#eff6ff\s*;/);
-  assert.match(titleStyle, /border-left:\s*4px solid #3b82f6\s*;/);
+  assert.ok(titleStyle, 'Merge section labels have a scoped style');
+  assert.match(titleStyle, /color:\s*var\(--text-primary\)\s*;/);
+  assert.match(titleStyle, /font-size:\s*1rem\s*;/);
+  assert.match(titleStyle, /font-weight:\s*750\s*;/);
+  assert.match(titleStyle, /line-height:\s*1\.4\s*;/);
+  assert.match(titleStyle, /background:\s*transparent\s*;/);
+  assert.match(titleStyle, /border:\s*0\s*;/);
+  assert.match(titleStyle, /padding:\s*0\s*;/);
   assert.ok(controlsStyle, 'controls have a style within the shared panel');
   assert.doesNotMatch(controlsStyle, /background:\s*var\(--surface-background\)\s*;/);
   assert.doesNotMatch(controlsStyle, /border:\s*1px solid var\(--border-color\)\s*;/);
@@ -258,14 +273,19 @@ test('Merge page selection and live output each group their heading and content 
   const outputPanelIndex = merger.indexOf('className="merge-live-output merge-live-output-panel"');
   const outputHeadingIndex = merger.indexOf('className="merge-section-heading merge-live-output-heading"', outputPanelIndex);
   const outputTitleIndex = merger.indexOf(
-    'className="merge-section-heading-title merge-live-output-title">Live Output Preview',
+    'className="merge-section-heading-title merge-live-output-title">Preview',
     outputHeadingIndex
   );
   const outputContentIndex = merger.indexOf('className="merge-live-output-content"', outputTitleIndex);
   const emptyPrompt = merger.match(/<p className="merge-live-output-empty(?:\s+[^"]*)?">Select a page above to start building the output\.<\/p>/);
   const panelStyle = styles.match(/\.merge-page-selection-panel,\s*\.merge-live-output-panel\s*\{([^}]*)\}/)?.[1];
   const headingStyle = styles.match(/\.merge-page-selection-heading,\s*\.merge-live-output-heading\s*\{([^}]*)\}/)?.[1];
-  const titleStyle = styles.match(/\.merge-section-heading h3\.merge-page-selection-title,\s*\.merge-section-heading h3\.merge-live-output-title\s*\{([^}]*)\}/)?.[1];
+  const titleStyle = styles.match(
+    /\.merge-pdf-settings \.merge-section-heading h3\.merge-output-settings-title,\s*\.merge-pdf-settings \.merge-section-heading h3\.merge-page-selection-title,\s*\.merge-pdf-settings \.merge-section-heading h3\.merge-live-output-title\s*\{([^}]*)\}/
+  )?.[1];
+  const darkTitleStyle = styles.match(
+    /:root\[data-theme='dark'\] \.merge-pdf-settings \.merge-section-heading h3\.merge-output-settings-title,\s*:root\[data-theme='dark'\] \.merge-pdf-settings \.merge-section-heading h3\.merge-page-selection-title,\s*:root\[data-theme='dark'\] \.merge-pdf-settings \.merge-section-heading h3\.merge-live-output-title\s*\{([^}]*)\}/
+  )?.[1];
   const outputContentStyle = styles.match(/\.merge-live-output-content\s*\{([^}]*)\}/)?.[1];
 
   assert.ok(selectionPanelIndex >= 0, 'Select pages has a containing panel');
@@ -280,9 +300,15 @@ test('Merge page selection and live output each group their heading and content 
   assert.ok(headingStyle, 'both panel headings are unboxed inside their panel');
   assert.match(headingStyle, /background:\s*transparent\s*;/);
   assert.doesNotMatch(headingStyle, /border-left:\s*4px solid #3b82f6/);
-  assert.ok(titleStyle, 'the Select pages and Live output preview labels receive the blue tint');
-  assert.match(titleStyle, /background:\s*#eff6ff\s*;/);
-  assert.match(titleStyle, /border-left:\s*4px solid #3b82f6\s*;/);
+  assert.ok(titleStyle, 'Merge section labels use the neutral typography rule');
+  assert.match(titleStyle, /font-size:\s*1rem\s*;/);
+  assert.match(titleStyle, /font-weight:\s*750\s*;/);
+  assert.match(titleStyle, /background:\s*transparent\s*;/);
+  assert.match(titleStyle, /border:\s*0\s*;/);
+  assert.ok(darkTitleStyle, 'dark theme overrides the shared blue treatment for Merge');
+  assert.match(darkTitleStyle, /background:\s*transparent\s*;/);
+  assert.match(darkTitleStyle, /color:\s*var\(--text-primary\)\s*;/);
+  assert.match(darkTitleStyle, /border:\s*0\s*;/);
   assert.ok(emptyPrompt, 'the empty output prompt is plain text without the blue-tint instruction class');
   assert.ok(outputContentStyle, 'output content retains a distinct in-panel boundary');
   assert.doesNotMatch(outputContentStyle, /margin-block-start:\s*1rem\s*;/);
@@ -296,17 +322,17 @@ test('Merge page-selection panel uses the parent section gap without extra top p
   assert.doesNotMatch(workspaceStyle, /padding-top\s*:/, 'the parent section gap is not doubled by workspace padding');
 });
 
-test('Merge section headings carry the highlight while their explanations stay unhighlighted', () => {
-  for (const heading of ['Choose Settings', 'Select Pages', 'Live Output Preview']) {
+test('Merge section headings use neutral labels while their explanations stay unhighlighted', () => {
+  for (const heading of ['Choose Settings', 'Select Pages', 'Preview']) {
     const titleClass = {
       'Choose Settings': 'merge-section-heading-title merge-output-settings-title',
       'Select Pages': 'merge-section-heading-title merge-page-selection-title',
-      'Live Output Preview': 'merge-section-heading-title merge-live-output-title',
+      Preview: 'merge-section-heading-title merge-live-output-title',
     }[heading];
     const headingMarkup = merger.match(
       new RegExp(`<h3(?: id="[^"]+")? className="${titleClass}">${heading}</h3>`)
     );
-    assert.ok(headingMarkup, `${heading} has the highlighted heading style`);
+    assert.ok(headingMarkup, `${heading} uses the neutral heading style`);
   }
 
   assert.doesNotMatch(
@@ -326,11 +352,11 @@ test('Merge section headings carry the highlight while their explanations stay u
 
 test('Merge settings guidance precedes mode selection without duplicate per-file preview guidance', () => {
   const settingsIntro = merger.match(
-    /<div className="merge-control-intro">\s*<h3 className="merge-selected-files-title">Merge Setup &amp; Preview<\/h3>\s*<p>Choose how to combine your PDFs and customize the output\.<\/p>\s*<\/div>/
+    /<div className="merge-control-intro">\s*<h3 className="merge-selected-files-title">Merge Settings &amp; Preview<\/h3>\s*<p>Choose how to combine your PDFs and customize the output\.<\/p>\s*<\/div>/
   );
   const settingsButtons = merger.indexOf('className="merge-mode-switch"');
 
-  assert.ok(settingsIntro, 'The Merge Setup & Preview heading and guidance appear above the merge-mode buttons');
+  assert.ok(settingsIntro, 'The Merge Settings & Preview heading and guidance appear above the merge-mode buttons');
   assert.ok(settingsButtons > merger.indexOf('className="merge-control-intro"'), 'Settings guidance precedes its buttons');
   assert.doesNotMatch(picker, /Choose which pages to include in the output/);
 });
@@ -352,6 +378,15 @@ test('Merge output options occupy their own panel and live output has no outer b
   assert.doesNotMatch(liveOutputStyle, /background\s*:/);
   assert.doesNotMatch(liveOutputStyle, /border\s*:/);
   assert.doesNotMatch(liveOutputStyle, /padding\s*:/);
+});
+
+test('Merge filename and action wrapper has no extra top spacing', () => {
+  const outputActionsWrapper = merger.match(
+    /<div className="pdf-workflow-actions([^"]*)">\s*<div className="merge-output-actions">/
+  );
+
+  assert.ok(outputActionsWrapper, 'filename and Merge PDFs action share the workflow action wrapper');
+  assert.doesNotMatch(outputActionsWrapper[1], /\b(?:pt|mt)-\d+\b/, 'the wrapper adds no extra top spacing');
 });
 
 test('Merge live output pages sit inside a dark surface box spaced from its heading', () => {
@@ -445,7 +480,7 @@ test('selected pages are previewed in their live output order and can be reorder
   assert.match(merger, /<Reorder\.Group[^>]*axis="x"[^>]*values=\{selectedPages\}/);
   assert.match(merger, /onReorder=\{reorderSelectedPages\}/);
   assert.match(merger, /<img src=\{item\.preview\.preview\} alt="" draggable=\{false\}/);
-  assert.match(merger, /Live Output Preview/);
+  assert.match(merger, /<h3 id="merge-live-output-heading"[^>]*>Preview<\/h3>/);
   assert.match(merger, /onClick=\{\(\) => moveSelectedPage/);
 });
 

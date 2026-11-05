@@ -37,7 +37,7 @@ test('Image to PDF attachment content has a descriptive heading and a neutral ne
   const panel = component.slice(panelStart, settingsStart);
 
   assert.match(panel, /aria-label=\{imageUi\.uploadLabel\}/);
-  assert.match(panel, /<h3 id="image-to-pdf-file-heading"[^>]*>\{imageUi\.uploadLabel\}<\/h3>/);
+  assert.match(panel, /<div className="merge-panel-title">\s*<ImageIcon aria-hidden="true" \/>\s*<h3 id="image-to-pdf-file-heading"[^>]*>\{imageUi\.uploadLabel\}<\/h3>\s*<\/div>\s*<p>\{imageUi\.chooseImagesDescription\}<\/p>/);
   assert.match(panel, /pdf-workflow-upload pdf-upload-zone merge-pdf-upload-zone/);
   assert.doesNotMatch(panel, /imageUi\.uploadDescription/, 'the file limit should not be repeated in the chooser');
   assert.match(styles, /\.image-to-pdf-file-section,\s*\.crop-pdf-settings-shell\s*\{[^}]*background:\s*var\(--surface-muted\)/s);

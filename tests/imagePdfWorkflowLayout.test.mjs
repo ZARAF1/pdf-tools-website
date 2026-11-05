@@ -24,7 +24,7 @@ test('Image to PDF groups settings and composed image tiles in matching preview 
   assert.ok(settingsStart > attachmentStart, 'settings should follow the attachment section');
   assert.ok(previewStart > settingsStart, 'preview should follow settings');
   assert.match(component, /className="image-to-pdf-image-count"[^>]*>[\s\S]*imageUi\.imageCount/);
-  assert.match(component, /<h4 className="image-to-pdf-attached-images-title">\{imageUi\.attachedImages\}<\/h4>/);
+  assert.doesNotMatch(component, /<h4 className="image-to-pdf-attached-images-title">/);
   assert.match(component, /<ol className="image-to-pdf-attached-image-list" aria-label=\{imageUi\.attachedImages\}>/);
   assert.match(component, /className="merge-selected-file-position image-to-pdf-attached-image-position"/);
   assert.match(component, /String\(index \+ 1\)\.padStart\(2, '0'\)/);
@@ -36,7 +36,7 @@ test('Image to PDF groups settings and composed image tiles in matching preview 
   assert.match(attachedImageRows, /onClick=\{\(\) => rotateImage\(image\.id, 90\)\}/);
   assert.match(attachedImageRows, /onClick=\{\(\) => removeImage\(image\.id\)\}/);
   assert.match(settingsSection, /className="image-to-pdf-settings-panel"/);
-  assert.match(settingsSection, /<h3 className="merge-selected-files-title">\{imageUi\.settingsTitle\}<\/h3>\s*<p>\{imageUi\.settingsDescription\}<\/p>/);
+  assert.match(settingsSection, /<div className="merge-panel-title">\s*<Settings2 aria-hidden="true" \/>\s*<h3 className="merge-selected-files-title">\{imageUi\.settingsTitle\}<\/h3>\s*<\/div>\s*<p>\{imageUi\.settingsDescription\}<\/p>/);
   assert.match(settingsSection, /id="image-to-pdf-scope-toggle-label"[^>]*>\s*\{imageUi\.scopeToggleLabel\}\s*<\/p>/);
   assert.match(settingsSection, /imageUi\.pageSize/);
   assert.match(settingsSection, /imageUi\.jpegQuality/);
@@ -50,7 +50,8 @@ test('Image to PDF groups settings and composed image tiles in matching preview 
       && settingsSection.indexOf('image-to-pdf-scope-toggle-setting') < settingsSection.indexOf('image-to-pdf-settings-controls'),
     'the scope toggle follows PDF output choices and precedes image settings'
   );
-  assert.match(previewSection, /className="merge-section-heading merge-page-selection-heading"[\s\S]*className="merge-section-heading-title merge-page-selection-title">\{imageUi\.pagePreview\}/);
+  assert.doesNotMatch(previewSection, /imageUi\.pagePreview|Page Preview/, 'the redundant Page Preview label is not rendered');
+  assert.match(previewSection, /<section className="image-to-pdf-preview-panel" aria-label=\{imageUi\.previewTitle\}>/);
   assert.match(previewSection, /className="image-to-pdf-page-preview-description"[\s\S]*?\{imageUi\.selectImagesHint\}/);
   assert.match(previewSection, /image-to-pdf-preview-panel/);
   assert.match(previewSection, /image-to-pdf-page-card/);
@@ -84,6 +85,20 @@ test('Image to PDF groups settings and composed image tiles in matching preview 
   assert.match(component, /outputMode === 'separate'/);
   assert.match(component, /createImagePdfArchive/);
   assert.match(component, /const resetSettings = \(\) => \{[\s\S]*?setImages\(\(current\) => resetImagePdfSettings\(current\)\);[\s\S]*?setSettings\(INITIAL_SETTINGS\);[\s\S]*?clearOutput\(\);[\s\S]*?\};/);
+});
+
+test('Image to PDF uses icons and a concise attachment description without a duplicate list heading', async () => {
+  const component = await readSource('../src/components/ImageToPdf.jsx');
+  const uploadTitle = component.indexOf('id="image-to-pdf-file-heading"');
+  const settingsTitle = component.indexOf('image-to-pdf-settings-shell');
+  const previewTitle = component.indexOf('image-to-pdf-preview-shell');
+
+  assert.match(component, /<div className="merge-panel-title">\s*<ImageIcon aria-hidden="true" \/>\s*<h3 id="image-to-pdf-file-heading"[^>]*>\{imageUi\.uploadLabel\}<\/h3>\s*<\/div>\s*<p>\{imageUi\.chooseImagesDescription\}<\/p>/);
+  assert.doesNotMatch(component, /<h4 className="image-to-pdf-attached-images-title">/);
+  assert.match(component, /<ol className="image-to-pdf-attached-image-list" aria-label=\{imageUi\.attachedImages\}>/);
+  assert.match(component.slice(settingsTitle, previewTitle), /<div className="merge-panel-title">\s*<Settings2 aria-hidden="true" \/>\s*<h3 className="merge-selected-files-title">\{imageUi\.settingsTitle\}<\/h3>\s*<\/div>/);
+  assert.match(component.slice(previewTitle), /<div className="merge-panel-title">\s*<Eye aria-hidden="true" \/>\s*<h3 className="merge-selected-files-title">\{imageUi\.previewTitle\}<\/h3>\s*<\/div>/);
+  assert.ok(uploadTitle >= 0 && uploadTitle < settingsTitle && settingsTitle < previewTitle);
 });
 
 test('Image to PDF places selected images in their own muted attachment section', async () => {

@@ -5,7 +5,7 @@ import { PDFDocument } from 'pdf-lib';
 import { validateUnencryptedPdf } from '../lib/pdfValidation';
 import { formatPageRanges, parsePageRanges, parsePageRangesWhileTyping } from '../lib/pageSelection.mjs';
 import { normalizeOutputFileName } from '../lib/outputFileName.mjs';
-import { AlertCircle, Loader2, Upload } from 'lucide-react';
+import { AlertCircle, Eye, FileText, Loader2, Settings2, Upload } from 'lucide-react';
 import PdfPageGrid from './PdfPageGrid';
 import { AttachedFileActions, AttachedFileIcon } from './AttachedFileControls';
 import DownloadReadyCard from './DownloadReadyCard';
@@ -240,7 +240,10 @@ const PageSelectionTool = ({ mode }) => {
         {file ? (isRemoving ? (
           <section className="remove-pdf-file-section" aria-labelledby="remove-pdf-file-heading">
             <header>
-              <h3 id="remove-pdf-file-heading" className="merge-selected-files-title">PDF to remove pages from</h3>
+              <div className="merge-panel-title">
+                <FileText aria-hidden="true" />
+                <h3 id="remove-pdf-file-heading" className="merge-selected-files-title">File to Remove Pages</h3>
+              </div>
               <p>One PDF selected. Replace it or remove it to choose another.</p>
             </header>
             <div className="pdf-attached-file-card rotate-selected-file-card">
@@ -309,14 +312,14 @@ const PageSelectionTool = ({ mode }) => {
           {isRemoving ? (
             <div className="remove-pdf-settings-shell">
               <div className="merge-control-intro">
-                <h3 id="remove-pdf-workspace-heading" className="merge-selected-files-title">Select Pages &amp; Preview</h3>
+                <h3 id="remove-pdf-workspace-heading" className="merge-selected-files-title">Removal Settings &amp; Preview</h3>
                 <p>Select pages to remove, choose an output name, and download the result.</p>
               </div>
 
               <section className="remove-pdf-settings-panel" aria-labelledby="remove-pdf-settings-heading">
                 <div className="merge-section-heading merge-output-settings-heading">
                   <div>
-                    <h3 id="remove-pdf-settings-heading" className="merge-section-heading-title merge-output-settings-title">Choose Settings</h3>
+                    <div className="merge-panel-title"><Settings2 aria-hidden="true" /><h3 id="remove-pdf-settings-heading" className="merge-section-heading-title merge-output-settings-title">Settings</h3></div>
                     <p>Select the pages to remove from your PDF.</p>
                   </div>
                 </div>
@@ -345,22 +348,24 @@ const PageSelectionTool = ({ mode }) => {
                       Enter valid page numbers and ascending ranges from 1 to {pageCount}.
                     </p>
                   )}
-                  {selectedPages.size >= pageCount && pageCount > 0 && (
-                    <p className="rotate-page-range-error" role="status">
-                      At least one page must remain in the output PDF.
-                    </p>
-                  )}
                 </div>
                 <div className="remove-pdf-selection-actions">
                   <button type="button" onClick={selectAll} className="remove-pdf-selection-action">Select All</button>
-                  <button type="button" onClick={clearSelection} disabled={!selectedPages.size} className="remove-pdf-selection-action">Clear Selection</button>
+                  <div className="remove-pdf-clear-selection-group">
+                    <button type="button" onClick={clearSelection} disabled={!selectedPages.size} className="remove-pdf-selection-action">Clear Selection</button>
+                    {selectedPages.size >= pageCount && pageCount > 0 && (
+                      <p className="remove-pdf-last-page-warning" role="status">
+                        At least one page must remain in the output PDF.
+                      </p>
+                    )}
+                  </div>
                 </div>
               </section>
 
               <section className="remove-pdf-page-preview-panel" aria-labelledby="remove-pdf-page-preview-heading">
                 <div className="merge-section-heading merge-output-settings-heading">
                   <div>
-                    <h3 id="remove-pdf-page-preview-heading" className="merge-section-heading-title merge-output-settings-title">Page preview</h3>
+                    <div className="merge-panel-title"><Eye aria-hidden="true" /><h3 id="remove-pdf-page-preview-heading" className="merge-section-heading-title merge-output-settings-title">Preview</h3></div>
                     <p>Click a page to select it for removal or use its eye button to view it larger.</p>
                   </div>
                 </div>

@@ -30,9 +30,9 @@ const imageControlKeys = [
   'downloadPdf'
 ];
 const imageWorkflowControlKeys = [
-  'imageCount', 'attachedImages', 'settingsTitle', 'settingsDescription', 'pagePreview', 'scopeToggleLabel',
+  'imageCount', 'attachedImages', 'settingsTitle', 'settingsDescription', 'scopeToggleLabel',
   'allImages', 'selectedImages', 'selectImagesHint',
-  'previewTitle', 'previewDescription', 'selectImage', 'viewLargerPreview',
+  'previewTitle', 'previewDescription', 'chooseImagesDescription', 'selectImage', 'viewLargerPreview',
   'closePreview', 'previewInvalid', 'outputMode', 'singlePdf', 'separatePdf'
 ];
 const powerpointControlKeys = [
@@ -66,6 +66,7 @@ test('every bundled language has localized image attachment and control labels',
     if (code === 'en') {
       assert.equal(localized.imageToPdf.scopeToggleLabel,
         'Apply settings to all or selected images (select images in preview to enable settings)');
+      assert.equal(localized.imageToPdf.chooseImagesDescription.split(/\s+/).length, 9);
       assert.equal(localized.imageToPdf.allImages, 'All images');
       assert.equal(localized.imageToPdf.selectedImages, 'Selected images');
     }
@@ -78,7 +79,7 @@ test('every bundled language has localized image attachment and control labels',
           `${code} leaves imageToPdf.${key} in English`
         );
       }
-      for (const key of ['scopeToggleLabel', 'allImages', 'selectedImages', 'selectImagesHint']) {
+      for (const key of ['scopeToggleLabel', 'allImages', 'selectedImages', 'selectImagesHint', 'chooseImagesDescription']) {
         assert.notEqual(
           localized.imageToPdf[key],
           TOOL_UI_TRANSLATIONS.en.imageToPdf[key],

@@ -12,7 +12,11 @@ import {
   ChevronDown, 
   Download, 
   Loader2, 
-  AlertCircle
+  AlertCircle,
+  FileText,
+  Eye,
+  ListChecks,
+  Settings2
 } from 'lucide-react';
 import { AttachedFileIcon } from './AttachedFileControls';
 import DownloadReadyCard from './DownloadReadyCard';
@@ -434,7 +438,10 @@ const PdfMerger = () => {
           <section className="merge-selected-files" aria-labelledby="merge-selected-files-heading">
             <header className="merge-selected-files-header">
               <div>
-                <h3 id="merge-selected-files-heading" className="merge-selected-files-title">Files to Merge</h3>
+                <div className="merge-panel-title">
+                  <FileText aria-hidden="true" />
+                  <h3 id="merge-selected-files-heading" className="merge-selected-files-title">Files to Merge</h3>
+                </div>
                 <p>Drag files to arrange their order.</p>
               </div>
               <span className="merge-selected-files-count" aria-label={`Files: ${files.length}/${MAX_FILES}`}>
@@ -529,7 +536,7 @@ const PdfMerger = () => {
 
         <section className="merge-pdf-settings space-y-6" aria-label="Merge Options">
           <div className="merge-control-intro">
-            <h3 className="merge-selected-files-title">Merge Setup &amp; Preview</h3>
+            <h3 className="merge-selected-files-title">Merge Settings &amp; Preview</h3>
             <p>Choose how to combine your PDFs and customize the output.</p>
           </div>
 
@@ -555,7 +562,10 @@ const PdfMerger = () => {
           <div className="merge-output-settings-panel">
             <div className="merge-section-heading merge-output-settings-heading">
               <div>
-                <h3 className="merge-section-heading-title merge-output-settings-title">Choose Settings</h3>
+                <div className="merge-panel-title">
+                  <Settings2 aria-hidden="true" />
+                  <h3 className="merge-section-heading-title merge-output-settings-title">Choose Settings</h3>
+                </div>
                 <p>Choose page sizing and optional bookmarks or blank pages.</p>
               </div>
             </div>
@@ -619,7 +629,10 @@ const PdfMerger = () => {
               <div className="merge-page-selection-panel">
                 <div className="merge-section-heading merge-page-selection-heading">
                   <div>
-                    <h3 className="merge-section-heading-title merge-page-selection-title">Select Pages</h3>
+                    <div className="merge-panel-title">
+                      <ListChecks aria-hidden="true" />
+                      <h3 className="merge-section-heading-title merge-page-selection-title">Select Pages</h3>
+                    </div>
                     <p>Click page previews to add them to the live output in that order. New selections start empty.</p>
                   </div>
                   <p className="merge-page-count-summary" aria-live="polite">
@@ -645,7 +658,10 @@ const PdfMerger = () => {
               <section className="merge-live-output merge-live-output-panel" aria-labelledby="merge-live-output-heading">
                 <div className="merge-section-heading merge-live-output-heading">
                   <div>
-                    <h3 id="merge-live-output-heading" className="merge-section-heading-title merge-live-output-title">Live Output Preview</h3>
+                    <div className="merge-panel-title">
+                      <Eye aria-hidden="true" />
+                      <h3 id="merge-live-output-heading" className="merge-section-heading-title merge-live-output-title">Preview</h3>
+                    </div>
                     <p>Pages are shown in the order they will appear. Drag to reorder, or use the move buttons.</p>
                   </div>
                   <p className="merge-page-count-summary">
@@ -725,7 +741,7 @@ const PdfMerger = () => {
 
         </section>
 
-        <div className="pdf-workflow-actions pt-4">
+        <div className="pdf-workflow-actions">
           <div className="merge-output-actions">
             <label htmlFor="merge-output-filename">Output Filename</label>
             <input

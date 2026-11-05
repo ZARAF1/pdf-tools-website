@@ -6,8 +6,6 @@ import {
   ArrowDown,
   ArrowUp,
   Check,
-  ChevronLeft,
-  ChevronRight,
   FileImage,
   Highlighter,
   ImagePlus,
@@ -28,6 +26,7 @@ import pdfjsLib from '../lib/pdfjsClient';
 import { validateUnencryptedPdf } from '../lib/pdfValidation';
 import { AttachedFileActions, AttachedFileIcon } from './AttachedFileControls';
 import DownloadReadyCard from './DownloadReadyCard';
+import PdfPageThumbnailRail from './PdfPageThumbnailRail';
 
 const TOOL_OPTIONS = [
   { id: 'select', label: 'Select / move', icon: MousePointer2 },
@@ -266,7 +265,6 @@ const EditPdf = () => {
       .filter((pageId) => !editorState.deletedPageIds.has(pageId)),
     [editorState.deletedPageIds, pageCount]
   );
-  const currentPageIndex = visiblePageIds.indexOf(currentPageId);
   const pageItems = editorState.items.filter((item) => item.pageId === currentPageId);
   const selectedItem = pageItems.find((item) => item.id === selectedItemId);
   const hasChanges = history.done.length > 0;
@@ -1257,39 +1255,12 @@ const EditPdf = () => {
           )}
 
           <div className="pdf-editor-workspace">
-            <aside className="pdf-editor-pages" aria-label="PDF pages">
-              <p className="pdf-editor-secondary mb-2 text-xs font-bold uppercase tracking-wide">Pages</p>
-              {visiblePageIds.map((pageId, index) => (
-                <button
-                  key={pageId}
-                  type="button"
-                  aria-current={pageId === currentPageId ? 'page' : undefined}
-                  onClick={() => selectedPage(pageId)}
-                  className="pdf-editor-page-button"
-                >
-                  <span className="pdf-editor-page-number">{index + 1}</span>
-                  <span>Page {pageId + 1}</span>
-                </button>
-              ))}
-            </aside>
-
             <section className="pdf-editor-canvas-area" ref={canvasAreaRef} aria-label="Page preview and editor">
               <div className="pdf-editor-canvas-controls">
                 <div className="flex items-center gap-1">
                   <button type="button" onClick={() => setZoom((value) => Math.max(0.5, Math.round((value - 0.1) * 10) / 10))} disabled={zoom <= 0.5} aria-label="Zoom out" className="pdf-editor-icon-button">−</button>
                   <span className="pdf-editor-secondary min-w-12 text-center text-sm">{Math.round(zoom * 100)}%</span>
                   <button type="button" onClick={() => setZoom((value) => Math.min(2, Math.round((value + 0.1) * 10) / 10))} disabled={zoom >= 2} aria-label="Zoom in" className="pdf-editor-icon-button">+</button>
-                </div>
-                <p className="pdf-editor-text text-sm font-semibold">
-                  Page {currentPageIndex + 1} of {visiblePageIds.length}
-                </p>
-                <div className="flex items-center gap-1">
-                  <button type="button" onClick={() => currentPageIndex > 0 && selectedPage(visiblePageIds[currentPageIndex - 1])} disabled={currentPageIndex <= 0} aria-label="Previous page" className="pdf-editor-icon-button">
-                    <ChevronLeft className="h-4 w-4" aria-hidden="true" />
-                  </button>
-                  <button type="button" onClick={() => currentPageIndex < visiblePageIds.length - 1 && selectedPage(visiblePageIds[currentPageIndex + 1])} disabled={currentPageIndex >= visiblePageIds.length - 1} aria-label="Next page" className="pdf-editor-icon-button">
-                    <ChevronRight className="h-4 w-4" aria-hidden="true" />
-                  </button>
                 </div>
               </div>
 
@@ -1374,6 +1345,12 @@ const EditPdf = () => {
                 )}
               </div>
             </section>
+            <PdfPageThumbnailRail
+              document={pdfjsDocument}
+              pageNumbers={visiblePageIds.map((pageId) => pageId + 1)}
+              currentPage={currentPageId + 1}
+              onSelectPage={(pageNumber) => selectedPage(pageNumber - 1)}
+            />
           </div>
           </section>
 

@@ -16,7 +16,9 @@ import {
   Check,
   RotateCw,
   Eye,
-  X
+  X,
+  FileText,
+  Settings2
 } from 'lucide-react';
 import { AttachedFileActions, AttachedFileIcon } from './AttachedFileControls';
 import DownloadReadyCard from './DownloadReadyCard';
@@ -419,7 +421,10 @@ const PdfRotator = () => {
         <div className="rotate-pdf-workspace">
           <section className="rotate-selected-file-section" aria-labelledby="rotate-selected-file-heading">
             <header>
-              <h3 id="rotate-selected-file-heading" className="merge-selected-files-title">PDF to rotate</h3>
+              <div className="merge-panel-title">
+                <FileText aria-hidden="true" />
+                <h3 id="rotate-selected-file-heading" className="merge-selected-files-title">File to Rotate</h3>
+              </div>
               <p>One PDF selected. Replace it or remove it to choose another.</p>
             </header>
             <div className="pdf-attached-file-card rotate-selected-file-card">
@@ -441,7 +446,7 @@ const PdfRotator = () => {
 
           <div className="rotate-settings-shell">
             <div className="merge-control-intro">
-              <h3 className="merge-selected-files-title">Rotation Setup &amp; Preview</h3>
+              <h3 className="merge-selected-files-title">Rotation Settings &amp; Preview</h3>
               <p>Choose a rotation, select pages, and review each page before processing.</p>
             </div>
 
@@ -483,7 +488,10 @@ const PdfRotator = () => {
             <section className="rotate-settings-panel">
               <div className="merge-section-heading merge-output-settings-heading">
                 <div>
-                  <h3 className="merge-section-heading-title merge-output-settings-title">Choose Settings</h3>
+                  <div className="merge-panel-title">
+                    <Settings2 aria-hidden="true" />
+                    <h3 className="merge-section-heading-title merge-output-settings-title">Settings</h3>
+                  </div>
                   <p>Angles preview immediately and apply to all or selected pages; rotate individual pages with their buttons.</p>
                 </div>
               </div>
@@ -554,7 +562,10 @@ const PdfRotator = () => {
             <section className="rotate-page-preview-panel" aria-labelledby="rotate-page-preview-heading">
               <div className="merge-section-heading merge-output-settings-heading">
                 <div>
-                  <h3 id="rotate-page-preview-heading" className="merge-section-heading-title merge-output-settings-title">Page Preview</h3>
+                  <div className="merge-panel-title">
+                    <Eye aria-hidden="true" />
+                    <h3 id="rotate-page-preview-heading" className="merge-section-heading-title merge-output-settings-title">Preview</h3>
+                  </div>
                   <p>Review each page and rotate it individually with its button.</p>
                 </div>
               </div>

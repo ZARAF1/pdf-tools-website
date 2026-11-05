@@ -280,12 +280,12 @@ const TOOL_CONTENT = {
       how: `Draw opaque marks over each area to redact and review every marked page before saving.`,
       result: `A rasterized PDF with the covered content removed; selectable text and interactive features are lost.`
     },
-    intro: 'Cover sensitive information in a new PDF copy before sharing it. Select a document with up to 15 pages, move to the page you want to review, and draw an opaque black box over each item to hide. Use the available undo or clear controls to correct marks before creating the output. Check every marked page carefully: redaction changes are difficult to reverse in the generated file. To prevent covered text from remaining underneath, pages are saved as images. This means the resulting PDF will not keep selectable text, sharp vector artwork, links, forms, or other interactive content. Your original PDF is left untouched. Redaction is performed in your browser, and your selected document is not sent to an external server.',
+    intro: 'Cover sensitive information in a new PDF copy before sharing it. Select a document with up to 30 pages, move to the page you want to review, and draw an opaque black box over each item to hide. Use the available undo or clear controls to correct marks before creating the output. Check every marked page carefully: redaction changes are difficult to reverse in the generated file. To prevent covered text from remaining underneath, pages are saved as images. This means the resulting PDF will not keep selectable text, sharp vector artwork, links, forms, or other interactive content. Your original PDF is left untouched. Redaction is performed in your browser, and your selected document is not sent to an external server.',
     mechanism: 'PDF.js renders every page to an image and the tool burns opaque masks into those images before creating a new PDF with pdf-lib. This removes underlying text from the output, but rasterizes all pages and removes selectable text, vectors, links, forms, and other interactive features.',
     steps: ['Choose one PDF and select the page to review.', 'Draw a black box over each item to redact; use Undo or Clear Marks to correct the page.', 'Review all marked pages, then create and download the redacted PDF.'],
     faqs: [
       ['Is the redaction permanent?', 'The original page content is not included in the output; the selected areas are replaced by opaque pixels. Always inspect the output before sharing it.'],
-      ['How many pages are supported?', 'The tool accepts documents with up to 15 pages.'],
+      ['How many pages are supported?', 'The tool accepts documents with up to 30 pages.'],
       ['Does the output keep selectable text?', 'No. To remove hidden text beneath redactions, every page is rasterized. Text search, vector quality, links, forms, and other interactive content are lost.'],
       ['Are my files uploaded?', 'The PDF is rendered and processed in the browser. Normal website requests and hosting logs are separate from PDF processing.']
     ]
@@ -451,8 +451,8 @@ const ATTACHMENT_RULES = {
   },
   redact: {
     title: 'Attach PDF Here',
-    ruleKey: 'pdf15',
-    rule: 'One unencrypted PDF · up to 15 pages',
+    ruleKey: 'pdf30',
+    rule: 'One unencrypted PDF · up to 30 pages',
     infoTitle: 'Permanently redact page content',
     info: 'Drag over sensitive text or images to mark them. Every page is rasterized in the output so the original text beneath a redaction is not retained.'
   },

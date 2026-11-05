@@ -25,19 +25,32 @@ test('Remove PDF keeps page selection controls in settings and real page tiles i
   const settingsStart = component.indexOf('className="remove-pdf-settings-panel"');
   const previewStart = component.indexOf('className="remove-pdf-page-preview-panel"');
   const settings = component.slice(settingsStart, previewStart);
+  const rangeControls = settings.slice(
+    settings.indexOf('className="rotate-page-range-controls"'),
+    settings.indexOf('className="remove-pdf-selection-actions"')
+  );
   const preview = component.slice(previewStart);
 
-  assert.match(settings, /Choose Settings/);
+  assert.match(component, /Removal Settings &amp; Preview/);
+  assert.match(settings, /<Settings2 aria-hidden="true" \/><h3 id="remove-pdf-settings-heading"[^>]*>Settings<\/h3>/);
   assert.match(settings, />\s*Select All\s*</);
-  assert.match(settings, />\s*Clear Selection\s*</);
-  assert.match(preview, /Page preview/);
+  assert.match(settings, /className="remove-pdf-clear-selection-group"[\s\S]*?>\s*Clear Selection\s*<\/button>[\s\S]*?At least one page must remain in the output PDF\./);
+  assert.doesNotMatch(rangeControls, /At least one page must remain in the output PDF\./);
+  assert.match(preview, /<Eye aria-hidden="true" \/><h3 id="remove-pdf-page-preview-heading"[^>]*>Preview<\/h3>/);
   assert.match(preview, /<PdfPageGrid\b/);
   assert.match(preview, /showPreviewButton=\{isRemoving\}/);
   assert.match(preview, /Selected pages:/);
 });
 
+test('Remove PDF attachment heading has a decorative file icon', () => {
+  assert.match(
+    component,
+    /className="remove-pdf-file-section"[\s\S]*?<div className="merge-panel-title">\s*<FileText aria-hidden="true" \/>\s*<h3 id="remove-pdf-file-heading"[^>]*>File to Remove Pages<\/h3>/
+  );
+});
+
 test('Remove PDF supports synchronized page ranges, output naming, and a Rotate-style action', () => {
-  assert.match(component, /Select Pages &amp; Preview/);
+  assert.match(component, /Removal Settings &amp; Preview/);
   assert.match(component, /import \{ formatPageRanges, parsePageRanges, parsePageRangesWhileTyping \} from '\.\.\/lib\/pageSelection\.mjs'/);
   assert.match(component, /id="remove-page-ranges"/);
   assert.match(component, /parsePageRangesWhileTyping\(value, pageCount\)/);
@@ -56,6 +69,26 @@ test('Remove PDF workflow panels use bounded responsive surfaces and theme-aware
   assert.match(styles, /\.remove-pdf-settings-panel,\s*\.remove-pdf-page-preview-panel\s*\{[^}]*min-width:\s*0/s);
   assert.match(styles, /\.remove-pdf-selection-actions\s*\{[^}]*flex-wrap:\s*wrap/s);
   assert.match(styles, /:root\[data-theme='dark'\]\s+\.remove-pdf-selection-action/);
+});
+
+test('Remove PDF settings and preview titles use neutral overview-matched typography', () => {
+  const headingStyle = styles.match(
+    /\.remove-pdf-settings-shell \.merge-section-heading h3\.merge-output-settings-title\s*\{([^}]*)\}/
+  )?.[1];
+  const darkHeadingStyle = styles.match(
+    /:root\[data-theme='dark'\] \.remove-pdf-settings-shell \.merge-section-heading h3\.merge-output-settings-title\s*\{([^}]*)\}/
+  )?.[1];
+
+  assert.match(component, /<h3 id="remove-pdf-workspace-heading" className="merge-selected-files-title">Removal Settings &amp; Preview<\/h3>/);
+  assert.ok(headingStyle, 'Remove section labels have scoped typography');
+  assert.match(headingStyle, /font-size:\s*1rem\s*;/);
+  assert.match(headingStyle, /font-weight:\s*750\s*;/);
+  assert.match(headingStyle, /background:\s*transparent\s*;/);
+  assert.match(headingStyle, /border:\s*0\s*;/);
+  assert.match(headingStyle, /padding:\s*0\s*;/);
+  assert.ok(darkHeadingStyle, 'dark theme removes the shared title tint for Remove');
+  assert.match(darkHeadingStyle, /background:\s*transparent\s*;/);
+  assert.match(darkHeadingStyle, /border:\s*0\s*;/);
 });
 
 test('Remove PDF panels constrain narrow grid items and allow selection controls to wrap', () => {
