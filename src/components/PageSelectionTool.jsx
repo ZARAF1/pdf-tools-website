@@ -366,7 +366,7 @@ const PageSelectionTool = ({ mode }) => {
                 <div className="merge-section-heading merge-output-settings-heading">
                   <div>
                     <div className="merge-panel-title"><Eye aria-hidden="true" /><h3 id="remove-pdf-page-preview-heading" className="merge-section-heading-title merge-output-settings-title">Preview</h3></div>
-                    <p>Click a page to select it for removal or use its eye button to view it larger.</p>
+                    <p>Click a page or its centered trash button to select it for removal; use the eye button for a larger preview.</p>
                   </div>
                 </div>
                 <PdfPageGrid
@@ -376,6 +376,7 @@ const PageSelectionTool = ({ mode }) => {
                   onToggle={togglePage}
                   actionLabel={actionLabel}
                   showPreviewButton={isRemoving}
+                  showRemoveButton={isRemoving}
                 />
                 {selectedSummary.length > 0 && (
                   <p className="remove-pdf-selected-summary">

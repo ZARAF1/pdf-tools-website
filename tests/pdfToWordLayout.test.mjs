@@ -9,6 +9,7 @@ test('places direction-specific guidance above the full-width upload card', () =
   const guidance = component.match(/<aside className="tool-attachment-guidance"[\s\S]*?<\/aside>/)?.[0];
 
   assert.ok(guidance?.includes('Convert text-based PDFs into editable Word documents.'));
+  assert.ok(guidance?.includes('Scanned pages use English OCR in your browser and may need internet to load OCR data; simple tables may convert, while complex layouts may need cleanup.'));
   assert.ok(guidance?.includes('image-based PDF'));
   assert.match(component, /translate\('attachWordFileHere'\)/);
   assert.doesNotMatch(component, /<p className="mt-2 text-slate-500">Convert text-based and scanned PDFs into editable Word documents\.<\/p>/);
@@ -36,17 +37,27 @@ test('separates the attachment panel from conversion controls with the workspace
   assert.doesNotMatch(styles, /\.word-file-workspace\s*\{[^}]*margin-top/s);
 });
 
-test('places the PDF or Word attachment in its own panel before conversion controls', () => {
+test('places the PDF or Word attachment and output controls inside the blue attachment panel', () => {
   const attachmentPanel = component.match(/<section className="word-file-panel"[\s\S]*?<\/section>/)?.[0];
+  const selectedSection = component.match(
+    /className="conversion-selected-file-section word-selected-file-section"[\s\S]*?<\/section>/
+  )?.[0];
 
   assert.ok(attachmentPanel, 'file selection has its own labelled panel');
   assert.match(attachmentPanel, /aria-label="File to convert"/);
   assert.match(attachmentPanel, /merge-pdf-upload-zone/);
   assert.match(attachmentPanel, /pdf-attached-file-card/);
   assert.match(attachmentPanel, /<AttachedFileActions/);
+  assert.ok(selectedSection, 'the selected file and output controls share one inset panel');
+  assert.match(selectedSection, /<FileText aria-hidden="true" \/>[\s\S]*PDF to convert[\s\S]*Word file to convert/);
+  assert.match(selectedSection, /pdf-attached-file-card word-attached-file-card[\s\S]*word-conversion-actions/);
+  assert.ok(
+    component.indexOf('word-conversion-actions') < component.indexOf('word-conversion-panel'),
+    'filename and conversion action are inside the attachment boundary, before the separate information panel'
+  );
   assert.ok(
     component.indexOf('word-conversion-panel') > component.indexOf('className="word-file-panel"'),
-    'conversion controls follow the attachment panel'
+    'the information and processing panel follows the attachment panel'
   );
   assert.match(styles, /\.conversion-attachment-shell \.word-file-panel,[\s\S]*?background:\s*transparent/);
   assert.match(styles, /\.conversion-attachment-shell \.word-file-panel,[\s\S]*?border:\s*0/);
@@ -80,7 +91,7 @@ test('PDF to Word keeps the muted attachment surface and shared blue glow', () =
   );
 });
 
-test('PDF and Word attachments use a dedicated muted selected-file section', () => {
+test('PDF and Word attachments use an icon-labelled muted selected-file section', () => {
   const selectedSection = component.match(
     /className="conversion-selected-file-section word-selected-file-section"[\s\S]*?<\/section>/
   )?.[0];
@@ -90,6 +101,7 @@ test('PDF and Word attachments use a dedicated muted selected-file section', () 
   assert.match(selectedSection, /Word file to convert/);
   assert.match(selectedSection, /One PDF selected\./);
   assert.match(selectedSection, /One Word file selected\./);
+  assert.match(selectedSection, /<FileText aria-hidden="true" \/>/);
   assert.match(selectedSection, /pdf-attached-file-card word-attached-file-card/);
   assert.match(selectedSection, /<AttachedFileActions/);
   assert.match(styles, /\.conversion-selected-file-section\s*\{[^}]*background:\s*var\(--surface-muted\)/s);
@@ -99,8 +111,31 @@ test('places the editable output filename beside Convert and hides the duplicate
   const actionRow = component.match(
     /className="word-conversion-actions"[\s\S]*?<\/div>/
   )?.[0];
+  const attachmentPanelStart = component.indexOf(
+    '<section className="tool-attachment-section conversion-attachment-shell word-attachment-section"'
+  );
+  const resultPanelStart = component.indexOf('className="word-conversion-panel');
+  const guidanceIndex = component.indexOf('bg-amber-50', resultPanelStart);
+  const downloadCardIndex = component.indexOf('<DownloadReadyCard', resultPanelStart);
+  const attachmentMarkupEnd = component.indexOf('{error && (', attachmentPanelStart);
+  const attachmentMarkup = component.slice(attachmentPanelStart, attachmentMarkupEnd);
 
   assert.ok(actionRow, 'conversion action row is present');
+  assert.ok(resultPanelStart >= 0, 'the information and result content has a separate panel');
+  assert.ok(
+    resultPanelStart > attachmentPanelStart && attachmentMarkupEnd > resultPanelStart,
+    'the result panel appears inside the blue attachment boundary'
+  );
+  assert.match(attachmentMarkup, /word-conversion-panel[\s\S]*<\/section>\s*<\/div>\s*$/);
+  assert.ok(guidanceIndex > resultPanelStart, 'conversion guidance is inside the result panel');
+  assert.ok(
+    downloadCardIndex > guidanceIndex && downloadCardIndex < attachmentMarkupEnd,
+    'the ready-to-download card follows the guidance inside the same panel'
+  );
+  assert.ok(
+    resultPanelStart > attachmentPanelStart,
+    'the shared information and result panel follows the selected PDF or Word content inside the attachment boundary'
+  );
   assert.match(actionRow, /className="word-output-filename"/);
   assert.match(actionRow, /id="word-output-filename"/);
   assert.match(actionRow, /value=\{outputFileName\}/);
@@ -114,5 +149,15 @@ test('places the editable output filename beside Convert and hides the duplicate
   assert.match(component, /direction === 'pdf-to-word'\s*\?\s*'document_converted\.docx'/);
   assert.match(component, /file\.name\.replace\(\/\\\.docx\$\/i, ''\).*_converted\.pdf/);
   assert.match(styles, /\.word-conversion-actions\s*\{[^}]*display:\s*flex/s);
-  assert.match(styles, /\.word-output-filename\s*\{[^}]*min-width:\s*0/s);
+  assert.match(styles, /\.word-output-filename\s*\{[^}]*min-width:\s*0;[^}]*font-size:\s*1rem/s);
+  assert.match(styles, /\.word-output-filename input\s*\{[^}]*font-size:\s*1\.125rem/s);
+  assert.match(styles, /\.word-attachment-section\s+\.word-conversion-panel\s*\{[^}]*border-color:\s*var\(--border-color\);[^}]*background:\s*var\(--surface-muted\)/s);
+  assert.match(styles, /\.word-conversion-panel\s*>\s*\.download-ready-card\s*\{[^}]*width:\s*100%;[^}]*background:\s*var\(--surface-background\);[^}]*color:\s*var\(--text-primary\)/s);
+  assert.match(styles, /\.word-conversion-panel\s*>\s*\.download-ready-card\s+\.download-ready-card-title\s*\{[^}]*color:\s*var\(--text-primary\)/s);
+});
+
+test('removes the duplicate Best text-based results section from the PDF-to-Word result panel', () => {
+  assert.doesNotMatch(component, /Best text-based results|Scanned pages use English OCR in your browser\. Simple aligned rows may become Word tables/);
+  assert.match(component, /DOCX only · image-based PDF output/);
+  assert.match(component, /Convert text-based PDFs into editable Word documents\.[\s\S]*Scanned pages use English OCR in your browser and may need internet to load OCR data/);
 });

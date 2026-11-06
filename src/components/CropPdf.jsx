@@ -108,6 +108,7 @@ const CropPdf = () => {
   const canvasRef = useRef(null);
   const renderTaskRef = useRef(null);
   const dragRef = useRef(null);
+  const hasCropSelection = !(crop.width >= 0.9999 && crop.height >= 0.9999 && crop.x <= 0.0001 && crop.y <= 0.0001);
 
   const clearOutput = useCallback(() => {
     setOutput(null);
@@ -427,7 +428,7 @@ const CropPdf = () => {
       setError('Choose a PDF before applying a crop.');
       return;
     }
-    if (crop.width >= 0.9999 && crop.height >= 0.9999 && crop.x <= 0.0001 && crop.y <= 0.0001) {
+    if (!hasCropSelection) {
       setError('Adjust the crop area before applying it.');
       return;
     }
@@ -806,7 +807,7 @@ const CropPdf = () => {
                 autoComplete="off"
               />
               <p>The .pdf extension is added automatically when needed.</p>
-              <button type="button" className="crop-pdf-button crop-pdf-button-primary" onClick={applyCrop} disabled={isProcessing || isRendering || isLoading}>
+              <button type="button" className="crop-pdf-button crop-pdf-button-primary" onClick={applyCrop} disabled={isProcessing || isRendering || isLoading || !hasCropSelection}>
                 {isProcessing ? <Loader2 className="crop-pdf-spinner" aria-hidden="true" size={17} /> : null}
                 {isProcessing ? 'Applying crop...' : 'Apply crop'}
               </button>

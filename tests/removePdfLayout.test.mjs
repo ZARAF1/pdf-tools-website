@@ -150,6 +150,35 @@ test('Remove PDF page previews offer an accessible larger-view action', async ()
   assert.match(pageGrid, /event\.key === 'Escape'/);
 });
 
+test('Remove PDF page tiles center one trash action inside each tile footer', async () => {
+  const pageGrid = await readFile(new URL('../src/components/PdfPageGrid.jsx', import.meta.url), 'utf8');
+  const removeButtonStyle = styles.match(/^\.pdf-page-grid-remove-button\s*\{([^}]*)\}/m)?.[1] ?? '';
+  const removeButtonHoverStyle = styles.match(/^\.pdf-page-grid-remove-button:hover:not\(:disabled\)\s*\{([^}]*)\}/m)?.[1] ?? '';
+  const removePreview = component.slice(
+    component.indexOf('className="remove-pdf-page-preview-panel"'),
+    component.indexOf('className="remove-pdf-output-actions"')
+  );
+
+  assert.match(removePreview, /Click a page or its centered trash button to select it for removal/);
+  assert.match(removePreview, /showRemoveButton=\{isRemoving\}/);
+  assert.match(pageGrid, /showRemoveButton = false/);
+  assert.match(pageGrid, /className=\{showRemoveButton && selectionEnabled[\s\S]*?pdf-page-grid-item-removable\$\{selected \? ' is-selected' : ''\}/);
+  assert.match(pageGrid, /<\/PageElement>[\s\S]*?<div className="pdf-page-grid-remove-actions">/);
+  assert.match(pageGrid, /className="pdf-page-grid-remove-actions"[\s\S]*className="organize-pdf-page-action pdf-page-grid-remove-button"/);
+  assert.match(pageGrid, /onClick=\{\(\) => onToggle\(pageNumber\)\}/);
+  assert.match(pageGrid, /aria-label=\{selected \? `Keep page \$\{pageNumber\} in output` : `Select page \$\{pageNumber\} for removal`\}/);
+  assert.match(pageGrid, /<Trash2 className="h-4 w-4" aria-hidden="true" \/>/);
+  assert.match(pageGrid, /className="merge-page-preview-button pdf-page-grid-preview-button"/);
+  assert.match(styles, /\.remove-pdf-page-preview-panel \.pdf-page-grid-item-removable\s*\{[^}]*display:\s*flex;[^}]*flex-direction:\s*column;[^}]*border:[^;]+;[^}]*padding:[^;]+;/s);
+  assert.match(styles, /\.remove-pdf-page-preview-panel \.pdf-page-grid-item-removable \.pdf-page-grid-select\s*\{[^}]*flex:\s*1 1 auto;[^}]*border:\s*0 !important;/s);
+  assert.match(styles, /\.pdf-page-grid-remove-actions\s*\{[^}]*display:\s*flex;[^}]*justify-content:\s*center/s);
+  assert.match(styles, /\.pdf-page-grid-item \.pdf-page-grid-remove-button\s*\{[^}]*position:\s*static;[^}]*width:\s*2rem;[^}]*min-width:\s*2rem;/s);
+  assert.match(removeButtonStyle, /color:\s*var\(--text-secondary\)/);
+  assert.match(removeButtonHoverStyle, /background:\s*var\(--surface-muted\);[^}]*color:\s*var\(--text-primary\)/s);
+  assert.match(pageGrid, /aria-pressed=\{selected\}/);
+  assert.doesNotMatch(styles, /\.pdf-page-grid-remove-button\s*\{[^}]*position:\s*absolute/s);
+});
+
 test('closing a larger page preview restores focus without waiting for animation frames', async () => {
   const pageGrid = await readFile(new URL('../src/components/PdfPageGrid.jsx', import.meta.url), 'utf8');
 

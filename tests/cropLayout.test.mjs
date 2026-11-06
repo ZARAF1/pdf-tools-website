@@ -34,6 +34,18 @@ test('Crop PDF Apply crop shares an output row with the filename field', () => {
   assert.match(styles, /\.crop-pdf-output-actions\s*\{[^}]*flex:\s*1 1 100%/s);
 });
 
+test('Crop PDF keeps Apply crop disabled until the crop bounds differ from the full page', () => {
+  const applyAction = cropPdf.match(
+    /<button type="button" className="crop-pdf-button crop-pdf-button-primary" onClick=\{applyCrop\} disabled=\{([^}]+)\}>/
+  );
+
+  assert.match(cropPdf, /const hasCropSelection = !\(crop\.width >= 0\.9999 && crop\.height >= 0\.9999 && crop\.x <= 0\.0001 && crop\.y <= 0\.0001\);/);
+  assert.ok(applyAction, 'Apply crop remains visible as an action');
+  assert.match(applyAction[1], /!hasCropSelection/, 'Apply crop is disabled until a crop is drawn or adjusted');
+  assert.match(cropPdf, /if \(!hasCropSelection\) \{\s*setError\('Adjust the crop area before applying it\.'\);/);
+  assert.match(cropPdf, /const \[crop, setCrop\] = useState\(fullPage\)/);
+});
+
 test('Crop PDF removes the CropBox disclosure beneath its output controls', () => {
   assert.doesNotMatch(cropPdf, /crop-pdf-disclosure|Cropping changes each page/);
 });

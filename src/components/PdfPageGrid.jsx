@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import pdfjsLib from '../lib/pdfjsClient';
-import { Check, Eye, X } from 'lucide-react';
+import { Check, Eye, Trash2, X } from 'lucide-react';
 
 const PdfPageGrid = ({
   file,
@@ -12,7 +12,8 @@ const PdfPageGrid = ({
   startPage = 1,
   endPage,
   pageLabels = {},
-  showPreviewButton = false
+  showPreviewButton = false,
+  showRemoveButton = false
 }) => {
   const [previews, setPreviews] = useState([]);
   const [pageSummaries, setPageSummaries] = useState([]);
@@ -121,7 +122,12 @@ const PdfPageGrid = ({
           const pageLabel = typeof pageLabels === 'function' ? pageLabels(pageNumber) : pageLabels[pageNumber];
           const PageElement = selectionEnabled ? 'button' : 'div';
           return (
-            <div className="pdf-page-grid-item" key={pageNumber}>
+            <div
+              className={showRemoveButton && selectionEnabled
+                ? `pdf-page-grid-item pdf-page-grid-item-removable${selected ? ' is-selected' : ''}`
+                : 'pdf-page-grid-item'}
+              key={pageNumber}
+            >
               <PageElement
                 {...(selectionEnabled
                   ? {
@@ -182,6 +188,20 @@ const PdfPageGrid = ({
                 >
                   <Eye className="h-4 w-4" aria-hidden="true" />
                 </button>
+              )}
+              {showRemoveButton && selectionEnabled && (
+                <div className="pdf-page-grid-remove-actions">
+                  <button
+                    type="button"
+                    className="organize-pdf-page-action pdf-page-grid-remove-button"
+                    onClick={() => onToggle(pageNumber)}
+                    aria-label={selected ? `Keep page ${pageNumber} in output` : `Select page ${pageNumber} for removal`}
+                    title={selected ? `Keep page ${pageNumber} in output` : `Select page ${pageNumber} for removal`}
+                    aria-pressed={selected}
+                  >
+                    <Trash2 className="h-4 w-4" aria-hidden="true" />
+                  </button>
+                </div>
               )}
             </div>
           );

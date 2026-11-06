@@ -3,9 +3,12 @@ import { useToolExitGuard } from './ToolExitGuard';
 import useAccessibleDropzone from '../lib/useAccessibleDropzone';
 import {
   AlertCircle,
+  Eye,
   FileImage,
   Loader2,
+  Paperclip,
   RefreshCw,
+  Settings2,
   Upload
 } from 'lucide-react';
 import { PASSWORD_PROTECTED_PDF_MESSAGE, validateUnencryptedPdf } from '../lib/pdfValidation';
@@ -16,7 +19,9 @@ import { createPdfImageDownload } from '../lib/pdfImageOutput.mjs';
 import { normalizeOutputFileName } from '../lib/outputFileName.mjs';
 import { AttachedFileActions, AttachedFileIcon } from './AttachedFileControls';
 import DownloadReadyCard from './DownloadReadyCard';
+import PdfPageThumbnailRail from './PdfPageThumbnailRail';
 import { getLocalizedTool } from '../i18n/toolTranslations.mjs';
+import { formatToolUiMessage, getLocalizedToolUi } from '../i18n/toolUiLocalization.mjs';
 import { useLanguage } from '../i18n/useLanguage';
 
 const MAX_PAGES = 50;
@@ -84,6 +89,7 @@ const cropCanvasToContent = (canvas, context) => {
 
 const PdfToImages = () => {
   const { language, translate } = useLanguage();
+  const { pdfToImages: pdfImagesUi } = getLocalizedToolUi(language);
   const localizedTool = getLocalizedTool(language, {
     id: 'pdf-images',
     name: 'PDF to Images',
@@ -91,6 +97,10 @@ const PdfToImages = () => {
   });
   const [file, setFile] = useState(null);
   const [pageCount, setPageCount] = useState(0);
+  const [previewDocument, setPreviewDocument] = useState(null);
+  const [previewPage, setPreviewPage] = useState(1);
+  const [selectedPageNumbers, setSelectedPageNumbers] = useState(() => new Set());
+  const [exportScope, setExportScope] = useState('all');
   const [format, setFormat] = useState('png');
   const [quality, setQuality] = useState('standard');
   const [jpegQuality, setJpegQuality] = useState(0.85);
@@ -110,6 +120,8 @@ const PdfToImages = () => {
   const validationRef = useRef(0);
   const processingRef = useRef(false);
   const loadingTaskRef = useRef(null);
+  const previewLoadingTaskRef = useRef(null);
+  const previewDocumentTaskRef = useRef(null);
   const renderTaskRef = useRef(null);
   const generatedFilesRef = useRef(null);
   const generatedFormatRef = useRef(null);
@@ -134,6 +146,22 @@ const PdfToImages = () => {
     }
   }, []);
 
+  const stopPdfPreviewLoading = useCallback(() => {
+    const loadingTasks = [
+      previewLoadingTaskRef.current,
+      previewDocumentTaskRef.current
+    ].filter((task, index, tasks) => task && tasks.indexOf(task) === index);
+    previewLoadingTaskRef.current = null;
+    previewDocumentTaskRef.current = null;
+    setPreviewDocument(null);
+    setPreviewPage(1);
+    loadingTasks.forEach((task) => {
+      void task.destroy().catch((destroyError) => {
+        console.error('Unable to release the PDF preview task:', destroyError);
+      });
+    });
+  }, []);
+
   const onDrop = useCallback(async (acceptedFiles, rejectedFiles) => {
     if (isProcessing || isValidating) return;
     setError('');
@@ -153,6 +181,7 @@ const PdfToImages = () => {
 
     const [selectedFile] = acceptedFiles;
     const validationRun = ++validationRef.current;
+    let previewTask;
     setIsValidating(true);
     try {
       const pdf = await validateUnencryptedPdf(selectedFile);
@@ -162,10 +191,38 @@ const PdfToImages = () => {
         throw new Error(`This PDF has ${count} pages. Choose a PDF with no more than ${MAX_PAGES} pages.`);
       }
       if (validationRef.current !== validationRun) return;
+      const previewData = new Uint8Array(await selectedFile.arrayBuffer());
+      if (validationRef.current !== validationRun) return;
+      previewTask = pdfjsLib.getDocument({ data: previewData });
+      previewLoadingTaskRef.current = previewTask;
+      const nextPreviewDocument = await previewTask.promise;
+      if (validationRef.current !== validationRun) return;
+      if (nextPreviewDocument.numPages !== count) {
+        throw new Error('The PDF page count could not be confirmed for preview. Select the file again and retry.');
+      }
+
+      const previousPreviewTask = previewDocumentTaskRef.current;
+      previewDocumentTaskRef.current = previewTask;
+      previewLoadingTaskRef.current = null;
+      setPreviewDocument(nextPreviewDocument);
+      setPreviewPage(1);
+      setSelectedPageNumbers(new Set());
+      setExportScope('all');
+      if (previousPreviewTask) {
+        void previousPreviewTask.destroy().catch((destroyError) => {
+          console.error('Unable to release the previous PDF preview task:', destroyError);
+        });
+      }
       setFile(selectedFile);
       setPageCount(count);
       setOutputBaseName(getBaseName(selectedFile.name));
     } catch (validationError) {
+      if (previewTask && previewLoadingTaskRef.current === previewTask) {
+        previewLoadingTaskRef.current = null;
+        void previewTask.destroy().catch((destroyError) => {
+          console.error('Unable to release the invalid PDF preview task:', destroyError);
+        });
+      }
       if (validationRef.current === validationRun) {
         console.error('Unable to validate PDF for image conversion:', validationError);
         const message = validationError.message || '';
@@ -223,6 +280,10 @@ const PdfToImages = () => {
       setError('Choose a valid PDF before converting.');
       return;
     }
+    if (exportScope === 'selected' && selectedPageNumbers.size === 0) {
+      setError(pdfImagesUi.selectPagesBeforeExport);
+      return;
+    }
     if (pageCount > MAX_PAGES) {
       setError(`This tool supports PDFs with up to ${MAX_PAGES} pages.`);
       return;
@@ -262,7 +323,17 @@ const PdfToImages = () => {
       const requestedScale = quality === 'high' ? 3 : 2;
       imageFiles = [];
       let totalBytes = 0;
-      for (let pageNumber = 1; pageNumber <= document.numPages; pageNumber += 1) {
+      const pageNumbersToExport = Array.from(
+        { length: document.numPages },
+        (_, index) => index + 1
+      ).filter((pageNumber) => (
+        exportScope === 'all' || selectedPageNumbers.has(pageNumber)
+      ));
+      if (!pageNumbersToExport.length) {
+        throw new Error(pdfImagesUi.selectPagesBeforeExport);
+      }
+
+      for (const pageNumber of pageNumbersToExport) {
         if (generationRef.current !== runId) return;
         setProgress(`Rendering page ${pageNumber} of ${document.numPages}`);
         const page = await document.getPage(pageNumber);
@@ -386,6 +457,32 @@ const PdfToImages = () => {
     }
   };
 
+  const toggleExportPage = (pageNumber) => {
+    if (exportScope !== 'selected' || isProcessing) return;
+    setSelectedPageNumbers((current) => {
+      const next = new Set(current);
+      if (next.has(pageNumber)) next.delete(pageNumber);
+      else next.add(pageNumber);
+      return next;
+    });
+    clearOutput();
+    generatedFilesRef.current = null;
+    generatedFormatRef.current = null;
+    setProgress('');
+    setError('');
+  };
+
+  const changeExportScope = (nextScope) => {
+    if (exportScope === nextScope) return;
+    setExportScope(nextScope);
+    if (nextScope === 'all') setSelectedPageNumbers(new Set());
+    clearOutput();
+    generatedFilesRef.current = null;
+    generatedFormatRef.current = null;
+    setProgress('');
+    setError('');
+  };
+
   const cancelConversion = () => {
     generationRef.current += 1;
     renderTaskRef.current?.cancel();
@@ -405,12 +502,15 @@ const PdfToImages = () => {
     renderTaskRef.current?.cancel();
     renderTaskRef.current = null;
     stopPdfLoading();
+    stopPdfPreviewLoading();
     processingRef.current = false;
     generatedFilesRef.current = null;
     generatedFormatRef.current = null;
     clearOutput();
     setFile(null);
     setPageCount(0);
+    setSelectedPageNumbers(new Set());
+    setExportScope('all');
     setFormat('png');
     setQuality('standard');
     setJpegQuality(0.85);
@@ -423,6 +523,7 @@ const PdfToImages = () => {
   };
 
   const resetSettings = () => {
+    setExportScope('all');
     setFormat('png');
     setQuality('standard');
     setJpegQuality(0.85);
@@ -439,18 +540,25 @@ const PdfToImages = () => {
     generationRef.current += 1;
     renderTaskRef.current?.cancel();
     renderTaskRef.current = null;
-    const loadingTask = loadingTaskRef.current;
-    loadingTaskRef.current = null;
-    if (loadingTask) {
-      void loadingTask.destroy().catch((destroyError) => {
-        console.error('Unable to release the PDF rendering task:', destroyError);
-      });
-    }
+    [loadingTaskRef, previewLoadingTaskRef, previewDocumentTaskRef].forEach((taskRef) => {
+      const loadingTask = taskRef.current;
+      taskRef.current = null;
+      if (loadingTask) {
+        void loadingTask.destroy().catch((destroyError) => {
+          console.error('Unable to release the PDF rendering task:', destroyError);
+        });
+      }
+    });
     if (outputUrlRef.current) URL.revokeObjectURL(outputUrlRef.current);
   }, []);
 
   return (
     <div className="pdf-tool-workflow pdf-to-images-workflow space-y-6">
+      <div
+        className="image-pdf-workspace-shell pdf-images-workspace-shell"
+        data-has-content={file ? 'true' : 'false'}
+        data-has-file={file ? 'true' : 'false'}
+      >
       <input {...getInputProps()} aria-label="Choose a PDF to convert to images" />
       <section className="tool-attachment-section image-pdf-attachment-section pdf-images-attachment-section" aria-labelledby="pdf-images-attachment-heading">
         <div className="tool-attachment-heading">
@@ -471,7 +579,10 @@ const PdfToImages = () => {
             {file && (
               <section className="conversion-selected-file-section pdf-images-selected-file-section" aria-labelledby="pdf-images-file-heading">
                 <header className="pdf-images-file-section-header">
-                  <h3 id="pdf-images-file-heading" className="merge-selected-files-title">PDF to convert</h3>
+                  <div className="merge-panel-title">
+                    <Paperclip aria-hidden="true" />
+                    <h3 id="pdf-images-file-heading" className="merge-selected-files-title">PDF to convert</h3>
+                  </div>
                   <p>One PDF selected. Replace it or remove it to choose another.</p>
                 </header>
                 <section className="pdf-attached-file-card pdf-workflow-selected flex flex-col gap-3 rounded-xl border border-slate-200 bg-white p-4 sm:flex-row sm:items-center sm:justify-between">
@@ -535,36 +646,42 @@ const PdfToImages = () => {
       </section>
 
       {file && (
-      <section className="pdf-images-settings-shell" aria-labelledby="pdf-images-settings-overview">
-        <div className="merge-control-intro">
-          <h3 id="pdf-images-settings-overview" className="merge-selected-files-title">Settings</h3>
-          <p>Choose the image format, quality, crop, and output name before converting.</p>
-        </div>
-        <section className="pdf-images-settings-panel pdf-workflow-controls" aria-labelledby="pdf-images-settings-heading">
-          <div className="merge-section-heading merge-output-settings-heading">
-            <div>
-              <h3 id="pdf-images-settings-heading" className="merge-section-heading-title merge-output-settings-title">Choose Settings</h3>
-              <p>Set how each page is cropped and saved.</p>
+        <section className="pdf-images-settings-shell pdf-images-settings-panel pdf-workflow-controls" aria-labelledby="pdf-images-settings-heading">
+          <div className="pdf-images-settings-topbar">
+            <div className="pdf-images-settings-title-row">
+              <div className="merge-panel-title">
+                <Settings2 aria-hidden="true" />
+                <h3 id="pdf-images-settings-heading" className="pdf-images-settings-heading">Choose Settings</h3>
+              </div>
+              <button
+                type="button"
+                onClick={resetSettings}
+                disabled={isProcessing || isValidating}
+                className="pdf-images-settings-reset rounded-xl border border-slate-200 px-4 py-2 font-semibold text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
+              >
+                <RefreshCw className="h-4 w-4" aria-hidden="true" />
+                Reset
+              </button>
             </div>
-          </div>
-
-          <div className="pdf-images-output-name-field">
-            <label htmlFor="pdf-images-output-name" className="text-sm font-semibold text-slate-700">Output file name</label>
-            <input
-              id="pdf-images-output-name"
-              type="text"
-              value={outputBaseName}
-              disabled={!file || isValidating || isProcessing}
-              onChange={(event) => {
-                const nextName = event.target.value;
-                setOutputBaseName(nextName);
-                if (outputUrl && outputName) {
-                  setOutputName(normalizeOutputFileName(nextName, outputName));
-                }
-              }}
-              className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
-            />
-            <p className="text-xs text-slate-500">The extension is added automatically. One page saves as an image; multiple pages use this name for the ZIP.</p>
+            <p>Set how each page is cropped and saved.</p>
+            <div className="pdf-images-export-scope" role="group" aria-label="Image export scope">
+              <button
+                type="button"
+                aria-pressed={exportScope === 'all'}
+                onClick={() => changeExportScope('all')}
+                disabled={isProcessing || isValidating}
+              >
+                {pdfImagesUi.includeAllImages}
+              </button>
+              <button
+                type="button"
+                aria-pressed={exportScope === 'selected'}
+                onClick={() => changeExportScope('selected')}
+                disabled={isProcessing || isValidating}
+              >
+                {pdfImagesUi.includeSelectedImages}
+              </button>
+            </div>
           </div>
 
           <div className="pdf-images-crop-setting">
@@ -596,8 +713,9 @@ const PdfToImages = () => {
             {FORMATS.map((item) => (
               <label
                 key={item.id}
-                className={`cursor-pointer rounded-xl border p-4 transition-colors ${
-                  format === item.id ? 'border-blue-500 bg-blue-50' : 'border-slate-200 hover:border-blue-300'
+                data-selected={format === item.id}
+                className={`pdf-images-option-card cursor-pointer rounded-xl border p-4 transition-colors ${
+                  format === item.id ? 'border-blue-500' : 'border-slate-200 hover:border-blue-300'
                 }`}
               >
                 <span className="flex items-center gap-2 font-semibold text-slate-800">
@@ -627,7 +745,10 @@ const PdfToImages = () => {
         <fieldset disabled={!file || isValidating || isProcessing}>
           <legend className="mb-3 text-lg font-bold text-slate-800">Image quality</legend>
           <div className="grid gap-3 sm:grid-cols-2">
-            <label className={`cursor-pointer rounded-xl border p-4 ${quality === 'standard' ? 'border-blue-500 bg-blue-50' : 'border-slate-200'}`}>
+            <label
+              data-selected={quality === 'standard'}
+              className={`pdf-images-option-card cursor-pointer rounded-xl border p-4 ${quality === 'standard' ? 'border-blue-500' : 'border-slate-200'}`}
+            >
               <span className="flex items-center gap-2 font-semibold text-slate-800">
                 <input
                   type="radio"
@@ -647,7 +768,10 @@ const PdfToImages = () => {
               </span>
               <span className="mt-1 block text-sm text-slate-600">About 144 DPI; recommended for most documents.</span>
             </label>
-            <label className={`cursor-pointer rounded-xl border p-4 ${quality === 'high' ? 'border-blue-500 bg-blue-50' : 'border-slate-200'}`}>
+            <label
+              data-selected={quality === 'high'}
+              className={`pdf-images-option-card cursor-pointer rounded-xl border p-4 ${quality === 'high' ? 'border-blue-500' : 'border-slate-200'}`}
+            >
               <span className="flex items-center gap-2 font-semibold text-slate-800">
                 <input
                   type="radio"
@@ -671,7 +795,7 @@ const PdfToImages = () => {
         </fieldset>
 
         {format === 'jpg' && (
-          <div className="space-y-2">
+          <div className="pdf-images-jpeg-quality-setting space-y-2">
             <label htmlFor="pdf-images-jpeg-quality" className="text-sm font-semibold text-slate-700">
               JPG quality ({Math.round(jpegQuality * 100)}%)
             </label>
@@ -702,42 +826,94 @@ const PdfToImages = () => {
           </p>
         )}
 
-          <div className="flex justify-end pt-4">
-            <button
-              type="button"
-              onClick={resetSettings}
-              disabled={isProcessing || isValidating}
-              className="rounded-xl border border-slate-200 px-5 py-3 font-semibold text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
-            >
-              Reset
-            </button>
-          </div>
         </section>
-      </section>
       )}
 
       {file && (
-        <div className="pdf-workflow-actions flex flex-wrap justify-end gap-3">
-          <button
-            type="button"
-            onClick={convert}
-            disabled={isValidating || isProcessing}
-            className="pdf-conversion-action-button inline-flex items-center justify-center gap-2 rounded-xl bg-blue-600 font-semibold text-white shadow-sm transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
-          >
-            {isProcessing ? <Loader2 className="h-5 w-5 animate-spin" aria-hidden="true" /> : <FileImage className="h-5 w-5" aria-hidden="true" />}
-            PDF to Images
-          </button>
-          {isProcessing && (
-            <button
-              type="button"
-              onClick={cancelConversion}
-              className="rounded-xl border border-slate-300 px-5 py-3 font-semibold text-slate-700 transition hover:bg-slate-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
-            >
-              Cancel conversion
-            </button>
-          )}
+        <section className="pdf-images-preview-shell" aria-labelledby="pdf-images-preview-heading">
+          <header className="pdf-images-preview-heading">
+            <div className="merge-panel-title">
+              <Eye aria-hidden="true" />
+              <h3 id="pdf-images-preview-heading" className="merge-selected-files-title">Preview</h3>
+            </div>
+            <p>{pdfImagesUi.previewSelectionDescription}</p>
+            <p className="pdf-images-selected-pages-count" aria-live="polite">
+              {selectedPageNumbers.size === 1
+                ? pdfImagesUi.selectedPageCount
+                : formatToolUiMessage(pdfImagesUi.selectedPagesCount, { count: selectedPageNumbers.size })}
+            </p>
+          </header>
+          <div className="pdf-images-preview-panel">
+            {previewDocument && (
+              <PdfPageThumbnailRail
+                document={previewDocument}
+                pageNumbers={Array.from({ length: pageCount }, (_, index) => index + 1)}
+                currentPage={previewPage}
+                disabled={isProcessing || exportScope === 'all'}
+                showPageNavigation={false}
+                showSelectedMark
+                selectedPageNumbers={selectedPageNumbers}
+                onTogglePageSelection={toggleExportPage}
+                getPageSelectionLabel={(pageNumber, isSelected) => formatToolUiMessage(
+                  isSelected ? pdfImagesUi.removePageFromExport : pdfImagesUi.selectPageForExport,
+                  { page: pageNumber }
+                )}
+                onSelectPage={setPreviewPage}
+              />
+            )}
+          </div>
+        </section>
+      )}
+
+      {file && (
+        <div className="pdf-images-convert-actions">
+          <div className="pdf-images-output-name-field">
+            <label htmlFor="pdf-images-output-name" className="text-sm font-semibold text-slate-700">Output filename</label>
+            <div className="pdf-images-output-name-controls">
+              <input
+                id="pdf-images-output-name"
+                type="text"
+                value={outputBaseName}
+                disabled={!file || isValidating || isProcessing}
+                onChange={(event) => {
+                  const nextName = event.target.value;
+                  setOutputBaseName(nextName);
+                  if (outputUrl && outputName) {
+                    setOutputName(normalizeOutputFileName(nextName, outputName));
+                  }
+                }}
+                className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
+              />
+              <div className="pdf-images-convert-buttons">
+                <button
+                  type="button"
+                  onClick={convert}
+                  disabled={isValidating || isProcessing || (exportScope === 'selected' && selectedPageNumbers.size === 0)}
+                  aria-label="PDF to Images"
+                  className="pdf-conversion-action-button inline-flex items-center justify-center gap-2 rounded-xl bg-blue-600 font-semibold text-white shadow-sm transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
+                >
+                  {isProcessing
+                    ? <Loader2 className="h-5 w-5 animate-spin" aria-hidden="true" />
+                    : <FileImage className="h-5 w-5" aria-hidden="true" />}
+                  PDF to Images
+                </button>
+                {isProcessing && (
+                  <button
+                    type="button"
+                    onClick={cancelConversion}
+                    className="rounded-xl border border-slate-300 px-5 py-3 font-semibold text-slate-700 transition hover:bg-slate-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
+                  >
+                    Cancel conversion
+                  </button>
+                )}
+              </div>
+            </div>
+            <p className="text-xs text-slate-500">The extension is added automatically. One page saves as an image; multiple pages use this name for the ZIP.</p>
+          </div>
         </div>
       )}
+
+      </div>
 
       {progress && <p className="flex items-center gap-2 text-sm text-blue-700" role="status" aria-live="polite">
         {isProcessing && <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />}

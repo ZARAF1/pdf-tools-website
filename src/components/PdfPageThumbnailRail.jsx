@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { ChevronLeft, ChevronRight, Eye } from 'lucide-react';
+import { Check, ChevronLeft, ChevronRight, Eye } from 'lucide-react';
 
 const PdfPageThumbnailPreview = ({ document, pageNumber, rootRef }) => {
   const paperRef = useRef(null);
@@ -77,7 +77,18 @@ const PdfPageThumbnailPreview = ({ document, pageNumber, rootRef }) => {
   );
 };
 
-const PdfPageThumbnailRail = ({ document, pageNumbers, currentPage, onSelectPage, disabled = false }) => {
+const PdfPageThumbnailRail = ({
+  document,
+  pageNumbers,
+  currentPage,
+  onSelectPage,
+  disabled = false,
+  showPageNavigation = true,
+  showSelectedMark = false,
+  selectedPageNumbers,
+  onTogglePageSelection,
+  getPageSelectionLabel
+}) => {
   const rootRef = useRef(null);
   const currentThumbnailRef = useRef(null);
   const currentIndex = pageNumbers.indexOf(currentPage);
@@ -112,49 +123,77 @@ const PdfPageThumbnailRail = ({ document, pageNumbers, currentPage, onSelectPage
   }, [currentPage]);
 
   return (
-    <aside className="pdf-page-thumbnail-rail" aria-label="Page preview navigation">
-      <header className="pdf-page-thumbnail-rail-header">
-        <p className="pdf-page-thumbnail-rail-title"><Eye aria-hidden="true" />Preview page</p>
-        <div className="pdf-page-thumbnail-navigation">
-          <button
-            type="button"
-            onClick={() => onSelectPage(pageNumbers[safeCurrentIndex - 1])}
-            disabled={disabled || safeCurrentIndex <= 0}
-            aria-label="Previous page"
-          >
-            <ChevronLeft aria-hidden="true" />
-          </button>
-          <span aria-live="polite">Page {safeCurrentIndex + 1} of {pageNumbers.length}</span>
-          <button
-            type="button"
-            onClick={() => onSelectPage(pageNumbers[safeCurrentIndex + 1])}
-            disabled={disabled || safeCurrentIndex >= pageNumbers.length - 1}
-            aria-label="Next page"
-          >
-            <ChevronRight aria-hidden="true" />
-          </button>
-        </div>
-      </header>
+    <aside
+      className="pdf-page-thumbnail-rail"
+      aria-label={showPageNavigation ? 'Page preview navigation' : 'PDF page thumbnails'}
+    >
+      {showPageNavigation && (
+        <header className="pdf-page-thumbnail-rail-header">
+          <p className="pdf-page-thumbnail-rail-title"><Eye aria-hidden="true" />Preview page</p>
+          <div className="pdf-page-thumbnail-navigation">
+            <button
+              type="button"
+              onClick={() => onSelectPage(pageNumbers[safeCurrentIndex - 1])}
+              disabled={disabled || safeCurrentIndex <= 0}
+              aria-label="Previous page"
+            >
+              <ChevronLeft aria-hidden="true" />
+            </button>
+            <span aria-live="polite">Page {safeCurrentIndex + 1} of {pageNumbers.length}</span>
+            <button
+              type="button"
+              onClick={() => onSelectPage(pageNumbers[safeCurrentIndex + 1])}
+              disabled={disabled || safeCurrentIndex >= pageNumbers.length - 1}
+              aria-label="Next page"
+            >
+              <ChevronRight aria-hidden="true" />
+            </button>
+          </div>
+        </header>
+      )}
       <div ref={rootRef} className="pdf-page-thumbnail-list" role="group" aria-label="PDF page thumbnails">
-        {pageNumbers.map((pageNumber) => (
-          <button
-            key={pageNumber}
-            type="button"
-            className="pdf-page-thumbnail-button"
-            disabled={disabled}
-            aria-label={`Show page ${pageNumber} in large preview`}
-            aria-current={pageNumber === currentPage ? 'page' : undefined}
-            ref={pageNumber === currentPage ? currentThumbnailRef : undefined}
-            onClick={() => onSelectPage(pageNumber)}
-          >
-            <PdfPageThumbnailPreview
-              document={document}
-              pageNumber={pageNumber}
-              rootRef={rootRef}
-            />
-            <span className="pdf-page-thumbnail-label">Page {pageNumber}</span>
-          </button>
-        ))}
+        {pageNumbers.map((pageNumber) => {
+          const isExportSelected = selectedPageNumbers?.has(pageNumber) ?? false;
+          const isSelected = onTogglePageSelection
+            ? isExportSelected
+            : pageNumber === currentPage;
+          const pageSelectionLabel = getPageSelectionLabel
+            ? getPageSelectionLabel(pageNumber, isExportSelected)
+            : isExportSelected
+              ? `Remove page ${pageNumber} from export`
+              : `Select page ${pageNumber} for export`;
+
+          return (
+            <button
+              key={pageNumber}
+              type="button"
+              className="pdf-page-thumbnail-button"
+              disabled={disabled}
+              aria-label={onTogglePageSelection ? pageSelectionLabel : `Preview page ${pageNumber}`}
+              aria-pressed={onTogglePageSelection
+                ? isExportSelected
+                : showSelectedMark ? pageNumber === currentPage : undefined}
+              aria-current={pageNumber === currentPage ? 'page' : undefined}
+              ref={pageNumber === currentPage ? currentThumbnailRef : undefined}
+              onClick={() => {
+                onSelectPage(pageNumber);
+                onTogglePageSelection?.(pageNumber);
+              }}
+            >
+              <PdfPageThumbnailPreview
+                document={document}
+                pageNumber={pageNumber}
+                rootRef={rootRef}
+              />
+              <span className="pdf-page-thumbnail-label">Page {pageNumber}</span>
+              {showSelectedMark && isSelected && (
+                <span className="pdf-page-thumbnail-selected-mark" aria-hidden="true">
+                  <Check />
+                </span>
+              )}
+            </button>
+          );
+        })}
       </div>
     </aside>
   );

@@ -11,6 +11,7 @@ import {
   Loader2,
   AlertCircle,
   Download,
+  FileText,
   Info,
   ArrowLeftRight
 } from 'lucide-react';
@@ -475,7 +476,7 @@ const PdfToWord = () => {
             <h3 id="word-attachment-guidance-heading">{direction === 'pdf-to-word' ? 'PDF to Word' : 'Word to PDF'}</h3>
             <p>
               {direction === 'pdf-to-word'
-                ? 'Convert text-based PDFs into editable Word documents. Scanned pages use English OCR and may require an internet connection to load OCR data.'
+                ? 'Convert text-based PDFs into editable Word documents. Scanned pages use English OCR in your browser and may need internet to load OCR data; simple tables may convert, while complex layouts may need cleanup.'
                 : 'Convert a .docx file to an image-based PDF. The output text is not searchable or selectable.'}
             </p>
           </aside>
@@ -523,9 +524,12 @@ const PdfToWord = () => {
           ) : (
             <section className="conversion-selected-file-section word-selected-file-section" aria-labelledby="word-selected-file-heading">
               <header>
-                <h3 id="word-selected-file-heading" className="merge-selected-files-title">
-                  {direction === 'pdf-to-word' ? 'PDF to convert' : 'Word file to convert'}
-                </h3>
+                <div className="merge-panel-title">
+                  <FileText aria-hidden="true" />
+                  <h3 id="word-selected-file-heading" className="merge-selected-files-title">
+                    {direction === 'pdf-to-word' ? 'PDF to convert' : 'Word file to convert'}
+                  </h3>
+                </div>
                 <p>
                   {direction === 'pdf-to-word'
                     ? 'One PDF selected. Replace it or remove it to choose another.'
@@ -547,92 +551,91 @@ const PdfToWord = () => {
                   disabled={isProcessing}
                 />
               </div>
+              <div className="word-conversion-actions">
+                <label className="word-output-filename" htmlFor="word-output-filename">
+                  <span>{getLocalizedToolUi(language).fileActions.outputFilename}</span>
+                  <input
+                    id="word-output-filename"
+                    type="text"
+                    value={outputFileName}
+                    onChange={(event) => setOutputFileName(event.target.value)}
+                    aria-label={getLocalizedToolUi(language).fileActions.outputFilename}
+                    disabled={isProcessing}
+                  />
+                </label>
+                <button
+                  onClick={handleConvert}
+                  disabled={isProcessing}
+                  className={`
+                    pdf-conversion-action-button flex items-center justify-center gap-2 rounded-xl font-bold text-white transition-all
+                    ${isProcessing ? 'bg-slate-300 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700 shadow-lg shadow-blue-200 active:scale-[0.98]'}
+                  `}
+                >
+                  {isProcessing ? (
+                    <>
+                      <Loader2 className="w-5 h-5 animate-spin" />
+                      Converting...
+                    </>
+                  ) : (
+                    <>
+                      <Download className="w-5 h-5" />
+                      {direction === 'pdf-to-word' ? 'Convert to Word' : 'Convert to PDF'}
+                    </>
+                  )}
+                </button>
+              </div>
             </section>
           )}
             </section>
           </div>
-        </section>
-
-        {file && (
-          <div className="word-conversion-panel bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-6">
-            {isProcessing && (
-              <div className="space-y-2">
-                <div className="flex justify-between text-sm text-slate-500">
-                  <span role="status" aria-atomic="true">{status || 'Converting document...'}</span>
-                  <span>{progress}%</span>
-                </div>
-                <div
-                  className="w-full h-2 bg-slate-100 rounded-full overflow-hidden"
-                  role="progressbar"
-                  aria-label={`${direction === 'pdf-to-word' ? 'PDF to Word' : 'Word to PDF'} conversion progress`}
-                  aria-valuemin={0}
-                  aria-valuemax={100}
-                  aria-valuenow={progress}
-                >
+          {file && (
+            <div className="word-conversion-panel p-6 rounded-2xl border border-slate-200 shadow-sm space-y-6">
+              {isProcessing && (
+                <div className="space-y-2">
+                  <div className="flex justify-between text-sm text-slate-500">
+                    <span role="status" aria-atomic="true">{status || 'Converting document...'}</span>
+                    <span>{progress}%</span>
+                  </div>
                   <div
-                    className="h-full bg-blue-600 transition-all duration-200"
-                    style={{ width: `${progress}%` }}
-                  />
+                    className="w-full h-2 bg-slate-100 rounded-full overflow-hidden"
+                    role="progressbar"
+                    aria-label={`${direction === 'pdf-to-word' ? 'PDF to Word' : 'Word to PDF'} conversion progress`}
+                    aria-valuemin={0}
+                    aria-valuemax={100}
+                    aria-valuenow={progress}
+                  >
+                    <div
+                      className="h-full bg-blue-600 transition-all duration-200"
+                      style={{ width: `${progress}%` }}
+                    />
+                  </div>
                 </div>
-              </div>
-            )}
+              )}
 
-            <div className="flex items-start gap-3 p-4 bg-amber-50 rounded-xl border border-amber-100 text-amber-800 text-sm">
-              <Info className="w-5 h-5 flex-shrink-0 mt-0.5" />
-              <div>
-                {direction === 'pdf-to-word' ? (
-                  <>
-                    <p className="font-semibold">Best text-based results</p>
-                    <p className="text-amber-700 text-xs mt-1">
-                      Scanned pages use English OCR in your browser. Simple aligned rows may become Word tables, but complex layouts can need manual cleanup.
-                    </p>
-                  </>
-                ) : (
-                  <>
+              {direction === 'word-to-pdf' && (
+                <div className="flex items-start gap-3 p-4 bg-amber-50 rounded-xl border border-amber-100 text-amber-800 text-sm">
+                  <Info className="w-5 h-5 flex-shrink-0 mt-0.5" />
+                  <div>
                     <p className="font-semibold">DOCX only · image-based PDF output</p>
                     <p className="text-amber-700 text-xs mt-1">
                       Pages are rendered in this browser and saved as images in the PDF, so text cannot be searched or selected. Layout may differ from Word; legacy .doc files are not supported.
                     </p>
-                  </>
-                )}
-              </div>
-            </div>
+                  </div>
+                </div>
+              )}
 
-            <div className="word-conversion-actions">
-              <label className="word-output-filename" htmlFor="word-output-filename">
-                <span>{getLocalizedToolUi(language).fileActions.outputFilename}</span>
-                <input
-                  id="word-output-filename"
-                  type="text"
-                  value={outputFileName}
-                  onChange={(event) => setOutputFileName(event.target.value)}
-                  aria-label={getLocalizedToolUi(language).fileActions.outputFilename}
-                  disabled={isProcessing}
+              {success && outputBlob && (
+                <DownloadReadyCard
+                  fileName={outputFileName}
+                  sizeBytes={outputBlob.size}
+                  onDownload={downloadWordDocument}
+                  downloadLabel={direction === 'pdf-to-word' ? 'Download Word file' : 'Download PDF'}
+                  showFilenameEditor={false}
                 />
-              </label>
-              <button
-                onClick={handleConvert}
-                disabled={isProcessing}
-                className={`
-                  pdf-conversion-action-button flex items-center justify-center gap-2 rounded-xl font-bold text-white transition-all
-                  ${isProcessing ? 'bg-slate-300 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700 shadow-lg shadow-blue-200 active:scale-[0.98]'}
-                `}
-              >
-                {isProcessing ? (
-                  <>
-                    <Loader2 className="w-5 h-5 animate-spin" />
-                    Converting...
-                  </>
-                ) : (
-                  <>
-                    <Download className="w-5 h-5" />
-                    {direction === 'pdf-to-word' ? 'Convert to Word' : 'Convert to PDF'}
-                  </>
-                )}
-              </button>
+              )}
             </div>
-          </div>
-        )}
+          )}
+        </section>
       </div>
 
       {error && (
@@ -647,17 +650,6 @@ const PdfToWord = () => {
         </motion.div>
       )}
 
-      {success && (
-        outputBlob && (
-          <DownloadReadyCard
-            fileName={outputFileName}
-            sizeBytes={outputBlob.size}
-            onDownload={downloadWordDocument}
-            downloadLabel={direction === 'pdf-to-word' ? 'Download Word file' : 'Download PDF'}
-            showFilenameEditor={false}
-          />
-        )
-      )}
     </div>
   );
 };

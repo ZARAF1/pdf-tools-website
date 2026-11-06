@@ -23,6 +23,7 @@ import { limitImageFiles } from '../lib/imageSelection.mjs';
 import { formatToolUiMessage, getLocalizedToolUi } from '../i18n/toolUiLocalization.mjs';
 import { getLocalizedTool } from '../i18n/toolTranslations.mjs';
 import { useLanguage } from '../i18n/useLanguage';
+import { normalizeOutputFileName } from '../lib/outputFileName.mjs';
 import {
   calculateImagePageLayout,
   getHexColorComponents
@@ -196,6 +197,11 @@ const ImageToPdf = () => {
   const [outputBytes, setOutputBytes] = useState(null);
   const [outputArchive, setOutputArchive] = useState(null);
   const [outputMode, setOutputMode] = useState('single');
+  const [outputFileName, setOutputFileName] = useState('images_to_pdf.pdf');
+  const normalizedOutputFileName = normalizeOutputFileName(
+    outputFileName,
+    outputMode === 'separate' ? 'images_to_pdf.zip' : 'images_to_pdf.pdf'
+  );
   const downloadableOutput = outputArchive
     ? { id: outputArchive.name, blob: outputArchive.blob }
     : outputBytes;
@@ -203,7 +209,6 @@ const ImageToPdf = () => {
     images.length > 0 || pendingImageCount > 0,
     downloadableOutput
   );
-  const [outputName, setOutputName] = useState('images_to_pdf.pdf');
   const previewUrls = useRef(new Set());
 
   const [settings, setSettings] = useState(INITIAL_SETTINGS);
@@ -402,6 +407,7 @@ const ImageToPdf = () => {
     setSelectedImageIds(new Set());
     setSettingsScope('all');
     setOutputMode('single');
+    setOutputFileName('images_to_pdf.pdf');
     setSettings(INITIAL_SETTINGS);
     setError('');
     clearOutput();
@@ -436,6 +442,10 @@ const ImageToPdf = () => {
 
   const changeOutputMode = (mode) => {
     setOutputMode(mode);
+    setOutputFileName((current) => normalizeOutputFileName(
+      current,
+      mode === 'separate' ? 'images_to_pdf.zip' : 'images_to_pdf.pdf'
+    ));
     clearOutput();
   };
 
@@ -572,7 +582,6 @@ const ImageToPdf = () => {
           throw new Error('The generated PDF did not contain the expected image page count.');
         }
         setOutputBytes(bytes);
-        setOutputName('images_to_pdf.pdf');
       }
     } catch (processingError) {
       console.error('Unable to generate image PDF:', processingError);
@@ -588,7 +597,7 @@ const ImageToPdf = () => {
     const url = URL.createObjectURL(blob);
     const link = window.document.createElement('a');
     link.href = url;
-    link.download = downloadFileName || outputArchive?.name || outputName;
+    link.download = downloadFileName || normalizedOutputFileName;
     link.click();
     markOutputDownloaded(outputArchive?.name);
     window.setTimeout(() => URL.revokeObjectURL(url), 10000);
@@ -596,6 +605,10 @@ const ImageToPdf = () => {
 
   return (
     <div className="pdf-tool-workflow image-to-pdf-workflow space-y-6">
+      <div
+        className="image-pdf-workspace-shell image-to-pdf-workspace-shell"
+        data-has-content={images.length > 0 ? 'true' : 'false'}
+      >
       <section className="tool-attachment-section image-pdf-attachment-section" aria-labelledby="image-pdf-attachment-heading">
         <div className="tool-attachment-heading">
           <span className="tool-attachment-icon" aria-hidden="true">
@@ -752,46 +765,56 @@ const ImageToPdf = () => {
             </header>
             <section className="image-to-pdf-settings-panel" aria-labelledby="image-to-pdf-settings-heading">
               <div className="image-to-pdf-output-mode-setting">
-                <p className="image-to-pdf-output-mode-label">{imageUi.outputMode}</p>
-                <div className="merge-mode-switch image-to-pdf-output-mode" role="group" aria-label={imageUi.outputMode}>
+                <p id="image-to-pdf-output-mode-label" className="image-to-pdf-output-mode-label">{imageUi.outputMode}</p>
+                <div className="image-to-pdf-output-row">
+                  <div className="image-to-pdf-output-controls" role="group" aria-labelledby="image-to-pdf-output-mode-label">
+                    <button
+                      type="button"
+                      onClick={() => changeOutputMode('single')}
+                      aria-pressed={outputMode === 'single'}
+                      disabled={isProcessing}
+                    >
+                      {imageUi.singlePdf}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => changeOutputMode('separate')}
+                      aria-pressed={outputMode === 'separate'}
+                      disabled={isProcessing}
+                    >
+                      {imageUi.separatePdf}
+                    </button>
+                  </div>
                   <button
                     type="button"
-                    onClick={() => changeOutputMode('single')}
-                    aria-pressed={outputMode === 'single'}
+                    onClick={resetSettings}
                     disabled={isProcessing}
+                    className="image-to-pdf-output-mode-reset inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-5 py-3 font-semibold text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
                   >
-                    {imageUi.singlePdf}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => changeOutputMode('separate')}
-                    aria-pressed={outputMode === 'separate'}
-                    disabled={isProcessing}
-                  >
-                    {imageUi.separatePdf}
+                    <RefreshCw className="h-4 w-4" aria-hidden="true" /> {imageUi.reset}
                   </button>
                 </div>
-              </div>
-              <div className="image-to-pdf-scope-toggle-setting">
-                <p id="image-to-pdf-scope-toggle-label" className="image-to-pdf-scope-toggle-label">
-                  {imageUi.scopeToggleLabel}
-                </p>
-                <button
-                  type="button"
-                  role="switch"
-                  aria-checked={settingsScope === 'select'}
-                  aria-labelledby="image-to-pdf-scope-toggle-label"
-                  disabled={isProcessing}
-                  onClick={() => changeSettingsScope(settingsScope === 'all' ? 'select' : 'all')}
-                  className={`image-to-pdf-scope-toggle${settingsScope === 'select' ? ' is-selected' : ''}`}
-                >
-                  <span className="image-to-pdf-scope-toggle-value">
-                    {settingsScope === 'select' ? imageUi.selectedImages : imageUi.allImages}
-                  </span>
-                  <span className="image-to-pdf-scope-toggle-track" aria-hidden="true">
-                    <span />
-                  </span>
-                </button>
+                <div className="image-to-pdf-scope-toggle-setting">
+                  <button
+                    type="button"
+                    role="switch"
+                    aria-checked={settingsScope === 'select'}
+                    aria-labelledby="image-to-pdf-scope-toggle-label"
+                    disabled={isProcessing}
+                    onClick={() => changeSettingsScope(settingsScope === 'all' ? 'select' : 'all')}
+                    className={`image-to-pdf-scope-toggle${settingsScope === 'select' ? ' is-selected' : ''}`}
+                  >
+                    <span className="image-to-pdf-scope-toggle-value">
+                      {settingsScope === 'select' ? imageUi.selectedImages : imageUi.allImages}
+                    </span>
+                    <span className="image-to-pdf-scope-toggle-track" aria-hidden="true">
+                      <span />
+                    </span>
+                  </button>
+                  <p id="image-to-pdf-scope-toggle-label" className="image-to-pdf-scope-toggle-label">
+                    {imageUi.scopeToggleLabel}
+                  </p>
+                </div>
               </div>
               <fieldset
                 className="image-to-pdf-settings-controls grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3"
@@ -888,16 +911,6 @@ const ImageToPdf = () => {
                   {imageUi.encodingNote}
                 </p>
               </fieldset>
-              <div className="flex justify-end pt-4">
-                <button
-                  type="button"
-                  onClick={resetSettings}
-                  disabled={isProcessing}
-                  className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-5 py-3 font-semibold text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
-                >
-                  <RefreshCw className="h-4 w-4" aria-hidden="true" /> {imageUi.reset}
-                </button>
-              </div>
             </section>
           </div>
 
@@ -1018,32 +1031,41 @@ const ImageToPdf = () => {
           </div>
         </div>
       )}
-
-      {images.length > 0 && (
-          <div className="pdf-workflow-actions image-to-pdf-action-row flex flex-row flex-wrap justify-end gap-3 pt-2">
+        {images.length > 0 && (
+          <section className="image-to-pdf-output-panel" aria-label="Image to PDF output">
+            <div className="pdf-workflow-actions image-to-pdf-action-row image-to-pdf-output-actions">
+              <label className="image-to-pdf-output-filename" htmlFor="image-to-pdf-output-filename">
+                <span>{fileActions.outputFilename}</span>
+                <input
+                  id="image-to-pdf-output-filename"
+                  type="text"
+                  value={outputFileName}
+                  disabled={isProcessing}
+                  onChange={(event) => setOutputFileName(event.target.value)}
+                  className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
+                />
+              </label>
               <button type="button" onClick={generatePdf} disabled={isProcessing} className="inline-flex shrink-0 items-center justify-center gap-2 rounded-xl bg-blue-600 px-5 py-2.5 font-bold text-white shadow-md transition hover:bg-blue-700 active:scale-[0.99] disabled:cursor-not-allowed disabled:bg-slate-300">
                 {isProcessing ? <Loader2 className="h-5 w-5 animate-spin" aria-hidden="true" /> : <ImageIcon className="h-5 w-5" aria-hidden="true" />}
                 {isProcessing
                   ? imageUi.creatingPdf
-                  : formatToolUiMessage(imageUi.createPdf, {
-                    count: images.length,
-                    pageUnit: images.length === 1 ? imageUi.page : imageUi.pages
-                  })}
-            </button>
-          </div>
-      )}
+                  : outputMode === 'separate' ? imageUi.createPdfsAction : imageUi.createPdfAction}
+              </button>
+            </div>
+            {(outputBytes || outputArchive) && (
+              <DownloadReadyCard
+                fileName={normalizedOutputFileName}
+                sizeBytes={outputArchive?.blob.size ?? outputBytes.length}
+                onDownload={downloadOutput}
+                downloadLabel={outputArchive ? imageUi.downloadZip : imageUi.downloadPdf}
+                showFilenameEditor={false}
+              />
+            )}
+          </section>
+        )}
+      </div>
 
       {error && <div role="alert" className="image-to-pdf-error flex items-start gap-3 rounded-xl border border-rose-200 bg-rose-50 p-4 text-rose-800"><AlertCircle className="h-5 w-5 shrink-0" aria-hidden="true" /><span className="text-sm">{error}</span></div>}
-
-      {(outputBytes || outputArchive) && (
-        <DownloadReadyCard
-          fileName={outputArchive?.name || outputName}
-          sizeBytes={outputArchive?.blob.size ?? outputBytes.length}
-          onDownload={downloadOutput}
-          downloadLabel={outputArchive ? imageUi.downloadZip : imageUi.downloadPdf}
-          showFilenameEditor={false}
-        />
-      )}
     </div>
   );
 };

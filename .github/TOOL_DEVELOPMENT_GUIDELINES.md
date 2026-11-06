@@ -116,7 +116,7 @@ These decisions are grounded in the current `PdfMerger.jsx`, `PdfMergePagePicker
 
 1. **Selectable image tiles:** In Select Pages settings scope, clicking the page image toggles that image's settings selection. Match Merge's selected-page treatment: a blue tile outline, a selected checkmark at the upper-right of the image, and a distinct eye action at the upper-left. Keep the selection button keyboard-operable and labelled; the eye opens the larger preview without changing selection. This selection scopes per-image settings and does not exclude images from PDF output.
 2. **PDF output mode:** Offer one PDF containing all images or a separate one-page PDF per image, packaged together in a single ZIP download. The combined PDF is the default. Keep the mode localized and clear generated output when the user changes it.
-3. **Primary and reset actions:** Place Create PDF before Reset in the action row, with Reset immediately to its right. Keep them side by side at narrow widths; let Create PDF flex while keeping Reset compact.
+3. **Primary and reset actions:** Keep Create PDF in its action row. Place Reset after Separate PDFs in the output-options row, aligned to the far right on desktop; allow it to wrap onto a right-aligned line on narrow screens. Preserve its existing settings-reset behavior.
 
 #### Rotate PDF: single-source transformation reference
 
@@ -133,7 +133,7 @@ These decisions are grounded in the current `PdfMerger.jsx`, `PdfMergePagePicker
 1. **Selected source:** show a dedicated selected-file card before the workflow. Reuse the shared file icon and Replace/Remove actions, and keep the existing PDF validation, page limit, and replacement/drop behavior.
 2. **Outer workflow shell:** place the concise `Settings > Preview` heading and explanation inside the muted shell. Do not add All Pages/Selected Pages tabs, page-range input, rotation controls, or output-name settings; Remove PDF does not have those modes.
 3. **Choose Settings:** keep the live selected-page count and Select All/Clear Selection actions in one inner panel. These actions change only the existing page-selection state.
-4. **Page preview:** show real, one-based page tiles in a separate inner panel after settings. Tile clicks select/deselect pages; the independent eye action opens a labelled larger preview and must not change selection.
+4. **Page preview:** show real, one-based page tiles in a separate inner panel after settings. Tile clicks select/deselect pages; the independent eye action opens a labelled larger preview and must not change selection. If a per-tile trash action is provided, place the single Remove action centered in an Organize-style bottom action row and keep it separate from the eye action.
 5. **Confirm and process:** keep the existing confirmation and processing action after page review. Preserve the refusal to remove every page, the 50-page cap, source-order output, and stale-result clearing.
 6. **Shared implementation:** Remove PDF and Extract Pages share `PageSelectionTool.jsx`. Scope the redesigned shell, file card, settings, and eye action to Remove mode; keep Extract's layout and selection/output behavior intact.
 

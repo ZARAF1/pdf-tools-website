@@ -353,29 +353,222 @@ const imageSettingsScopeLabels = {
   ko: ['모든 이미지 또는 선택한 이미지에 설정 적용 (설정을 사용하려면 미리보기에서 이미지 선택)', '모든 이미지', '선택한 이미지', '아래에서 이미지를 선택하세요. 변경 사항은 선택한 이미지만 적용됩니다. 모든 이미지는 PDF에 포함됩니다.', '이미지 {page} 선택'],
   'zh-CN': ['将设置应用于所有图片或所选图片（请在预览中选择图片以启用设置）', '所有图片', '已选图片', '在下方选择图片；更改仅影响所选图片。所有图片都会保留在 PDF 中。', '选择图片 {page}']
 };
-const imageOutputKeys = ['outputMode', 'singlePdf', 'separatePdf', 'downloadZip'];
+const imageOutputKeys = [
+  'outputMode', 'singlePdf', 'separatePdf', 'downloadZip', 'createPdfAction', 'createPdfsAction'
+];
 const imageOutputLabels = {
-  en: ['PDF output', 'One PDF with all images', 'Separate PDFs in a ZIP', 'Download ZIP'],
-  es: ['Salida PDF', 'Un PDF con todas las imágenes', 'PDF separados en un ZIP', 'Descargar ZIP'],
-  fr: ['Sortie PDF', 'Un seul PDF avec toutes les images', 'PDF séparés dans un ZIP', 'Télécharger le ZIP'],
-  de: ['PDF-Ausgabe', 'Ein PDF mit allen Bildern', 'Separate PDFs in einer ZIP-Datei', 'ZIP herunterladen'],
-  pt: ['Saída PDF', 'Um PDF com todas as imagens', 'PDFs separados em um ZIP', 'Baixar ZIP'],
-  it: ['Output PDF', 'Un PDF con tutte le immagini', 'PDF separati in un file ZIP', 'Scarica ZIP'],
-  nl: ['PDF-uitvoer', 'Eén PDF met alle afbeeldingen', 'Afzonderlijke pdf’s in een ZIP', 'ZIP downloaden'],
-  pl: ['Wyjściowy PDF', 'Jeden PDF ze wszystkimi obrazami', 'Osobne pliki PDF w archiwum ZIP', 'Pobierz ZIP'],
-  sv: ['PDF-utdata', 'En PDF med alla bilder', 'Separata PDF-filer i en ZIP-fil', 'Ladda ned ZIP'],
-  fi: ['PDF-tuloste', 'Yksi PDF kaikilla kuvilla', 'Erilliset PDF-tiedostot ZIP-arkistossa', 'Lataa ZIP'],
-  da: ['PDF-output', 'Én PDF med alle billeder', 'Separate PDF-filer i en ZIP-fil', 'Download ZIP'],
-  nb: ['PDF-utdata', 'Én PDF med alle bilder', 'Separate PDF-filer i en ZIP-fil', 'Last ned ZIP'],
-  tr: ['PDF çıktısı', 'Tüm görseller tek PDF içinde', 'Ayrı PDF dosyaları ZIP içinde', 'ZIP indir'],
-  ru: ['Результат PDF', 'Один PDF со всеми изображениями', 'Отдельные PDF в ZIP-архиве', 'Скачать ZIP'],
-  uk: ['Результат PDF', 'Один PDF з усіма зображеннями', 'Окремі PDF у ZIP-архіві', 'Завантажити ZIP'],
-  ar: ['إخراج PDF', 'ملف PDF واحد بكل الصور', 'ملفات PDF منفصلة في ZIP', 'تنزيل ZIP'],
-  hi: ['PDF आउटपुट', 'सभी छवियों के साथ एक PDF', 'अलग-अलग PDF एक ZIP में', 'ZIP डाउनलोड करें'],
-  ja: ['PDF出力', 'すべての画像を1つのPDFにする', '画像ごとにPDFを作成してZIPにまとめる', 'ZIPをダウンロード'],
-  ko: ['PDF 출력', '모든 이미지가 포함된 PDF 하나', '이미지별 PDF를 ZIP으로 다운로드', 'ZIP 다운로드'],
-  'zh-CN': ['PDF 输出', '所有图片合并为一个 PDF', '每张图片单独生成 PDF 并打包为 ZIP', '下载 ZIP']
+  en: ['PDF output', 'Create Single PDF', 'Create Seperate PDFs', 'Download ZIP', 'Create PDF', 'Create PDFs'],
+  es: ['Salida PDF', 'Crear un PDF con todas las imágenes', 'Crear PDF separados en un ZIP', 'Descargar ZIP', 'Crear PDF', 'Crear PDFs'],
+  fr: ['Sortie PDF', 'Créer un seul PDF avec toutes les images', 'Créer des PDF séparés dans un ZIP', 'Télécharger le ZIP', 'Créer le PDF', 'Créer les PDF'],
+  de: ['PDF-Ausgabe', 'Ein PDF mit allen Bildern erstellen', 'Separate PDFs in einer ZIP-Datei erstellen', 'ZIP herunterladen', 'PDF erstellen', 'PDFs erstellen'],
+  pt: ['Saída PDF', 'Criar um PDF com todas as imagens', 'Criar PDFs separados em um ZIP', 'Baixar ZIP', 'Criar PDF', 'Criar PDFs'],
+  it: ['Output PDF', 'Crea un PDF con tutte le immagini', 'Crea PDF separati in un file ZIP', 'Scarica ZIP', 'Crea PDF', 'Crea i PDF'],
+  nl: ['PDF-uitvoer', 'Eén PDF met alle afbeeldingen maken', 'Afzonderlijke pdf’s in een ZIP maken', 'ZIP downloaden', 'PDF maken', 'PDF’s maken'],
+  pl: ['Wyjściowy PDF', 'Utwórz jeden PDF ze wszystkimi obrazami', 'Utwórz osobne pliki PDF w archiwum ZIP', 'Pobierz ZIP', 'Utwórz PDF', 'Utwórz pliki PDF'],
+  sv: ['PDF-utdata', 'Skapa en PDF med alla bilder', 'Skapa separata PDF-filer i en ZIP-fil', 'Ladda ned ZIP', 'Skapa PDF', 'Skapa PDF-filer'],
+  fi: ['PDF-tuloste', 'Luo yksi PDF kaikista kuvista', 'Luo erilliset PDF-tiedostot ZIP-arkistoon', 'Lataa ZIP', 'Luo PDF', 'Luo PDF-tiedostot'],
+  da: ['PDF-output', 'Opret én PDF med alle billeder', 'Opret separate PDF-filer i en ZIP-fil', 'Download ZIP', 'Opret PDF', 'Opret PDF-filer'],
+  nb: ['PDF-utdata', 'Opprett én PDF med alle bilder', 'Opprett separate PDF-filer i en ZIP-fil', 'Last ned ZIP', 'Opprett PDF', 'Opprett PDF-filer'],
+  tr: ['PDF çıktısı', 'Tüm görselleri içeren tek bir PDF oluştur', 'Ayrı PDF dosyaları oluşturup ZIP içinde indir', 'ZIP indir', 'PDF oluştur', 'PDF dosyaları oluştur'],
+  ru: ['Результат PDF', 'Создать один PDF со всеми изображениями', 'Создать отдельные PDF в ZIP-архиве', 'Скачать ZIP', 'Создать PDF', 'Создать PDF-файлы'],
+  uk: ['Результат PDF', 'Створити один PDF з усіма зображеннями', 'Створити окремі PDF у ZIP-архіві', 'Завантажити ZIP', 'Створити PDF', 'Створити файли PDF'],
+  ar: ['إخراج PDF', 'إنشاء ملف PDF واحد بكل الصور', 'إنشاء ملفات PDF منفصلة في ZIP', 'تنزيل ZIP', 'إنشاء PDF', 'إنشاء ملفات PDF'],
+  hi: ['PDF आउटपुट', 'सभी छवियों के साथ एक PDF बनाएँ', 'अलग-अलग PDF बनाकर ZIP में डाउनलोड करें', 'ZIP डाउनलोड करें', 'PDF बनाएँ', 'PDF फ़ाइलें बनाएँ'],
+  ja: ['PDF出力', 'すべての画像を1つのPDFに作成', '画像ごとにPDFを作成してZIPにまとめる', 'ZIPをダウンロード', 'PDFを作成', 'PDFファイルを作成'],
+  ko: ['PDF 출력', '모든 이미지가 포함된 PDF 하나 만들기', '이미지별 PDF를 만들어 ZIP으로 다운로드', 'ZIP 다운로드', 'PDF 만들기', 'PDF 여러 개 만들기'],
+  'zh-CN': ['PDF 输出', '创建包含所有图片的单个 PDF', '创建单独的 PDF 并打包为 ZIP', '下载 ZIP', '创建 PDF', '创建多个 PDF']
 };
+const pdfToImagesKeys = [
+  'previewSelectionDescription', 'selectedPageCount', 'selectedPagesCount',
+  'selectPageForExport', 'removePageFromExport', 'selectPagesBeforeExport',
+  'exportAllSingleImage', 'exportAllImageArchive',
+  'exportSelectedSingleImage', 'exportSelectedImageArchive'
+];
+const pdfToImagesLabels = {
+  en: [
+    'Select pages in the preview to export only those pages, or export all pages.',
+    '1 page selected for export', '{count} pages selected for export',
+    'Select page {page} for export', 'Remove page {page} from export',
+    'Select at least one page in the preview before exporting selected pages.',
+    'Export all pages as {format} image', 'Export all pages as {format} images (ZIP)',
+    'Export selected page as {format} image', 'Export selected pages as {format} images (ZIP)'
+  ],
+  es: [
+    'Selecciona páginas en la vista previa para exportar solo esas páginas, o exporta todas.',
+    '1 página seleccionada para exportar', '{count} páginas seleccionadas para exportar',
+    'Seleccionar la página {page} para exportar', 'Quitar la página {page} de la exportación',
+    'Selecciona al menos una página en la vista previa antes de exportar páginas seleccionadas.',
+    'Exportar todas las páginas como imagen {format}', 'Exportar todas las páginas como imágenes {format} (ZIP)',
+    'Exportar la página seleccionada como imagen {format}', 'Exportar las páginas seleccionadas como imágenes {format} (ZIP)'
+  ],
+  fr: [
+    'Sélectionnez des pages dans l’aperçu pour exporter uniquement celles-ci, ou exportez toutes les pages.',
+    '1 page sélectionnée pour l’exportation', '{count} pages sélectionnées pour l’exportation',
+    'Sélectionner la page {page} pour l’exportation', 'Retirer la page {page} de l’exportation',
+    'Sélectionnez au moins une page dans l’aperçu avant d’exporter les pages sélectionnées.',
+    'Exporter toutes les pages en image {format}', 'Exporter toutes les pages en images {format} (ZIP)',
+    'Exporter la page sélectionnée en image {format}', 'Exporter les pages sélectionnées en images {format} (ZIP)'
+  ],
+  de: [
+    'Wähle Seiten in der Vorschau aus, um nur diese zu exportieren, oder exportiere alle Seiten.',
+    '1 Seite für den Export ausgewählt', '{count} Seiten für den Export ausgewählt',
+    'Seite {page} für den Export auswählen', 'Seite {page} aus dem Export entfernen',
+    'Wähle vor dem Export ausgewählter Seiten mindestens eine Seite in der Vorschau aus.',
+    'Alle Seiten als {format}-Bild exportieren', 'Alle Seiten als {format}-Bilder exportieren (ZIP)',
+    'Ausgewählte Seite als {format}-Bild exportieren', 'Ausgewählte Seiten als {format}-Bilder exportieren (ZIP)'
+  ],
+  pt: [
+    'Selecione páginas na pré-visualização para exportar apenas essas páginas ou exporte todas.',
+    '1 página selecionada para exportação', '{count} páginas selecionadas para exportação',
+    'Selecionar página {page} para exportar', 'Remover página {page} da exportação',
+    'Selecione pelo menos uma página na pré-visualização antes de exportar as páginas selecionadas.',
+    'Exportar todas as páginas como imagem {format}', 'Exportar todas as páginas como imagens {format} (ZIP)',
+    'Exportar a página selecionada como imagem {format}', 'Exportar as páginas selecionadas como imagens {format} (ZIP)'
+  ],
+  it: [
+    'Seleziona le pagine nell’anteprima per esportare solo quelle oppure esporta tutte le pagine.',
+    '1 pagina selezionata per l’esportazione', '{count} pagine selezionate per l’esportazione',
+    'Seleziona la pagina {page} per l’esportazione', 'Rimuovi la pagina {page} dall’esportazione',
+    'Seleziona almeno una pagina nell’anteprima prima di esportare le pagine selezionate.',
+    'Esporta tutte le pagine come immagine {format}', 'Esporta tutte le pagine come immagini {format} (ZIP)',
+    'Esporta la pagina selezionata come immagine {format}', 'Esporta le pagine selezionate come immagini {format} (ZIP)'
+  ],
+  nl: [
+    'Selecteer pagina’s in het voorbeeld om alleen die pagina’s te exporteren, of exporteer alle pagina’s.',
+    '1 pagina geselecteerd voor export', '{count} pagina’s geselecteerd voor export',
+    'Pagina {page} selecteren voor export', 'Pagina {page} uit de export verwijderen',
+    'Selecteer eerst minstens één pagina in het voorbeeld om geselecteerde pagina’s te exporteren.',
+    'Alle pagina’s exporteren als {format}-afbeelding', 'Alle pagina’s exporteren als {format}-afbeeldingen (ZIP)',
+    'Geselecteerde pagina exporteren als {format}-afbeelding', 'Geselecteerde pagina’s exporteren als {format}-afbeeldingen (ZIP)'
+  ],
+  pl: [
+    'Wybierz strony w podglądzie, aby wyeksportować tylko je, albo wyeksportuj wszystkie strony.',
+    '1 strona wybrana do eksportu', '{count} strony wybrane do eksportu',
+    'Wybierz stronę {page} do eksportu', 'Usuń stronę {page} z eksportu',
+    'Przed eksportem wybranych stron wybierz co najmniej jedną stronę w podglądzie.',
+    'Eksportuj wszystkie strony jako obraz {format}', 'Eksportuj wszystkie strony jako obrazy {format} (ZIP)',
+    'Eksportuj wybraną stronę jako obraz {format}', 'Eksportuj wybrane strony jako obrazy {format} (ZIP)'
+  ],
+  sv: [
+    'Välj sidor i förhandsgranskningen för att exportera endast dem, eller exportera alla sidor.',
+    '1 sida vald för export', '{count} sidor valda för export',
+    'Välj sida {page} för export', 'Ta bort sida {page} från exporten',
+    'Välj minst en sida i förhandsgranskningen innan du exporterar valda sidor.',
+    'Exportera alla sidor som {format}-bild', 'Exportera alla sidor som {format}-bilder (ZIP)',
+    'Exportera vald sida som {format}-bild', 'Exportera valda sidor som {format}-bilder (ZIP)'
+  ],
+  fi: [
+    'Valitse esikatselusta sivut, jotka haluat viedä, tai vie kaikki sivut.',
+    '1 sivu valittu vientiin', '{count} sivua valittu vientiin',
+    'Valitse sivu {page} vientiin', 'Poista sivu {page} viennistä',
+    'Valitse vähintään yksi sivu esikatselusta ennen valittujen sivujen vientiä.',
+    'Vie kaikki sivut {format}-kuvana', 'Vie kaikki sivut {format}-kuvina (ZIP)',
+    'Vie valittu sivu {format}-kuvana', 'Vie valitut sivut {format}-kuvina (ZIP)'
+  ],
+  da: [
+    'Vælg sider i forhåndsvisningen for kun at eksportere dem, eller eksportér alle sider.',
+    '1 side valgt til eksport', '{count} sider valgt til eksport',
+    'Vælg side {page} til eksport', 'Fjern side {page} fra eksporten',
+    'Vælg mindst én side i forhåndsvisningen, før du eksporterer valgte sider.',
+    'Eksportér alle sider som {format}-billede', 'Eksportér alle sider som {format}-billeder (ZIP)',
+    'Eksportér valgt side som {format}-billede', 'Eksportér valgte sider som {format}-billeder (ZIP)'
+  ],
+  nb: [
+    'Velg sider i forhåndsvisningen for å eksportere bare dem, eller eksporter alle sidene.',
+    '1 side valgt for eksport', '{count} sider valgt for eksport',
+    'Velg side {page} for eksport', 'Fjern side {page} fra eksporten',
+    'Velg minst én side i forhåndsvisningen før du eksporterer valgte sider.',
+    'Eksporter alle sider som {format}-bilde', 'Eksporter alle sider som {format}-bilder (ZIP)',
+    'Eksporter valgt side som {format}-bilde', 'Eksporter valgte sider som {format}-bilder (ZIP)'
+  ],
+  tr: [
+    'Yalnızca seçtiklerinizi dışa aktarmak için önizlemede sayfaları seçin veya tüm sayfaları dışa aktarın.',
+    'Dışa aktarmak için 1 sayfa seçildi', 'Dışa aktarmak için {count} sayfa seçildi',
+    'Dışa aktarmak için {page}. sayfayı seç', '{page}. sayfayı dışa aktarımdan kaldır',
+    'Seçilen sayfaları dışa aktarmadan önce önizlemede en az bir sayfa seçin.',
+    'Tüm sayfaları {format} görseli olarak dışa aktar', 'Tüm sayfaları {format} görselleri olarak dışa aktar (ZIP)',
+    'Seçilen sayfayı {format} görseli olarak dışa aktar', 'Seçilen sayfaları {format} görselleri olarak dışa aktar (ZIP)'
+  ],
+  ru: [
+    'Выберите страницы в предварительном просмотре, чтобы экспортировать только их, или экспортируйте все страницы.',
+    'Для экспорта выбрана 1 страница', 'Для экспорта выбрано страниц: {count}',
+    'Выбрать страницу {page} для экспорта', 'Убрать страницу {page} из экспорта',
+    'Перед экспортом выбранных страниц выберите хотя бы одну страницу в предварительном просмотре.',
+    'Экспортировать все страницы как изображение {format}', 'Экспортировать все страницы как изображения {format} (ZIP)',
+    'Экспортировать выбранную страницу как изображение {format}', 'Экспортировать выбранные страницы как изображения {format} (ZIP)'
+  ],
+  uk: [
+    'Виберіть сторінки в попередньому перегляді, щоб експортувати лише їх, або експортуйте всі сторінки.',
+    'Для експорту вибрано 1 сторінку', 'Для експорту вибрано сторінок: {count}',
+    'Вибрати сторінку {page} для експорту', 'Вилучити сторінку {page} з експорту',
+    'Перед експортом вибраних сторінок виберіть хоча б одну сторінку в попередньому перегляді.',
+    'Експортувати всі сторінки як зображення {format}', 'Експортувати всі сторінки як зображення {format} (ZIP)',
+    'Експортувати вибрану сторінку як зображення {format}', 'Експортувати вибрані сторінки як зображення {format} (ZIP)'
+  ],
+  ar: [
+    'حدد الصفحات في المعاينة لتصديرها فقط، أو صدّر جميع الصفحات.',
+    'تم تحديد صفحة واحدة للتصدير', 'تم تحديد {count} صفحات للتصدير',
+    'تحديد الصفحة {page} للتصدير', 'إزالة الصفحة {page} من التصدير',
+    'حدد صفحة واحدة على الأقل في المعاينة قبل تصدير الصفحات المحددة.',
+    'تصدير كل الصفحات كصورة {format}', 'تصدير كل الصفحات كصور {format} (ZIP)',
+    'تصدير الصفحة المحددة كصورة {format}', 'تصدير الصفحات المحددة كصور {format} (ZIP)'
+  ],
+  hi: [
+    'केवल चुने हुए पेज निर्यात करने के लिए पूर्वावलोकन में उन्हें चुनें, या सभी पेज निर्यात करें।',
+    'निर्यात के लिए 1 पेज चुना गया', 'निर्यात के लिए {count} पेज चुने गए',
+    'निर्यात के लिए पेज {page} चुनें', 'पेज {page} को निर्यात से हटाएँ',
+    'चुने हुए पेज निर्यात करने से पहले पूर्वावलोकन में कम से कम एक पेज चुनें।',
+    'सभी पेज {format} छवि के रूप में निर्यात करें', 'सभी पेज {format} छवियों के रूप में निर्यात करें (ZIP)',
+    'चुना हुआ पेज {format} छवि के रूप में निर्यात करें', 'चुने हुए पेज {format} छवियों के रूप में निर्यात करें (ZIP)'
+  ],
+  ja: [
+    '一部のページだけを書き出すにはプレビューで選択し、すべてのページを書き出すこともできます。',
+    '書き出すページを1ページ選択中', '書き出すページを{count}ページ選択中',
+    '書き出すページ{page}を選択', 'ページ{page}を書き出し対象から外す',
+    '選択したページを書き出すには、プレビューで1ページ以上選択してください。',
+    'すべてのページを{format}画像として書き出す', 'すべてのページを{format}画像として書き出す (ZIP)',
+    '選択したページを{format}画像として書き出す', '選択したページを{format}画像として書き出す (ZIP)'
+  ],
+  ko: [
+    '일부 페이지만 내보내려면 미리보기에서 선택하세요. 모든 페이지를 내보낼 수도 있습니다.',
+    '내보낼 페이지 1개 선택됨', '내보낼 페이지 {count}개 선택됨',
+    '내보낼 페이지 {page} 선택', '페이지 {page}을(를) 내보내기에서 제거',
+    '선택한 페이지를 내보내려면 미리보기에서 하나 이상의 페이지를 선택하세요.',
+    '모든 페이지를 {format} 이미지로 내보내기', '모든 페이지를 {format} 이미지로 내보내기 (ZIP)',
+    '선택한 페이지를 {format} 이미지로 내보내기', '선택한 페이지를 {format} 이미지로 내보내기 (ZIP)'
+  ],
+  'zh-CN': [
+    '在预览中选择页面即可仅导出所选页面，也可以导出全部页面。',
+    '已选择 1 页用于导出', '已选择 {count} 页用于导出',
+    '选择第 {page} 页以导出', '从导出中移除第 {page} 页',
+    '导出所选页面前，请先在预览中至少选择一页。',
+    '将所有页面导出为 {format} 图片', '将所有页面导出为 {format} 图片 (ZIP)',
+    '将所选页面导出为 {format} 图片', '将所选页面导出为 {format} 图片 (ZIP)'
+  ]
+};
+const pdfToImagesScopeLabels = {
+  en: ['Include All Images', 'Include Selected Images'],
+  es: ['Incluir todas las imágenes', 'Incluir imágenes seleccionadas'],
+  fr: ['Inclure toutes les images', 'Inclure les images sélectionnées'],
+  de: ['Alle Bilder einbeziehen', 'Ausgewählte Bilder einbeziehen'],
+  pt: ['Incluir todas as imagens', 'Incluir imagens selecionadas'],
+  it: ['Includi tutte le immagini', 'Includi le immagini selezionate'],
+  nl: ['Alle afbeeldingen opnemen', 'Geselecteerde afbeeldingen opnemen'],
+  pl: ['Uwzględnij wszystkie obrazy', 'Uwzględnij wybrane obrazy'],
+  sv: ['Inkludera alla bilder', 'Inkludera valda bilder'],
+  fi: ['Sisällytä kaikki kuvat', 'Sisällytä valitut kuvat'],
+  da: ['Medtag alle billeder', 'Medtag valgte billeder'],
+  nb: ['Inkluder alle bilder', 'Inkluder valgte bilder'],
+  tr: ['Tüm görselleri dahil et', 'Seçilen görselleri dahil et'],
+  ru: ['Включить все изображения', 'Включить выбранные изображения'],
+  uk: ['Додати всі зображення', 'Додати вибрані зображення'],
+  ar: ['تضمين كل الصور', 'تضمين الصور المحددة'],
+  hi: ['सभी छवियाँ शामिल करें', 'चुनी गई छवियाँ शामिल करें'],
+  ja: ['すべての画像を含める', '選択した画像を含める'],
+  ko: ['모든 이미지 포함', '선택한 이미지 포함'],
+  'zh-CN': ['包含所有图片', '包含所选图片']
+};
+
 const imageWorkflowLabels = {
   en: ['Images: {count}/{max}', 'Settings', 'Page Preview', 'Choose Settings', 'All Pages', 'Select Pages', 'Select pages below; settings changes affect only selected images.', 'Preview', 'Review and reorder images. Changes appear in each page preview.', 'Select page {page}', 'View larger preview of {fileName}', 'Close larger preview', 'Choose page size and orientation, fit, alignment, background, and resizing.', 'Choose whether changes apply to all images or only selected pages.', 'Attached Images'],
   es: ['Imágenes: {count}/{max}', 'Ajustes', 'Vista previa de páginas', 'Elegir ajustes', 'Todas las páginas', 'Páginas seleccionadas', 'Elige páginas abajo; los cambios se aplican solo a esas imágenes.', 'Vista previa', 'Revisa y reordena las imágenes. Los cambios se muestran en cada página.', 'Seleccionar página {page}', 'Ver vista previa ampliada de {fileName}', 'Cerrar vista previa ampliada', 'Elige el tamaño y la orientación de página, el ajuste, la alineación, el fondo y el redimensionamiento.', 'Elige si los cambios se aplican a todas las imágenes o solo a las páginas seleccionadas.', 'Imágenes adjuntas'],
@@ -551,6 +744,8 @@ for (const { code } of SUPPORTED_LANGUAGES) {
   const imageLabels = imageToPdfLabels[code];
   const imageWorkflowLabelsForLanguage = imageWorkflowLabels[code];
   const imageOutputLabelsForLanguage = imageOutputLabels[code];
+  const pdfToImagesLabelsForLanguage = pdfToImagesLabels[code];
+  const pdfToImagesScopeLabelsForLanguage = pdfToImagesScopeLabels[code];
   const imagePreviewInvalidLabel = imagePreviewInvalidLabels[code];
   const actionLabels = fileActionLabels[code];
   const powerpointLabelsForLanguage = powerpointLabels[code];
@@ -559,6 +754,8 @@ for (const { code } of SUPPORTED_LANGUAGES) {
     || !imageWorkflowLabelsForLanguage || imageWorkflowLabelsForLanguage.length !== imageWorkflowKeys.length
     || !imageSettingsScopeLabels[code] || imageSettingsScopeLabels[code].length !== imageSettingsScopeKeys.length
     || !imageOutputLabelsForLanguage || imageOutputLabelsForLanguage.length !== imageOutputKeys.length
+    || !pdfToImagesLabelsForLanguage || pdfToImagesLabelsForLanguage.length !== pdfToImagesKeys.length
+    || !pdfToImagesScopeLabelsForLanguage || pdfToImagesScopeLabelsForLanguage.length !== 2
     || !imagePreviewInvalidLabel
     || !imageSectionDescriptionLabels[code]
     || !actionLabels || actionLabels.length !== 3
@@ -572,6 +769,13 @@ for (const { code } of SUPPORTED_LANGUAGES) {
       ...Object.fromEntries(imageWorkflowKeys.map((key, index) => [key, imageWorkflowLabelsForLanguage[index]])),
       ...Object.fromEntries(imageSettingsScopeKeys.map((key, index) => [key, imageSettingsScopeLabels[code][index]])),
       ...Object.fromEntries(imageOutputKeys.map((key, index) => [key, imageOutputLabelsForLanguage[index]]))
+    },
+    pdfToImages: {
+      ...Object.fromEntries(
+        pdfToImagesKeys.map((key, index) => [key, pdfToImagesLabelsForLanguage[index]])
+      ),
+      includeAllImages: pdfToImagesScopeLabelsForLanguage[0],
+      includeSelectedImages: pdfToImagesScopeLabelsForLanguage[1]
     },
     powerpoint: {
       ...Object.fromEntries(powerpointKeys.map((key, index) => [key, powerpointLabelsForLanguage[index]])),

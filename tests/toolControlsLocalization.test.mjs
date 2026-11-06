@@ -26,7 +26,7 @@ const imageControlKeys = [
   'margin', 'horizontalAlignment', 'left', 'center', 'right', 'verticalAlignment',
   'top', 'middle', 'bottom', 'maximumWidth', 'maximumHeight', 'scale',
   'pageBackgroundColor', 'jpegQuality', 'maintainAspectRatio', 'encodingNote',
-  'reset', 'addMoreImages', 'createPdf', 'creatingPdf', 'page', 'pages',
+  'reset', 'addMoreImages', 'createPdfAction', 'createPdfsAction', 'creatingPdf',
   'downloadPdf'
 ];
 const imageWorkflowControlKeys = [
@@ -35,6 +35,17 @@ const imageWorkflowControlKeys = [
   'previewTitle', 'previewDescription', 'chooseImagesDescription', 'selectImage', 'viewLargerPreview',
   'closePreview', 'previewInvalid', 'outputMode', 'singlePdf', 'separatePdf'
 ];
+const pdfToImagesControlKeys = [
+  'previewSelectionDescription', 'selectedPageCount', 'selectedPagesCount',
+  'selectPageForExport', 'removePageFromExport', 'selectPagesBeforeExport',
+  'exportAllSingleImage', 'exportAllImageArchive',
+  'exportSelectedSingleImage', 'exportSelectedImageArchive',
+  'includeAllImages', 'includeSelectedImages'
+];
+const pdfToImagesToolSource = await readFile(
+  new URL('../src/components/PdfToImages.jsx', import.meta.url),
+  'utf8'
+);
 const powerpointControlKeys = [
   'directionPdfToPptx', 'directionPptxToPdf', 'choosePdf', 'choosePptx',
   'uploadPdfPrompt', 'uploadPptxPrompt', 'dropPdfPrompt', 'dropPptxPrompt',
@@ -69,10 +80,14 @@ test('every bundled language has localized image attachment and control labels',
       assert.equal(localized.imageToPdf.chooseImagesDescription.split(/\s+/).length, 9);
       assert.equal(localized.imageToPdf.allImages, 'All images');
       assert.equal(localized.imageToPdf.selectedImages, 'Selected images');
+      assert.equal(localized.imageToPdf.singlePdf, 'Create Single PDF');
+      assert.equal(localized.imageToPdf.separatePdf, 'Create Seperate PDFs');
+      assert.equal(localized.imageToPdf.createPdfAction, 'Create PDF');
+      assert.equal(localized.imageToPdf.createPdfsAction, 'Create PDFs');
     }
 
     if (code !== 'en') {
-      for (const key of ['uploadPrompt', 'pageSize', 'createPdf', 'reset', 'downloadPdf']) {
+      for (const key of ['uploadPrompt', 'pageSize', 'createPdfAction', 'createPdfsAction', 'reset', 'downloadPdf']) {
         assert.notEqual(
           localized.imageToPdf[key],
           TOOL_UI_TRANSLATIONS.en.imageToPdf[key],
@@ -88,6 +103,38 @@ test('every bundled language has localized image attachment and control labels',
       }
       assert.notEqual(localized.fileActions.replace, TOOL_UI_TRANSLATIONS.en.fileActions.replace, `${code} leaves replace in English`);
       assert.notEqual(localized.fileActions.remove, TOOL_UI_TRANSLATIONS.en.fileActions.remove, `${code} leaves remove in English`);
+    }
+  }
+});
+
+test('every bundled language has localized PDF-to-Images selection and export labels', async () => {
+  const { getLocalizedToolUi, TOOL_UI_TRANSLATIONS } = await import('../src/i18n/toolUiLocalization.mjs');
+  assert.match(pdfToImagesToolSource, /getLocalizedToolUi\(language\)/);
+  for (const { code } of SUPPORTED_LANGUAGES) {
+    const localized = getLocalizedToolUi(code).pdfToImages;
+    assert.ok(localized, `${code} is missing the PDF-to-Images controls`);
+    for (const key of pdfToImagesControlKeys) {
+      assert.ok(localized[key], `${code} is missing pdfToImages.${key}`);
+    }
+
+    if (code === 'en') {
+      assert.equal(localized.previewSelectionDescription,
+        'Select pages in the preview to export only those pages, or export all pages.');
+      assert.equal(localized.exportAllImageArchive, 'Export all pages as {format} images (ZIP)');
+      assert.equal(localized.exportSelectedImageArchive, 'Export selected pages as {format} images (ZIP)');
+      assert.equal(localized.includeAllImages, 'Include All Images');
+      assert.equal(localized.includeSelectedImages, 'Include Selected Images');
+    } else {
+      for (const key of [
+        'previewSelectionDescription', 'exportAllImageArchive', 'exportSelectedImageArchive',
+        'includeAllImages', 'includeSelectedImages'
+      ]) {
+        assert.notEqual(
+          localized[key],
+          TOOL_UI_TRANSLATIONS.en.pdfToImages[key],
+          `${code} leaves pdfToImages.${key} in English`
+        );
+      }
     }
   }
 });
@@ -127,8 +174,8 @@ test('image attachment prompts and settings render through the selected language
   assert.match(imageToolSource, /getLocalizedToolUi\(language\)/);
   assert.match(imageToolSource, /imageUi\.uploadPrompt/);
   assert.match(imageToolSource, /imageUi\.pageSize/);
-  assert.match(imageToolSource, /imageUi\.createPdf/);
-  assert.match(imageToolSource, /imageUi\.page\s*:/);
+  assert.match(imageToolSource, /imageUi\.createPdfAction/);
+  assert.match(imageToolSource, /imageUi\.createPdfsAction/);
   for (const key of imageControlKeys) {
     assert.match(imageToolSource, new RegExp(`imageUi\\.${key}\\b`), `Image to PDF does not render ${key}`);
   }

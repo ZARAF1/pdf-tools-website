@@ -5,13 +5,31 @@ import { readFile } from 'node:fs/promises';
 const rail = await readFile(new URL('../src/components/PdfPageThumbnailRail.jsx', import.meta.url), 'utf8').catch(() => '');
 
 test('PDF page thumbnail rail provides accessible page navigation and current-page state', () => {
-  assert.match(rail, /<aside className="pdf-page-thumbnail-rail" aria-label="Page preview navigation">/);
+  assert.match(rail, /aria-label=\{showPageNavigation \? 'Page preview navigation' : 'PDF page thumbnails'\}/);
   assert.match(rail, /<p className="pdf-page-thumbnail-rail-title"><Eye aria-hidden="true" \/>Preview page<\/p>/);
   assert.match(rail, /aria-label="Previous page"/);
   assert.match(rail, /aria-label="Next page"/);
   assert.match(rail, /Page \{safeCurrentIndex \+ 1\} of \{pageNumbers\.length\}/);
   assert.match(rail, /aria-current=\{pageNumber === currentPage \? 'page' : undefined\}/);
-  assert.match(rail, /onClick=\{\(\) => onSelectPage\(pageNumber\)\}/);
+  assert.match(rail, /onClick=\{\(\) => \{\s*onSelectPage\(pageNumber\);/);
+});
+
+test('PDF page thumbnail rail can remove pagination while showing a check on the selected tile', () => {
+  assert.match(rail, /showPageNavigation = true/);
+  assert.match(rail, /showSelectedMark = false/);
+  assert.match(rail, /\{showPageNavigation && \(/);
+  assert.match(rail, /onTogglePageSelection\s*\?\s*isExportSelected\s*:\s*showSelectedMark \? pageNumber === currentPage : undefined/);
+  assert.match(rail, /showSelectedMark && isSelected && \([\s\S]*pdf-page-thumbnail-selected-mark/);
+  assert.match(rail, /className="pdf-page-thumbnail-selected-mark" aria-hidden="true">[\s\S]*<Check \/>/);
+});
+
+test('PDF page thumbnail rail supports independent multi-page selection for export', () => {
+  assert.match(rail, /selectedPageNumbers,\s*onTogglePageSelection,\s*getPageSelectionLabel/);
+  assert.match(rail, /const isExportSelected = selectedPageNumbers\?\.has\(pageNumber\) \?\? false/);
+  assert.match(rail, /aria-pressed=\{onTogglePageSelection[\s\S]*isExportSelected/);
+  assert.match(rail, /onTogglePageSelection \? pageSelectionLabel : `Preview page \$\{pageNumber\}`/);
+  assert.match(rail, /onSelectPage\(pageNumber\);\s*onTogglePageSelection\?\.\(pageNumber\);/);
+  assert.match(rail, /showSelectedMark && isSelected/);
 });
 
 test('PDF thumbnail previews render lazily inside their scrollable rail', () => {
