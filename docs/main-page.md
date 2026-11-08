@@ -846,6 +846,507 @@ index c0180cb..40339d0 100644
 
 ## Task 2.2 — Interactive Primitives
 
+### A) Read evidence and scope
+
+- Read [docs/status.md](./status.md): Task 2.1 was Ready for Review with a 352/352 test baseline.
+- Read [docs/PROJECT-TRACKER.md](./PROJECT-TRACKER.md): D1, D6, R1–R9, and F1–F8 informed the accessibility, placement, evidence, and scope constraints.
+- Read Task 2.1 in this file: token names, dark-theme selector, color values, and focus-ring shadow token.
+- Read [ToolCard.jsx](../src/components/ToolCard.jsx) and [ToolSearch.jsx](../src/components/ToolSearch.jsx) as read-only API references; neither was modified.
+- Created only the five requested files under `src/components/ui/`; this section and the Task 2.2 row in `docs/status.md` are the only documentation changes.
+
+### B) Prop tables
+
+#### Button
+
+| Prop | Type | Default | Behavior |
+|------|------|---------|----------|
+| `variant` | `primary \| secondary \| ghost \| danger` | `primary` | Selects the documented color treatment; unsupported values throw. |
+| `size` | `sm \| md \| lg` | `md` | Sets padding, font scale, and minimum height. `sm` uses 44px to meet the project-wide touch target despite the packet's 32px primitive suggestion. |
+| `loading` | boolean | `false` | Shows an aria-hidden spinner, sets `aria-busy="true"`, and disables activation. |
+| `disabled` | boolean | `false` | Uses native button disabling or disables an anchor by removing its `href` and tab stop. |
+| `iconLeft`, `iconRight` | React node | — | Optional decorative icons, hidden from assistive technology. |
+| `as` | `button \| a` | `button` | Chooses native semantics. Enabled anchors require `href`; unsupported tags throw. |
+| `children` | React node | — | Visible button/link name. |
+| `type` | button type | `button` | Forwarded to the native button only. |
+| `className` | string | `''` | Appended utility classes. |
+| `...rest` | native element props | — | Includes attributes such as `id`, `href`, and accessible naming props. |
+
+#### Input
+
+| Prop | Type | Default | Behavior |
+|------|------|---------|----------|
+| `label` | React node | Required | Always rendered as a visible `<label>` associated with the input. Empty/missing labels throw. |
+| `hint` | React node | — | Adds visible 16px supporting text and includes its ID in `aria-describedby`. |
+| `error` | React node | — | Adds 16px error text with `role="alert"`, sets `aria-invalid`, and includes the error ID in `aria-describedby`. |
+| `size` | `md \| lg` | `md` | Sets 44px or 52px minimum height; unsupported values throw. |
+| `id` | string | generated | Connects the label and descriptions to this input. |
+| `className` | string | `''` | Appended utility classes. |
+| `aria-describedby` | string | — | Merged with hint/error IDs. |
+| `aria-invalid` | boolean/string | — | Preserved when no `error` prop is supplied; the error prop forces `true`. |
+| `...rest` | native input props | — | Forwarded to the native input. |
+
+#### Card
+
+| Prop | Type | Default | Behavior |
+|------|------|---------|----------|
+| `variant` | `default \| interactive \| featured` | `default` | Chooses static, clickable, or featured styling; unsupported values throw. |
+| `as` | element tag | `button` for interactive; otherwise `div` | Interactive cards allow only a button or an anchor. Interactive anchors require `href`. |
+| `children` | React node | — | Card content. An interactive card is one native target; do not nest other interactive controls inside it. |
+| `className` | string | `''` | Appended utility classes. |
+| `...rest` | native element props | — | Interactive button defaults to `type="button"`; event and accessible-name props are forwarded. |
+
+#### Badge
+
+| Prop | Type | Default | Behavior |
+|------|------|---------|----------|
+| `tone` | `neutral \| brand \| success \| warning \| danger` | `neutral` | Selects a semantic foreground/background pair; unsupported values throw. |
+| `size` | `sm \| md` | `sm` | Sets 24px or 28px minimum height. Badges are non-interactive and are not tap targets. |
+| `children` | React node | — | Badge content. |
+| `className` | string | `''` | Appended utility classes. |
+| `...rest` | span props | — | Forwarded to the `<span>`. |
+
+#### FocusRing
+
+| Prop | Type | Default | Behavior |
+|------|------|---------|----------|
+| `children` | one React element | Required | Cloned to add the focus-ring classes; exactly one focusable child is expected. |
+| `focusableOnly` | boolean | `true` | Uses `:focus-visible` when true; uses `:focus` when false. |
+| `className` | string | `''` | Appended to the child's classes. |
+
+### C) Contrast evidence
+
+Ratios use the Task 2.1 token RGB values converted to sRGB relative luminance and are rounded to two decimals. Text pairs target 4.5:1; control borders and focus indicators target 3:1. Hover rows include their actual hover background or the `brightness()` filter applied to both foreground and background. Disabled/loading text is inactive UI and is dimmed to 60%; it is not represented as an enabled-state contrast result.
+
+#### Button text pairs
+
+| Variant | Theme/state | Foreground / background | Ratio |
+|---------|-------------|-------------------------|-------|
+| Primary | Light / default | `#ffffff` / `#1d4ed8` | 6.70:1 |
+| Primary | Light / hover | `#ffffff` / `#1e40af` | 8.72:1 |
+| Primary | Dark / default | `#0b1220` / `#dbeafe` | 15.35:1 |
+| Primary | Dark / hover | `#0b1220` / `#93c5fd` | 10.38:1 |
+| Secondary | Light / default | `#1d4ed8` / `#f1f5f9` | 6.12:1 |
+| Secondary | Light / hover | `#1d4ed8` / `#eff6ff` | 6.16:1 |
+| Secondary | Dark / default | `#e2e8f0` / `#111c2e` | 13.86:1 |
+| Secondary | Dark / hover | `#e2e8f0` / `#1e293b` | 11.87:1 |
+| Ghost | Light / default | `#1d4ed8` / `#ffffff` | 6.70:1 |
+| Ghost | Light / hover | `#1d4ed8` / `#eff6ff` | 6.16:1 |
+| Ghost | Dark / default | `#60a5fa` / `#0b1220` | 7.36:1 |
+| Ghost | Dark / hover | `#60a5fa` / `#111c2e` | 6.72:1 |
+| Danger | Light / default | `#ffffff` / `#b91c1c` | 6.47:1 |
+| Danger | Light / hover (`brightness(.95)`) | Filter-adjusted foreground / background | 6.21:1 |
+| Danger | Dark / default | `#450a0a` / `#fca5a5` | 8.51:1 |
+| Danger | Dark / hover (`brightness(1.10)`) | Filter-adjusted foreground / background | 9.28:1 |
+
+The secondary border is `#2563eb`: 4.72:1 against light `#f1f5f9` and 3.30:1 against dark `#111c2e`.
+
+#### Input and Card pairs
+
+| Element / state | Theme | Foreground or border / background | Ratio |
+|-----------------|-------|-----------------------------------|-------|
+| Input label text | Light | `#0f172a` / `#f1f5f9` | 16.30:1 |
+| Input label text | Dark | `#e2e8f0` / `#111c2e` | 13.86:1 |
+| Input hint text | Light | `#475569` / `#f1f5f9` | 6.92:1 |
+| Input hint text | Dark | `#a7b3c5` / `#111c2e` | 8.05:1 |
+| Input error text | Light | `#b91c1c` / `#f1f5f9` | 5.91:1 |
+| Input error text | Dark | `#fca5a5` / `#111c2e` | 9.00:1 |
+| Input normal border | Light | `#2563eb` / `#f1f5f9` | 4.72:1 |
+| Input normal border | Dark | `#60a5fa` / `#111c2e` | 6.72:1 |
+| Input error border | Light | `#b91c1c` / `#f1f5f9` | 5.91:1 |
+| Input error border | Dark | `#fca5a5` / `#111c2e` | 9.00:1 |
+| Card text | Light | `#0f172a` / `#f1f5f9` | 16.30:1 |
+| Card text | Dark | `#e2e8f0` / `#111c2e` | 13.86:1 |
+| Default/interactive Card border | Light | `#64748b` / `#f1f5f9` | 4.34:1 |
+| Default/interactive Card border | Dark | `#64748b` / `#111c2e` | 3.59:1 |
+| Featured Card border | Light | `#2563eb` / `#f1f5f9` | 4.72:1 |
+| Featured Card border | Dark | `#2563eb` / `#111c2e` | 3.30:1 |
+
+The dark input border uses important utilities because the existing dark-theme global input selector is more specific than regular Tailwind border utilities; this keeps the component's documented border/error colors effective without changing global CSS.
+
+#### Badge text pairs
+
+| Tone | Theme | Foreground / background | Ratio |
+|------|-------|-------------------------|-------|
+| Neutral | Light | `#0f172a` / `#e2e8f0` | 14.48:1 |
+| Neutral | Dark | `#f1f5f9` / `#1e293b` | 13.35:1 |
+| Brand | Light | `#1e3a8a` / `#dbeafe` | 8.49:1 |
+| Brand | Dark | `#dbeafe` / `#0f172a` | 14.63:1 |
+| Success | Light | `#ffffff` / `#15803d` | 5.02:1 |
+| Success | Dark | `#052e16` / `#86efac` | 10.62:1 |
+| Warning | Light | `#ffffff` / `#a16207` | 4.92:1 |
+| Warning | Dark | `#422006` / `#fde68a` | 11.70:1 |
+| Danger | Light | `#ffffff` / `#b91c1c` | 6.47:1 |
+| Danger | Dark | `#450a0a` / `#fca5a5` | 8.51:1 |
+
+#### Focus ring pairs
+
+| Theme | Ring color | Offset surface | Ring / surface | Ring / page |
+|-------|------------|----------------|----------------|-------------|
+| Light | `#2563eb` | `#ffffff` | 5.17:1 | 4.94:1 against `#f8fafc` |
+| Dark | `#60a5fa` | `#111c2e` | 6.72:1 | 7.36:1 against `#0b1220` |
+
+The rendered ring is a visible 2px color outline with a 2px surface-colored offset, implemented by the existing `--shadow-focus-ring` token (`0 0 0 2px var(--surface-background), 0 0 0 4px var(--focus-ring)`).
+
+### D) Focus, keyboard, and browser evidence
+
+The five modules were dynamically rendered in the running Vite browser page and tested with keyboard input. A keyboard-focus screenshot was captured in the conversation; no screenshot file was added to the repository.
+
+| Check | Result | Evidence |
+|-------|--------|----------|
+| Tab order | Pass | Tab reached each enabled Button, each Input, interactive Card button and link, and the FocusRing-wrapped button in DOM order. The disabled loading button and non-interactive Badge were correctly skipped. |
+| Enter activation | Pass | Primary Button incremented its click count; interactive Card button activated; Card anchor changed the fragment to `#test`. |
+| Space activation | Pass | Primary Button and interactive Card button each activated with Space; the Card click count reached 2 after Enter and Space. |
+| Visible keyboard focus | Pass | `:focus-visible` matched every tested focusable primitive, with the 2px/2px-offset ring visible in computed styles and the captured screenshot. |
+| Target and text sizes | Pass | Browser measurements: `sm`/`md` Buttons and `md` Inputs 44px; `lg` Button and Input 52px; all tested input, hint, and error text 16px; small Button text 16px. |
+| Input error announcement | Pass | Error input had `aria-invalid="true"`, `aria-describedby` included hint/error IDs, and error content had `role="alert"`. |
+| Loading state | Pass | Loading Button exposed `aria-busy="true"` and native `disabled`; its spinner was `aria-hidden`. |
+| Escape | N/A — no primitive is dismissible | Escape is not a dismissal action for these controls; no dialog/popover was introduced. |
+| Keyboard trap | Pass | After the last primitive, Tab moved to the site's skip link; focus was not trapped. |
+| Horizontal overflow | Pass in measured state | With the pointer moved off hover controls, `documentElement.scrollWidth === clientWidth` at 320, 375, 414, 768, 1024, 1280, 1440, and 1920px. The rendered primitive fixture itself fit at 320px (right edge 296px; available client width 305px). |
+
+### E) WCAG 2.2 criterion evidence
+
+| # | Criterion | Result | Evidence |
+|---|-----------|--------|----------|
+| 1 | 1.3.1 Info and Relationships | Pass | Visible Input label uses `htmlFor`/`id`; hint and error IDs are associated by `aria-describedby`. |
+| 2 | 1.4.3 Text Contrast | Pass for documented pairs | Section C lists enabled Button, Input, Card, and Badge pairs in both themes; each text pair is at least 4.5:1. |
+| 3 | 1.4.4 Resize Text | Not evaluated | Browser zoom/text-resize testing was not part of this primitive check. |
+| 4 | 1.4.10 Reflow | Pass in measured state | Scroll width equaled client width at the eight project viewport widths; the primitive fixture adapted at 320px. |
+| 5 | 1.4.11 Non-text Contrast | Pass for tested boundaries | Input borders, Card borders, secondary-button border, and focus-ring pairs in Section C are at least 3:1. |
+| 6 | 1.4.12 Text Spacing | Not evaluated | Text-spacing override/bookmarklet testing was not part of this primitive check. |
+| 7 | 2.1.1 Keyboard | Pass | Tab, Enter, and Space tests exercised the native controls; the link used Enter as expected. |
+| 8 | 2.1.2 No Keyboard Trap | Pass | Tab moved from the final primitive to the page skip link. |
+| 9 | 2.4.1 Bypass Blocks | N/A — no bypass-block feature was added | Existing site skip-link behavior was not changed by these primitives. |
+| 10 | 2.4.3 Focus Order | Pass for the fixture | Observed keyboard order followed the rendered DOM order and skipped disabled/non-interactive elements. |
+| 11 | 2.4.7 Focus Visible | Pass | All tested focusable primitives matched `:focus-visible` and showed the focus-ring shadow. |
+| 12 | 2.4.11 Focus Not Obscured | Not evaluated | Sticky overlays and whole-site scroll positions were outside this isolated primitive test. |
+| 13 | 2.5.7 Dragging Movements | N/A — no dragging interaction was added | These primitives use click, text entry, and native keyboard activation only. |
+| 14 | 2.5.8 Target Size Minimum | Pass for interactive controls | Measured Button heights were 44/44/52px; Input heights 44/52px; interactive Cards 58px. Badge is non-interactive. |
+| 15 | 3.2.6 Consistent Help | N/A — no help/contact component was added | No help or contact UI is introduced by this task. |
+| 16 | 3.3.1 Error Identification | Pass | Input error is visible text, has `aria-invalid`, and is not indicated by color alone. |
+| 17 | 3.3.7 Redundant Entry | N/A — no multi-step data-entry flow was added | Input is a reusable single-field primitive; no repeated-entry flow is introduced. |
+| 18 | 3.3.8 Accessible Authentication | N/A — no authentication flow was added | These UI primitives do not create an authentication step. |
+| 19 | 4.1.2 Name, Role, Value | Pass for tested controls | Native button/link/input semantics were present; visible Input labels and button text were exposed in the browser accessibility snapshot. |
+| 20 | 4.1.3 Status Messages | Pass for tested states | Input error used `role="alert"`; loading state exposed `aria-busy="true"`. |
+
+### F) Rejected alternatives and implementation decisions
+
+- Considered a 32px `sm` Button per the primitive-specific size suggestion; used a 44px minimum instead to preserve the project-wide touch-target rule. Compact padding remains.
+- Considered reducing the `sm` Button, Input hint, or error font to 14px; retained 16px text to preserve the mobile body/input minimum.
+- Considered adding a headless UI dependency; rejected it to keep these wrappers dependency-light and consistent with the existing Tailwind stack.
+- Kept existing `ToolCard`, `ToolSearch`, and global CSS untouched; these are new primitives, not replacements.
+- Used native button, anchor, and input elements rather than custom roles so browser keyboard behavior and semantics remain native.
+- Kept disabled/loading controls visibly dimmed; the enabled-state contrast table does not claim that inactive controls meet enabled-text contrast targets.
+
+### G) Full source
+
+#### `src/components/ui/Button.jsx`
+
+```jsx
+import React from 'react';
+import { LoaderCircle } from 'lucide-react';
+import FocusRing from './FocusRing';
+
+const VARIANT_CLASSES = {
+  primary: 'bg-brand-700 text-white hover:bg-brand-800 dark:bg-brand-900 dark:text-surface-50 dark:hover:bg-brand-800',
+  secondary: 'border border-brand-600 bg-surface-100 text-brand-700 hover:bg-brand-50 dark:bg-surface-100 dark:text-surface-fg dark:hover:bg-surface-200',
+  ghost: 'bg-transparent text-brand-700 hover:bg-brand-50 dark:text-brand-700 dark:hover:bg-surface-100',
+  danger: 'bg-danger text-danger-foreground hover:brightness-95 dark:hover:brightness-110',
+};
+
+const SIZE_CLASSES = {
+  sm: 'min-h-11 gap-1.5 px-3 py-1 text-base',
+  md: 'min-h-11 gap-2 px-4 py-2 text-base',
+  lg: 'min-h-[52px] gap-2.5 px-5 py-3 text-lg',
+};
+
+const Button = React.forwardRef(function Button({
+  variant = 'primary',
+  size = 'md',
+  loading = false,
+  disabled = false,
+  iconLeft,
+  iconRight,
+  as = 'button',
+  children,
+  className = '',
+  onClick,
+  type = 'button',
+  ...rest
+}, ref) {
+  if (!Object.hasOwn(VARIANT_CLASSES, variant)) {
+    throw new Error(`Unsupported Button variant: ${variant}`);
+  }
+  if (!Object.hasOwn(SIZE_CLASSES, size)) {
+    throw new Error(`Unsupported Button size: ${size}`);
+  }
+  if (as !== 'button' && as !== 'a') {
+    throw new Error('Button must render as a button or anchor.');
+  }
+
+  const Component = as;
+  const isDisabled = disabled || loading;
+  if (as === 'a' && !isDisabled && !rest.href) {
+    throw new Error('An enabled Button rendered as an anchor requires an href.');
+  }
+
+  const classes = [
+    'inline-flex min-w-[44px] items-center justify-center rounded-md font-semibold leading-5 transition-colors',
+    'focus-visible:z-10',
+    VARIANT_CLASSES[variant],
+    SIZE_CLASSES[size],
+    isDisabled ? 'cursor-not-allowed opacity-60' : 'cursor-pointer',
+    className,
+  ].filter(Boolean).join(' ');
+
+  const handleClick = (event) => {
+    if (isDisabled) {
+      event.preventDefault();
+      event.stopPropagation();
+      return;
+    }
+
+    onClick?.(event);
+  };
+
+  const props = {
+    ...rest,
+    ref,
+    className: classes,
+    onClick: handleClick,
+    'aria-busy': loading ? 'true' : rest['aria-busy'],
+    'aria-disabled': as === 'a' && isDisabled ? true : rest['aria-disabled'],
+  };
+
+  if (as === 'button') {
+    props.type = type;
+    props.disabled = isDisabled;
+  } else if (as === 'a' && isDisabled) {
+    props.tabIndex = -1;
+    props.href = undefined;
+  }
+
+  return (
+    <FocusRing>
+      <Component {...props}>
+        {loading && (
+          <LoaderCircle
+            className="h-4 w-4 shrink-0 animate-spin motion-reduce:animate-none"
+            aria-hidden="true"
+          />
+        )}
+        {!loading && iconLeft && <span className="inline-flex shrink-0" aria-hidden="true">{iconLeft}</span>}
+        {children}
+        {!loading && iconRight && <span className="inline-flex shrink-0" aria-hidden="true">{iconRight}</span>}
+      </Component>
+    </FocusRing>
+  );
+});
+
+export default Button;
+```
+
+#### `src/components/ui/Input.jsx`
+
+```jsx
+import React, { useId } from 'react';
+import FocusRing from './FocusRing';
+
+const SIZE_CLASSES = {
+  md: 'min-h-11',
+  lg: 'min-h-[52px]',
+};
+
+const Input = React.forwardRef(function Input({
+  label,
+  hint,
+  error,
+  size = 'md',
+  id,
+  className = '',
+  'aria-describedby': describedBy,
+  'aria-invalid': ariaInvalid,
+  ...rest
+}, ref) {
+  if (label === undefined || label === null || label === '') {
+    throw new Error('Input requires a visible label.');
+  }
+  if (!Object.hasOwn(SIZE_CLASSES, size)) {
+    throw new Error(`Unsupported Input size: ${size}`);
+  }
+
+  const generatedId = useId();
+  const inputId = id || `ui-input-${generatedId}`;
+  const hintId = hint ? `${inputId}-hint` : undefined;
+  const errorId = error ? `${inputId}-error` : undefined;
+  const descriptionIds = [describedBy, hintId, errorId].filter(Boolean).join(' ') || undefined;
+  const inputClasses = [
+    'block w-full rounded-md border bg-surface-100 px-3 text-base leading-6 text-surface-fg',
+    'placeholder:text-surface-fg-muted focus-visible:outline-none',
+    'disabled:cursor-not-allowed disabled:opacity-60',
+    SIZE_CLASSES[size],
+    error ? '!border-danger' : '!border-brand-600 dark:!border-brand-700',
+    className,
+  ].filter(Boolean).join(' ');
+
+  return (
+    <div className="grid gap-1.5">
+      <label htmlFor={inputId} className="text-base font-semibold leading-6 text-surface-fg">
+        {label}
+      </label>
+      <FocusRing>
+        <input
+          {...rest}
+          ref={ref}
+          id={inputId}
+          className={inputClasses}
+          aria-invalid={error ? true : ariaInvalid}
+          aria-describedby={descriptionIds}
+        />
+      </FocusRing>
+      {hint && <p id={hintId} className="text-base leading-6 text-surface-fg-secondary">{hint}</p>}
+      {error && (
+        <p id={errorId} role="alert" className="text-base font-medium leading-6 text-danger">
+          {error}
+        </p>
+      )}
+    </div>
+  );
+});
+
+export default Input;
+```
+
+#### `src/components/ui/Card.jsx`
+
+```jsx
+import React from 'react';
+import FocusRing from './FocusRing';
+
+const VARIANT_CLASSES = {
+  default: 'border border-surface-500 bg-surface-100 shadow-card',
+  featured: 'border border-brand-600 bg-surface-100 shadow-card',
+  interactive: 'border border-surface-500 bg-surface-100 shadow-card transition-shadow hover:shadow-cardHover',
+};
+
+const Card = ({ variant = 'default', as, children, className = '', ...rest }) => {
+  if (!Object.hasOwn(VARIANT_CLASSES, variant)) {
+    throw new Error(`Unsupported Card variant: ${variant}`);
+  }
+
+  const isInteractive = variant === 'interactive';
+  const Component = as || (isInteractive ? 'button' : 'div');
+
+  if (isInteractive && Component !== 'button' && Component !== 'a') {
+    throw new Error('Interactive Card must render as a button or anchor.');
+  }
+  if (isInteractive && Component === 'a' && !rest.href) {
+    throw new Error('Interactive Card rendered as an anchor requires an href.');
+  }
+
+  const props = {
+    ...rest,
+    className: [
+      'block rounded-lg p-4 text-left text-surface-fg',
+      VARIANT_CLASSES[variant],
+      isInteractive ? 'cursor-pointer' : '',
+      className,
+    ].filter(Boolean).join(' '),
+  };
+
+  if (isInteractive && Component === 'button') {
+    props.type = rest.type || 'button';
+  }
+
+  const card = <Component {...props}>{children}</Component>;
+  return isInteractive ? <FocusRing>{card}</FocusRing> : card;
+};
+
+export default Card;
+```
+
+#### `src/components/ui/Badge.jsx`
+
+```jsx
+import React from 'react';
+
+const TONE_CLASSES = {
+  neutral: 'bg-surface-200 text-surface-900 dark:bg-surface-200 dark:text-surface-900',
+  brand: 'bg-brand-100 text-brand-900 dark:bg-brand-100 dark:text-brand-900',
+  success: 'bg-success text-success-foreground',
+  warning: 'bg-warning text-warning-foreground',
+  danger: 'bg-danger text-danger-foreground',
+};
+
+const SIZE_CLASSES = {
+  sm: 'min-h-6 px-2 text-xs',
+  md: 'min-h-7 px-2.5 text-sm',
+};
+
+const Badge = ({ tone = 'neutral', size = 'sm', children, className = '', ...rest }) => {
+  if (!Object.hasOwn(TONE_CLASSES, tone)) {
+    throw new Error(`Unsupported Badge tone: ${tone}`);
+  }
+  if (!Object.hasOwn(SIZE_CLASSES, size)) {
+    throw new Error(`Unsupported Badge size: ${size}`);
+  }
+
+  return (
+    <span
+      {...rest}
+      className={[
+        'inline-flex w-fit items-center justify-center rounded-full font-semibold leading-5',
+        TONE_CLASSES[tone],
+        SIZE_CLASSES[size],
+        className,
+      ].filter(Boolean).join(' ')}
+    >
+      {children}
+    </span>
+  );
+};
+
+export default Badge;
+```
+
+#### `src/components/ui/FocusRing.jsx`
+
+```jsx
+import React from 'react';
+
+const FocusRing = ({ children, focusableOnly = true, className = '' }) => {
+  const child = React.Children.only(children);
+
+  if (!React.isValidElement(child)) {
+    throw new Error('FocusRing requires one focusable React element.');
+  }
+
+  const focusClass = focusableOnly
+    ? 'focus-visible:outline-none focus-visible:shadow-focusRing'
+    : 'focus:outline-none focus:shadow-focusRing';
+  const childClassName = [child.props.className, focusClass, className]
+    .filter(Boolean)
+    .join(' ');
+
+  return React.cloneElement(child, { className: childClassName });
+};
+
+export default FocusRing;
+```
+
+### H) Self-verification
+
+- [x] All five requested files exist, and all props/variants/defaults are listed above.
+- [x] Enabled text pairs meet 4.5:1; input/card/secondary borders and focus rings meet 3:1 in both themes.
+- [x] All Button sizes meet the 44px project target (`sm` is intentionally 44px); Input sizes measured 44px/52px.
+- [x] Input, hint, and error text measured 16px; loading state, accessible input error, and disabled behavior were checked in the browser.
+- [x] Keyboard screenshot captured; Tab, Enter, Space, focus visibility, link activation, and no-trap behavior were tested.
+- [x] Escape dismissal is N/A because no primitive is dismissible.
+- [x] `npm.cmd test` passed 352/352 before and after the changes; post-change duration 1,880.0454ms, zero failures, skipped, or warnings.
+- [x] `npm.cmd run build` passed; existing `buffer` externalization and >500 kB chunk warnings remain.
+- [x] `git diff --check` passed; no existing component or `.github/` file was changed for Task 2.2.
+- [x] The full application was not redesigned or modified; the viewport test checked that the rendered fixture itself fits from 320px upward.
+
 ## Task 2.3 — Typography & Spacing
 
 ## Task 2.4 — Dark Mode

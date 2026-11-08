@@ -83,6 +83,7 @@
 
 | Date/Paste # | Reason | Notes |
 |--------------|--------|-------|
+| 2026-11-09 | Task 2.2 completion and design decision | Interactive Primitives is Ready for Review in `docs/status.md`; created Button, Input, Card, Badge, and FocusRing. Decision: Button `sm` uses a 44px minimum height (rather than the primitive-specific 32px suggestion) to honor the project-wide 44×44px touch-target rule; compact padding is retained. |
 
 ## Resolved
 
