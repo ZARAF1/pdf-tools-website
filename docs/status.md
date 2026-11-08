@@ -43,3 +43,4 @@
 | 10.2 | TBD | Planned | — | — | — | — | — | — |
 | 10.3 | TBD | Planned | — | — | — | — | — | — |
 | 10.4 | TBD | Planned | — | — | — | — | — | — |
+| 1.6 | Project Tracker | Ready for Review | 352/352 | — | — | — | — | Created `docs/PROJECT-TRACKER.md` with decisions, amendments, findings, handover backlog, and Task 1.5 baseline. |
