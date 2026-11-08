@@ -328,6 +328,122 @@ Given the current review, the shipped set is not obviously a thin-content AdSens
 
 ## Task 1.5 — Baseline Metrics
 
+### A) Test suite
+
+| Item | Result |
+|------|--------|
+| Command | `npm.cmd test` (`node --test tests/*.test.mjs`) |
+| Result | PASS before and after this documentation update — 352 passed, 0 failed, 0 skipped on both runs |
+| Duration | Initial run: 1.94s wall-clock, Node duration 1,011.5734ms; post-update run: 1.33s wall-clock, Node duration 1,040.5927ms |
+| Warnings | None observed in test output |
+
+### B) Production build and bundle
+
+| Item | Result |
+|------|--------|
+| Command | `npm.cmd run build` |
+| Result | PASS; build completed in 2.23s |
+| `dist/` output | 53,206,095 bytes (53,206.10 kB; 51,959.08 KiB) across 67 files |
+| JavaScript chunks | 41 generated chunks in `dist/assets/`; 54 `.js` files total including copied OCR assets |
+| Largest generated JavaScript chunk | `index-DS8Pxecb.js` — 991,541 bytes (968.30 KiB) |
+| Homepage entry payload | 1,183,109 bytes (1,155.38 KiB) uncompressed: HTML, entry JavaScript, preloaded runtime, and stylesheet listed by `dist/index.html` |
+| Warnings | `buffer` was externalized for browser compatibility from `docx`; a generated chunk exceeds the 500 kB minified warning limit. |
+
+The homepage payload is an uncompressed build-file sum, not a measured network transfer size. The total `dist/` size includes copied OCR assets and is not the homepage's initial payload.
+
+### C) Lighthouse mobile
+
+| Metric | Result |
+|--------|--------|
+| Homepage URL | `http://localhost:4173/` — local production preview (`npm run build && npm run preview`); live Netlify deployment was outdated |
+| Performance | 92 |
+| Accessibility | 100 |
+| Best Practices | 100 |
+| SEO | 92 |
+| LCP | Passed; export reported no major delay, but no numeric value was supplied |
+| CLS | Passed; no layout shifts reported |
+| INP | N/A — no value supplied |
+| TBT | 10 ms |
+
+### D) Accessibility audit — WAVE (axe DevTools unavailable)
+
+axe DevTools failed to inject into the local preview, so WAVE was used instead. These counts are WAVE results and must not be interpreted as axe results.
+
+| Item | WAVE result |
+|------|-------------|
+| Total WAVE errors | 0 errors; 28 contrast errors were reported separately |
+| Critical | 0 |
+| Serious | 28 contrast errors |
+| Moderate | 24 alerts |
+| Minor | 0 |
+| Top reported items | Contrast Errors; Redundant title text; Redundant link |
+
+### E) Responsive screenshots
+
+The user reports that all eight full-page screenshots were saved in `tests/baseline-day1/`. Their presence was verified locally:
+
+| Viewport width | Screenshot | Verified |
+|----------------|------------|----------|
+| 320 | `home-320.png` | Yes |
+| 375 | `home-375.png` | Yes |
+| 414 | `home-414.png` | Yes |
+| 768 | `home-768.png` | Yes |
+| 1024 | `home-1024.png` | Yes |
+| 1280 | `home-1280.png` | Yes |
+| 1440 | `home-1440.png` | Yes |
+| 1920 | `home-1920.png` | Yes |
+
+### F) Browser console
+
+On the local production preview after a hard reload, the user reported **0 errors** and **0 warnings**. Error text: none.
+
+### G) Baseline summary
+
+| Metric | Value | Source | Threshold |
+|--------|-------|--------|-----------|
+| LH Performance | 92 | human — local production preview | ≥ 90 |
+| LH Accessibility | 100 | human — local production preview | ≥ 95 |
+| LH Best Practices | 100 | human — local production preview | ≥ 90 |
+| LH SEO | 92 | human — local production preview | ≥ 95 |
+| LCP | Passed; no major delay reported, numeric value not supplied | human — local production preview | < 2.5s |
+| CLS | Passed; no layout shifts reported | human — local production preview | < 0.1 |
+| INP | N/A — not supplied | human — local production preview | < 200ms |
+| WAVE critical | 0 | human — WAVE; axe injection failed | 0 |
+| WAVE serious | 28 contrast errors | human — WAVE; not an axe result | 0 |
+| WAVE moderate | 24 alerts | human — WAVE | informational |
+| WAVE errors | 0 errors (28 contrast errors reported separately) | human — WAVE | 0 |
+| TBT | 10 ms | human — local production preview | — |
+| Browser console | 0 errors, 0 warnings | human — local production preview | 0 |
+| Screenshots | 8/8 files present for required widths | human reported; files verified locally | 8 |
+| npm test | 352/352 passed | Copilot CLI | 352 (no regression) |
+| Bundle size | 53,206.10 kB dist; homepage entry 1,155.38 KiB uncompressed | Copilot build output | decrease |
+
+The Lighthouse, WAVE, screenshot, and console evidence above describes the local production preview, not the outdated live Netlify site. LCP was reported as passing without a numeric measurement, and INP was not supplied; neither is represented as a numeric Core Web Vital here.
+
+### H) Interpretation
+
+- **Furthest from target:** Lighthouse SEO is 92 against a target of ≥95 (3 points below target). Performance (92), Accessibility (100), and Best Practices (100) meet their stated score targets.
+- **Reported as meeting target:** Lighthouse reports CLS passed with no layout shifts. LCP is reported as passed/no major delay, but without a numeric value; INP is unavailable, so those two results cannot be compared quantitatively with their thresholds.
+- **Largest quality/accessibility risk:** WAVE reported 28 contrast errors and 24 moderate alerts; its top items also included redundant title text and redundant links. The contrast findings deserve review before redesign acceptance. Lighthouse Accessibility 100 does not erase these separate WAVE findings.
+- **AdSense risk:** No direct AdSense-policy violation was identified by these measurements. The contrast findings are a user-experience/accessibility concern, not proof of an AdSense violation. The existing AdSlot audit records placements as inactive; the baseline does not establish future ad-placement compliance.
+- **Scope limitation:** Evidence was gathered on the local production preview because the live Netlify site was outdated. Re-run the baseline against the intended deployment if production-specific measurements are required.
+
+### I) Status and self-verification
+
+Baseline status: **Ready for Review** — human browser evidence was supplied; axe DevTools was unavailable and WAVE was used as a clearly labeled substitute.
+
+- [x] Section A records the actual test command, result, duration, and observed warnings.
+- [x] Section B records the actual build output, `dist/` size, chunk counts, largest generated chunk, homepage entry payload, and warnings.
+- [x] Section C records the supplied Lighthouse scores and distinguishes missing numeric LCP/INP values.
+- [x] Section D records WAVE results and explicitly notes axe DevTools injection failure.
+- [x] Section E confirms all eight screenshot files exist.
+- [x] Section F records the supplied console counts.
+- [x] Section G records all supplied measurements; unavailable numeric metrics are identified rather than fabricated.
+- [x] Section H interprets the results and distinguishes accessibility quality risk from a proven AdSense violation.
+- [x] `docs/status.md` Baseline row updated with browser evidence.
+- [x] No application `.jsx`, `.js`, `.css`, `.mjs`, or `.json` file was modified.
+- [x] Test count is recorded as observed: 352 passed.
+
 ## Task 2.1 — Design Tokens
 
 ## Task 2.2 — Interactive Primitives
