@@ -1,0 +1,94 @@
+Initial workspace structure (file names only):
+```text
+c:\Projects\pdf
+IDEA.md
+attachfile.md
+build.log
+buildout.txt
+devout.txt
+impcheck.mjs
+index.html
+opencode.json
+package.json
+postcss.config.js
+tailwind.config.js
+tmp_make_sample.js
+tmp_original_untouched.pdf
+tmp_protect_test.js
+tmp_sample.pdf
+unique_tester_99.txt
+vite.config.mjs
+patches/
+	pptx-browser+4.1.5.patch
+public/
+	_headers
+	_redirects
+	robots.txt
+	assets/
+	ocr-assets/
+src/
+	App.jsx
+	index.css
+	main.jsx
+	components/
+	i18n/
+	lib/
+tests/
+	attachmentWorkflowLayout.test.mjs
+	categoryNavigationLayout.test.mjs
+	compressLayout.test.mjs
+	conversionDirection.test.mjs
+	cropLayout.test.mjs
+	deploymentReadiness.test.mjs
+	docxToPdf.test.mjs
+	downloadReadyCard.test.mjs
+	editPdfLayout.test.mjs
+	faqLocalization.test.mjs
+	imagePdfArchive.test.mjs
+	imagePdfDirection.test.mjs
+	imagePdfLayout.test.mjs
+	imagePdfSettings.test.mjs
+	imagePdfWorkflowLayout.test.mjs
+	imageSelection.test.mjs
+	languageCatalog.test.mjs
+	languageSelection.test.mjs
+	markdownConversion.test.mjs
+	markdownToolRoute.test.mjs
+	mergeSelectionWorkflow.test.mjs
+	mergeToolDetails.test.mjs
+	ocrPdfLayout.test.mjs
+	organizePdfCropGeometry.test.mjs
+	organizePdfLayout.test.mjs
+	outputFileName.test.mjs
+	pageRotations.test.mjs
+	pageSelection.test.mjs
+	pdfImageCrop.test.mjs
+	pdfImageOutput.test.mjs
+	pdfMergeOptions.test.mjs
+	pdfMergeOutput.test.mjs
+	pdfPageThumbnailRail.test.mjs
+	pdfToImagesWorkflowLayout.test.mjs
+	pdfToWordLayout.test.mjs
+	pdfValidationMessage.test.mjs
+	powerpointConversion.test.mjs
+	powerpointToolRoute.test.mjs
+	pptxBrowserRendererPatch.test.mjs
+	previewInstructions.test.mjs
+	protectPdfLayout.test.mjs
+	redactPdfLayout.test.mjs
+	removePdfLayout.test.mjs
+	resourceLocalization.test.mjs
+	rotatePdfAttachmentLayout.test.mjs
+	routeCodeSplitting.test.mjs
+	sidebarCollapse.test.mjs
+	siteNavigationAccessibility.test.mjs
+	sitePolicies.test.mjs
+	splitPdfArchive.test.mjs
+	splitPdfLayout.test.mjs
+	splitPdfMobileLayout.test.mjs
+	splitPdfModes.test.mjs
+	splitPdfOutputs.test.mjs
+	splitPdfPageTreeRecovery.test.mjs
+...
+```
+This snapshot may be truncated or stale. Use tools to inspect file contents and collect more context as needed.
