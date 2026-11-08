@@ -3,7 +3,7 @@
 | Task | Title | Status | npm test | axe | LH Mobile Perf | LH Mobile A11y | Screenshots | Notes |
 |------|-------|--------|----------|-----|----------------|----------------|-------------|------|
 | 1.1 | Scaffolding | Complete | 352/352 | — | — | — | — | Initial docs scaffold created. |
-| 1.2 | Current Homepage Audit | Ready for Review | 352/352 | — | — | — | — | Completed as a read-only audit and documentation reconciliation. |
+| 1.2 | Current Homepage Audit | Fixed — Ready for Review | 352/352 | — | — | — | — | Homepage component tree, preserved tool routes, and audit sections reconciled. |
 | 1.3 | AdSlot Audit | Ready for Review | 352/352 | — | — | — | — | Read-only audit completed; no code changes. |
 | 1.4 | i18n Quality Audit | Ready for Review | 352/352 | — | — | — | — | Read-only audit completed; no translation content or app code changed. |
 | 1.5 | Baseline Metrics | Planned | — | — | — | — | — | — |

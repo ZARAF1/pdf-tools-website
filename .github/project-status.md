@@ -1,6 +1,8 @@
 # Project Status — PDF Utility Website
 
 ## Current state
+**Completing Task 1.2 homepage audit (2026-11-08):** Sections B–J were already present in `docs/main-page.md`; clarified the shared app-shell context in the component tree, enumerated all 18 active homepage tool routes in Section G, and verified the minimum list sizes (G: 14, H: 8). Updated the Task 1.2 self-verification and `docs/status.md` status to “Fixed — Ready for Review.” No application code changed; `npm.cmd test` passed 352/352 before and after, and `git diff --check` passed. Runtime browser/axe checks remain outside this documentation-only fix. **Next:** human review.
+
 **Fixing the Split PDF mobile action wrap regression (2026-11-06):** Added `flex-wrap: wrap` to the left-aligned markdown selected-file actions so the Split PDF replace/delete controls wrap cleanly on narrow mobile screens without changing the broader attachment layout. The regression test failed before this CSS fix; the targeted `splitPdfMobileLayout` suite passes 8/8 and the full project test suite passes. `git diff --check` passes. No commit made. **Next:** review or broaden any remaining UI polish if user wants it.
 
 **Removing the duplicate PDF-to-Word result guidance (2026-11-06):** Removed the “Best text-based results” amber section from the PDF-to-Word conversion result panel. The summarized OCR, internet, table, and complex-layout note remains in the attachment description; Word-to-PDF's image-output warning is unchanged. The new regression failed before removal; PDF-to-Word layout and upload-description tests pass 9/9. `npm.cmd run build` succeeds with the existing buffer/chunk warnings; `git diff --check` passes. No browser conversion was run. No commit made. **Next:** gather feedback.
