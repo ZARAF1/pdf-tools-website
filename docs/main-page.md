@@ -446,6 +446,404 @@ Baseline status: **Ready for Review** — human browser evidence was supplied; a
 
 ## Task 2.1 — Design Tokens
 
+### A) Token layer and theme integration
+
+The shared tokens are exposed through Tailwind utilities and CSS custom properties. Existing application theme state is controlled by `document.documentElement.dataset.theme`; Tailwind is configured with a class-mode custom selector matching `[data-theme="dark"]`, so the current theme toggle keeps working without component changes. Light tokens are the `:root` defaults; dark color and shadow values are overridden by `:root[data-theme='dark']`.
+
+The theme's color values are CSS-variable-backed, so the same utilities change with the active theme. Typography, spacing, and radius are structural scales and intentionally remain identical in both themes. The card, hover, modal, and sticky-bar shadows have light/dark values. The focus-ring token is light blue in dark mode to retain strong contrast.
+
+Body copy and form-control text must remain at least 16px on mobile. Smaller type tokens are for compact labels, metadata, or supporting UI, not body copy.
+
+### B) Color tokens
+
+Hex values are shown for readability; the CSS custom properties store equivalent RGB channels for Tailwind alpha utilities. Palette-swatch ratios below are reference contrast against the page background, not approval to use every ramp shade as text; Section C lists each intended foreground/background pair.
+
+| Name | Value (light) | Value (dark) | Contrast (if applicable) | Intended use |
+|------|---------------|--------------|---------------------------|--------------|
+| brand-50 | `#eff6ff` | `#0b1220` | Swatch/page reference: 1.04:1 light; 1.00:1 dark; background-only | Light tint / dark base tint |
+| brand-100 | `#dbeafe` | `#0f172a` | Swatch/page reference: 1.17:1 light; 1.05:1 dark; background-only | Subtle brand surface |
+| brand-200 | `#bfdbfe` | `#172554` | Swatch/page reference: 1.36:1 light; 1.27:1 dark; not text | Brand tint |
+| brand-300 | `#93c5fd` | `#1e3a8a` | Swatch/page reference: 1.72:1 light; 1.81:1 dark; not text | Brand tint |
+| brand-400 | `#60a5fa` | `#1e40af` | Swatch/page reference: 2.43:1 light; 2.15:1 dark; not text | Brand tint |
+| brand-500 | `#3b82f6` | `#1d4ed8` | Swatch/page reference: 3.52:1 light; 2.79:1 dark; not text | Brand accent |
+| brand-600 | `#2563eb` | `#2563eb` | Swatch/page reference: 4.94:1 light; 3.62:1 dark. Border: 5.17:1 on white; 3.30:1 on dark surface | Interactive borders and strong brand controls |
+| brand-700 | `#1d4ed8` | `#60a5fa` | Swatch/page reference: 6.41:1 light; 7.36:1 dark. Text: 6.70:1 on white; 6.72:1 on dark surface | Brand links and text |
+| brand-800 | `#1e40af` | `#93c5fd` | Swatch/page reference: 8.34:1 light; 10.38:1 dark; not text | Deep/light brand accent |
+| brand-900 | `#1e3a8a` | `#dbeafe` | Swatch/page reference: 9.90:1 light; 15.35:1 dark; not text | Strongest light-theme / palest dark-theme accent |
+| surface-50 | `#f8fafc` | `#0b1220` | Swatch/page reference: 1.00:1 in both themes; page background | Page background |
+| surface-100 | `#f1f5f9` | `#111c2e` | Swatch/page reference: 1.05:1 light; 1.10:1 dark; muted/card background | Muted/card surface |
+| surface-200 | `#e2e8f0` | `#1e293b` | Swatch/page reference: 1.18:1 light; 1.28:1 dark; non-interactive divider only | Subtle separators |
+| surface-300 | `#cbd5e1` | `#334155` | Swatch/page reference: 1.42:1 light; 1.81:1 dark; non-interactive divider only | Stronger separators |
+| surface-400 | `#94a3b8` | `#475569` | Swatch/page reference: 2.45:1 light; 2.47:1 dark; not text | Neutral ramp |
+| surface-500 | `#64748b` | `#64748b` | Swatch/page reference: 4.55:1 light; 3.93:1 dark; use surface-fg-muted for text | Neutral ramp |
+| surface-600 | `#475569` | `#94a3b8` | Swatch/page reference: 7.24:1 light; 7.30:1 dark; use surface-fg-secondary for text | Neutral ramp |
+| surface-700 | `#334155` | `#cbd5e1` | Swatch/page reference: 9.90:1 light; 12.61:1 dark; not text | Neutral ramp |
+| surface-800 | `#1e293b` | `#e2e8f0` | Swatch/page reference: 13.98:1 light; 15.19:1 dark; not text | Neutral ramp |
+| surface-900 | `#0f172a` | `#f1f5f9` | Swatch/page reference: 17.06:1 light; 17.09:1 dark; use surface-fg-primary for text | Neutral ramp |
+| surface-950 | `#020617` | `#f8fafc` | Swatch/page reference: 19.28:1 light; 17.89:1 dark; not text | Highest-contrast neutral |
+| surface-fg (primary) | `#0f172a` | `#e2e8f0` | See every surface foreground pair in Section C | Primary text |
+| surface-fg-secondary | `#475569` | `#a7b3c5` | See every surface foreground pair in Section C | Secondary text |
+| surface-fg-muted | `#64748b` | `#94a3b8` | See every surface foreground pair in Section C | Muted text; chosen to pass AA on both theme surfaces |
+| success / foreground | `#15803d` / `#ffffff` | `#86efac` / `#052e16` | 5.02:1 light; 10.62:1 dark | Success status background and readable foreground |
+| warning / foreground | `#a16207` / `#ffffff` | `#fde68a` / `#422006` | 4.92:1 light; 11.70:1 dark | Warning status background and readable foreground |
+| danger / foreground | `#b91c1c` / `#ffffff` | `#fca5a5` / `#450a0a` | 6.47:1 light; 8.51:1 dark | Error/danger status background and readable foreground |
+| info / foreground | `#0369a1` / `#ffffff` | `#7dd3fc` / `#082f49` | 5.93:1 light; 8.32:1 dark | Informational status background and readable foreground |
+| `--focus-ring` | `#2563eb` | `#60a5fa` | 5.17:1 on white; 6.72:1 on dark surface | 2px visible focus ring with a 2px surface-colored offset |
+
+### C) Contrast evidence
+
+Ratios use the WCAG relative-luminance formula and are rounded to two decimals. The following are the foreground/background combinations intended for token-based text, interactive boundaries, status treatments, and focus indicators. Palette-only surface swatches are backgrounds or decorative ramp values, not approved text colors; interactive boundaries use brand-600 rather than the subtle surface divider colors.
+
+| Foreground | Background | Theme / use | Contrast |
+|------------|------------|-------------|----------|
+| `surface-fg` `#0f172a` | page `#f8fafc` | Light primary text | 17.06:1 |
+| `surface-fg` `#0f172a` | card `#ffffff` | Light primary text | 17.85:1 |
+| `surface-fg-secondary` `#475569` | page `#f8fafc` | Light secondary text | 7.24:1 |
+| `surface-fg-secondary` `#475569` | card `#ffffff` | Light secondary text | 7.58:1 |
+| `surface-fg-muted` `#64748b` | page `#f8fafc` | Light muted text | 4.55:1 |
+| `surface-fg-muted` `#64748b` | card `#ffffff` | Light muted text | 4.76:1 |
+| `surface-fg` `#e2e8f0` | page `#0b1220` | Dark primary text | 15.19:1 |
+| `surface-fg` `#e2e8f0` | card `#111c2e` | Dark primary text | 13.86:1 |
+| `surface-fg-secondary` `#a7b3c5` | page `#0b1220` | Dark secondary text | 8.82:1 |
+| `surface-fg-secondary` `#a7b3c5` | card `#111c2e` | Dark secondary text | 8.05:1 |
+| `surface-fg-muted` `#94a3b8` | page `#0b1220` | Dark muted text | 7.30:1 |
+| `surface-fg-muted` `#94a3b8` | card `#111c2e` | Dark muted text | 6.66:1 |
+| brand-700 `#1d4ed8` | white `#ffffff` | Light brand text | 6.70:1 |
+| brand-700 `#1d4ed8` | page `#f8fafc` | Light brand text | 6.41:1 |
+| brand-700 `#60a5fa` | page `#0b1220` | Dark brand text | 7.36:1 |
+| brand-700 `#60a5fa` | card `#111c2e` | Dark brand text | 6.72:1 |
+| brand-600 `#2563eb` | white `#ffffff` | Light interactive border | 5.17:1 |
+| brand-600 `#2563eb` | page `#f8fafc` | Light interactive border | 4.94:1 |
+| brand-600 `#2563eb` | page `#0b1220` | Dark interactive border | 3.62:1 |
+| brand-600 `#2563eb` | card `#111c2e` | Dark interactive border | 3.30:1 |
+| Focus `#2563eb` | white `#ffffff` | Light focus ring | 5.17:1 |
+| Focus `#2563eb` | page `#f8fafc` | Light focus ring | 4.94:1 |
+| Focus `#60a5fa` | page `#0b1220` | Dark focus ring | 7.36:1 |
+| Focus `#60a5fa` | card `#111c2e` | Dark focus ring | 6.72:1 |
+| `#ffffff` | success `#15803d` | Light success | 5.02:1 |
+| `#ffffff` | warning `#a16207` | Light warning | 4.92:1 |
+| `#ffffff` | danger `#b91c1c` | Light danger | 6.47:1 |
+| `#ffffff` | info `#0369a1` | Light information | 5.93:1 |
+| `#052e16` | success `#86efac` | Dark success | 10.62:1 |
+| `#422006` | warning `#fde68a` | Dark warning | 11.70:1 |
+| `#450a0a` | danger `#fca5a5` | Dark danger | 8.51:1 |
+| `#082f49` | info `#7dd3fc` | Dark information | 8.32:1 |
+| Existing tool-icon foreground `#1d4ed8` | existing tool-icon background `#eff6ff` | Light legacy alias preserved | 6.16:1 |
+| Existing tool-icon foreground `#bfdbfe` | existing tool-icon background `#1e3a5f` | Dark legacy alias preserved | 8.10:1 |
+
+All status foreground/background pairs exceed 4.5:1. The focus ring exceeds 3:1 against both page and card backgrounds in both themes. This is token contrast evidence; it does not claim that every existing page component has been runtime-audited with these tokens.
+
+### D) Type scale
+
+| Token | Size | Line height | Intended use |
+|-------|------|-------------|--------------|
+| 2xs | 11px | 16px | Compact metadata only |
+| xs | 12px | 16px | Compact labels only |
+| sm | 14px | 20px | Secondary UI labels; not mobile body text |
+| base | 16px | 24px | Minimum body and form text on mobile |
+| lg | 18px | 28px | Lead/body emphasis |
+| xl | 20px | 28px | Subheadings |
+| 2xl | 24px | 32px | Section headings |
+| 3xl | 30px | 36px | Large headings |
+| 4xl | 36px | 40px | Display headings |
+| 5xl | 48px | 1 | Display |
+| 6xl | 60px | 1 | Large display |
+| 7xl | 72px | 1 | Largest display |
+
+Type tokens have identical light and dark values; theme changes do not alter typography geometry.
+
+### E) Spacing scale
+
+| Token | Value | Intended use |
+|-------|-------|--------------|
+| xs | 4px | Tight inline spacing |
+| sm | 8px | Compact control gaps |
+| md | 12px | Control padding/gaps |
+| lg | 16px | Standard spacing |
+| xl | 24px | Section spacing |
+| 2xl | 32px | Large component spacing |
+| 3xl | 48px | Section separation |
+| 4xl | 64px | Large section separation |
+| 5xl | 96px | Page composition |
+| 6xl | 128px | Major layout separation |
+
+Spacing tokens are theme-invariant.
+
+### F) Radii
+
+| Token | Value | Intended use |
+|-------|-------|--------------|
+| sm | 6px | Compact controls |
+| md | 10px | Standard controls |
+| lg | 14px | Cards |
+| xl | 20px | Large cards/panels |
+| 2xl | 28px | Hero surfaces |
+| full | 9999px | Pills and circular controls |
+
+Radius tokens are theme-invariant.
+
+### G) Shadows
+
+| Token | Light value | Dark value | Intended use |
+|-------|-------------|------------|--------------|
+| card | `0 1px 2px rgb(15 23 42 / .06), 0 1px 3px rgb(15 23 42 / .1)` | `0 1px 2px rgb(0 0 0 / .24), 0 1px 3px rgb(0 0 0 / .32)` | Resting cards |
+| cardHover | `0 8px 20px rgb(15 23 42 / .12), 0 3px 8px rgb(15 23 42 / .08)` | `0 8px 20px rgb(0 0 0 / .36), 0 3px 8px rgb(0 0 0 / .24)` | Elevated/hovered cards |
+| focusRing | `0 0 0 2px var(--surface-background), 0 0 0 4px var(--focus-ring)` | Same geometry; dark surface and focus colors resolve from dark variables | 2px separator offset plus 2px visible outer ring |
+| modal | `0 20px 50px rgb(15 23 42 / .2)` | `0 20px 50px rgb(0 0 0 / .48)` | Modal elevation |
+| stickyBar | `0 -4px 16px rgb(15 23 42 / .12)` | `0 -4px 16px rgb(0 0 0 / .36)` | Sticky action bar |
+
+### H) Rejected alternatives
+
+- Considered a neutral-only brand palette; rejected because brand surfaces and links need a distinct identity and clear hierarchy.
+- Considered relying on Tailwind's operating-system `media` dark mode; rejected because the app already supports an explicit persisted theme toggle.
+- Considered converting the app to a literal `.dark` class; rejected for this task because it would require component changes outside scope. Tailwind's class strategy instead uses the existing `[data-theme="dark"]` root selector.
+- Considered using gray-400 for muted text on white; rejected because it would not meet 4.5:1 for normal-sized text. The selected muted foreground is `#64748b` in light mode.
+
+### I) Full source diffs
+
+#### `tailwind.config.js`
+
+```diff
+diff --git a/tailwind.config.js b/tailwind.config.js
+index d3f6d6c..9f7c05d 100644
+--- a/tailwind.config.js
++++ b/tailwind.config.js
+@@ -1,7 +1,98 @@
+ module.exports = {
+   content: ['./index.html', './src/**/*.{js,ts,jsx,tsx}'],
++  darkMode: ['class', '[data-theme="dark"]'],
+   theme: {
+-    extend: {},
++    extend: {
++      colors: {
++        brand: {
++          50: 'rgb(var(--brand-50) / <alpha-value>)',
++          100: 'rgb(var(--brand-100) / <alpha-value>)',
++          200: 'rgb(var(--brand-200) / <alpha-value>)',
++          300: 'rgb(var(--brand-300) / <alpha-value>)',
++          400: 'rgb(var(--brand-400) / <alpha-value>)',
++          500: 'rgb(var(--brand-500) / <alpha-value>)',
++          600: 'rgb(var(--brand-600) / <alpha-value>)',
++          700: 'rgb(var(--brand-700) / <alpha-value>)',
++          800: 'rgb(var(--brand-800) / <alpha-value>)',
++          900: 'rgb(var(--brand-900) / <alpha-value>)',
++        },
++        surface: {
++          50: 'rgb(var(--surface-50) / <alpha-value>)',
++          100: 'rgb(var(--surface-100) / <alpha-value>)',
++          200: 'rgb(var(--surface-200) / <alpha-value>)',
++          300: 'rgb(var(--surface-300) / <alpha-value>)',
++          400: 'rgb(var(--surface-400) / <alpha-value>)',
++          500: 'rgb(var(--surface-500) / <alpha-value>)',
++          600: 'rgb(var(--surface-600) / <alpha-value>)',
++          700: 'rgb(var(--surface-700) / <alpha-value>)',
++          800: 'rgb(var(--surface-800) / <alpha-value>)',
++          900: 'rgb(var(--surface-900) / <alpha-value>)',
++          950: 'rgb(var(--surface-950) / <alpha-value>)',
++        },
++        'surface-fg': {
++          DEFAULT: 'rgb(var(--surface-fg) / <alpha-value>)',
++          secondary: 'rgb(var(--surface-fg-secondary) / <alpha-value>)',
++          muted: 'rgb(var(--surface-fg-muted) / <alpha-value>)',
++        },
++        success: {
++          DEFAULT: 'rgb(var(--success) / <alpha-value>)',
++          foreground: 'rgb(var(--success-foreground) / <alpha-value>)',
++        },
++        warning: {
++          DEFAULT: 'rgb(var(--warning) / <alpha-value>)',
++          foreground: 'rgb(var(--warning-foreground) / <alpha-value>)',
++        },
++        danger: {
++          DEFAULT: 'rgb(var(--danger) / <alpha-value>)',
++          foreground: 'rgb(var(--danger-foreground) / <alpha-value>)',
++        },
++        info: {
++          DEFAULT: 'rgb(var(--info) / <alpha-value>)',
++          foreground: 'rgb(var(--info-foreground) / <alpha-value>)',
++        },
++      },
++      fontSize: {
++        '2xs': ['11px', { lineHeight: '16px' }],
++        xs: ['12px', { lineHeight: '16px' }],
++        sm: ['14px', { lineHeight: '20px' }],
++        base: ['16px', { lineHeight: '24px' }],
++        lg: ['18px', { lineHeight: '28px' }],
++        xl: ['20px', { lineHeight: '28px' }],
++        '2xl': ['24px', { lineHeight: '32px' }],
++        '3xl': ['30px', { lineHeight: '36px' }],
++        '4xl': ['36px', { lineHeight: '40px' }],
++        '5xl': ['48px', { lineHeight: '1' }],
++        '6xl': ['60px', { lineHeight: '1' }],
++        '7xl': ['72px', { lineHeight: '1' }],
++      },
++      spacing: {
++        xs: '4px',
++        sm: '8px',
++        md: '12px',
++        lg: '16px',
++        xl: '24px',
++        '2xl': '32px',
++        '3xl': '48px',
++        '4xl': '64px',
++        '5xl': '96px',
++        '6xl': '128px',
++      },
++      borderRadius: {
++        sm: '6px',
++        md: '10px',
++        lg: '14px',
++        xl: '20px',
++        '2xl': '28px',
++        full: '9999px',
++      },
++      boxShadow: {
++        card: 'var(--shadow-card)',
++        cardHover: 'var(--shadow-card-hover)',
++        focusRing: 'var(--shadow-focus-ring)',
++        modal: 'var(--shadow-modal)',
++        stickyBar: 'var(--shadow-sticky-bar)',
++      },
++    },
+   },
+   plugins: [],
+ };
+```
+
+#### `src/index.css`
+
+```diff
+diff --git a/src/index.css b/src/index.css
+index c0180cb..40339d0 100644
+--- a/src/index.css
++++ b/src/index.css
+@@ -28,24 +28,100 @@ body {
+
+ :root {
+   color-scheme: light;
++  --brand-50: 239 246 255;
++  --brand-100: 219 234 254;
++  --brand-200: 191 219 254;
++  --brand-300: 147 197 253;
++  --brand-400: 96 165 250;
++  --brand-500: 59 130 246;
++  --brand-600: 37 99 235;
++  --brand-700: 29 78 216;
++  --brand-800: 30 64 175;
++  --brand-900: 30 58 138;
++  --surface-50: 248 250 252;
++  --surface-100: 241 245 249;
++  --surface-200: 226 232 240;
++  --surface-300: 203 213 225;
++  --surface-400: 148 163 184;
++  --surface-500: 100 116 139;
++  --surface-600: 71 85 105;
++  --surface-700: 51 65 85;
++  --surface-800: 30 41 59;
++  --surface-900: 15 23 42;
++  --surface-950: 2 6 23;
++  --surface-fg: 15 23 42;
++  --surface-fg-secondary: 71 85 105;
++  --surface-fg-muted: 100 116 139;
++  --success: 21 128 61;
++  --success-foreground: 255 255 255;
++  --warning: 161 98 7;
++  --warning-foreground: 255 255 255;
++  --danger: 185 28 28;
++  --danger-foreground: 255 255 255;
++  --info: 3 105 161;
++  --info-foreground: 255 255 255;
++  --focus-ring: #2563eb;
++  --shadow-card: 0 1px 2px rgb(15 23 42 / 0.06), 0 1px 3px rgb(15 23 42 / 0.1);
++  --shadow-card-hover: 0 8px 20px rgb(15 23 42 / 0.12), 0 3px 8px rgb(15 23 42 / 0.08);
++  --shadow-focus-ring: 0 0 0 2px var(--surface-background), 0 0 0 4px var(--focus-ring);
++  --shadow-modal: 0 20px 50px rgb(15 23 42 / 0.2);
++  --shadow-sticky-bar: 0 -4px 16px rgb(15 23 42 / 0.12);
+   --page-background: #f8fafc;
+   --surface-background: #ffffff;
+   --surface-muted: #f1f5f9;
+-  --text-primary: #0f172a;
+-  --text-secondary: #475569;
+-  --border-color: #e2e8f0;
+-  --tool-icon-background: #eff6ff;
+-  --tool-icon-foreground: #1d4ed8;
++  --text-primary: rgb(var(--surface-fg));
++  --text-secondary: rgb(var(--surface-fg-secondary));
++  --border-color: rgb(var(--surface-200));
++  --tool-icon-background: rgb(var(--brand-50));
++  --tool-icon-foreground: rgb(var(--brand-700));
+ }
+
+ :root[data-theme='dark'] {
+   color-scheme: dark;
++  --brand-50: 11 18 32;
++  --brand-100: 15 23 42;
++  --brand-200: 23 37 84;
++  --brand-300: 30 58 138;
++  --brand-400: 30 64 175;
++  --brand-500: 29 78 216;
++  --brand-600: 37 99 235;
++  --brand-700: 96 165 250;
++  --brand-800: 147 197 253;
++  --brand-900: 219 234 254;
++  --surface-50: 11 18 32;
++  --surface-100: 17 28 46;
++  --surface-200: 30 41 59;
++  --surface-300: 51 65 85;
++  --surface-400: 71 85 105;
++  --surface-500: 100 116 139;
++  --surface-600: 148 163 184;
++  --surface-700: 203 213 225;
++  --surface-800: 226 232 240;
++  --surface-900: 241 245 249;
++  --surface-950: 248 250 252;
++  --surface-fg: 226 232 240;
++  --surface-fg-secondary: 167 179 197;
++  --surface-fg-muted: 148 163 184;
++  --success: 134 239 172;
++  --success-foreground: 5 46 22;
++  --warning: 253 230 138;
++  --warning-foreground: 66 32 6;
++  --danger: 252 165 165;
++  --danger-foreground: 69 10 10;
++  --info: 125 211 252;
++  --info-foreground: 8 47 73;
++  --focus-ring: #60a5fa;
++  --shadow-card: 0 1px 2px rgb(0 0 0 / 0.24), 0 1px 3px rgb(0 0 0 / 0.32);
++  --shadow-card-hover: 0 8px 20px rgb(0 0 0 / 0.36), 0 3px 8px rgb(0 0 0 / 0.24);
++  --shadow-focus-ring: 0 0 0 2px var(--surface-background), 0 0 0 4px var(--focus-ring);
++  --shadow-modal: 0 20px 50px rgb(0 0 0 / 0.48);
++  --shadow-sticky-bar: 0 -4px 16px rgb(0 0 0 / 0.36);
+   --page-background: #0b1220;
+   --surface-background: #111c2e;
+   --surface-muted: #1e293b;
+-  --text-primary: #e2e8f0;
+-  --text-secondary: #a7b3c5;
+-  --border-color: #334155;
++  --text-primary: rgb(var(--surface-fg));
++  --text-secondary: rgb(var(--surface-fg-secondary));
++  --border-color: rgb(var(--surface-300));
+   --tool-icon-background: #1e3a5f;
+   --tool-icon-foreground: #bfdbfe;
+ }
+```
+
+### J) Self-verification
+
+- [x] Brand and surface color scales have explicit light and dark values; every intended foreground/background pair is listed with its ratio in Section C.
+- [x] Accent base/foreground pairs exceed 4.5:1 in both themes.
+- [x] Focus ring is `#2563eb` light / `#60a5fa` dark and exceeds 3:1 against both page and card surfaces in each theme.
+- [x] All 12 type sizes and paired line heights are defined.
+- [x] All 10 spacing tokens are defined.
+- [x] `tailwind.config.js` is extended; existing content and plugins remain.
+- [x] Existing `data-theme` toggle is retained through the custom class-mode selector; no component files changed.
+- [x] `npm.cmd test` passed before and after the token changes: 352/352 each run.
+- [x] `npm.cmd run build` passed; existing `buffer` externalization and >500 kB chunk warnings remain.
+- [x] Tailwind generated brand utilities and the custom dark selector in a focused PostCSS check.
+- [x] Automated token-count and contrast checks passed, including 27 intended color pairs.
+- [x] `git diff --check` passed; no `.jsx` file was modified.
+- [x] No `.jsx` file was modified.
+
 ## Task 2.2 — Interactive Primitives
 
 ## Task 2.3 — Typography & Spacing

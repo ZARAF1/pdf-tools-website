@@ -7,7 +7,7 @@
 | 1.3 | AdSlot Audit | Ready for Review | 352/352 | — | — | — | — | Read-only audit completed; no code changes. |
 | 1.4 | i18n Quality Audit | Ready for Review | 352/352 | — | — | — | — | Read-only audit completed; no translation content or app code changed. |
 | 1.5 | Baseline Metrics | Ready for Review | 352/352 | WAVE: 0 errors; 28 contrast errors | 92 | 100 | 8/8 | Local preview baseline: Lighthouse SEO 92, Best Practices 100; axe injection failed, WAVE used; console 0 errors/warnings. |
-| 2.1 | Design Tokens | Planned | — | — | — | — | — | — |
+| 2.1 | Design Tokens | Ready for Review | 352/352 | — | — | — | — | Added theme-aware Tailwind/CSS tokens; 27 contrast pairs checked; production build passed with existing warnings. |
 | 2.2 | Interactive Primitives | Planned | — | — | — | — | — | — |
 | 2.3 | Typography & Spacing | Planned | — | — | — | — | — | — |
 | 2.4 | Dark Mode | Planned | — | — | — | — | — | — |
