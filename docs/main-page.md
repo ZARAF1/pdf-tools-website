@@ -1563,6 +1563,177 @@ None is a black-filled SVG icon requiring inversion. Lucide icons are stroke-bas
 
 ## Task 2.5 — Design System Summary
 
+### A) Canonical visual spec
+
+This is the visual rulebook for homepage Variants 1–3. Color swatches show the literal light and dark values (`[light]` / `[dark]`); the complete contrast calculations remain in Task 2.1, Section C. Use the paired foreground/background recipes there rather than treating every palette shade as text-safe.
+
+#### Color palette
+
+| Token | Light chip / value | Dark chip / value | Intended role |
+|---|---|---|---|
+| `brand-50` | <span style="display:inline-block;width:1em;height:1em;background:#eff6ff;border:1px solid #94a3b8"></span> `#eff6ff` | <span style="display:inline-block;width:1em;height:1em;background:#0b1220;border:1px solid #94a3b8"></span> `#0b1220` | Brand tint / dark base |
+| `brand-100` | <span style="display:inline-block;width:1em;height:1em;background:#dbeafe;border:1px solid #94a3b8"></span> `#dbeafe` | <span style="display:inline-block;width:1em;height:1em;background:#0f172a;border:1px solid #94a3b8"></span> `#0f172a` | Subtle brand surface |
+| `brand-200` | <span style="display:inline-block;width:1em;height:1em;background:#bfdbfe;border:1px solid #94a3b8"></span> `#bfdbfe` | <span style="display:inline-block;width:1em;height:1em;background:#172554;border:1px solid #94a3b8"></span> `#172554` | Brand tint |
+| `brand-300` | <span style="display:inline-block;width:1em;height:1em;background:#93c5fd;border:1px solid #94a3b8"></span> `#93c5fd` | <span style="display:inline-block;width:1em;height:1em;background:#1e3a8a;border:1px solid #94a3b8"></span> `#1e3a8a` | Brand tint |
+| `brand-400` | <span style="display:inline-block;width:1em;height:1em;background:#60a5fa;border:1px solid #94a3b8"></span> `#60a5fa` | <span style="display:inline-block;width:1em;height:1em;background:#1e40af;border:1px solid #94a3b8"></span> `#1e40af` | Brand accent |
+| `brand-500` | <span style="display:inline-block;width:1em;height:1em;background:#3b82f6;border:1px solid #94a3b8"></span> `#3b82f6` | <span style="display:inline-block;width:1em;height:1em;background:#1d4ed8;border:1px solid #94a3b8"></span> `#1d4ed8` | Brand accent |
+| `brand-600` | <span style="display:inline-block;width:1em;height:1em;background:#2563eb;border:1px solid #94a3b8"></span> `#2563eb` | <span style="display:inline-block;width:1em;height:1em;background:#2563eb;border:1px solid #94a3b8"></span> `#2563eb` | Interactive borders |
+| `brand-700` | <span style="display:inline-block;width:1em;height:1em;background:#1d4ed8;border:1px solid #94a3b8"></span> `#1d4ed8` | <span style="display:inline-block;width:1em;height:1em;background:#60a5fa;border:1px solid #94a3b8"></span> `#60a5fa` | Brand text / links |
+| `brand-800` | <span style="display:inline-block;width:1em;height:1em;background:#1e40af;border:1px solid #94a3b8"></span> `#1e40af` | <span style="display:inline-block;width:1em;height:1em;background:#93c5fd;border:1px solid #94a3b8"></span> `#93c5fd` | Deep/light brand accent |
+| `brand-900` | <span style="display:inline-block;width:1em;height:1em;background:#1e3a8a;border:1px solid #94a3b8"></span> `#1e3a8a` | <span style="display:inline-block;width:1em;height:1em;background:#dbeafe;border:1px solid #94a3b8"></span> `#dbeafe` | Strong light / pale dark accent |
+| `surface-50` | <span style="display:inline-block;width:1em;height:1em;background:#f8fafc;border:1px solid #94a3b8"></span> `#f8fafc` | <span style="display:inline-block;width:1em;height:1em;background:#0b1220;border:1px solid #94a3b8"></span> `#0b1220` | Page background |
+| `surface-100` | <span style="display:inline-block;width:1em;height:1em;background:#f1f5f9;border:1px solid #94a3b8"></span> `#f1f5f9` | <span style="display:inline-block;width:1em;height:1em;background:#111c2e;border:1px solid #94a3b8"></span> `#111c2e` | Muted/card surface |
+| `surface-200` | <span style="display:inline-block;width:1em;height:1em;background:#e2e8f0;border:1px solid #94a3b8"></span> `#e2e8f0` | <span style="display:inline-block;width:1em;height:1em;background:#1e293b;border:1px solid #94a3b8"></span> `#1e293b` | Subtle divider |
+| `surface-300` | <span style="display:inline-block;width:1em;height:1em;background:#cbd5e1;border:1px solid #94a3b8"></span> `#cbd5e1` | <span style="display:inline-block;width:1em;height:1em;background:#334155;border:1px solid #94a3b8"></span> `#334155` | Strong divider |
+| `surface-400` | <span style="display:inline-block;width:1em;height:1em;background:#94a3b8;border:1px solid #64748b"></span> `#94a3b8` | <span style="display:inline-block;width:1em;height:1em;background:#475569;border:1px solid #94a3b8"></span> `#475569` | Neutral ramp |
+| `surface-500` | <span style="display:inline-block;width:1em;height:1em;background:#64748b;border:1px solid #94a3b8"></span> `#64748b` | <span style="display:inline-block;width:1em;height:1em;background:#64748b;border:1px solid #94a3b8"></span> `#64748b` | Neutral ramp; not dark muted text |
+| `surface-600` | <span style="display:inline-block;width:1em;height:1em;background:#475569;border:1px solid #94a3b8"></span> `#475569` | <span style="display:inline-block;width:1em;height:1em;background:#94a3b8;border:1px solid #64748b"></span> `#94a3b8` | Neutral ramp |
+| `surface-700` | <span style="display:inline-block;width:1em;height:1em;background:#334155;border:1px solid #94a3b8"></span> `#334155` | <span style="display:inline-block;width:1em;height:1em;background:#cbd5e1;border:1px solid #94a3b8"></span> `#cbd5e1` | Neutral ramp |
+| `surface-800` | <span style="display:inline-block;width:1em;height:1em;background:#1e293b;border:1px solid #94a3b8"></span> `#1e293b` | <span style="display:inline-block;width:1em;height:1em;background:#e2e8f0;border:1px solid #94a3b8"></span> `#e2e8f0` | Neutral ramp |
+| `surface-900` | <span style="display:inline-block;width:1em;height:1em;background:#0f172a;border:1px solid #94a3b8"></span> `#0f172a` | <span style="display:inline-block;width:1em;height:1em;background:#f1f5f9;border:1px solid #94a3b8"></span> `#f1f5f9` | Neutral ramp |
+| `surface-950` | <span style="display:inline-block;width:1em;height:1em;background:#020617;border:1px solid #94a3b8"></span> `#020617` | <span style="display:inline-block;width:1em;height:1em;background:#f8fafc;border:1px solid #94a3b8"></span> `#f8fafc` | Highest-contrast neutral |
+| `surface-fg` | <span style="display:inline-block;width:1em;height:1em;background:#0f172a;border:1px solid #94a3b8"></span> `#0f172a` | <span style="display:inline-block;width:1em;height:1em;background:#e2e8f0;border:1px solid #94a3b8"></span> `#e2e8f0` | Primary text |
+| `surface-fg-secondary` | <span style="display:inline-block;width:1em;height:1em;background:#475569;border:1px solid #94a3b8"></span> `#475569` | <span style="display:inline-block;width:1em;height:1em;background:#a7b3c5;border:1px solid #64748b"></span> `#a7b3c5` | Secondary text |
+| `surface-fg-muted` | <span style="display:inline-block;width:1em;height:1em;background:#64748b;border:1px solid #94a3b8"></span> `#64748b` | <span style="display:inline-block;width:1em;height:1em;background:#94a3b8;border:1px solid #64748b"></span> `#94a3b8` | Muted text; retains ≥4.5:1 |
+| `--surface-background` | <span style="display:inline-block;width:1em;height:1em;background:#ffffff;border:1px solid #94a3b8"></span> `#ffffff` | <span style="display:inline-block;width:1em;height:1em;background:#111c2e;border:1px solid #94a3b8"></span> `#111c2e` | Raised card/surface background |
+| `--text-primary` (legacy alias) | <span style="display:inline-block;width:1em;height:1em;background:#0f172a;border:1px solid #94a3b8"></span> `#0f172a` | <span style="display:inline-block;width:1em;height:1em;background:#e2e8f0;border:1px solid #94a3b8"></span> `#e2e8f0` | Alias of `surface-fg` |
+| `--text-secondary` (legacy alias) | <span style="display:inline-block;width:1em;height:1em;background:#475569;border:1px solid #94a3b8"></span> `#475569` | <span style="display:inline-block;width:1em;height:1em;background:#a7b3c5;border:1px solid #64748b"></span> `#a7b3c5` | Alias of `surface-fg-secondary` |
+| `--border-color` | <span style="display:inline-block;width:1em;height:1em;background:#e2e8f0;border:1px solid #94a3b8"></span> `#e2e8f0` | <span style="display:inline-block;width:1em;height:1em;background:#334155;border:1px solid #94a3b8"></span> `#334155` | Subtle divider; not an interactive boundary |
+| `success` / foreground | <span style="display:inline-block;width:1em;height:1em;background:#15803d;border:1px solid #94a3b8"></span> `#15803d` / <span style="display:inline-block;width:1em;height:1em;background:#ffffff;border:1px solid #94a3b8"></span> `#fff` | <span style="display:inline-block;width:1em;height:1em;background:#86efac;border:1px solid #94a3b8"></span> `#86efac` / <span style="display:inline-block;width:1em;height:1em;background:#052e16;border:1px solid #94a3b8"></span> `#052e16` | Success status |
+| `warning` / foreground | <span style="display:inline-block;width:1em;height:1em;background:#a16207;border:1px solid #94a3b8"></span> `#a16207` / <span style="display:inline-block;width:1em;height:1em;background:#ffffff;border:1px solid #94a3b8"></span> `#fff` | <span style="display:inline-block;width:1em;height:1em;background:#fde68a;border:1px solid #94a3b8"></span> `#fde68a` / <span style="display:inline-block;width:1em;height:1em;background:#422006;border:1px solid #94a3b8"></span> `#422006` | Warning status |
+| `danger` / foreground | <span style="display:inline-block;width:1em;height:1em;background:#b91c1c;border:1px solid #94a3b8"></span> `#b91c1c` / <span style="display:inline-block;width:1em;height:1em;background:#ffffff;border:1px solid #94a3b8"></span> `#fff` | <span style="display:inline-block;width:1em;height:1em;background:#fca5a5;border:1px solid #94a3b8"></span> `#fca5a5` / <span style="display:inline-block;width:1em;height:1em;background:#450a0a;border:1px solid #94a3b8"></span> `#450a0a` | Error/destructive status |
+| `info` / foreground | <span style="display:inline-block;width:1em;height:1em;background:#0369a1;border:1px solid #94a3b8"></span> `#0369a1` / <span style="display:inline-block;width:1em;height:1em;background:#ffffff;border:1px solid #94a3b8"></span> `#fff` | <span style="display:inline-block;width:1em;height:1em;background:#7dd3fc;border:1px solid #94a3b8"></span> `#7dd3fc` / <span style="display:inline-block;width:1em;height:1em;background:#082f49;border:1px solid #94a3b8"></span> `#082f49` | Informational status |
+| `--page-background` | <span style="display:inline-block;width:1em;height:1em;background:#f8fafc;border:1px solid #94a3b8"></span> `#f8fafc` | <span style="display:inline-block;width:1em;height:1em;background:#0b1220;border:1px solid #94a3b8"></span> `#0b1220` | App canvas |
+| `--surface-muted` | <span style="display:inline-block;width:1em;height:1em;background:#f1f5f9;border:1px solid #94a3b8"></span> `#f1f5f9` | <span style="display:inline-block;width:1em;height:1em;background:#1e293b;border:1px solid #94a3b8"></span> `#1e293b` | Quiet nested surface (`surface-100` / `surface-200`) |
+| Tool icon background / foreground | <span style="display:inline-block;width:1em;height:1em;background:#eff6ff;border:1px solid #94a3b8"></span> `#eff6ff` / <span style="display:inline-block;width:1em;height:1em;background:#1d4ed8;border:1px solid #94a3b8"></span> `#1d4ed8` | <span style="display:inline-block;width:1em;height:1em;background:#1e3a5f;border:1px solid #94a3b8"></span> `#1e3a5f` / <span style="display:inline-block;width:1em;height:1em;background:#bfdbfe;border:1px solid #94a3b8"></span> `#bfdbfe` | Paired icon tile |
+| `--focus-ring` | <span style="display:inline-block;width:1em;height:1em;background:#2563eb;border:1px solid #94a3b8"></span> `#2563eb` | <span style="display:inline-block;width:1em;height:1em;background:#60a5fa;border:1px solid #94a3b8"></span> `#60a5fa` | Keyboard focus indicator |
+
+Use the four accent foreground/background pairs and their contrast evidence from Task 2.1; do not switch foreground and background roles.
+
+#### Type scale
+
+| Token | Size / line-height | Named use |
+|---|---|---|
+| `2xs` | 11px / 16px | Dense, nonessential micro-metadata only |
+| `xs` | 12px / 16px | Eyebrows and captions |
+| `sm` | 14px / 20px | Compact labels/control metadata, never mobile body copy |
+| `base` | 16px / 24px | Body, help, descriptions, instructions; minimum mobile body size |
+| `lg` | 18px / 28px | Lead text and minor headings |
+| `xl` | 20px / 28px | Subsection headings |
+| `2xl` | 24px / 32px | Section headings |
+| `3xl` | 30px / 36px | Informational page titles |
+| `4xl` | 36px / 40px | Large page/feature headings |
+| `5xl` | 48px / 1 | Display headings |
+| `6xl` | 60px / 1 | Homepage hero scale |
+| `7xl` | 72px / 1 | Largest display scale |
+
+Choose a deliberate hierarchy and use no more than three type sizes in a single section. Type geometry is the same in light and dark themes.
+
+#### Spacing scale
+
+| Token | Value | Typical role |
+|---|---:|---|
+| `xs` | 4px | Tight icon/label spacing |
+| `sm` | 8px | Compact control gaps |
+| `md` | 12px | Dense grid/control gaps |
+| `lg` | 16px | Standard component padding/gaps |
+| `xl` | 24px | Related content and section spacing |
+| `2xl` | 32px | Large component separation |
+| `3xl` | 48px | Section separation |
+| `4xl` | 64px | Major section separation |
+| `5xl` | 96px | Page composition |
+| `6xl` | 128px | Major layout separation |
+
+Use the named spacing utilities (`gap-md`, `p-lg`, `space-y-xl`, etc.); these dimensions do not change by theme. Avoid arbitrary pixel utilities and off-token values such as the current 28px category-stack gap noted in Task 2.3.
+
+#### Radii and shadows
+
+| Token | Value | Typical role |
+|---|---:|---|
+| `sm` | 6px | Compact controls |
+| `md` | 10px | Standard controls |
+| `lg` | 14px | Cards |
+| `xl` | 20px | Large panels |
+| `2xl` | 28px | Hero surfaces |
+| `full` | 9999px | Pills/circular controls |
+
+| Shadow token | Light | Dark | Use |
+|---|---|---|---|
+| `card` | `0 1px 2px rgb(15 23 42 / .06), 0 1px 3px rgb(15 23 42 / .1)` | `0 1px 2px rgb(0 0 0 / .24), 0 1px 3px rgb(0 0 0 / .32)` | Resting card elevation |
+| `cardHover` | `0 8px 20px rgb(15 23 42 / .12), 0 3px 8px rgb(15 23 42 / .08)` | `0 8px 20px rgb(0 0 0 / .36), 0 3px 8px rgb(0 0 0 / .24)` | Interactive hover/focus elevation |
+| `focusRing` | 2px surface offset + 2px blue ring | Same geometry; dark surface/ring tokens | Visible keyboard focus |
+| `modal` | `0 20px 50px rgb(15 23 42 / .2)` | `0 20px 50px rgb(0 0 0 / .48)` | Modal elevation |
+| `stickyBar` | `0 -4px 16px rgb(15 23 42 / .12)` | `0 -4px 16px rgb(0 0 0 / .36)` | Sticky action-bar elevation |
+
+The focus ring is exactly 2px visible outline with 2px offset, implemented by `shadow-focusRing` / `--shadow-focus-ring: 0 0 0 2px var(--surface-background), 0 0 0 4px var(--focus-ring)`. Its color is `#2563eb` light / `#60a5fa` dark; measured contrast is 4.94:1 or better on page backgrounds and 5.17:1 or better on surfaces in light mode, and 6.72:1 or better in dark mode.
+
+### B) Primitive do/don't and composition rules
+
+| Primitive | Do | Don't |
+|---|---|---|
+| `Button` | Use `primary` for the main action, `secondary` for a peer action, `ghost` for low-emphasis actions, and `danger` only for destructive actions; keep `md`/`lg` targets at least 44px. | Don't use a button for navigation unless rendered as `as="a"` with an `href`; don't make ordinary links look like primary actions; don't bypass loading/disabled behavior. |
+| `Input` | Always provide a visible label; use `hint` for help and `error` for an announced, described validation error. Keep text at least 16px and target height at least 44px. | Don't use placeholder-only labels, color-only validation, or custom input CSS that removes focus indication. |
+| `Card` | Use `default` for grouped content, `featured` for one intentionally emphasized item, and `interactive` only when the whole card is one action. | Don't nest links/buttons/inputs inside an interactive card; don't make a static card appear clickable. |
+| `Badge` | Use `neutral`, `brand`, `success`, `warning`, or `danger` for short categorical/status labels, paired with clear text. | Don't use a badge as a button, long-form status message, or the only indication of success/error. |
+| `FocusRing` | Wrap a single focusable custom child that needs the shared focus-visible ring; rely on `focusableOnly` default for keyboard-only indication. | Don't wrap several siblings or another interactive control; don't suppress the ring or wrap primitives that already supply the same focus treatment. |
+
+Usage and composition:
+
+- Choose `Button` for an action that changes state or submits work. Choose a semantic `Link` (router link or anchor) for navigation; style it as a button only when it is a true call to action, and preserve its link semantics.
+- Choose `Card interactive` only when the complete card is one navigation/action target. Otherwise keep a default `Card` and place separate `Button`/`Link` controls inside it.
+- Choose `Badge` for a compact label such as “New” or “Ready”. Choose a text status message (and appropriate live/alert semantics when it changes) for instructions, outcomes, and errors; a status color alone is never sufficient.
+- Standard content-card shape: `Card > Badge (optional) > heading/body text`. Keep the badge adjacent to its relevant heading or content and provide text labels for meaning.
+- Apply `FocusRing` to a custom focusable `Link` or control where the native/component focus styling is not already provided. The ring must remain visible in both themes and must not be clipped.
+
+Examples:
+
+```jsx
+<Button variant="primary" size="md" onClick={submit}>Save changes</Button>
+<Button as="a" href="/resources" variant="secondary">Read the guide</Button>
+<Input label="Output filename" hint="PDF extension is added automatically" />
+<Card variant="default">
+  <Badge tone="success">Ready</Badge>
+  <h3>Merge PDFs</h3>
+  <p>Combine selected documents in the chosen order.</p>
+</Card>
+<FocusRing><a href="/privacy">Privacy details</a></FocusRing>
+```
+
+### C) Variant build rules
+
+Variants 1–3 must follow all of these rules:
+
+1. Use only the color, type, spacing, radius, shadow, and focus tokens specified in Task 2.1; use the approved Task 2.2 primitive recipes for component colors.
+2. Do not hardcode hex/RGB/HSL colors, arbitrary spacing values, or one-off radii in variant source or styles. If the needed value is missing, raise it for design-system review rather than inventing a token.
+3. Use only `Button`, `Input`, `Card`, `Badge`, and `FocusRing` from Task 2.2 for their respective roles; do not create competing wrappers or duplicate primitives.
+4. Every interactive element must be a `Button`, `Input`, interactive `Card`, semantic `Link`/anchor, or a wrapper of one. Use native/router link semantics for navigation; there is no separate custom Link primitive in Task 2.2.
+5. Every keyboard-focusable control and link has a visible focus ring with the specified 2px ring and 2px offset; no `outline-none` without the replacement ring.
+6. Preserve WCAG text contrast of at least 4.5:1 and non-text/focus contrast of at least 3:1; pair status colors with visible words/icons and never communicate state by color alone.
+7. Keep body copy and inputs at least 16px on mobile. Use no more than three type sizes in a section and keep heading levels semantic.
+8. Use named spacing/radius/shadow utilities only; maintain a single radius family within each component and at least 44×44px targets for primary interactive controls.
+9. Keep light/dark behavior token-driven through `[data-theme="dark"]`; do not hardcode a light-only surface into a variant or change system-preference/persistence behavior.
+10. Preserve current tool behavior, shared components, routes, and below-content ad placement; do not redesign or duplicate existing tools while building homepage variants.
+11. Keep the 320px-first layout free of horizontal overflow at all required widths, maintain a composed desktop layout through 1920px, and avoid above-fold animation or ad containers.
+
+### D) Open design questions for human decision before Day 3
+
+1. Keep the current PDF Merge Pro wordmark/icon, or commission a new original lockup? If changing it, which elements are fixed (name, PDF tile, icon)?
+2. Which homepage headline voice should lead: concise/formal utility language, or conversational task-first language?
+3. What original hero treatment is preferred: abstract document geometry, a restrained workflow diagram, or typography-only? Any imagery/illustration constraints?
+4. Which trust proof should be most prominent: browser-side processing/privacy, tool breadth, or simple workflow guidance? Confirm the exact claims that can be supported.
+5. Should homepage category/tool browsing feel compact and scan-dense, or spacious and editorial? Choose which content receives the strongest visual emphasis.
+
+### E) Self-verification
+
+- [x] Palette table includes every Task 2.1 brand ramp, surface ramp, foreground token, status pair, focus ring, page/card/muted surface, and tool-icon alias, with light/dark color chips.
+- [x] Type table includes all 12 sizes with names and intended use; mobile body-text minimum is explicit.
+- [x] Spacing table includes all 10 named values; radii and all five shadows include their values and theme behavior.
+- [x] All five Task 2.2 primitives have do/don't guidance and examples/usages; Button, Input, Card, Badge, and FocusRing composition rules are explicit.
+- [x] Variant rules have 11 independently verifiable requirements; 5 human decisions are listed.
+- [x] No code was modified for Task 2.5.
+- [x] `npm.cmd test` passed 352/352 before and after the documentation update; exact durations are recorded below.
+- [x] `docs/status.md` and `docs/PROJECT-TRACKER.md` record Task 2.5 completion.
+
 ## Task 3.x — Variant 1 (to be filled)
 
 ## Task 4.x — Variant 2 (to be filled)
@@ -1896,3 +2067,105 @@ Static issues flagged by review:
 - [x] Only Task 1.2 in docs/main-page.md and its docs/status.md row were changed; Tasks 1.1, 1.3, and 1.4 remain untouched.
 - [x] npm test passed before and after the documentation update with identical results (352/352).
 - [x] docs/status.md Task 1.2 row updated to "Fixed — Ready for Review".
+
+## Task 3.1 — Variant 1: Scannable Grid Homepage
+
+### A) Read evidence and scope
+
+- Read `docs/status.md`, `docs/PROJECT-TRACKER.md`, `docs/inventory.md`, and the Task 1.2 and Task 2.5 sections of this file.
+- Read `src/components/Home.jsx`, `src/components/toolRegistry.js`, `src/components/ToolSearch.jsx`, `src/components/ui/`, and the shared `AdSlot` implementation.
+- The new variant is intentionally not routed. Existing Home/App routing, global ToolSearch, ToolCard, registry data, tool workflows, footer, and language picker were not changed.
+
+### B) Implemented variant
+
+- Added `src/components/VariantScannableGrid.jsx` and four focused components in `src/components/v1/`.
+- The replaceable `brandName` prop supplies the header wordmark; the composite H1 is “All the PDF tools you need, right in your browser.” The browser-privacy statement is displayed directly beside the hero search.
+- The full-width search uses the shared `Input` primitive and registry/localized tool data. Result counts and no-result feedback are announced through a polite live region.
+- Five registry-driven category cards appear immediately below the hero. Each shows three or four visible text links; the operation labels in Extract link to their valid Split/OCR destinations. Popular cards are interactive shared `Card` primitives.
+- A `Button` primitive creates the fixed mobile “Browse All Tools” action, with bottom safe-area padding. The category sidebar replaces it at the desktop breakpoint.
+- The shared `AdSlot` remains after all content. Its configuration is disabled, so the preview showed no ad or reserved ad box.
+- The required hero Input is distinct from the existing global `ToolSearch`, which remains unchanged in the app shell. Reconcile whether both remain visible when the variant is selected/routed in Task 6.1.
+- A temporary preview harness is available at `http://localhost:5173/?preview=v1` when Vite is running. `src/main.jsx` selects it only when `import.meta.env.DEV` is true and the query is `preview=v1`; the production build contains no harness module or variant copy. This does not change application routing.
+
+### C) Design rationale and rejected alternatives
+
+The discovery goal is to make the category and actual task names scannable without first opening a menu or waiting for a carousel. Five categories and up to four text links per card are directly visible, followed by three popular actions. This is an interaction rationale, not a measured competitor benchmark; no third-party layout or artwork was copied.
+
+Alternatives considered:
+
+- Category carousel — rejected because off-screen cards conceal tool choices and require interaction before scanning.
+- Single category dropdown — rejected because it adds a tap and hides the task names on mobile.
+- Dense one-column list of every tool — rejected because category grouping would be lost and the initial scan would be longer.
+- Replacing the required hero Input with the app-shell `ToolSearch` — rejected for this variant because the task requires a persistent, full-width Input. The existing app-shell search is preserved; whether to consolidate the two at final routing remains open.
+
+### D) Responsive behavior
+
+| Width | Observed behavior |
+|---|---|
+| 320 | One-column category cards; 48px search input; safe-area mobile CTA; 30 visible interactive targets measured, all at least 44×44px. The first card’s four tool links fit above the sticky bar in the 900px preview viewport. |
+| 375 | One-column cards and stacked hero; sticky CTA remains visible; no horizontal overflow. |
+| 414 | One-column cards; sticky CTA remains visible; no horizontal overflow. |
+| 768 | Two-column category cards; hero stays stacked; mobile CTA remains visible. |
+| 1024 | Three-column cards and category sidebar; sticky CTA hidden. |
+| 1280 | Four-column cards; hero places headline and search side by side; sidebar visible. |
+| 1440 | Four-column cards and sidebar; container remains within its parent’s available width. |
+| 1920 | Four-column cards; measured content container is capped at 1440px and centered; no horizontal overflow. |
+
+The Chromium preview reported no horizontal overflow at 320, 375, 414, 768, 1024, 1280, 1440, or 1920px. Visible interactive targets were checked at every width; none measured below 44×44px. The Input measured 48px high. This is a local-browser check, not cross-browser certification.
+
+### E) Contrast and focus evidence
+
+Measurements were taken after light/dark theme color transitions settled. Every visible text pair sampled in the rendered variant exceeded 4.5:1 in both themes; the measured search and focus boundaries exceed 3:1.
+
+| Pair | Light | Dark | Result |
+|---|---:|---:|---|
+| Search border against Input surface | 4.72:1 | 6.72:1 | Pass |
+| Search border on hover | 7.96:1 | 3.30:1 | Pass; border visibly changes in both themes |
+| Browser-privacy Badge text/surface | 5.02:1 | 10.62:1 | Pass |
+| Trust statement against its composited panel | 15.61:1 | 10.96:1 | Pass |
+| Category tool link against card | 6.12:1 | 6.72:1 | Pass |
+| Mobile primary CTA text/background | 6.70:1 | 15.35:1 | Pass |
+| Focus ring token | `#2563eb`; 5.17:1 on white | `#60a5fa`; 6.72:1 on dark surface | Pass |
+
+Keyboard focus showed the 2px surface offset plus visible 2px focus ring on the search result link and the focused skip link. Category links, header navigation, interactive cards, Input, and Button use the existing FocusRing primitive or the documented `focus-visible` token utility.
+
+### F) WCAG 2.2 evidence
+
+| # | Criterion | Result | Evidence |
+|---:|---|---|---|
+| 1 | 1.3.1 Info and Relationships | Pass | One H1; native header, navigation, aside, labelled sections, lists, and links. The shared app shell supplies the main landmark when routed. |
+| 2 | 1.4.3 Text Contrast | Pass for rendered pairs | Browser sampling found no visible text pair below 4.5:1 in either theme; lowest sampled examples are recorded in Section E. |
+| 3 | 1.4.4 Resize Text | Pass for accepted proxy; native zoom pending | At the agreed 640px emulated 200% viewport, content reflowed without horizontal overflow. Native browser zoom was not exercised. |
+| 4 | 1.4.10 Reflow | Pass | No horizontal overflow at all eight required viewport widths. |
+| 5 | 1.4.11 Non-text Contrast | Pass for measured boundaries | Search border measured 4.72:1 light / 6.72:1 dark (hover: 7.96:1 / 3.30:1); focus-ring token pairings exceed 3:1. |
+| 6 | 1.4.12 Text Spacing | Pass for override test | Applied line-height 1.5, paragraph spacing 2em, letter spacing .12em, and word spacing .16em at 320px; no horizontal overflow or clipped content was detected. |
+| 7 | 2.1.1 Keyboard | Pass for observed path | Tab moved from the labelled search Input to the “Rotate PDF” result link; native link and Button semantics are retained. |
+| 8 | 2.1.2 No Keyboard Trap | Pass for implemented controls | Search, links, cards, and Button use native focusable elements; no modal or custom trapped-focus interaction is introduced. |
+| 9 | 2.4.1 Bypass Blocks | Pass | “Skip to tools” became visible on keyboard focus and targets the category directory. |
+| 10 | 2.4.3 Focus Order | Pass for inspected DOM path | Initial Tab reached the skip link; subsequent controls follow the rendered header, hero, directory, popular tools, and mobile CTA order. |
+| 11 | 2.4.7 Focus Visible | Pass | Computed focus shadow was visible on both the search result and focused skip link. |
+| 12 | 2.4.11 Focus Not Obscured | Pass for mobile sample | At 320px, the final Extract link’s bounds did not overlap the fixed CTA. |
+| 13 | 2.5.7 Dragging Movements | N/A — no dragging interaction | The variant introduces no drag operation. |
+| 14 | 2.5.8 Target Size Minimum | Pass | All visible interactive targets measured at least 44×44px at the eight required widths. |
+| 15 | 3.2.6 Consistent Help | N/A — no help/contact UI added | The variant adds no help or contact mechanism. |
+| 16 | 3.3.1 Error Identification | N/A — no error-producing form | Search no-result feedback is plain-text status, not a form error; no validation-error state is introduced. |
+| 17 | 3.3.7 Redundant Entry | N/A — no multi-step entry flow | The search is a single field and does not request repeated data. |
+| 18 | 3.3.8 Accessible Authentication | N/A — no authentication flow | No authentication UI is introduced. |
+| 19 | 4.1.2 Name, Role, Value | Pass | Search exposes the visible “Find a PDF tool” label and `aria-controls`; navigation and actions use named native links/buttons. |
+| 20 | 4.1.3 Status Messages | Pass | Search announces “2 matching tools” and “No matching tools” through `aria-live="polite"`. |
+
+Automated axe/WAVE scanning remains **pending**: neither `window.axe` nor the WAVE extension toolbar was available in the local browser session. No zero-violation result is claimed.
+
+### G) Regression and self-verification
+
+| Check | Result | Evidence |
+|---|---|---|
+| Existing suite before implementation | 352/352 passed | Recorded pre-change run; 1,198.2876ms. |
+| Existing suite plus variant tests | 362/362 passed | `npm.cmd test`; 1,592.4634ms. |
+| Variant-focused tests | 10/10 passed | `tests/variantScannableGrid.test.mjs`; includes H1/trust, registry categories, primitives, breakpoints, target size, mobile type size, hover/focus feedback, and the development-only preview gate. |
+| Production build | Passed | `npm.cmd run build`; existing `buffer` externalization and >500kB chunk warnings remain. The variant/harness are intentionally absent from the production bundle. |
+| Browser preview | Passed for measured states | Local Chromium rendered the isolated variant; responsive, search, focus, contrast, 640px reflow proxy, and text-spacing checks are recorded above. |
+| axe/WAVE and Lighthouse | Pending human scan | Browser automation had neither axe nor WAVE injected. Lighthouse on the Vite development server is diagnostic, not representative of a production build; collect the requested output and repeat performance validation after final routing. |
+| Existing app source scope | Passed | `src/main.jsx` only selects the temporary preview when the development flag and `preview=v1` query are both present; `Home.jsx`, `App.jsx`, `ToolSearch.jsx`, and existing tools/routes are unchanged. |
+
+**Status: In Progress — awaiting user input.** The variant remains unrouted as required. Do not mark Ready for Review until a human supplies an axe DevTools or WAVE scan for the preview and the zero critical/serious requirement is confirmed.

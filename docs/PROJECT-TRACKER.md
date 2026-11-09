@@ -90,6 +90,7 @@
 | 2026-11-09 | Task 2.2 completion and design decision | Interactive Primitives is Ready for Review in `docs/status.md`; created Button, Input, Card, Badge, and FocusRing. Decision: Button `sm` uses a 44px minimum height (rather than the primitive-specific 32px suggestion) to honor the project-wide 44×44px touch-target rule; compact padding is retained. |
 | Task 2.3 | Typography and spacing audit | Marked Task 2.3 Ready for Review in `docs/status.md`. Logged F9–F11: undersized body/instruction text, desktop prose lines longer than 80 characters, and 28px homepage spacing values that are off-token. The 200% zoom check was emulated with a 640px viewport and is documented as such; text-spacing overrides produced no measured overflow or paragraph clipping. |
 | 2026-11-09 | Task 2.4 dark-mode audit and toggle fix | All 17 documented token contrast pairs passed in dark mode; Home, Merge PDF, and Privacy rendered without observed light-only text/surfaces. F12 resolved: theme button now exposes `aria-pressed` with a stable “Dark mode” accessible name; first-load system preference and localStorage persistence were browser-checked. |
+| Task 2.5 design-system summary | Consolidated Task 2.1 token values (including light/dark colors and shadows) and Task 2.2 primitive usage into the canonical visual rulebook in `docs/main-page.md`. Decisions: keep status meaning explicit in text, preserve semantic links separately from action buttons, use one interactive target per clickable card, and constrain variants to approved tokens/primitives. Five design choices (wordmark, headline tone, hero treatment, trust proof, and content density) remain for human resolution before Day 3. No code changed; `npm.cmd test` passed 352/352 before and after. |
 
 ## Resolved
 
@@ -99,3 +100,11 @@
 | Q2 | 20-language indexing strategy | Noindex `ar`, `hi`, `ja`, `ko`, and `zh-CN` during AdSense submission pending native QA. | Task 1.6 |
 | Q3 | Native-language QA schedule | Schedule QA approximately two weeks after approval. | Task 1.6 |
 | F12 | Theme toggle state semantics and stable accessible name | Added `aria-pressed` and the stable “Dark mode” accessible name in `src/App.jsx`; browser verified state and persistence. | Task 2.4 |
+
+## Task 3.1 — Variant 1: Scannable Grid Homepage
+
+- Added the unrouted registry-driven variant and its focused subcomponents; the existing Home route, app shell, tool workflows, and shared search remain unchanged.
+- Decision: keep the full-width hero `Input` required by this variant while preserving the global `ToolSearch`; revisit whether both remain visible when the final route is selected in Task 6.1.
+- Added a temporary dev-only preview gate at `http://localhost:5173/?preview=v1`; it requires both `import.meta.env.DEV` and the query flag. The production build contains no preview module or variant copy, and no application route was changed.
+- Verification: `npm.cmd test` passed 362/362 (352/352 before implementation); production build passed with existing warnings; Chromium checks covered eight widths, both themes, keyboard focus, search feedback, hover states, and text-spacing overrides.
+- Status remains **In Progress — awaiting user input** pending the requested human WAVE and Lighthouse evidence. Do not claim zero critical/serious violations until the scan results are supplied.

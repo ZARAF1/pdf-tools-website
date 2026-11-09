@@ -11,8 +11,8 @@
 | 2.2 | Interactive Primitives | Ready for Review | 352/352 | — | — | — | Keyboard focus captured | Added five accessible UI primitives; keyboard, target-size, responsive-fixture, and contrast evidence recorded in `docs/main-page.md`; production build passed with existing warnings. |
 | 2.3 | Typography & Spacing | Ready for Review | 352/352 | — | — | — | 2 browser captures | `npm.cmd test` passed 352/352 before (1,702.5382ms) and after (1,685.2089ms); audit findings and emulated 200% reflow evidence are recorded in `docs/main-page.md`. |
 | 2.4 | Dark Mode | Ready for Review | 352/352 | — | — | — | — | Audited 17 documented token contrast pairs and Home/Merge/Privacy in dark mode; added `aria-pressed` with a stable toggle name. `npm.cmd test` passed 352/352 before and after; production build passed with existing warnings. |
-| 2.5 | Design System Summary | Planned | — | — | — | — | — | — |
-| 3.1 | Variant 1 | Planned | — | — | — | — | — | — |
+| 2.5 | Design System Summary | Ready for Review | 352/352 | — | — | — | — | Canonical light/dark palette, typography, spacing, radii, shadows, primitive usage, and 11 variant rules documented in `docs/main-page.md`; 5 design questions await human decision. `npm.cmd test` passed 352/352 before (1,326.2039ms) and after (1,257.0957ms). Documentation-only; no code changed. |
+| 3.1 | Variant 1 — Scannable Grid Homepage | In Progress — awaiting user input | 362/362 | Pending — human WAVE scan | — | — | — | Dev-only preview: `http://localhost:5173/?preview=v1`. Responsive, hover/focus, and contrast checks passed; Lighthouse/WAVE evidence pending. |
 | 3.2 | Variant 1 | Planned | — | — | — | — | — | — |
 | 3.3 | Variant 1 | Planned | — | — | — | — | — | — |
 | 3.4 | Variant 1 | Planned | — | — | — | — | — | — |
