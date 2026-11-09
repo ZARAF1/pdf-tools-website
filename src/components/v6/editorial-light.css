@@ -1199,6 +1199,85 @@
   color-scheme: light;
 }
 
+.site-app-shell.is-tool-route .site-workspace {
+  margin-left: 0;
+  background: #fffdf9;
+}
+
+.site-app-shell.is-tool-route .site-topbar {
+  grid-template-columns: minmax(0, 1fr) minmax(3rem, min(28rem, 40vw));
+  column-gap: clamp(10px, 2vw, 20px);
+  padding-right: clamp(16px, 3vw, 36px);
+  border-color: #e6ddd1;
+  background: #fffdf9;
+  backdrop-filter: none;
+}
+
+.site-topbar-tool-context {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+}
+
+.site-app-shell.is-tool-route .site-topbar-tool-search {
+  width: min(28rem, 40vw);
+  min-width: 3rem;
+  max-width: 100%;
+  justify-self: end;
+}
+
+.site-app-shell.is-tool-route .site-topbar-tool-search .tool-search-input {
+  font-size: 16px !important;
+}
+
+.site-app-shell.is-tool-route .site-topbar-tool-search .tool-search-input:focus {
+  border-color: #7c2d12 !important;
+  box-shadow: 0 0 0 2px #fff3e5, 0 0 0 5px #7c2d12 !important;
+}
+
+.site-app-shell.is-tool-route .v6-tool-back-link {
+  flex: 0 0 auto;
+  color: #7c2d12;
+  white-space: nowrap;
+}
+
+.site-app-shell.is-tool-route .v6-tool-back-link:hover {
+  color: #57210c;
+}
+
+.v6-tool-back-link {
+  display: inline-flex;
+  min-height: 44px;
+  align-items: center;
+  gap: 9px;
+  border-radius: 8px;
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.v6-tool-back-link svg {
+  width: 18px;
+  height: 18px;
+  flex: 0 0 auto;
+}
+
+.v6-tool-topbar-title {
+  min-width: 0;
+  color: #475569;
+  font-size: 15px;
+  font-weight: 650;
+  text-align: right;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+:root:has(.v6-tool-page) .site-app-shell.is-tool-route .site-topbar {
+  color-scheme: light;
+}
+
 .v6-tool-page .v6-tool-detail-hero {
   border-color: #e4cbb2;
   background:
@@ -1368,22 +1447,40 @@
   align-items: center;
 }
 
-:root:has(.v6-tool-page) .site-left-brand,
-:root:has(.v6-tool-page) .site-left-category-link,
-:root:has(.v6-tool-page) .site-left-link,
-:root:has(.v6-tool-page) .site-left-theme-button,
 :root:has(.v6-tool-page) .site-workspace .footer-link {
   min-width: 44px;
   min-height: 44px;
 }
 
-:root[data-theme="dark"] .v6-tool-page .v6-tool-detail-hero,
-:root[data-theme="dark"] .v6-tool-page .v6-tool-info-card,
-:root[data-theme="dark"] .v6-tool-page .v6-tool-workspace {
+:root:has(.v6-tool-page) .v6-tool-page .v6-tool-detail-hero,
+:root:has(.v6-tool-page) .v6-tool-page .v6-tool-info-card,
+:root:has(.v6-tool-page) .v6-tool-page .v6-tool-workspace {
   color-scheme: light;
 }
 
-:root[data-theme="dark"] .v6-tool-page .v6-tool-detail-hero {
+:root:has(.v6-tool-page) .v6-tool-page .tool-attachment-content .pdf-workflow-upload,
+:root:has(.v6-tool-page) .v6-tool-page .tool-attachment-content .pdf-upload-zone,
+:root:has(.v6-tool-page) .v6-tool-page .tool-attachment-content section.pdf-upload-trigger,
+:root:has(.v6-tool-page) .v6-tool-page .tool-attachment-content .crop-pdf-upload:not(:has(.crop-pdf-file)),
+:root:has(.v6-tool-page) .v6-tool-page .tool-attachment-content .pdf-editor-upload-zone,
+:root:has(.v6-tool-page) .v6-tool-page .tool-attachment-content [class*="border-dashed"] {
+  border-color: #d7b79a;
+  background: #fffdf9;
+  color: #263445;
+  box-shadow: 0 8px 22px rgb(75 45 21 / 0.06);
+}
+
+:root:has(.v6-tool-page) .v6-tool-page .tool-attachment-content .pdf-workflow-upload:hover,
+:root:has(.v6-tool-page) .v6-tool-page .tool-attachment-content .pdf-upload-zone:hover,
+:root:has(.v6-tool-page) .v6-tool-page .tool-attachment-content section.pdf-upload-trigger:hover,
+:root:has(.v6-tool-page) .v6-tool-page .tool-attachment-content .crop-pdf-upload:not(:has(.crop-pdf-file)):hover,
+:root:has(.v6-tool-page) .v6-tool-page .tool-attachment-content .pdf-editor-upload-zone:hover,
+:root:has(.v6-tool-page) .v6-tool-page .tool-attachment-content [class*="border-dashed"]:hover {
+  border-color: #9a4c24;
+  background: #f6f1e8;
+}
+
+:root:has(.v6-tool-page) .v6-tool-page .v6-tool-detail-hero {
   border-color: #e4cbb2;
   background:
     radial-gradient(ellipse at 0% 0%, rgb(255 231 204 / 0.75), transparent 54%),
@@ -1391,96 +1488,96 @@
   box-shadow: 0 16px 38px rgb(75 45 21 / 0.08);
 }
 
-:root[data-theme="dark"] .v6-tool-page .tool-detail-icon {
+:root:has(.v6-tool-page) .v6-tool-page .tool-detail-icon {
   border-color: #d7b79a;
   background: #fff0dd;
   color: #7c2d12;
 }
 
-:root[data-theme="dark"] .v6-tool-page .tool-detail-title,
-:root[data-theme="dark"] .v6-tool-page .v6-tool-info-card h2,
-:root[data-theme="dark"] .v6-tool-page #tool-faq-heading {
+:root:has(.v6-tool-page) .v6-tool-page .tool-detail-title,
+:root:has(.v6-tool-page) .v6-tool-page .v6-tool-info-card h2,
+:root:has(.v6-tool-page) .v6-tool-page #tool-faq-heading {
   color: #27374b;
 }
 
-:root[data-theme="dark"] .v6-tool-page .tool-detail-description,
-:root[data-theme="dark"] .v6-tool-page .tool-detail-point,
-:root[data-theme="dark"] .v6-tool-page .tool-detail-point strong,
-:root[data-theme="dark"] .v6-tool-page .v6-tool-steps,
-:root[data-theme="dark"] .v6-tool-page .v6-tool-privacy-note {
+:root:has(.v6-tool-page) .v6-tool-page .tool-detail-description,
+:root:has(.v6-tool-page) .v6-tool-page .tool-detail-point,
+:root:has(.v6-tool-page) .v6-tool-page .tool-detail-point strong,
+:root:has(.v6-tool-page) .v6-tool-page .v6-tool-steps,
+:root:has(.v6-tool-page) .v6-tool-page .v6-tool-privacy-note {
   color: #465361;
 }
 
-:root[data-theme="dark"] .v6-tool-page .tool-detail-point-icon {
+:root:has(.v6-tool-page) .v6-tool-page .tool-detail-point-icon {
   color: #9a4c24;
 }
 
-:root[data-theme="dark"] .v6-tool-page .v6-tool-detail-intro {
+:root:has(.v6-tool-page) .v6-tool-page .v6-tool-detail-intro {
   border-color: #d8c6b3;
 }
 
-:root[data-theme="dark"] .v6-tool-page .tool-attachment-section.v6-tool-workspace {
+:root:has(.v6-tool-page) .v6-tool-page .tool-attachment-section.v6-tool-workspace {
   border-color: #d7b79a;
   background: #fffaf3;
   box-shadow: 0 10px 28px rgb(75 45 21 / 0.08);
   animation: none;
 }
 
-:root[data-theme="dark"] .v6-tool-page .v6-tool-workspace .tool-attachment-heading {
+:root:has(.v6-tool-page) .v6-tool-page .v6-tool-workspace .tool-attachment-heading {
   border-color: #ead9c7;
 }
 
-:root[data-theme="dark"] .v6-tool-page .v6-tool-workspace .tool-attachment-icon {
+:root:has(.v6-tool-page) .v6-tool-page .v6-tool-workspace .tool-attachment-icon {
   color: #7c2d12;
   background: #f4e3d1;
 }
 
-:root[data-theme="dark"] .v6-tool-page .v6-tool-workspace .tool-attachment-heading h2 {
+:root:has(.v6-tool-page) .v6-tool-page .v6-tool-workspace .tool-attachment-heading h2 {
   color: #263445;
 }
 
-:root[data-theme="dark"] .v6-tool-page .v6-tool-workspace .tool-attachment-heading p {
+:root:has(.v6-tool-page) .v6-tool-page .v6-tool-workspace .tool-attachment-heading p {
   color: #684128;
 }
 
-:root[data-theme="dark"] .v6-tool-page .v6-tool-workspace .tool-attachment-guidance {
+:root:has(.v6-tool-page) .v6-tool-page .v6-tool-workspace .tool-attachment-guidance {
   border-color: #d7c2ab;
   background: #f6f1e8;
 }
 
-:root[data-theme="dark"] .v6-tool-page .v6-tool-workspace .tool-attachment-guidance h3 {
+:root:has(.v6-tool-page) .v6-tool-page .v6-tool-workspace .tool-attachment-guidance h3 {
   color: #263445;
 }
 
-:root[data-theme="dark"] .v6-tool-page .v6-tool-workspace .tool-attachment-guidance p {
+:root:has(.v6-tool-page) .v6-tool-page .v6-tool-workspace .tool-attachment-guidance p {
   color: #475569;
 }
 
-:root[data-theme="dark"] .v6-tool-page .v6-tool-info-card {
+:root:has(.v6-tool-page) .v6-tool-page .v6-tool-info-card {
   border-color: #dfd2c2;
   background: #fffdf9;
 }
 
-:root[data-theme="dark"] .v6-tool-page .v6-tool-flow-step {
+:root:has(.v6-tool-page) .v6-tool-page .v6-tool-flow-step {
   border-color: #dfd2c2;
   background: #f6f1e8;
   color: #263445;
 }
 
-:root[data-theme="dark"] .v6-tool-page .v6-tool-flow-step .tool-card-icon {
+:root:has(.v6-tool-page) .v6-tool-page .v6-tool-flow-step .tool-card-icon {
   color: #7c2d12;
   background: #fffdf9;
 }
 
-:root[data-theme="dark"] .v6-tool-page a {
+:root:has(.v6-tool-page) .v6-tool-page a {
   color: #7c2d12;
 }
 
-:root[data-theme="dark"] .v6-tool-page a:hover {
+:root:has(.v6-tool-page) .v6-tool-page a:hover {
   color: #57210c;
 }
 
-:root[data-theme="dark"]:has(.v6-tool-page) {
+:root:has(.v6-tool-page) {
   color-scheme: light;
   --page-background: #fffdf9;
   --surface-background: #fffdf9;
@@ -1493,7 +1590,7 @@
   --tool-icon-foreground: #7c2d12;
 }
 
-:root[data-theme="dark"]:has(.v6-tool-page) body {
+:root:has(.v6-tool-page) body {
   background: #fffdf9;
   color: #263445;
 }
@@ -1518,6 +1615,32 @@
 }
 
 @media (max-width: 760px) {
+  .site-app-shell.is-tool-route .site-topbar {
+    grid-template-columns: minmax(0, 1fr) 3rem;
+  }
+
+  .site-app-shell.is-tool-route .site-topbar-tool-search .tool-search-shell.is-expanded {
+    position: absolute;
+    inset-inline: 12px;
+    top: 12px;
+    width: auto;
+    max-width: none;
+    z-index: 30;
+  }
+
+  .site-app-shell.is-tool-route .site-topbar-tool-search {
+    width: 3rem;
+  }
+
+  .site-topbar-tool-context {
+    gap: 8px;
+  }
+
+  .v6-tool-topbar-title {
+    flex: 1 1 auto;
+    text-align: left;
+  }
+
   .v6-tool-page .v6-tool-detail-hero {
     grid-template-columns: minmax(0, 1fr);
     gap: 20px;

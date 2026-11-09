@@ -42,6 +42,7 @@ const DownloadReadyCard = ({
               type="text"
               value={downloadName}
               onChange={(event) => setDownloadName(event.target.value)}
+              className="focus-visible:!outline focus-visible:!outline-[3px] focus-visible:!outline-offset-2 focus-visible:!outline-[#174ea6]"
               aria-label={outputFilenameLabel}
             />
           </label>
@@ -51,7 +52,7 @@ const DownloadReadyCard = ({
             href={href}
             download={safeDownloadName}
             onClick={() => onDownload?.()}
-            className="download-ready-card-action"
+            className="download-ready-card-action !rounded-xl !bg-[#9a3412] !text-white hover:!bg-[#7c2d12] focus-visible:!outline focus-visible:!outline-[3px] focus-visible:!outline-offset-2 focus-visible:!outline-[#174ea6]"
           >
             <Download aria-hidden="true" />
             {downloadLabel}
@@ -60,7 +61,7 @@ const DownloadReadyCard = ({
           <button
             type="button"
             onClick={() => onDownload?.(safeDownloadName)}
-            className="download-ready-card-action"
+            className="download-ready-card-action !rounded-xl !bg-[#9a3412] !text-white hover:!bg-[#7c2d12] focus-visible:!outline focus-visible:!outline-[3px] focus-visible:!outline-offset-2 focus-visible:!outline-[#174ea6]"
           >
             <Download aria-hidden="true" />
             {downloadLabel}

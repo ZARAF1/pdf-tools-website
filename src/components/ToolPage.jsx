@@ -486,6 +486,79 @@ const ATTACHMENT_RULES = {
   }
 };
 
+const V6_TOOL_WORKSPACE_CLASSES = [
+  '[&_.pdf-workflow-upload]:!rounded-2xl',
+  '[&_.pdf-workflow-upload]:!border-[#d7b79a]',
+  '[&_.pdf-workflow-upload]:!bg-[#fffdf9]',
+  '[&_.pdf-workflow-upload]:!text-[#263445]',
+  '[&_.pdf-workflow-upload:hover]:!border-[#9a4c24]',
+  '[&_.pdf-workflow-upload:hover]:!bg-[#f6f1e8]',
+  '[&_.pdf-workflow-upload.border-blue-500.bg-blue-50.border-dashed]:!border-[#9a4c24]',
+  '[&_.pdf-workflow-upload.border-blue-500.bg-blue-50.border-dashed]:!bg-[#fff3e5]',
+  '[&_.pdf-workflow-upload.is-drag-active]:!border-[#9a4c24]',
+  '[&_.pdf-workflow-upload.is-drag-active]:!bg-[#fff3e5]',
+  '[&_.pdf-workflow-upload.is-dragging]:!border-[#9a4c24]',
+  '[&_.pdf-workflow-upload.is-dragging]:!bg-[#fff3e5]',
+  '[&_.merge-pdf-upload-zone]:!rounded-2xl',
+  '[&_.merge-pdf-upload-zone]:!border-[#d7b79a]',
+  '[&_.merge-pdf-upload-zone]:!bg-[#fffdf9]',
+  '[&_.merge-pdf-upload-zone]:!text-[#263445]',
+  '[&_.merge-pdf-upload-zone:hover]:!border-[#9a4c24]',
+  '[&_.merge-pdf-upload-zone:hover]:!bg-[#f6f1e8]',
+  '[&_.merge-pdf-upload-zone.border-blue-500.bg-blue-50.border-dashed]:!border-[#9a4c24]',
+  '[&_.merge-pdf-upload-zone.border-blue-500.bg-blue-50.border-dashed]:!bg-[#fff3e5]',
+  '[&_.merge-pdf-upload-zone.is-drag-active]:!border-[#9a4c24]',
+  '[&_.merge-pdf-upload-zone.is-drag-active]:!bg-[#fff3e5]',
+  '[&_.merge-pdf-upload-zone.is-dragging]:!border-[#9a4c24]',
+  '[&_.merge-pdf-upload-zone.is-dragging]:!bg-[#fff3e5]',
+  '[&_.pdf-upload-icon_.text-blue-600]:!text-[#7c2d12]',
+  '[&_.merge-pdf-upload-zone_.text-blue-600]:!text-[#7c2d12]',
+  '[&_.pdf-editor-primary-button:not(:disabled)]:!rounded-xl',
+  '[&_.pdf-editor-primary-button:not(:disabled)]:!bg-[#9a3412]',
+  '[&_.pdf-editor-primary-button:not(:disabled)]:!text-white',
+  '[&_.pdf-editor-primary-button:not(:disabled):hover]:!bg-[#7c2d12]',
+  '[&_.pdf-editor-primary-button:focus-visible]:!outline',
+  '[&_.pdf-editor-primary-button:focus-visible]:!outline-[3px]',
+  '[&_.pdf-editor-primary-button:focus-visible]:!outline-offset-2',
+  '[&_.pdf-editor-primary-button:focus-visible]:!outline-[#174ea6]',
+  '[&_.pdf-conversion-action-button:not(:disabled)]:!bg-[#9a3412]',
+  '[&_.pdf-conversion-action-button:not(:disabled)]:!text-white',
+  '[&_.pdf-conversion-action-button:not(:disabled):hover]:!bg-[#7c2d12]',
+  '[&_.merge-process-button:not(:disabled)]:!bg-[#9a3412]',
+  '[&_.merge-process-button:not(:disabled):hover]:!bg-[#7c2d12]',
+  '[&_.rotate-process-button:not(:disabled)]:!bg-[#9a3412]',
+  '[&_.rotate-process-button:not(:disabled):hover]:!bg-[#7c2d12]',
+  '[&_.pdf-tool-workflow_button.bg-blue-600:not(:disabled)]:!bg-[#9a3412]',
+  '[&_.pdf-tool-workflow_button.bg-blue-600:not(:disabled):hover]:!bg-[#7c2d12]',
+  '[&_.pdf-editor-upload-zone]:!rounded-2xl',
+  '[&_.pdf-editor-upload-zone]:!border-[#d7b79a]',
+  '[&_.pdf-editor-upload-zone]:!bg-[#fffdf9]',
+  '[&_.pdf-editor-upload-zone.is-dragging]:!border-[#9a4c24]',
+  '[&_.pdf-editor-upload-zone.is-dragging]:!bg-[#fff3e5]',
+  '[&_.pdf-attached-file-card]:!rounded-2xl',
+  '[&_.pdf-attached-file-card]:!border-[#dfd2c2]',
+  '[&_.download-ready-card-action:focus-visible]:!outline',
+  '[&_.download-ready-card-action:focus-visible]:!outline-[3px]',
+  '[&_.download-ready-card-action:focus-visible]:!outline-offset-2',
+  '[&_.download-ready-card-action:focus-visible]:!outline-[#174ea6]',
+  '[&_.pdf-attached-file-action:focus-visible]:!outline',
+  '[&_.pdf-attached-file-action:focus-visible]:!outline-[3px]',
+  '[&_.pdf-attached-file-action:focus-visible]:!outline-offset-2',
+  '[&_.pdf-attached-file-action:focus-visible]:!outline-[#174ea6]',
+  '[&_.pdf-tool-workflow_input:focus-visible]:!outline',
+  '[&_.pdf-tool-workflow_input:focus-visible]:!outline-[3px]',
+  '[&_.pdf-tool-workflow_input:focus-visible]:!outline-offset-2',
+  '[&_.pdf-tool-workflow_input:focus-visible]:!outline-[#174ea6]',
+  '[&_.pdf-tool-workflow_select:focus-visible]:!outline',
+  '[&_.pdf-tool-workflow_select:focus-visible]:!outline-[3px]',
+  '[&_.pdf-tool-workflow_select:focus-visible]:!outline-offset-2',
+  '[&_.pdf-tool-workflow_select:focus-visible]:!outline-[#174ea6]',
+  '[&_.pdf-tool-workflow_textarea:focus-visible]:!outline',
+  '[&_.pdf-tool-workflow_textarea:focus-visible]:!outline-[3px]',
+  '[&_.pdf-tool-workflow_textarea:focus-visible]:!outline-offset-2',
+  '[&_.pdf-tool-workflow_textarea:focus-visible]:!outline-[#174ea6]'
+].join(' ');
+
 const ToolPage = ({ tool, children }) => {
   const { language, translate } = useLanguage();
   const localizedResources = getLocalizedResourceLabels(language);
@@ -539,110 +612,112 @@ const ToolPage = ({ tool, children }) => {
 
   return (
     <article className={tool === 'merge' ? 'space-y-8 merge-tool-page v6-tool-page' : 'space-y-8 v6-tool-page'}>
-      <header className="tool-detail-hero v6-tool-detail-hero">
-        <div className="tool-detail-hero-main">
-          <div className="tool-detail-heading">
-            <span className="tool-detail-icon" aria-hidden="true">
-              <ToolIcon className="h-7 w-7" />
-            </span>
-            <h1 className="tool-detail-title">{pageTitleText}</h1>
-            <p className="tool-detail-description">{pageDescription}</p>
-          </div>
-        </div>
-        <div className="tool-detail-intro v6-tool-detail-intro">
-          <ul id={`${tool}-detail-points`} className="tool-detail-point-list">
-            {localizedContent.detailPoints.map(({ key, text }) => (
-              <li key={key} className="tool-detail-point">
-                <ToolIcon className="tool-detail-point-icon" aria-hidden="true" />
-                <span>
-                  <strong>{localizedContent.detailPointHeadings[key]}</strong>
-                  {text}
-                  {key === 'result' && (
-                    <Link
-                      className="mt-2 block w-fit font-semibold text-blue-700 underline hover:text-blue-800"
-                      to={`/resources/tools/${tool}`}
-                    >
-                      {localizedResources.readMore}
-                    </Link>
-                  )}
-                </span>
-              </li>
-            ))}
-          </ul>
-        </div>
-      </header>
-
-      <section aria-labelledby="tool-workspace-heading">
-        <h2 id="tool-workspace-heading" className="sr-only">{pageTitleText} {translate('toolWorkspace')}</h2>
-        {attachmentRule && tool !== 'word' && tool !== 'markdown' ? (
-          <div className="tool-attachment-section v6-tool-workspace">
-            <div className="tool-attachment-heading">
-              <span className="tool-attachment-icon" aria-hidden="true">
-                <Upload className="h-5 w-5" />
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+        <header className="tool-detail-hero v6-tool-detail-hero lg:col-span-3">
+          <div className="tool-detail-hero-main">
+            <div className="tool-detail-heading">
+              <span className="tool-detail-icon" aria-hidden="true">
+                <ToolIcon className="h-7 w-7" />
               </span>
-              <div>
-                <h2>{translate(attachmentTitleKey)}</h2>
-                <p>{localizedContent.attachment.rule}</p>
-              </div>
+              <h1 className="tool-detail-title">{pageTitleText}</h1>
+              <p className="tool-detail-description">{pageDescription}</p>
             </div>
-            <aside className="tool-attachment-guidance" aria-labelledby={attachmentGuidanceHeadingId}>
-              <h3 id={attachmentGuidanceHeadingId}>{localizedTool?.name || localizedContent.attachment.infoTitle}</h3>
-              <p>{localizedContent.attachment.info}</p>
-            </aside>
-            <div className="tool-attachment-content">{children}</div>
           </div>
-        ) : children}
-      </section>
+          <div className="tool-detail-intro v6-tool-detail-intro">
+            <ul id={`${tool}-detail-points`} className="tool-detail-point-list">
+              {localizedContent.detailPoints.map(({ key, text }) => (
+                <li key={key} className="tool-detail-point">
+                  <ToolIcon className="tool-detail-point-icon" aria-hidden="true" />
+                  <span>
+                    <strong>{localizedContent.detailPointHeadings[key]}</strong>
+                    {text}
+                    {key === 'result' && (
+                      <Link
+                        className="mt-2 block w-fit font-semibold text-blue-700 underline hover:text-blue-800"
+                        to={`/resources/tools/${tool}`}
+                      >
+                        {localizedResources.readMore}
+                      </Link>
+                    )}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </header>
 
-      <section aria-label={`${pageTitleText} ${translate('instructionsAndWorkflow')}`} className="grid gap-4 lg:grid-cols-2">
-        <div aria-labelledby="how-to-heading" className="v6-tool-info-card">
-          <h2 id="how-to-heading" className="text-2xl font-bold text-slate-800 mb-4">{translate('howToUse')} {pageTitleText}</h2>
-          <ol className="v6-tool-steps">
-            {localizedContent.steps.map((step) => <li key={step}>{step}</li>)}
-          </ol>
-        </div>
+        <section aria-labelledby="tool-workspace-heading" className={`${V6_TOOL_WORKSPACE_CLASSES} min-w-0 lg:col-span-2`}>
+          <h2 id="tool-workspace-heading" className="sr-only">{pageTitleText} {translate('toolWorkspace')}</h2>
+          {attachmentRule && tool !== 'word' && tool !== 'markdown' ? (
+            <div className="tool-attachment-section v6-tool-workspace">
+              <div className="tool-attachment-heading">
+                <span className="tool-attachment-icon" aria-hidden="true">
+                  <Upload className="h-5 w-5" />
+                </span>
+                <div>
+                  <h2>{translate(attachmentTitleKey)}</h2>
+                  <p>{localizedContent.attachment.rule}</p>
+                </div>
+              </div>
+              <aside className="tool-attachment-guidance" aria-labelledby={attachmentGuidanceHeadingId}>
+                <h3 id={attachmentGuidanceHeadingId}>{localizedTool?.name || localizedContent.attachment.infoTitle}</h3>
+                <p>{localizedContent.attachment.info}</p>
+              </aside>
+              <div className="tool-attachment-content">{children}</div>
+            </div>
+          ) : children}
+        </section>
 
-        <div aria-labelledby="how-it-works-heading" className="v6-tool-info-card">
-          <h2 id="how-it-works-heading" className="text-2xl font-bold text-slate-800 mb-3">{translate('howItWorks')}</h2>
-          {ProcessingIcon ? (
-            <>
-              <ol aria-label={translate('howItWorks')} className="v6-tool-flow">
-                <li className="v6-tool-flow-step">
-                  <span className="tool-card-icon h-12 w-12" aria-hidden="true">
-                    <Upload className="h-6 w-6" />
-                  </span>
-                  <span>{translate('uploadToTool')}</span>
-                </li>
-                <li aria-hidden="true" className="flex justify-center text-slate-400">
-                  <ArrowRight className="h-5 w-5 rotate-90 xl:rotate-0" />
-                </li>
-                <li className="v6-tool-flow-step">
-                  <span className="tool-card-icon h-12 w-12" aria-hidden="true">
-                    <ProcessingIcon className="h-6 w-6" />
-                  </span>
-                  <span>{translate('processDocumentInBrowser')}</span>
-                </li>
-                <li aria-hidden="true" className="flex justify-center text-slate-400">
-                  <ArrowRight className="h-5 w-5 rotate-90 xl:rotate-0" />
-                </li>
-                <li className="v6-tool-flow-step">
-                  <span className="tool-card-icon h-12 w-12" aria-hidden="true">
-                    <Download className="h-6 w-6" />
-                  </span>
-                  <span>{translate('download')}</span>
-                </li>
-              </ol>
-              <p className="v6-tool-privacy-note">
-                {translate('filesStayInBrowser')} <Link className="underline hover:text-blue-700" to="/privacy">{translate('privacyPolicy')}</Link>.
+        <aside aria-label={`${pageTitleText} ${translate('instructionsAndWorkflow')}`} className="space-y-6 lg:col-span-1">
+          <section aria-labelledby="how-to-heading" className="v6-tool-info-card">
+            <h2 id="how-to-heading" className="mb-4 text-2xl font-bold text-slate-800">{translate('howToUse')} {pageTitleText}</h2>
+            <ol className="v6-tool-steps">
+              {localizedContent.steps.map((step) => <li key={step}>{step}</li>)}
+            </ol>
+          </section>
+
+          <section aria-labelledby="how-it-works-heading" className="v6-tool-info-card">
+            <h2 id="how-it-works-heading" className="mb-3 text-2xl font-bold text-slate-800">{translate('howItWorks')}</h2>
+            {ProcessingIcon ? (
+              <>
+                <ol aria-label={translate('howItWorks')} className="v6-tool-flow">
+                  <li className="v6-tool-flow-step">
+                    <span className="tool-card-icon h-12 w-12" aria-hidden="true">
+                      <Upload className="h-6 w-6" />
+                    </span>
+                    <span>{translate('uploadToTool')}</span>
+                  </li>
+                  <li aria-hidden="true" className="flex justify-center text-slate-400">
+                    <ArrowRight className="h-5 w-5 rotate-90 xl:rotate-0" />
+                  </li>
+                  <li className="v6-tool-flow-step">
+                    <span className="tool-card-icon h-12 w-12" aria-hidden="true">
+                      <ProcessingIcon className="h-6 w-6" />
+                    </span>
+                    <span>{translate('processDocumentInBrowser')}</span>
+                  </li>
+                  <li aria-hidden="true" className="flex justify-center text-slate-400">
+                    <ArrowRight className="h-5 w-5 rotate-90 xl:rotate-0" />
+                  </li>
+                  <li className="v6-tool-flow-step">
+                    <span className="tool-card-icon h-12 w-12" aria-hidden="true">
+                      <Download className="h-6 w-6" />
+                    </span>
+                    <span>{translate('download')}</span>
+                  </li>
+                </ol>
+                <p className="v6-tool-privacy-note">
+                  {translate('filesStayInBrowser')} <Link className="underline hover:text-blue-700" to="/privacy">{translate('privacyPolicy')}</Link>.
+                </p>
+              </>
+            ) : (
+              <p className="text-slate-600 leading-relaxed">
+                This conversion is not available yet. No files are uploaded or processed by this tool.
               </p>
-            </>
-          ) : (
-            <p className="text-slate-600 leading-relaxed">
-              This conversion is not available yet. No files are uploaded or processed by this tool.
-            </p>
-          )}
-        </div>
-      </section>
+            )}
+          </section>
+        </aside>
+      </div>
 
       <section aria-labelledby="tool-faq-heading" className="space-y-3">
         <h2 id="tool-faq-heading" className="text-2xl font-bold text-slate-800">{translate('frequentlyAskedQuestions')}</h2>

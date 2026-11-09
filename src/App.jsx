@@ -2,6 +2,7 @@ import React, { lazy, Suspense, useEffect, useRef, useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, Link, NavLink, Navigate, useLocation, useParams } from 'react-router-dom';
 import {
   BookOpenText,
+  ArrowLeft,
   Check,
   ChevronLeft,
   ChevronRight,
@@ -605,28 +606,48 @@ const RouteFocusManager = () => {
   return null;
 };
 
-const SiteShell = ({ theme, setTheme, isSidebarCollapsed, setIsSidebarCollapsed }) => (
-  <div className={`site-app-shell${isSidebarCollapsed ? ' is-sidebar-collapsed' : ''}`}>
-    <RouteFocusManager />
-    <a className="skip-to-content" href="#tool-search">Skip to main content</a>
-    <div className="site-workspace">
-      <header className="site-topbar">
-        <div className="site-topbar-search">
-          <ToolSearch />
-        </div>
-      </header>
+const SiteShell = ({ theme, setTheme, isSidebarCollapsed, setIsSidebarCollapsed }) => {
+  const { pathname } = useLocation();
+  const { language, translate } = useLanguage();
+  const isToolRoute = pathname === '/excel-to-pdf'
+    || TOOL_REGISTRY.some((tool) => tool.path === pathname);
+  const currentTool = TOOL_REGISTRY.find((tool) => tool.path === pathname);
+  const localizedTool = currentTool ? getLocalizedTool(language, currentTool) : null;
+  const toolName = localizedTool?.name || (pathname === '/excel-to-pdf' ? 'Excel to PDF' : '');
 
-      <LeftNavigation
-        theme={theme}
-        setTheme={setTheme}
-        isSidebarCollapsed={isSidebarCollapsed}
-        onToggleSidebar={() => setIsSidebarCollapsed((current) => !current)}
-      />
+  return (
+    <div className={`site-app-shell${isToolRoute ? ' is-tool-route' : ''}${isSidebarCollapsed ? ' is-sidebar-collapsed' : ''}`}>
+      <RouteFocusManager />
+      <a className="skip-to-content" href="#tool-search">Skip to main content</a>
+      <div className="site-workspace">
+        <header className="site-topbar">
+          {isToolRoute && (
+            <div className="site-topbar-tool-context">
+              <Link to="/" className="v6-tool-back-link">
+                <ArrowLeft aria-hidden="true" />
+                <span>Back to {translate('allTools')}</span>
+              </Link>
+              <span className="v6-tool-topbar-title" aria-current="page">{toolName}</span>
+            </div>
+          )}
+          <div className={`site-topbar-search${isToolRoute ? ' site-topbar-tool-search' : ''}`}>
+            <ToolSearch />
+          </div>
+        </header>
 
-      <main id="main-content" tabIndex={-1} className="site-main-content">
-        <RouteErrorBoundaryWithLocation fallback={<RouteErrorFallback />}>
-          <Suspense fallback={<RouteLoadingFallback />}>
-            <Routes>
+        {!isToolRoute && (
+          <LeftNavigation
+            theme={theme}
+            setTheme={setTheme}
+            isSidebarCollapsed={isSidebarCollapsed}
+            onToggleSidebar={() => setIsSidebarCollapsed((current) => !current)}
+          />
+        )}
+
+        <main id="main-content" tabIndex={-1} className="site-main-content">
+          <RouteErrorBoundaryWithLocation fallback={<RouteErrorFallback />}>
+            <Suspense fallback={<RouteLoadingFallback />}>
+              <Routes>
               {TOOL_CATEGORIES.map((category) => (
                 <Route
                   key={category.id}
@@ -670,15 +691,16 @@ const SiteShell = ({ theme, setTheme, isSidebarCollapsed, setIsSidebarCollapsed 
               <Route path="/about" element={<SitePages page="about" />} />
               <Route path="/contact" element={<SitePages page="contact" />} />
               <Route path="*" element={<NotFoundPage />} />
-            </Routes>
-          </Suspense>
-        </RouteErrorBoundaryWithLocation>
-      </main>
+              </Routes>
+            </Suspense>
+          </RouteErrorBoundaryWithLocation>
+        </main>
 
-      <Footer />
+        <Footer />
+      </div>
     </div>
-  </div>
-);
+  );
+};
 
 function App() {
   const [theme, setTheme] = useState(() => (
