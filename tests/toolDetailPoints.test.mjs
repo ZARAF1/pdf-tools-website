@@ -97,10 +97,11 @@ test('PDF password limitations stay in the input guidance instead of description
   assert.match(content, /tool === 'image-pdf'[\s\S]*?\? null/);
 });
 
-test('only the Merge Home icon receives the larger tool-fan treatment', async () => {
-  const home = await readSource('../src/components/Home.jsx');
-  const styles = await readSource('../src/index.css');
-  assert.match(home, /localizedTool\.id === 'merge' \? ' home-hero-tool-icon--merge'/);
-  assert.match(styles, /\.home-hero-tool-icon--merge\s*\{[^}]*width:\s*1\.75rem[^}]*height:\s*1\.75rem/);
+test('homepage collection links use their registered tool icon consistently', async () => {
+  const bento = await readSource('../src/components/v6/EditorialLightBento.jsx');
+  const styles = await readSource('../src/components/v6/editorial-light.css');
+  assert.match(bento, /const Icon = tool\.icon/);
+  assert.match(bento, /<Icon aria-hidden="true" \/>/);
+  assert.match(styles, /\.v6-tool-icon\s*\{[^}]*width:\s*38px[^}]*height:\s*38px/);
   assert.match(await readSource('../src/components/toolRegistry.js'), /id: 'merge'[\s\S]*?icon: FileStack/);
 });

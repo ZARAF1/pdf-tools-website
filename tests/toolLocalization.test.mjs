@@ -15,11 +15,11 @@ const toolCardSource = await readFile(
   'utf8'
 );
 const homeSource = await readFile(
-  fileURLToPath(new URL('../src/components/Home.jsx', import.meta.url)),
+  fileURLToPath(new URL('../src/components/v6/EditorialLightBento.jsx', import.meta.url)),
   'utf8'
 );
 const searchSource = await readFile(
-  fileURLToPath(new URL('../src/components/ToolSearch.jsx', import.meta.url)),
+  fileURLToPath(new URL('../src/components/v6/EditorialLightSearch.jsx', import.meta.url)),
   'utf8'
 );
 const toolPageSource = await readFile(

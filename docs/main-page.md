@@ -2074,18 +2074,19 @@ Static issues flagged by review:
 
 - Read `docs/status.md`, `docs/PROJECT-TRACKER.md`, `docs/inventory.md`, and the Task 1.2 and Task 2.5 sections of this file.
 - Read `src/components/Home.jsx`, `src/components/toolRegistry.js`, `src/components/ToolSearch.jsx`, `src/components/ui/`, and the shared `AdSlot` implementation.
-- The new variant is intentionally not routed. Existing Home/App routing, global ToolSearch, ToolCard, registry data, tool workflows, footer, and language picker were not changed.
+- Consulted the Linear, Stripe, Vercel, and Claude templates for high-level hierarchy and interaction cues only; no reference layout or artwork was copied.
+- The new variant is intentionally not routed. `App.jsx` adds a development-only preview branch; the existing Home route, ToolSearch implementation, ToolCard, registry data, tool workflows, footer, and language picker remain unchanged.
 
 ### B) Implemented variant
 
-- Added `src/components/VariantScannableGrid.jsx` and four focused components in `src/components/v1/`.
+- Added `src/components/VariantScannableGrid.jsx` and four focused components in `src/components/v1/`. The preview renders native header, main, navigation, and footer landmarks.
 - The replaceable `brandName` prop supplies the header wordmark; the composite H1 is “All the PDF tools you need, right in your browser.” The browser-privacy statement is displayed directly beside the hero search.
-- The full-width search uses the shared `Input` primitive and registry/localized tool data. Result counts and no-result feedback are announced through a polite live region.
+- The full-width search uses the shared `Input` primitive, is 48px high with 16px text, and searches registry/localized tool data. Result counts and no-result feedback are announced through a polite live region.
 - Five registry-driven category cards appear immediately below the hero. Each shows three or four visible text links; the operation labels in Extract link to their valid Split/OCR destinations. Popular cards are interactive shared `Card` primitives.
 - A `Button` primitive creates the fixed mobile “Browse All Tools” action, with bottom safe-area padding. The category sidebar replaces it at the desktop breakpoint.
 - The shared `AdSlot` remains after all content. Its configuration is disabled, so the preview showed no ad or reserved ad box.
 - The required hero Input is distinct from the existing global `ToolSearch`, which remains unchanged in the app shell. Reconcile whether both remain visible when the variant is selected/routed in Task 6.1.
-- A temporary preview harness is available at `http://localhost:5173/?preview=v1` when Vite is running. `src/main.jsx` selects it only when `import.meta.env.DEV` is true and the query is `preview=v1`; the production build contains no harness module or variant copy. This does not change application routing.
+- A temporary preview harness is available at `http://localhost:5173/?preview=v1` when Vite is running. `src/App.jsx` selects it only when `import.meta.env.DEV` is true and the query is `preview=v1`; the production build contains no harness module or variant copy. This does not change application routing. The existing app-shell `ToolSearch` is not rendered in this preview branch; decide whether to consolidate search when selecting the final route in Task 6.1.
 
 ### C) Design rationale and rejected alternatives
 
@@ -2102,7 +2103,7 @@ Alternatives considered:
 
 | Width | Observed behavior |
 |---|---|
-| 320 | One-column category cards; 48px search input; safe-area mobile CTA; 30 visible interactive targets measured, all at least 44×44px. The first card’s four tool links fit above the sticky bar in the 900px preview viewport. |
+| 320 | One-column category cards; 48px search input with 16px text; safe-area mobile CTA. All visible pointer targets measured at least 44×44px. |
 | 375 | One-column cards and stacked hero; sticky CTA remains visible; no horizontal overflow. |
 | 414 | One-column cards; sticky CTA remains visible; no horizontal overflow. |
 | 768 | Two-column category cards; hero stays stacked; mobile CTA remains visible. |
@@ -2111,48 +2112,44 @@ Alternatives considered:
 | 1440 | Four-column cards and sidebar; container remains within its parent’s available width. |
 | 1920 | Four-column cards; measured content container is capped at 1440px and centered; no horizontal overflow. |
 
-The Chromium preview reported no horizontal overflow at 320, 375, 414, 768, 1024, 1280, 1440, or 1920px. Visible interactive targets were checked at every width; none measured below 44×44px. The Input measured 48px high. This is a local-browser check, not cross-browser certification.
+The Chromium preview reported no horizontal overflow at 320, 375, 414, 768, 1024, 1280, 1440, or 1920px. Visible pointer targets were checked at every width; none measured below 44×44px. The Input measured 48px high with 16px text. This is a local-browser check, not cross-browser certification.
 
 ### E) Contrast and focus evidence
 
-Measurements were taken after light/dark theme color transitions settled. Every visible text pair sampled in the rendered variant exceeded 4.5:1 in both themes; the measured search and focus boundaries exceed 3:1.
+The search border measurements use computed colors from the rendered Input after theme changes. A full rendered text-pair audit and automated WAVE/axe scan remain pending. Hover classes are present, but the browser automation did not provide reliable visual hover measurements.
 
 | Pair | Light | Dark | Result |
 |---|---:|---:|---|
 | Search border against Input surface | 4.72:1 | 6.72:1 | Pass |
-| Search border on hover | 7.96:1 | 3.30:1 | Pass; border visibly changes in both themes |
-| Browser-privacy Badge text/surface | 5.02:1 | 10.62:1 | Pass |
-| Trust statement against its composited panel | 15.61:1 | 10.96:1 | Pass |
-| Category tool link against card | 6.12:1 | 6.72:1 | Pass |
-| Mobile primary CTA text/background | 6.70:1 | 15.35:1 | Pass |
-| Focus ring token | `#2563eb`; 5.17:1 on white | `#60a5fa`; 6.72:1 on dark surface | Pass |
+| Search border hover state | Not measured | Not measured | Hover classes exist; browser hover verification was inconclusive |
+| Focus indicator | Visible 2px ring with surface offset | Visible 2px ring with surface offset | Focused theme button computed style showed the ring; token ratios are documented in Task 2.1 |
 
-Keyboard focus showed the 2px surface offset plus visible 2px focus ring on the search result link and the focused skip link. Category links, header navigation, interactive cards, Input, and Button use the existing FocusRing primitive or the documented `focus-visible` token utility.
+After bringing the preview page to the foreground, focusing the skip link revealed it at the top-left (16px inset). The theme button's computed focus style showed a visible ring. Category links, header navigation, interactive cards, Input, and Button use the existing FocusRing primitive or the documented `focus-visible` token utility.
 
 ### F) WCAG 2.2 evidence
 
 | # | Criterion | Result | Evidence |
 |---:|---|---|---|
-| 1 | 1.3.1 Info and Relationships | Pass | One H1; native header, navigation, aside, labelled sections, lists, and links. The shared app shell supplies the main landmark when routed. |
-| 2 | 1.4.3 Text Contrast | Pass for rendered pairs | Browser sampling found no visible text pair below 4.5:1 in either theme; lowest sampled examples are recorded in Section E. |
-| 3 | 1.4.4 Resize Text | Pass for accepted proxy; native zoom pending | At the agreed 640px emulated 200% viewport, content reflowed without horizontal overflow. Native browser zoom was not exercised. |
+| 1 | 1.3.1 Info and Relationships | Pass | One H1 and one main landmark; native header, navigation, aside, labelled sections, lists, and links are present in the preview itself. |
+| 2 | 1.4.3 Text Contrast | Partial — full audit pending | Computed search-border contrast passes in both themes; text pairings use Task 2.1 tokens, but the complete rendered-page text contrast scan is pending. |
+| 3 | 1.4.4 Resize Text | Pending | Required viewport reflow was checked; 200% text resizing/native browser zoom was not verified for this variant. |
 | 4 | 1.4.10 Reflow | Pass | No horizontal overflow at all eight required viewport widths. |
-| 5 | 1.4.11 Non-text Contrast | Pass for measured boundaries | Search border measured 4.72:1 light / 6.72:1 dark (hover: 7.96:1 / 3.30:1); focus-ring token pairings exceed 3:1. |
-| 6 | 1.4.12 Text Spacing | Pass for override test | Applied line-height 1.5, paragraph spacing 2em, letter spacing .12em, and word spacing .16em at 320px; no horizontal overflow or clipped content was detected. |
-| 7 | 2.1.1 Keyboard | Pass for observed path | Tab moved from the labelled search Input to the “Rotate PDF” result link; native link and Button semantics are retained. |
+| 5 | 1.4.11 Non-text Contrast | Pass for measured search boundary | Search border measured 4.72:1 light / 6.72:1 dark against the rendered Input surface. Hover-state contrast was not measured. |
+| 6 | 1.4.12 Text Spacing | Pass for reflow sample | Applied line-height 1.5, paragraph spacing 2em, letter spacing .12em, and word spacing .16em at 320px; no horizontal overflow was observed. |
+| 7 | 2.1.1 Keyboard | Partial — manual keyboard check pending | Interactive controls use native links, buttons, and Input; this browser automation did not provide reliable keyboard-event evidence. |
 | 8 | 2.1.2 No Keyboard Trap | Pass for implemented controls | Search, links, cards, and Button use native focusable elements; no modal or custom trapped-focus interaction is introduced. |
-| 9 | 2.4.1 Bypass Blocks | Pass | “Skip to tools” became visible on keyboard focus and targets the category directory. |
-| 10 | 2.4.3 Focus Order | Pass for inspected DOM path | Initial Tab reached the skip link; subsequent controls follow the rendered header, hero, directory, popular tools, and mobile CTA order. |
-| 11 | 2.4.7 Focus Visible | Pass | Computed focus shadow was visible on both the search result and focused skip link. |
-| 12 | 2.4.11 Focus Not Obscured | Pass for mobile sample | At 320px, the final Extract link’s bounds did not overlap the fixed CTA. |
+| 9 | 2.4.1 Bypass Blocks | Pass | “Skip to tools” was revealed at a 16px top/left inset after focusing it in the foregrounded preview; its href targets the category directory. |
+| 10 | 2.4.3 Focus Order | Pass for DOM order | Focusable content follows the skip link, header, hero search, category directory, popular tools, footer, and mobile browse action in DOM order. |
+| 11 | 2.4.7 Focus Visible | Pass for sampled control | The focused theme button's computed style showed a surface offset and visible focus ring. |
+| 12 | 2.4.11 Focus Not Obscured | Pass for mobile sample | At 320px, the final Extract link ended at y=472px while the fixed CTA began at y=823px; their bounds did not overlap. |
 | 13 | 2.5.7 Dragging Movements | N/A — no dragging interaction | The variant introduces no drag operation. |
-| 14 | 2.5.8 Target Size Minimum | Pass | All visible interactive targets measured at least 44×44px at the eight required widths. |
+| 14 | 2.5.8 Target Size Minimum | Pass for visible pointer targets | No visible, non-sr-only link, button, or input measured below 44×44px at the eight required widths. |
 | 15 | 3.2.6 Consistent Help | N/A — no help/contact UI added | The variant adds no help or contact mechanism. |
 | 16 | 3.3.1 Error Identification | N/A — no error-producing form | Search no-result feedback is plain-text status, not a form error; no validation-error state is introduced. |
 | 17 | 3.3.7 Redundant Entry | N/A — no multi-step entry flow | The search is a single field and does not request repeated data. |
 | 18 | 3.3.8 Accessible Authentication | N/A — no authentication flow | No authentication UI is introduced. |
-| 19 | 4.1.2 Name, Role, Value | Pass | Search exposes the visible “Find a PDF tool” label and `aria-controls`; navigation and actions use named native links/buttons. |
-| 20 | 4.1.3 Status Messages | Pass | Search announces “2 matching tools” and “No matching tools” through `aria-live="polite"`. |
+| 19 | 4.1.2 Name, Role, Value | Pass | The visible “Search all PDF tools” label names the Input; the theme button exposes a stable name and `aria-pressed`; navigation and actions use native links/buttons. |
+| 20 | 4.1.3 Status Messages | Pass | Search results announce “1 matching tools” and “No tools found. Try another search.” through a `role="status"` polite live region. |
 
 Automated axe/WAVE scanning remains **pending**: neither `window.axe` nor the WAVE extension toolbar was available in the local browser session. No zero-violation result is claimed.
 
@@ -2161,11 +2158,870 @@ Automated axe/WAVE scanning remains **pending**: neither `window.axe` nor the WA
 | Check | Result | Evidence |
 |---|---|---|
 | Existing suite before implementation | 352/352 passed | Recorded pre-change run; 1,198.2876ms. |
-| Existing suite plus variant tests | 362/362 passed | `npm.cmd test`; 1,592.4634ms. |
-| Variant-focused tests | 10/10 passed | `tests/variantScannableGrid.test.mjs`; includes H1/trust, registry categories, primitives, breakpoints, target size, mobile type size, hover/focus feedback, and the development-only preview gate. |
+| Existing suite plus variant tests | 358/358 passed | `npm.cmd test`; 1,433.2275ms. |
+| Variant-focused tests | 6/6 passed | `tests/variantScannableGrid.test.mjs`; covers preview gating, one H1/main, tokens/primitives, category links, target sizing, hover classes, and the mobile action. |
 | Production build | Passed | `npm.cmd run build`; existing `buffer` externalization and >500kB chunk warnings remain. The variant/harness are intentionally absent from the production bundle. |
-| Browser preview | Passed for measured states | Local Chromium rendered the isolated variant; responsive, search, focus, contrast, 640px reflow proxy, and text-spacing checks are recorded above. |
+| Browser preview | Passed for measured states | Local Chromium checked eight responsive widths, 48px/16px search sizing, target dimensions, landmarks, theme state/persistence, search results, focus visibility, target overlap, input-border contrast, and a text-spacing override. |
 | axe/WAVE and Lighthouse | Pending human scan | Browser automation had neither axe nor WAVE injected. Lighthouse on the Vite development server is diagnostic, not representative of a production build; collect the requested output and repeat performance validation after final routing. |
-| Existing app source scope | Passed | `src/main.jsx` only selects the temporary preview when the development flag and `preview=v1` query are both present; `Home.jsx`, `App.jsx`, `ToolSearch.jsx`, and existing tools/routes are unchanged. |
+| Existing app source scope | Passed | `App.jsx` adds only the development-only `?preview=v1` branch; the `/` route, `Home.jsx`, `ToolSearch.jsx`, and existing tools/routes remain unchanged. |
 
 **Status: In Progress — awaiting user input.** The variant remains unrouted as required. Do not mark Ready for Review until a human supplies an axe DevTools or WAVE scan for the preview and the zero critical/serious requirement is confirmed.
+
+## Task 4.1 — Variant 2 (Bold Editorial)
+
+### A) Design rationale and reference interpretation
+
+Variant 2 is a more expressive, editorial direction for people who want to understand the breadth of the PDF toolbox before choosing a task. A layered brand-blue hero, oversized composite headline, numbered process strip, and asymmetrical category panels create stronger visual rhythm than Variant 1's compact directory.
+
+The Stripe reference informed the deliberate hierarchy, restrained multi-stop gradient, and blue-tinted elevation. The Framer reference informed the oversized display scale, assertive contrast, and product-forward presentation. These are high-level cues only: this implementation uses the project's Task 2.1 color, type, spacing, radius, and shadow tokens, with no reference-site layout, artwork, proprietary fonts, or external design assets copied.
+
+The headline, “Every PDF task, ready for its next chapter,” covers the tool collection; the supporting copy and trust proof state that tools work in the browser and files stay on the device. The wordmark remains replaceable through the `brandName` prop. No search field or dropdown is added.
+
+### B) Components created
+
+| Component | Responsibility |
+|---|---|
+| `src/components/VariantEditorial.jsx` | Variant shell, skip link, shared footer, and composition of the V2 sections. |
+| `src/components/v2/V2Header.jsx` | Replaceable wordmark, section navigation, and the shared accessible theme control. |
+| `src/components/v2/V2Hero.jsx` | Token-gradient hero, composite H1, privacy proof, tool-count badge, and “Explore All Tools” Button. |
+| `src/components/v2/V2HowItWorks.jsx` | Ordered three-step visual strip with large icons. |
+| `src/components/v2/V2ToolGrid.jsx` | Asymmetrical category panels containing rich interactive tool cards. |
+
+`src/components/VariantEditorial.jsx` reuses `Footer`; V2 sections reuse the existing `Button`, `Card`, and `Badge` primitives. The footer wrapper applies theme-aware surface tokens and ensures visible footer links and controls meet the project's 44px target minimum.
+
+### C) Registry fidelity and preview isolation
+
+- The five category panels are generated from `TOOL_CATEGORIES`; each panel filters `TOOL_REGISTRY` by its registry category id.
+- All 18 registry tools render exactly once. Their icon component, name, description, and `path` are read directly from the registry; no V2 tool list or invented label is maintained.
+- Each tool is a complete interactive `Card`, not a bare text link. The hero CTA points to the tool directory; there is no search/dropdown interaction.
+- `App.jsx` preserves the existing `/` → `Home` route and existing V1 preview branch. V2 is selected only for `?preview=v2` in development or when a separate build explicitly sets `VITE_ENABLE_V2_PREVIEW=true`. The opt-in preview build is not the normal deployment build.
+- V1 component files and `VariantScannableGrid.jsx` were not changed.
+
+### D) Responsive and browser verification
+
+| Width | Observed behavior |
+|---:|---|
+| 320 | Stacked hero, process cards, and tool cards; no horizontal overflow. |
+| 375 | Stacked content; no horizontal overflow. |
+| 414 | Stacked content; no horizontal overflow. |
+| 768 | Process strip and category tool cards begin using multi-column layouts; no horizontal overflow. |
+| 1024 | Asymmetric category grid is active; no horizontal overflow. |
+| 1280 | Spacious category grid and full hero composition; no horizontal overflow. |
+| 1440 | Content remains within the 1440px container; no horizontal overflow. |
+| 1920 | Container remains capped and centered; no horizontal overflow. |
+
+Production-preview browser checks confirmed one H1, five category panels, 18 tool cards, no search fields, zero horizontal overflow, and no visible link/button targets below 44×44px at all eight widths. The theme button changed `aria-pressed` from false to true in-browser. Loading `/` without `?preview=v2` displayed the existing “Powerful PDF Tools” homepage and not the V2 hero.
+
+### E) WCAG 2.2 evidence
+
+| # | Criterion | Result | Evidence |
+|---:|---|---|---|
+| 1 | 1.3.1 Info and Relationships | Pass | Native header, navigation, one main landmark, labelled sections, category headings, and ordered three-step list. |
+| 2 | 1.4.3 Text Contrast | Pass for documented token pairs | Contrast calculated from the Task 2.1 token values: light hero heading at least 6.41:1 and supporting text at least 5.50:1 across the gradient; dark hero heading at least 9.90:1 and supporting text at least 8.40:1. Body/card foregrounds use the documented surface token pairs. |
+| 3 | 1.4.4 Resize Text | Pending | No 200% browser zoom/text-resize check was performed for this variant. |
+| 4 | 1.4.10 Reflow | Pass | Production-preview browser reported no horizontal overflow at 320, 375, 414, 768, 1024, 1280, 1440, or 1920px. |
+| 5 | 1.4.11 Non-text Contrast | Partial | Focus ring uses the Task 2.1 focus token; full rendered-state boundary/icon contrast scan was not performed. |
+| 6 | 1.4.12 Text Spacing | Pending | No text-spacing override test was performed for this variant. |
+| 7 | 2.1.1 Keyboard | Partial | Actions are native links/buttons and use shared focus primitives; a full manual keyboard pass was not performed. |
+| 8 | 2.1.2 No Keyboard Trap | Pass | No modal, custom focus trap, or non-native keyboard interaction is introduced. |
+| 9 | 2.4.1 Bypass Blocks | Pass by source | “Skip to PDF tools” links directly to the tool-grid section. |
+| 10 | 2.4.3 Focus Order | Pass by DOM order | Focusable items follow skip link, header, hero action, sections, tool cards, and footer in document order. |
+| 11 | 2.4.7 Focus Visible | Pass by primitive usage | Shared `Button` and interactive `Card` apply `FocusRing`; navigation and skip links have visible focus styles. |
+| 12 | 2.4.11 Focus Not Obscured | Pass by layout | No fixed overlay or sticky control is added; interactive cards remain in document flow. |
+| 13 | 2.5.3 Label in Name | Pass | Theme control's stable accessible name is “Dark mode”; its visible desktop label is also “Dark mode”. |
+| 14 | 2.5.8 Target Size Minimum | Pass | Browser measured visible links and buttons at or above 44×44px across the eight widths. |
+| 15 | 3.2.6 Consistent Help | N/A — no help UI added | This variant adds no help mechanism. |
+| 16 | 3.3.1 Error Identification | N/A — no form or error state | The variant introduces no input or validation flow. |
+| 17 | 3.3.7 Redundant Entry | N/A — no data-entry flow | The variant introduces no repeated data-entry flow. |
+| 18 | 3.3.8 Accessible Authentication | N/A — no authentication flow | No authentication UI is introduced. |
+| 19 | 4.1.2 Name, Role, Value | Pass | Native headings, links, ordered list, and Button semantics; theme toggle exposes `aria-pressed`. |
+| 20 | 4.1.3 Status Messages | N/A — no dynamic status | No asynchronous status or result message is introduced. |
+
+Automated axe/WAVE and Lighthouse scans were not run; no zero-violation or performance score is claimed.
+
+### F) Regression and build evidence
+
+| Check | Result | Evidence |
+|---|---|---|
+| Full tests before implementation | 359/359 passed | `npm.cmd test`; baseline before the Task 4.1 regression test and implementation. |
+| Full tests after implementation | 363/363 passed | `npm.cmd test`; 0 failed. |
+| V2-focused tests | 4/4 passed | `tests/variantEditorial.test.mjs`; preview gate/default route, hero, process strip, registry-derived cards, and footer target classes. |
+| Production build | Passed | PowerShell temporarily set `$env:VITE_ENABLE_V2_PREVIEW='true'` around `npm.cmd run build`, then cleared it; existing `buffer` externalization and >500kB chunk warnings remain. Main JS output: 1,008.70 kB. |
+| Production preview | HTTP 200 | `npm.cmd run preview -- --host 127.0.0.1 --port 4174 --strictPort`; `http://127.0.0.1:4174/?preview=v2`. |
+| Whitespace validation | Passed | `git diff --check`. |
+
+### G) Alternatives considered and rejected
+
+- Adding another search dropdown — rejected because this direction explicitly uses one prominent CTA and avoids complex search interaction.
+- Hand-maintaining category/tool lists — rejected because it can drift from `toolRegistry.js`; categories and all 18 cards are registry-derived.
+- Using a full-bleed single-color black canvas and competitor-like screenshots — rejected in favor of project tokens, an original editorial grid, and non-interactive abstract document geometry.
+- Enabling V2 in every production build — rejected; the explicit `VITE_ENABLE_V2_PREVIEW` opt-in is required for a separate production-preview build, while the ordinary homepage remains unchanged.
+
+## Task 5.1 — Variant 3 (Apple Bento Box)
+
+### A) Read evidence and design direction
+
+- Reviewed Task 2.1 design tokens and Task 1.2 preservation requirements in this file, plus `docs/status.md` and `docs/PROJECT-TRACKER.md`.
+- Reviewed the Apple and Notion design-template references for high-level cues: warm restraint, tactile surfaces, clear hierarchy, and purposeful asymmetry. No reference layout, artwork, or proprietary visual assets were copied.
+- Inspected `src/components/toolRegistry.js`, `src/components/ui/`, and the existing V1/V2 preview branches in `src/App.jsx` before implementation.
+- Followed the workspace project instructions and status; no `.github/` file was modified.
+
+Variant 3 is a light-first, document-centered direction for users who want to browse by task. Its soft token gradient, generous editorial hero, and asymmetrical category panels distinguish it from the compact V1 directory and the high-contrast V2 composition. The wordmark is passed as a replaceable `brandName` prop; the hero keeps the all-tools promise and prominent on-device privacy proof.
+
+The hero's document shapes are decorative, static, and hidden from assistive technology. There is no above-the-fold animation, ad slot, or search control.
+
+### B) Components created
+
+| Component | Responsibility |
+|---|---|
+| `src/components/VariantBento.jsx` | Preview shell, skip link, replaceable composition, shared Footer, and theme props. |
+| `src/components/v3/V3Header.jsx` | Replaceable wordmark, section navigation, shared Button theme control, and focus treatment. |
+| `src/components/v3/V3Hero.jsx` | Single composite H1, privacy Badge and proof, primary shared Button, and static decorative illustration. |
+| `src/components/v3/V3BentoGrid.jsx` | Registry-derived category panels and complete interactive Card links. |
+
+### C) Bento layout and registry fidelity
+
+The 12-column desktop composition gives Organize seven columns, Convert five, Edit & Sign five, Protect & Repair four, and Extract three. This makes Organize the largest collection and Extract the smallest without a manually duplicated tool mapping. At tablet and mobile widths the grid collapses to two columns or one stacked column.
+
+`V3BentoGrid` maps `TOOL_CATEGORIES` and filters `TOOL_REGISTRY` by each category id. Every rendered tool uses the registry's actual icon, name, description, and `path`; the preview renders all five categories and all 18 tools. Missing layout metadata throws instead of silently omitting a category.
+
+The category panels and tool cards use the existing 28px `rounded-2xl` radius token. This follows the user's resolution of the requested 24px radius in favor of the existing design-system token; no new radius or palette token was introduced. Shared `Card`, `Badge`, and `Button` primitives are reused.
+
+### D) Preview isolation
+
+`src/App.jsx` selects V3 only when `?preview=v3` is present and either the app is in development or the production build explicitly sets `VITE_ENABLE_V3_PREVIEW=true`. The ordinary `/` route remains `Home`; a production preview build is not the normal deployment artifact. Existing V1 and V2 source files were not edited.
+
+### E) Responsive behavior
+
+Production-preview browser checks found no horizontal overflow and no undersized visible interactive targets at each viewport. The category layout uses a single column below `md`, two columns at `md`, and the asymmetrical 12-column composition at `lg`.
+
+| Width | Behavior |
+|---:|---|
+| 320 | Stacked hero and categories; tool cards remain single-column; skip link becomes a 44px-high visible target on focus. |
+| 375 | Stacked, compact card layout; no horizontal overflow. |
+| 414 | Stacked layout with the same single-column tool list; no horizontal overflow. |
+| 768 | Two-column category directory; no horizontal overflow. |
+
+| Width | Behavior |
+|---:|---|
+| 1024 | Asymmetrical 12-column grid begins; Organize is the largest panel. |
+| 1280 | Spacious 12-column editorial composition within the 1440px container. |
+| 1440 | 1440px maximum container and generous outer padding. |
+| 1920 | Container remains capped and centered; no horizontal overflow. |
+
+Browser verification at 320, 375, 414, 768, 1024, 1280, 1440, and 1920px measured equal document and client widths (no horizontal overflow). It also confirmed one H1, five category panels, 18 tool cards, 28px hero/category/tool-card radii, 44px minimum focused skip-link height, the hover translation and brand border, theme toggle state change, and fallback to the existing homepage at `/`. The production preview emitted no captured browser console errors or warnings.
+
+### F) WCAG 2.2 evidence
+
+| # | Criterion | Result | Evidence |
+|---:|---|---|---|
+| 1 | 1.3.1 Info and Relationships | Pass by source | Native header, nav, main, labelled hero and tool sections, category headings, and one H1. |
+| 2 | 1.4.3 Contrast (Minimum) | Pending measurement | Named foreground/surface tokens are used; no contrast calculation or axe/WAVE scan was run for V3. |
+| 3 | 1.4.4 Resize Text | Not tested | No 200% resize or browser text-zoom test was performed. |
+| 4 | 1.4.10 Reflow | Pass for tested widths | Production preview had no horizontal overflow at all eight required viewport widths. |
+| 5 | 1.4.11 Non-text Contrast | Pending measurement | Focus ring and icon/surface tokens are used; rendered contrast ratios were not measured. |
+| 6 | 1.4.12 Text Spacing | Not tested | No text-spacing override was run for V3. |
+| 7 | 2.1.1 Keyboard | Partial | Native anchors and buttons plus shared focus primitives are used; only skip-link focus and its visible ring were browser-checked, not a full traversal. |
+| 8 | 2.1.2 No Keyboard Trap | Pass by source | No modal, focus trap, or custom keyboard widget is introduced. |
+| 9 | 2.4.1 Bypass Blocks | Pass | “Skip to PDF tools” targets the tool section and expands visibly on focus. |
+| 10 | 2.4.3 Focus Order | Pass by DOM order | Focus sequence follows skip link, header, hero action, category tool links, and footer. |
+| 11 | 2.4.7 Focus Visible | Partial | Shared `FocusRing` is applied to header links, theme Button, and interactive Cards; the skip-link focus ring was observed, but every control was not individually tested. |
+| 12 | 2.4.11 Focus Not Obscured (Minimum) | Pass by layout | No fixed overlay or sticky control is added; interactive content remains in normal flow. |
+| 13 | 2.5.3 Label in Name | Pass by source | The theme control keeps the accessible name “Dark mode”; its desktop visible label matches. |
+| 14 | 2.5.8 Target Size (Minimum) | Pass for tested states | Browser found no undersized visible controls across eight widths; the focused skip link measures 124×44px. |
+| 15 | 3.2.6 Consistent Help | N/A — no help UI | Variant 3 adds no help mechanism. |
+| 16 | 3.3.1 Error Identification | N/A — no validation flow | Variant 3 adds no form or input validation. |
+| 17 | 3.3.2 Labels or Instructions | N/A — no data-entry controls | The variant adds no form fields. |
+| 18 | 3.3.7 Redundant Entry | N/A — no data-entry flow | The variant adds no user data-entry task. |
+| 19 | 4.1.2 Name, Role, Value | Pass by source | Navigation uses native links; the theme control is a shared Button with a stable accessible name and `aria-pressed`. |
+| 20 | 4.1.3 Status Messages | N/A — no dynamic status UI | The variant does not create status or result messages. |
+
+Automated axe/WAVE and Lighthouse scans were not run; this section does not claim zero violations or a Lighthouse score.
+
+### G) Alternatives considered and rejected
+
+- A symmetric equal-size category grid — rejected because the task calls for deliberate asymmetry and a visibly larger Organize collection.
+- Hand-maintained tool lists or link paths — rejected because they could drift; registry data is the single source of truth.
+- Hard-coded 24px corners — rejected after the user's decision to keep the existing 28px radius token.
+- Enabling V3 in every production build — rejected; production preview requires the explicit `VITE_ENABLE_V3_PREVIEW=true` opt-in.
+- Animated hero decoration — rejected to preserve the no-above-fold-animation and reduced-motion-safe direction.
+
+### H) Regression and build evidence
+
+| Check | Result | Evidence |
+|---|---|---|
+| Full tests before implementation | 363/363 passed | Full suite run before adding the V3 test and implementation. |
+| Full tests after implementation | 367/367 passed | `npm.cmd test`; 0 failed. |
+| V3-focused tests | 4/4 passed | `tests/variantBento.test.mjs`; preview isolation, hero primitives and trust proof, registry-driven grid, and theme/footer behavior. |
+| Production build | Passed with existing warnings | Built with `VITE_ENABLE_V3_PREVIEW=true`; the existing `buffer` externalization and >500kB chunk warnings remain. Main JS asset: 1,006.51 kB. |
+| Production preview | Browser verified | `http://127.0.0.1:4175/?preview=v3`; opt-in build, eight responsive widths, default-home fallback, theme control, hover state, and no captured console errors/warnings. |
+| Whitespace validation | Passed | `git diff --check`. |
+
+## Task 6.1 — Variant 4 (Command Center)
+
+### A) Read evidence and design direction
+
+- Reviewed the Raycast and Superhuman template references for dark command surfaces, keyboard-first search, and restrained accent glow. No reference layout, logo, or proprietary visual assets were copied.
+- Reviewed `src/components/toolRegistry.js`, `src/components/ui/`, Task 2.1 design tokens, Task 1.2 preservation requirements, `docs/status.md`, and `docs/PROJECT-TRACKER.md`.
+- The variant uses a centered black command surface, a single large labelled search field, compact registry-derived tool cards, a bright blue accent, and monospace metadata. The blue is locally set to `#3B82F6` so it remains legible even when the global theme is dark.
+- The hero and all cards retain the composite tool-discovery message and visible on-device privacy proof. The brand label remains replaceable through the `brandName` prop.
+
+### B) Components and behavior
+
+| Component | Responsibility |
+|---|---|
+| `src/components/VariantCommandCenter.jsx` | Isolated preview shell, skip link, layout, and footer. |
+| `src/components/v4/CommandHeader.jsx` | Replaceable wordmark, privacy indicator, and anchor navigation. |
+| `src/components/v4/CommandSearch.jsx` | Labelled search input, live result count, Cmd/Ctrl+K, Escape, ArrowDown, and first-result Enter navigation. |
+| `src/components/v4/CommandToolGrid.jsx` | Registry-derived category groups and tool cards. |
+| `src/components/v4/searchTools.mjs` | Shared all-registry filtering and ranking by exact/name-prefix relevance. |
+
+`searchTools` searches each registry tool's name, description, keywords, and category. The grid preserves the exact registry icon, name, description, and `path` for every link; all five categories and 18 tools render when the query is empty. The result count and no-results response are status messages.
+
+Tool, wordmark, and footer destinations use native full-page links. This is intentional: it exits the opt-in preview branch and lets the existing app route render instead of leaving the preview mounted after client-side navigation. The search Enter key follows the same path.
+
+### C) Preview isolation
+
+`src/App.jsx` selects V4 only for `?preview=v4` in development or when a production build opts in with `VITE_ENABLE_V4_PREVIEW=true`. The default `/` route remains the existing Home page. Do not deploy the opt-in preview build as the normal production artifact.
+
+Production preview: `http://127.0.0.1:4176/?preview=v4`
+
+### D) Responsive and interaction evidence
+
+The production preview rendered one H1, five category groups, and 18 tool links. Browser checks at the listed widths found `scrollWidth === clientWidth` and no visible link, button, or input target below 44px.
+
+| Width | Observed behavior |
+|---:|---|
+| 320 | Single-column cards; no horizontal overflow or undersized visible controls. |
+| 375 | Single-column cards; no horizontal overflow or undersized visible controls. |
+| 414 | Single-column cards; no horizontal overflow or undersized visible controls. |
+| 768 | Two-column tool cards; no horizontal overflow or undersized visible controls. |
+| 1024 | Two-column tool cards; no horizontal overflow or undersized visible controls. |
+| 1280 | Three-column tool cards in the centered layout; no horizontal overflow. |
+| 1440 | Three-column tool cards within the 1440px maximum container. |
+| 1920 | Container remains capped; no horizontal overflow. |
+
+Keyboard checks confirmed the search field's accessible name, Cmd/Ctrl+K focus, Escape clearing, ArrowDown focus to the first result, and Enter selection. Searching `ocr` ranked OCR PDF first, followed by PDF ↔ Word; Enter loaded the real `/ocr-pdf` route. Loading `/` separately rendered the unchanged Home H1.
+
+### E) WCAG 2.2 evidence
+
+| # | Criterion | Result | Evidence |
+|---:|---|---|---|
+| 1 | 1.3.1 Info and Relationships | Pass by source | Native header, navigation, main, labelled search section, five named category sections, lists, and one H1. |
+| 2 | 1.4.3 Contrast (Minimum) | Pass for used text colors | Browser-measured ratios: white on `#0A0A0A` 19.80:1; `#D4D4D4` on `#0A0A0A` 13.36:1; `#3B82F6` on `#0A0A0A` 5.38:1. |
+| 3 | 1.4.4 Resize Text | Pass for emulated 200% text | At 640px with the root font size doubled, the document had no horizontal overflow. |
+| 4 | 1.4.10 Reflow | Pass for tested widths | No horizontal overflow at 320, 375, 414, 768, 1024, 1280, 1440, or 1920px. |
+| 5 | 1.4.11 Non-text Contrast | Pass for primary boundaries and focus | Search border on its surface measured 5.13:1; 80%-opacity card border composited on its surface measured 3.67:1. The solid accent focus outline is 5.38:1 on the page background. |
+| 6 | 1.4.12 Text Spacing | Pass for tested override | At 640px with 1.5 line height, 0.12em letter spacing, 0.16em word spacing, and doubled paragraph spacing, visible content had no horizontal overflow or clipped content. The intentionally visually hidden skip link and label remain screen-reader accessible. |
+| 7 | 2.1.1 Keyboard | Partial | Cmd/Ctrl+K, Escape, ArrowDown, and Enter were exercised; a complete traversal of every link was not performed. |
+| 8 | 2.1.2 No Keyboard Trap | Pass by source | No modal, focus trap, or custom keyboard widget is introduced; native links and input remain in normal tab order. |
+| 9 | 2.4.1 Bypass Blocks | Pass | “Skip to command center” targets `#command-main` and becomes visible on focus. |
+| 10 | 2.4.3 Focus Order | Pass by DOM order | Focus order follows the skip link, header, search, tool links, and footer; search-to-result movement was keyboard-tested. |
+| 11 | 2.4.7 Focus Visible | Pass | Keyboard Tab to search showed a solid brand-blue outline. Source uses `focus-visible:outline-2`; the integrated browser reported a 1.6px computed outline. |
+| 12 | 2.4.11 Focus Not Obscured (Minimum) | Pass by layout | No fixed overlay or sticky control covers focused content. |
+| 13 | 2.5.7 Dragging Movements | N/A — no drag interaction | The command center adds no drag-only operation. |
+| 14 | 2.5.8 Target Size (Minimum) | Pass for tested widths | Browser found zero visible anchors, buttons, or inputs below 44px at all eight responsive widths. |
+| 15 | 3.2.6 Consistent Help | N/A — no help UI | The variant adds no help mechanism. |
+| 16 | 3.3.1 Error Identification | N/A — no validation flow | The search field filters results and introduces no form validation errors. |
+| 17 | 3.3.7 Redundant Entry | N/A — no multi-step data-entry flow | The variant collects no data for later re-entry. |
+| 18 | 3.3.8 Accessible Authentication | N/A — no authentication | The variant adds no authentication flow. |
+| 19 | 4.1.2 Name, Role, Value | Pass by source | Search has a visible label and searchbox role; tool cards and navigation use named native links. |
+| 20 | 4.1.3 Status Messages | Pass by source and interaction | The live result count and no-results message use `role="status"`; the search count updates when typing. |
+
+axe/WAVE and Lighthouse were not run for V4. The keyboard test was focused, not a full manual traversal; no zero-violation claim is made.
+
+### F) Design decisions and rejected alternatives
+
+- Centered command palette → fits the keyboard-first command-center direction; rejected a hero with a standard browse CTA because search is the primary interaction.
+- Registry-derived cards → prevents fabricated or stale tool data; rejected manually curated card lists.
+- Native full-page route links → guarantees preview-to-tool navigation exits V4; rejected client-side links that left the preview branch mounted.
+- High-contrast full search border and 80% card border → preserves a subtle dark interface while meeting non-text contrast; rejected the original lower-contrast 30% border.
+- Opt-in production flag → lets reviewers inspect V4 without replacing the existing homepage.
+
+### G) Regression and build evidence
+
+| Check | Result | Evidence |
+|---|---|---|
+| Full tests before implementation | 367/367 passed | Full-suite baseline before V4 implementation. |
+| Full tests after implementation | 371/371 passed | `npm.cmd test`; 0 failed. |
+| V4-focused tests | 4/4 passed | `tests/variantCommandCenter.test.mjs`; preview isolation, search keyboard behavior, registry links, and dark palette/focus rules. |
+| Production build | Passed with existing warnings | Built with `VITE_ENABLE_V4_PREVIEW=true`; `buffer` externalization and >500kB chunk warnings remain. Main JS asset: 1,005.18 kB. |
+| Production preview | Browser verified | `http://127.0.0.1:4176/?preview=v4`; 18 tools, eight widths, search ranking, real OCR route, and unchanged default homepage. |
+| Whitespace validation | Passed | `git diff --check`. |
+
+## Task status
+
+**Ready for Review.** Human accessibility-tool and Lighthouse scans remain outstanding; do not treat them as completed or infer results from the browser checks.
+
+## Task 7.1 — Variant 5 (Vibrant Consumer)
+
+### A) Read evidence and design direction
+
+- Reviewed the Spotify and Airbnb template references for high-level cues: warm welcoming tone, colorful surfaces, bold hierarchy, and rounded consumer-friendly cards. No competitor layout, artwork, proprietary assets, or copy was reproduced.
+- Reviewed `docs/inventory.md`, `src/components/toolRegistry.js`, `src/components/ui/`, Task 1.2 preservation requirements, Task 2.1 tokens, the existing app route and theme behavior, `docs/status.md`, and `docs/PROJECT-TRACKER.md`.
+- The light-first layout uses a soft background, pastel category panels, an editorial hero, and a compact 1/2/3-column directory. It preserves the app's existing theme preference and header toggle rather than forcing a theme change.
+- The hero has one H1, a labelled 56px search field, a direct tools CTA, and no above-the-fold ad slot. The explanatory section below the tool directory contains three substantive paragraphs and three supporting content cards; the existing `AdSlot` follows that content.
+
+### B) Components and registry fidelity
+
+| Component | Responsibility |
+|---|---|
+| `src/components/VariantVibrant.jsx` | Isolated preview composition, skip link, shared Footer, and below-content AdSlot. |
+| `src/components/v5/VibrantHeader.jsx` | Replaceable wordmark, browse link, and theme toggle. |
+| `src/components/v5/VibrantHero.jsx` | Single H1, primary CTA, supporting trust copy, and search placement. |
+| `src/components/v5/VibrantSearch.jsx` | Accessible live search, result panel, keyboard handling, and route selection. |
+| `src/components/v5/VibrantToolDirectory.jsx` | Registry-derived five-category grid and category navigation. |
+| `src/components/v5/VibrantToolCard.jsx` | Interactive tool card using the exact registry icon, name, description, and path. |
+| `src/components/v5/VibrantWhy.jsx` | Three long-form paragraphs and three supporting explanatory cards. |
+| `src/components/v5/vibrant.css` | V5-only shared-footer sizing and theme styling. |
+
+The directory filters `TOOL_REGISTRY` by each `TOOL_CATEGORIES` entry and renders all 18 tools. Tool links use `tool.path`; visible card labels and descriptions use the raw registry fields. The search checks registry names, descriptions, keywords, and category names; `pdf` produced all 18 results, and `ocr` Enter navigation opened `/ocr-pdf`.
+
+The shared `ToolCard` and `ToolSearch` components localize their displayed data and use a different expanding-search presentation. To preserve the task's exact registry-copy requirement and persistent large search input, V5 uses the shared `Card` and `Input` primitives with V5 presentation. It reuses the existing registry-only `searchTools` helper rather than maintaining a second filtering/ranking implementation.
+
+### C) Preview isolation
+
+`src/App.jsx` selects V5 only for `?preview=v5` in development or when a production build opts in with `VITE_ENABLE_V5_PREVIEW=true`. The default `/` route remains the existing Home page. Browser navigation to `/ocr-pdf` exited the preview and rendered the existing tool page.
+
+Production preview: `http://127.0.0.1:4177/?preview=v5`
+
+### D) Responsive and interaction evidence
+
+The production preview rendered exactly one H1, five categories, and 18 tool cards. At 320px, the 16px search input measured 56px high; the result panel was absolute, `z-index: 50`, and within the viewport. Searching `pdf` returned 18 results, clicking outside closed the panel, and Enter on `ocr` opened the existing `/ocr-pdf` tool. Loading `/` without the preview flag rendered the unchanged Home H1, “Powerful PDF Tools.”
+
+| Width | Observed behavior |
+|---:|---|
+| 320 | One-column category grid; no horizontal overflow; zero visible controls below 44px. |
+| 375 | One-column category grid; no horizontal overflow; zero visible controls below 44px. |
+| 414 | One-column category grid; no horizontal overflow; zero visible controls below 44px. |
+| 768 | Two-column category grid; no horizontal overflow; zero visible controls below 44px. |
+| 1024 | Two-column category grid; no horizontal overflow; zero visible controls below 44px. |
+| 1280 | Three-column category grid; no horizontal overflow; zero visible controls below 44px. |
+| 1440 | Three-column grid in the maximum-width container; no horizontal overflow. |
+| 1920 | Three-column grid remains centered within the 1440px maximum-width container; no horizontal overflow. |
+
+Browser keyboard checks reached the skip link, wordmark, header controls, primary CTA, labelled search input, category link, and a tool card in DOM order. The tool card has a visible brand focus outline; search supports Escape, Enter, and outside-click dismissal. A full manual keyboard traversal was not performed.
+
+### E) WCAG 2.2 evidence
+
+| # | Criterion | Result | Evidence |
+|---:|---|---|---|
+| 1 | 1.3.1 Info and Relationships | Pass by source and browser | Header, named navigation, one `main`, one H1, H2/H3 section hierarchy, named category sections, and tool lists render in the DOM. |
+| 2 | 1.4.3 Contrast (Minimum) | Pass for observed visible text | Browser-computed visible text and search-placeholder contrast had no sample below 4.5:1; minimum was 4.76:1 in light mode and 6.64:1 in dark mode. This was not an axe/WAVE scan. |
+| 3 | 1.4.4 Resize Text | Not tested | No 200% text-resize browser check was performed for this variant. |
+| 4 | 1.4.10 Reflow | Pass for tested widths | No horizontal overflow at 320, 375, 414, 768, 1024, 1280, 1440, or 1920px. |
+| 5 | 1.4.11 Non-text Contrast | Partial | Input boundaries and keyboard focus are visible; a complete 3:1 audit of every icon, boundary, and state was not performed. |
+| 6 | 1.4.12 Text Spacing | Not tested | No text-spacing override bookmarklet/browser check was performed. |
+| 7 | 2.1.1 Keyboard | Partial | Tab reached the first eight focusable controls; search Escape, Enter, and result navigation were exercised. Complete control-by-control keyboard traversal remains unverified. |
+| 8 | 2.1.2 No Keyboard Trap | Pass by source | No modal or focus-trap widget is added; the search and results use a normal input and links. |
+| 9 | 2.4.1 Bypass Blocks | Pass | The first Tab stop is “Skip to main content,” linking to `#main-content`. |
+| 10 | 2.4.3 Focus Order | Partial | The first eight Tab stops follow the DOM order from skip link through the first tool card; the rest of the page was not traversed. |
+| 11 | 2.4.7 Focus Visible | Pass for sampled controls | Keyboard focus on the skip link, header, CTA, input, category link, and tool card displayed an outline or focus-ring shadow; the tool card's outline was measured at 1.6px computed width. |
+| 12 | 2.4.11 Focus Not Obscured (Minimum) | Pass by layout | No fixed or sticky overlay is introduced; the search dropdown appears below the input and remains viewport-contained at 320px. |
+| 13 | 2.5.7 Dragging Movements | N/A — no drag-only interaction | The variant adds no drag interaction. |
+| 14 | 2.5.8 Target Size (Minimum) | Pass for tested widths | Browser found zero visible links, buttons, inputs, or selects below the project's 44px target at all eight responsive widths. |
+| 15 | 3.2.6 Consistent Help | N/A — no new help UI | The variant adds no help mechanism; the existing shared Footer remains in use. |
+| 16 | 3.3.1 Error Identification | N/A — no validation flow | Search is not a submission form; unmatched queries are described in text rather than by color alone. |
+| 17 | 3.3.7 Redundant Entry | N/A — no multi-step data-entry flow | The variant introduces no repeated data-entry step. |
+| 18 | 3.3.8 Accessible Authentication | N/A — no authentication | The variant introduces no authentication flow. |
+| 19 | 4.1.2 Name, Role, Value | Pass by source and browser | Search has a visible label and searchbox role; theme toggle exposes its pressed state; tool cards and navigation use native named links. |
+| 20 | 4.1.3 Status Messages | Pass by source and interaction | Search result count and no-results copy use `role="status"`; typing updates the result count. |
+
+### F) Design decisions
+
+- Warm pastel category grid and large friendly search → makes tool discovery approachable and scan-dense on mobile; rejected a dark technical palette and a horizontal-only category carousel that would hide tools offscreen.
+- 24px V5 surface corners → follows this task's explicit radius requirement; applied only within V5 rather than changing the site's shared 28px radius token.
+- Registry-exact cards and existing `searchTools` helper → prevent invented or localized tool data and avoid duplicate search filtering; rejected reusing `ToolCard`/`ToolSearch` presentation because they localize labels and use a different search interaction.
+- Below-directory explanatory content → places substantive SEO/AdSense copy after the tools and away from the hero CTA; rejected an above-the-fold ad container or placeholder ad copy.
+- Opt-in production flag → enables review without replacing the default homepage.
+
+### G) Regression and build evidence
+
+| Check | Result | Evidence |
+|---|---|---|
+| Full tests before implementation | 371/371 passed | Full-suite baseline before Task 7.1. |
+| Full tests after implementation | 371/371 passed | Final `npm.cmd test`; 0 failed. |
+| Production build | Passed with existing warnings | Built with `VITE_ENABLE_V5_PREVIEW=true`; existing `buffer` externalization and >500kB chunk warnings remain. Main JS asset: 1,013.31 kB (344.48 kB gzip); PDF worker: 1,375.83 kB. |
+| Production preview | Browser verified | `http://127.0.0.1:4177/?preview=v5`; exact tool count, eight widths, search, OCR navigation, computed 24px hero/category/tool/search/content surfaces, focus indicator, and unchanged default homepage verified. |
+| Whitespace validation | Passed | `git diff --check`. |
+
+axe/WAVE and Lighthouse were not run. The browser and computed-style checks provide the evidence above but do not substitute for those external scans.
+
+### H) Task status
+
+**Ready for Review.** The opt-in preview is available for human review; Lighthouse and axe/WAVE evidence remain outstanding.
+
+## Task 8.1 — Variant 6 (Light Editorial Bento Box)
+
+### A) Read evidence and design direction
+
+- Reviewed `docs/PROJECT-TRACKER.md`, `docs/status.md`, `docs/inventory.md`, `src/components/toolRegistry.js`, the shared `Footer` and `AdSlot`, the existing search helper, and `src/App.jsx`.
+- Built a warm, light-only editorial surface with a split-screen hero and abstract document illustration. The asymmetric desktop bento gives Organize a 2×2 area, Convert a tall area, Edit and Extract compact areas, and Protect a wide area; Tablet uses two columns and mobile stacks the collections.
+- The V6 wrapper uses `data-theme="light"` and locally scoped light tokens. Its search input explicitly overrides the site's root-level dark input rule so the control remains white with dark text when the global document theme is dark.
+- The long-form “Why Choose Us” article follows the tools, has a logical H2, and precedes the reused `AdSlot`; no ad slot is placed above the fold.
+
+### B) Components and registry fidelity
+
+| Component | Responsibility |
+|---|---|
+| `src/components/VariantEditorialLight.jsx` | Isolated V6 composition, forced-light wrapper, semantic main, shared footer, and below-content AdSlot. |
+| `src/components/v6/EditorialLightHeader.jsx` | V6 wordmark, browse navigation, and privacy note. |
+| `src/components/v6/EditorialLightHero.jsx` | Single H1, supporting copy, search placement, CTA, and abstract document illustration. |
+| `src/components/v6/EditorialLightSearch.jsx` | Labelled search, live result count, registry-helper results, Escape/outside-click dismissal, and keyboard navigation. |
+| `src/components/v6/EditorialLightBento.jsx` | Asymmetric five-category layout populated from `TOOL_CATEGORIES` and `TOOL_REGISTRY`. |
+| `src/components/v6/EditorialLightWhy.jsx` | Editorial explanatory section with three paragraphs. |
+| `src/components/v6/editorial-light.css` | V6-only responsive layout, fixed-light palette, focus styles, and shared-footer sizing. |
+
+All 18 tool cards use the exact registry icon, name, description, and `tool.path`. Searching `pdf` returned all 18 tools. Search results close on Escape and outside pointer interaction.
+
+### C) Preview isolation
+
+`src/App.jsx` gates `?preview=v6` to development or an explicitly enabled production build (`VITE_ENABLE_V6_PREVIEW=true`), and only at `/`. The default homepage and `/ocr-pdf` route were browser-checked and rendered without the V6 wrapper.
+
+Production preview: `http://127.0.0.1:4178/?preview=v6`
+
+### D) Responsive and interaction evidence
+
+The production preview rendered one H1, five categories, and 18 tool cards. At each listed width the document had no horizontal overflow and no visible link, button, input, or select below 44×44px. The search field is 16px text; the abstract art remains visible.
+
+| Width | Observed behavior |
+|---:|---|
+| 320 | One-column bento; no horizontal overflow or undersized visible controls. |
+| 375 | One-column bento; no horizontal overflow or undersized visible controls. |
+| 414 | One-column bento; no horizontal overflow or undersized visible controls. |
+| 768 | Two-column bento; no horizontal overflow or undersized visible controls. |
+| 1024 | Two-column bento; no horizontal overflow or undersized visible controls. |
+| 1280 | Four-column asymmetric bento; no horizontal overflow or undersized visible controls. |
+| 1440 | Four-column asymmetric bento in the maximum-width container; no horizontal overflow. |
+| 1920 | Four-column asymmetric bento remains within the 1440px maximum-width container; no horizontal overflow. |
+
+The production preview's first Tab stop was the skip link, with a solid 2.4px computed outline. The V6 input, placeholder, wrapper, article, and footer stayed light when the document root was set to dark. Search returned 18 matches for `pdf`; Escape and outside pointer interaction closed it. `/` continued to render “Powerful PDF Tools,” and `/ocr-pdf` rendered the existing OCR tool page.
+
+### E) WCAG 2.2 evidence
+
+| # | Criterion | Result | Evidence |
+|---:|---|---|---|
+| 1 | 1.3.1 Info and Relationships | Pass by source and browser | One semantic `main`, named navigation/search, one H1, ordered H2/H3 headings, named category sections, and tool lists render in the DOM. |
+| 2 | 1.4.3 Contrast (Minimum) | Pass for sampled visible text | Browser-computed 126 visible text samples in simulated dark-root mode had a minimum of 5.59:1; the search placeholder measured 6.25:1 against white. Not an axe/WAVE scan. |
+| 3 | 1.4.4 Resize Text | Not tested | No 200% text-resize browser check was performed. |
+| 4 | 1.4.10 Reflow | Pass at tested widths | No horizontal overflow at 320, 375, 414, 768, 1024, 1280, 1440, or 1920px. |
+| 5 | 1.4.11 Non-text Contrast | Partial | Search border and focus treatment are visible; a complete 3:1 review of all icons, boundaries, and states was not performed. |
+| 6 | 1.4.12 Text Spacing | Not tested | No text-spacing override bookmarklet/browser check was performed. |
+| 7 | 2.1.1 Keyboard | Partial | Skip-link focus, search Escape, and result navigation behavior were checked; full keyboard traversal of all controls remains unverified. |
+| 8 | 2.1.2 No Keyboard Trap | Pass by source | No modal or focus-trap component is introduced; search and tool results use a normal input and links. |
+| 9 | 2.4.1 Bypass Blocks | Pass | First Tab stop is “Skip to main content,” linking to `#v6-main`. |
+| 10 | 2.4.3 Focus Order | Partial | The DOM places skip link, header, hero search/CTA, collections, article, and footer in reading order; a complete Tab-order traversal was not performed. |
+| 11 | 2.4.7 Focus Visible | Partial | The first Tab stop showed a solid 2.4px outline; CSS provides focus-visible outlines for links, buttons, and inputs, but not every control was individually focused. |
+| 12 | 2.4.11 Focus Not Obscured (Minimum) | Partial | No fixed or sticky overlay is introduced; the search results intentionally overlay content. Full focus-obscuration testing across all states remains outstanding. |
+| 13 | 2.5.7 Dragging Movements | N/A — no drag-only interaction | V6 adds no dragging interaction. |
+| 14 | 2.5.8 Target Size (Minimum) | Pass for tested widths | Browser found no visible link, button, input, or select below 44×44px at all eight responsive widths. |
+| 15 | 3.2.6 Consistent Help | N/A — no new help mechanism | V6 reuses the site's shared footer and adds no separate help UI; cross-page help placement was not changed. |
+| 16 | 3.3.1 Error Identification | N/A — no validation flow | Search is not a submission/validation form; unmatched queries are described with text. |
+| 17 | 3.3.7 Redundant Entry | N/A — no repeated multi-step entry | V6 introduces no multi-step form or repeated data-entry flow. |
+| 18 | 3.3.8 Accessible Authentication | N/A — no authentication | V6 introduces no authentication flow. |
+| 19 | 4.1.2 Name, Role, Value | Pass by source and browser | Search has an associated label and searchbox role; tool/category destinations are native named links; clear-search is a labelled button. |
+| 20 | 4.1.3 Status Messages | Pass by source and interaction | Search result count uses `role="status"` and updates with the query; the browser displayed 18 matching results for `pdf`. |
+
+### F) Design decisions
+
+- Split hero plus asymmetric bento → makes the page visibly editorial and gives key tool groups distinct spatial weight; rejected another equal-column card grid.
+- Locally forced light palette → meets the explicit light-mode requirement without changing the app-wide theme; rejected changing the global theme or altering earlier variants.
+- Registry-derived tool links and reused `searchTools` helper → preserves real tool data and existing search behavior; rejected hand-authored tool labels or a duplicate ranking implementation.
+- Production opt-in preview gate → enables review while preserving the default homepage; rejected replacing the standard route.
+
+### G) Regression and build evidence
+
+| Check | Result | Evidence |
+|---|---|---|
+| Full tests before implementation | 371/371 passed | Pre-task V6 baseline recorded in the preceding task context. |
+| Full tests after implementation | 371/371 passed | `npm.cmd test`; 0 failed, 0 skipped; 1,962.2211ms. |
+| Production build | Passed with existing warnings | Built with `VITE_ENABLE_V6_PREVIEW=true`; `buffer` externalization and >500kB chunk warnings remain. Main JS: 1,023.73 kB (346.73 kB gzip); CSS: 239.15 kB (37.75 kB gzip); PDF worker: 1,375.83 kB. |
+| Production preview | Browser verified | `http://127.0.0.1:4178/?preview=v6`; tool count, eight widths, forced-light colors under simulated dark root, search, OCR route, and unchanged default homepage verified. |
+| Whitespace validation | Passed | `git diff --check`. |
+
+Lighthouse and axe/WAVE were not run. The browser and computed-style checks do not substitute for those scans. Text resizing, text-spacing overrides, full keyboard traversal, and a complete non-text contrast review remain for human/accessibility review.
+
+### H) Task status
+
+**Ready for Review.** Production preview is opt-in and available at `http://127.0.0.1:4178/?preview=v6`; Lighthouse and axe/WAVE evidence remain outstanding.
+
+## Task 9.1 — Variant 7 (Glassmorphism)
+
+### A) Read evidence and design direction
+
+- Reviewed `docs/PROJECT-TRACKER.md`, `docs/status.md`, `docs/inventory.md`, `src/App.jsx`, `src/components/toolRegistry.js`, the shared `ToolSearch`, `ToolCard`, `Footer`, and `AdSlot`, and the V6 component structure.
+- Created a light, airy surface with pale blue, lavender, and pink gradients; translucent panels; 32px category-card corners; soft shadows; and blur. The hero is centered above floating collections rather than a strict bento layout.
+- CSS is isolated in `src/components/v7/glass.css`; the preview wrapper sets `data-theme="light"` without changing the app-wide theme. No automatic or above-fold animation was added.
+- The shared `AdSlot` remains after the tool directory and explanatory section. It remains governed by its existing configuration and is not placed near the hero or primary search.
+
+### B) Components and registry fidelity
+
+| Component | Responsibility |
+|---|---|
+| `src/components/VariantGlass.jsx` | V7 composition, skip link, semantic main, shared footer, and below-content AdSlot. |
+| `src/components/v7/GlassHeader.jsx` | V7 wordmark and homepage collection navigation. |
+| `src/components/v7/GlassHero.jsx` | Single H1, centered description, shared ToolSearch, and collection link. |
+| `src/components/v7/GlassCollections.jsx` | Five collection panels and shared ToolCard links sourced from `TOOL_CATEGORIES` and `TOOL_REGISTRY`. |
+| `src/components/v7/GlassPrinciples.jsx` | Three explanatory content cards below the tool directory. |
+| `src/components/v7/glass.css` | V7-only glass surfaces, focus treatments, fixed-light colors, hover states, and responsive layout. |
+| `src/App.jsx` | V7 preview import and root-only development/production-opt-in gate. |
+
+The directory renders five categories and all 18 registered tools. ToolCard continues to use the registry's icons and paths and the site's existing language localization. Search behavior is provided by the shared ToolSearch; no tool workflow or route was recreated.
+The hero, search, footer, and card surfaces remained light while the document root was set to dark during a browser check.
+
+### C) Preview isolation
+
+`src/App.jsx` enables `?preview=v7` in development or when a production preview build sets `VITE_ENABLE_V7_PREVIEW=true`. The preview is restricted to `/`. The production browser check confirmed that `/` without the query renders the existing “Powerful PDF Tools” homepage and that `/privacy?preview=v7` does not render V7.
+
+Production preview: `http://127.0.0.1:4179/?preview=v7`
+
+### D) Responsive and interaction evidence
+
+The production preview rendered exactly one H1, five categories, and 18 tool cards. At each tested width, `document.documentElement.scrollWidth` equalled `clientWidth`; no visible link, button, input, or select was below 44×44px. The content container capped at 1440px at 1920px. Search opened from its shared trigger with a 16px input, returned one matching result for “merge,” and closed on Escape.
+
+| Width | Observed behavior |
+|---:|---|
+| 320 | One-column cards; no horizontal overflow or visible targets below 44×44px. |
+| 375 | One-column cards; no horizontal overflow or visible targets below 44×44px. |
+| 414 | One-column cards; no horizontal overflow or visible targets below 44×44px. |
+
+| Width | Observed behavior |
+|---:|---|
+| 768 | Two-column collection grid; no horizontal overflow or visible targets below 44×44px. |
+| 1024 | Two-column collection grid; no horizontal overflow or visible targets below 44×44px. |
+| 1280 | Three-column floating collection grid; no horizontal overflow or visible targets below 44×44px. |
+| 1440 | Three-column grid remains within the 1440px container; no horizontal overflow. |
+| 1920 | Three-column grid remains capped at 1440px; no horizontal overflow. |
+
+### E) WCAG 2.2 evidence
+
+| # | Criterion | Result | Evidence |
+|---:|---|---|---|
+| 1 | 1.3.1 Info and Relationships | Pass by source/browser structure | Browser found one H1; the source uses one `main`, named navigation, labelled sections, heading hierarchy, and category/tool lists. |
+| 2 | 1.4.3 Contrast (Minimum) | Not fully verified | The palette uses dark foreground colors on pale glass surfaces, but no complete computed contrast sampling or axe/WAVE scan was run. |
+| 3 | 1.4.4 Resize Text | Not tested | No 200% text-resize browser check was performed. |
+| 4 | 1.4.10 Reflow | Pass at tested widths | At 320, 375, 414, 768, 1024, 1280, 1440, and 1920px, the document had no horizontal overflow. |
+| 5 | 1.4.11 Non-text Contrast | Partial | Focus outlines and panel borders are explicitly styled; a complete 3:1 review of all icons, boundaries, and states was not performed. |
+| 6 | 1.4.12 Text Spacing | Not tested | No text-spacing override bookmarklet/browser check was performed. |
+| 7 | 2.1.1 Keyboard | Partial | Search trigger, search input, matching result, and Escape dismissal were exercised; full keyboard traversal was not performed. |
+| 8 | 2.1.2 No Keyboard Trap | Partial | The V7 layout adds no modal or focus trap; complete keyboard traversal out of every state was not performed. |
+| 9 | 2.4.1 Bypass Blocks | Pass by source/browser | The first Tab stop was the visible “Skip to main content” link, which targets the V7 `main` landmark (`#v7-main`). |
+| 10 | 2.4.3 Focus Order | Partial | DOM order follows header, hero/search, collections, supporting content, and footer; a full Tab-order check was not performed. |
+| 11 | 2.4.7 Focus Visible | Partial | The first Tab stop showed a visible solid outline (2.4px computed); scoped CSS defines 3px focus-visible outlines, but every interactive state was not individually focused. |
+| 12 | 2.4.11 Focus Not Obscured (Minimum) | Partial | No sticky overlay is introduced; search results can overlay nearby content, and complete focused-element visibility was not tested. |
+| 13 | 2.5.7 Dragging Movements | N/A — no drag-only interaction | The V7 homepage introduces no dragging interaction. |
+| 14 | 2.5.8 Target Size (Minimum) | Pass for tested widths | Browser measurement found no visible link, button, input, or select below 44×44px at all eight responsive widths. |
+| 15 | 3.2.6 Consistent Help | N/A — no new help mechanism | V7 reuses the shared footer and adds no separate help UI; cross-page help placement was not changed. |
+| 16 | 3.3.1 Error Identification | N/A — no validation flow | Search is not a form submission or validation flow; no-match feedback is textual in the shared search component. |
+| 17 | 3.3.7 Redundant Entry | N/A — no repeated multi-step entry | V7 introduces no multi-step form or repeated data-entry flow. |
+| 18 | 3.3.8 Accessible Authentication | N/A — no authentication | V7 introduces no authentication flow. |
+| 19 | 4.1.2 Name, Role, Value | Pass by source | Tool destinations are native links; the shared search exposes a labelled trigger and labelled search input; the skip link and nav have accessible names. |
+| 20 | 4.1.3 Status Messages | Partial | The shared search updates its result panel after typing, but a dedicated live status announcement was not verified. |
+
+### F) Design decisions
+
+- Frosted panels over a pale gradient → creates a distinct glass aesthetic while keeping dark content legible; rejected another solid-color bento grid.
+- Centered hero and loose three-column collection layout → keeps search prominent and the desktop composition airy; rejected a dense dashboard.
+- Shared ToolSearch and ToolCard → preserves existing search and registry navigation behavior; rejected duplicating their logic.
+- Root-only production opt-in → enables a production review without changing the standard homepage; rejected replacing the `/` route.
+
+### G) Validation and limitations
+
+| Check | Result | Evidence |
+|---|---|---|
+| Full tests before implementation | 371/371 passed | `npm.cmd test`; 0 failed. |
+| Full tests after implementation | 371/371 passed | `npm.cmd test`; 0 failed. |
+| Production build | Passed with existing warnings | Built with `VITE_ENABLE_V7_PREVIEW=true`; the existing `buffer` externalization and >500kB chunk warnings remain. Main JS: 1,030.06 kB (347.80 kB gzip); CSS: 251.49 kB (40.14 kB gzip). |
+| Production preview | Browser verified | `http://127.0.0.1:4179/?preview=v7`; one H1, five categories, 18 tools, search/Escape, root-only gate, and responsive checks verified. |
+| Whitespace validation | Passed | `git diff --check`. |
+
+Lighthouse and axe/WAVE were not run. Performance scores, CLS, full contrast, 200% text resize, text-spacing overrides, and full keyboard traversal remain unverified.
+
+### H) Task status
+
+**Ready for Review.** Production preview is available at `http://127.0.0.1:4179/?preview=v7` with `VITE_ENABLE_V7_PREVIEW=true`; the standard homepage remains unchanged.
+
+## Task 10.1 — Variant 8 (Neo-Brutalism)
+
+### A) Read evidence and design direction
+
+- Reviewed `docs/PROJECT-TRACKER.md`, `docs/status.md`, `docs/inventory.md`, `src/App.jsx`, `src/components/toolRegistry.js`, the shared `ToolSearch`, `ToolCard`, `Footer`, and `AdSlot`, and the preceding homepage variants.
+- Created an off-white canvas with bright yellow, electric blue, and pink blocks; 4px black borders; hard unblurred offset shadows; square cards; and heavy uppercase headlines. V8 uses no gradients, backdrop blur, or above-fold animations.
+- Styles are isolated in `src/components/v8/brutal.css`, and the page wrapper fixes the variant surface to light mode without changing the app-wide theme.
+- Reused the existing search, card, category/tool registry, footer, and below-content AdSlot. The ad remains after directory and supporting content; no ad container is introduced above the fold.
+
+### B) Components and registry fidelity
+
+| Component | Responsibility |
+|---|---|
+| `src/components/VariantBrutal.jsx` | V8 composition, skip link, semantic main, shared footer, and below-content AdSlot. |
+| `src/components/v8/BrutalHeader.jsx` | V8 brand link and homepage navigation. |
+| `src/components/v8/BrutalHero.jsx` | Single H1, supporting message, shared search, and directory link. |
+| `src/components/v8/BrutalDirectory.jsx` | Five category panels and shared ToolCard links sourced from the registry. |
+| `src/components/v8/BrutalManifesto.jsx` | Three supporting task-principle rows below the directory. |
+| `src/components/v8/brutal.css` | V8-only colors, thick borders, hard shadows, focus/hover states, and responsive layout. |
+| `src/App.jsx` | Development-only, root-only V8 preview gate. |
+
+All five categories and 18 tools are generated from `TOOL_CATEGORIES` and `TOOL_REGISTRY`; shared ToolCard provides registry icon, name, description, and path (with existing localization). No tool workflow or route is recreated.
+
+### C) Preview isolation
+
+`src/App.jsx` gates `?preview=v8` using `import.meta.env.DEV` and restricts it to `/`. The browser confirmed that `/` without the query renders the existing “Powerful PDF Tools” homepage and `/privacy?preview=v8` does not render V8.
+
+The task asked for both a dev-only preview gate and a production preview URL, which conflict: V8 is intentionally not enabled in the production build. Per the human's choice, the gate remains strictly development-only. Local preview: `http://127.0.0.1:5180/?preview=v8`. `npm.cmd run build` passed, but that production build does not expose V8.
+
+### D) Responsive and interaction evidence
+
+The browser rendered one H1, five categories, and 18 tool cards. At all eight tested widths, document `scrollWidth` equalled `clientWidth`, and no visible link, button, input, or select was below 44×44px. The content container capped at 1440px at 1920px. Search opens through the shared trigger with a 16px input, returned two matches for “ocr,” and closed on Escape. Hovering a tool card translated it by 3px and reduced its hard shadow from 4px to 1px. The first Tab exposed a 48px skip link with a 4px red focus outline.
+
+| Width | Observed behavior |
+|---:|---|
+| 320 | Single-column cards; no horizontal overflow; visible controls meet 44×44px. |
+| 375 | Single-column cards; no horizontal overflow; visible controls meet 44×44px. |
+| 414 | Single-column cards; no horizontal overflow; visible controls meet 44×44px. |
+
+| Width | Observed behavior |
+|---:|---|
+| 768 | Two-column collection grid; no overflow; visible controls meet 44×44px. |
+| 1024 | Two-column collection grid; no overflow; visible controls meet 44×44px. |
+| 1280 | Three-column collection grid; no overflow. |
+| 1440 | Three-column grid remains within the 1440px container. |
+| 1920 | Content remains capped at 1440px; no overflow. |
+
+### E) WCAG 2.2 evidence
+
+| # | Criterion | Result | Evidence |
+|---:|---|---|---|
+| 1 | 1.3.1 Info and Relationships | Pass by source/browser structure | Browser found one H1; source uses one `main`, named navigation, labelled sections, heading hierarchy, and category/tool lists. |
+| 2 | 1.4.3 Contrast (Minimum) | Not fully verified | The palette uses black text on light surfaces and colored blocks; no complete contrast sampling or axe/WAVE scan was run. |
+| 3 | 1.4.4 Resize Text | Not tested | No 200% text-resize browser check. |
+| 4 | 1.4.10 Reflow | Pass at tested widths | No horizontal overflow at 320, 375, 414, 768, 1024, 1280, 1440, or 1920px. |
+| 5 | 1.4.11 Non-text Contrast | Partial | Thick black card boundaries and visible focus outlines are provided; all icons, boundaries, and states were not checked against 3:1. |
+| 6 | 1.4.12 Text Spacing | Not tested | No text-spacing override bookmarklet/browser check. |
+| 7 | 2.1.1 Keyboard | Partial | Search trigger/input, a result, Escape dismissal, and first-Tab skip link were checked; full keyboard traversal was not performed. |
+| 8 | 2.1.2 No Keyboard Trap | Partial | No modal or focus trap is added; complete keyboard traversal out of every state was not tested. |
+| 9 | 2.4.1 Bypass Blocks | Pass by source/browser | First Tab reached the visible “Skip to main content” link, which targets `#v8-main`. |
+| 10 | 2.4.3 Focus Order | Partial | DOM order follows header, hero/search, directory, supporting content, and footer; full Tab-order review was not performed. |
+| 11 | 2.4.7 Focus Visible | Partial | Skip-link focus showed a visible 4px red outline; every control/state was not individually focused. |
+| 12 | 2.4.11 Focus Not Obscured (Minimum) | Partial | No sticky overlay is introduced; search results can overlay nearby content, and all focus states were not tested. |
+| 13 | 2.5.7 Dragging Movements | N/A — no drag-only interaction | The V8 homepage adds no dragging interaction. |
+| 14 | 2.5.8 Target Size (Minimum) | Pass for tested widths | No visible link, button, input, or select below 44×44px at all eight responsive widths. |
+| 15 | 3.2.6 Consistent Help | N/A — no new help mechanism | V8 reuses the shared footer and adds no separate help UI; cross-page help placement was not changed. |
+| 16 | 3.3.1 Error Identification | N/A — no validation flow | Search is not a form submission/validation flow; no-match feedback remains textual in the shared component. |
+| 17 | 3.3.7 Redundant Entry | N/A — no repeated multi-step entry | V8 introduces no multi-step form or repeated data-entry flow. |
+| 18 | 3.3.8 Accessible Authentication | N/A — no authentication | V8 introduces no authentication flow. |
+| 19 | 4.1.2 Name, Role, Value | Pass by source | Tool destinations are native links; shared search has a labelled trigger and searchbox; skip link and nav are named. |
+| 20 | 4.1.3 Status Messages | Partial | Shared search updates the result panel; a dedicated live status announcement was not verified. |
+
+### F) Design decisions
+
+- Flat off-white, yellow, blue, and pink blocks with black outlines → creates the requested raw visual language → rejected gradients, blur, and soft elevation.
+- Registry-generated category/tool cards → maintains exact tool data and links → rejected hand-authored duplicates.
+- Shared ToolSearch and ToolCard → preserves established search/localization/navigation → rejected rebuilding those interactions.
+- Strict development-only gate → honors the specific gate requirement → rejected a production environment flag after the human chose `dev_only`.
+
+### G) Validation and limitations
+
+| Check | Result | Evidence |
+|---|---|---|
+| Full tests before implementation | 371/371 passed | `npm.cmd test`; 0 failed. |
+| Full tests after implementation | 371/371 passed | `npm.cmd test`; 0 failed. |
+| Production build | Passed with existing warnings | `npm.cmd run build`; existing `buffer` externalization and >500kB chunk warnings remain. Main JS: 1,024.08 kB (346.61 kB gzip); CSS: 264.24 kB (42.06 kB gzip). V8 preview is disabled in this build by design. |
+| Development preview | Browser verified | `http://127.0.0.1:5180/?preview=v8`; layout, category/tool counts, search, Escape, hover, gate fallbacks, and target sizes checked. |
+| Whitespace validation | Passed | `git diff --check`. |
+
+Lighthouse and axe/WAVE were not run. Performance scores, CLS, full contrast, 200% text resize, text-spacing overrides, and full keyboard traversal remain unverified.
+
+### H) Task status
+
+**Ready for Review.** Development preview is available at `http://127.0.0.1:5180/?preview=v8`. A production preview is unavailable because V8 remains strictly dev-only, per the human's decision.
+
+## Task 11.1 — Variant 9 (Minimalist Zen)
+
+### A) Read evidence and design direction
+
+- Reviewed `docs/PROJECT-TRACKER.md`, `docs/status.md`, `docs/inventory.md`, `src/App.jsx`, `src/components/toolRegistry.js`, shared `ToolSearch`, `ToolCard`, `Footer`, and `AdSlot`, and the existing V8 gate.
+- Built a quiet white surface with dark slate typography, a single forest-green accent, generous vertical spacing, and thin neutral separators. Category tool links use a simple unboxed layout; hover emphasizes the text rather than adding a card treatment.
+- Kept all styling inside `src/components/v9/zen.css`; the wrapper pins the variant to light mode. No above-fold animation, heavy border, shadow, gradient, or ad container was added.
+- Reused the site's shared search, tool card, registry, footer, and below-content AdSlot.
+
+### B) Components and registry fidelity
+
+| Component | Responsibility |
+|---|---|
+| `src/components/VariantZen.jsx` | V9 composition, skip link, semantic main, shared footer, and below-content AdSlot. |
+| `src/components/v9/ZenHeader.jsx` | Minimal wordmark and homepage navigation. |
+| `src/components/v9/ZenHero.jsx` | Single H1, centered search, and directory link. |
+| `src/components/v9/ZenDirectory.jsx` | Five text-led category sections and shared ToolCard links sourced from the registry. |
+| `src/components/v9/ZenClosing.jsx` | Short closing message after the directory. |
+| `src/components/v9/zen.css` | V9-only white/green styles, whitespace, minimal search/card treatments, focus states, and responsive layout. |
+| `src/App.jsx` | Development-only, root-only V9 preview gate. |
+
+All five categories and 18 tools are generated from `TOOL_CATEGORIES` and `TOOL_REGISTRY`. Shared ToolCard preserves the registered icon, name, description, and path while retaining existing localization; no tool flow is recreated.
+
+### C) Preview isolation
+
+`src/App.jsx` gates `?preview=v9` on development builds and restricts it to `/`. Browser checks confirmed that `/` without the query renders the existing “Powerful PDF Tools” homepage and `/privacy?preview=v9` does not render V9.
+
+The request for a production preview URL conflicts with the explicit dev-only gate. The human approved keeping the gate strictly dev-only. Local development preview: `http://127.0.0.1:5180/?preview=v9`. A production preview is unavailable without changing that decision.
+
+### D) Responsive and interaction evidence
+
+The browser rendered one H1, five category sections, and 18 tool cards. At all eight tested widths, document `scrollWidth` equalled `clientWidth`, and no visible link, button, input, or select was below 44×44px. The content container capped at 1440px at 1920px. Search opened through the shared trigger with 16px input text, returned two matches for “ocr,” and closed on Escape. Hovering a tool link added a subtle background and underline without a box or shadow. First Tab revealed the 48px skip link with a visible forest-green outline.
+
+| Width | Observed behavior |
+|---:|---|
+| 320 | Single-column category sections and tools; no horizontal overflow; visible controls meet 44×44px. |
+| 375 | Single-column category sections and tools; no overflow; visible controls meet 44×44px. |
+| 414 | Single-column category sections and tools; no overflow; visible controls meet 44×44px. |
+
+| Width | Observed behavior |
+|---:|---|
+| 768 | Two-column tools within each section; no overflow; visible controls meet 44×44px. |
+| 1024 | Two-column tools within each section; no overflow. |
+| 1280 | Two-column directory composition with generous category/description separation. |
+| 1440 | Directory remains centered within the 1440px maximum-width container. |
+| 1920 | Content remains capped at 1440px; no horizontal overflow. |
+
+### E) WCAG 2.2 evidence
+
+| # | Criterion | Result | Evidence |
+|---:|---|---|---|
+| 1 | 1.3.1 Info and Relationships | Pass by source/browser structure | Browser found one H1; source uses one `main`, named navigation, labelled category sections, heading hierarchy, and tool lists. |
+| 2 | 1.4.3 Contrast (Minimum) | Not fully verified | Dark slate and forest-green text are used on white; no complete contrast sampling or axe/WAVE scan was run. |
+| 3 | 1.4.4 Resize Text | Not tested | No 200% text-resize browser check. |
+| 4 | 1.4.10 Reflow | Pass at tested widths | No horizontal overflow at 320, 375, 414, 768, 1024, 1280, 1440, or 1920px. |
+| 5 | 1.4.11 Non-text Contrast | Partial | Thin separators and focus outlines are styled; a full 3:1 check of icons, boundaries, and all states was not performed. |
+| 6 | 1.4.12 Text Spacing | Not tested | No text-spacing override bookmarklet/browser check. |
+| 7 | 2.1.1 Keyboard | Partial | Search trigger/input, a result, Escape dismissal, and first-Tab skip link were checked; full keyboard traversal was not performed. |
+| 8 | 2.1.2 No Keyboard Trap | Partial | No modal or focus trap is introduced; complete keyboard traversal out of every state was not tested. |
+| 9 | 2.4.1 Bypass Blocks | Pass by source/browser | First Tab reached the visible “Skip to main content” link, which targets `#v9-main`. |
+| 10 | 2.4.3 Focus Order | Partial | DOM order follows header, hero/search, directory, closing content, and footer; full Tab-order review was not performed. |
+| 11 | 2.4.7 Focus Visible | Partial | Skip-link focus showed a visible 3px forest-green outline; every control/state was not individually focused. |
+| 12 | 2.4.11 Focus Not Obscured (Minimum) | Partial | No sticky overlay is introduced; search results can overlay nearby content, and all focus states were not tested. |
+| 13 | 2.5.7 Dragging Movements | N/A — no drag-only interaction | The V9 homepage adds no dragging interaction. |
+| 14 | 2.5.8 Target Size (Minimum) | Pass for tested widths | No visible link, button, input, or select below 44×44px at all eight responsive widths. |
+| 15 | 3.2.6 Consistent Help | N/A — no new help mechanism | V9 reuses the shared footer and adds no separate help UI; cross-page help placement was not changed. |
+| 16 | 3.3.1 Error Identification | N/A — no validation flow | Search is not a form submission/validation flow; no-match feedback remains textual in the shared component. |
+| 17 | 3.3.7 Redundant Entry | N/A — no repeated multi-step entry | V9 introduces no multi-step form or repeated data-entry flow. |
+| 18 | 3.3.8 Accessible Authentication | N/A — no authentication | V9 introduces no authentication flow. |
+| 19 | 4.1.2 Name, Role, Value | Pass by source | Tool destinations are native links; shared search has a labelled trigger and searchbox; skip link and nav have accessible names. |
+| 20 | 4.1.3 Status Messages | Partial | Shared search updates its result panel; a dedicated live status announcement was not verified. |
+
+### F) Design decisions
+
+- White canvas, slate text, forest-green accent → creates a quiet premium tone → rejected bright multicolor blocks.
+- Unboxed tool lists with thin section separators → reduces visual noise while retaining grouping → rejected bordered cards or shadows.
+- Shared ToolSearch and ToolCard → preserves established search, localization, and routes → rejected duplicate interaction logic.
+- Strict dev-only preview gate → honors the specific gate requirement and approved choice → rejected production opt-in after the human chose dev-only.
+
+### G) Validation and limitations
+
+| Check | Result | Evidence |
+|---|---|---|
+| Full tests before implementation | 371/371 passed | `npm.cmd test`; 0 failed. |
+| Full tests after implementation | 371/371 passed | `npm.cmd test`; 0 failed. |
+| Production build | Passed with existing warnings | `npm.cmd run build`; existing `buffer` externalization and >500kB chunk warnings remain. Main JS: 1,024.25 kB (346.65 kB gzip); CSS: 273.34 kB (43.41 kB gzip). V9 preview is disabled in this build by design. |
+| Development preview | Browser verified | `http://127.0.0.1:5180/?preview=v9`; page structure, category/tool counts, search/Escape, hover, gate fallbacks, and target sizes checked. |
+| Whitespace validation | Passed | `git diff --check`. |
+
+Lighthouse and axe/WAVE were not run. Performance scores, CLS, full contrast, 200% text resize, text-spacing overrides, and full keyboard traversal remain unverified.
+
+### H) Task status
+
+**Ready for Review.** Development preview is available at `http://127.0.0.1:5180/?preview=v9`. A production preview is unavailable because V9 remains strictly dev-only, per the human's decision.
+
+## Task 12.1 — Variant 10 (Cyberpunk)
+
+### A) Read evidence and design direction
+
+- Reviewed `docs/PROJECT-TRACKER.md`, `docs/status.md`, `docs/inventory.md`, `src/App.jsx`, `src/components/toolRegistry.js`, shared `ToolSearch`, `ToolCard`, `Footer`, and `AdSlot`, and the previous V9 preview-gate choice.
+- Created a deep-black terminal aesthetic with a subtle cyan grid, cyan/magenta/lime accents, sharp neon borders, monospace labels, and glow that strengthens on card hover.
+- Styles are isolated in `src/components/v10/cyberpunk.css`; the preview wrapper uses a dark color scheme. No above-fold animation was added.
+- The existing AdSlot is reused after the tool directory and supporting readout; no ad container is introduced above the fold or adjacent to the search.
+
+### B) Components and registry fidelity
+
+| Component | Responsibility |
+|---|---|
+| `src/components/VariantCyberpunk.jsx` | V10 composition, skip link, semantic main, shared footer, and below-content AdSlot. |
+| `src/components/v10/CyberHeader.jsx` | Technical wordmark and homepage navigation. |
+| `src/components/v10/CyberHero.jsx` | Single H1, system status details, shared search, and tool-index link. |
+| `src/components/v10/CyberDirectory.jsx` | Five category panels and shared ToolCard links sourced from the registry. |
+| `src/components/v10/CyberReadout.jsx` | Supporting system notes after the directory. |
+| `src/components/v10/cyberpunk.css` | V10-only dark palette, grid, neon borders/glows, focus/hover styling, and responsive layout. |
+| `src/App.jsx` | Root-only development preview gate for V10. |
+
+All five categories and 18 tools are generated from `TOOL_CATEGORIES` and `TOOL_REGISTRY`; shared ToolCard preserves icons, names, descriptions, paths, and localization. Existing search, tools, and routes are reused rather than rebuilt.
+
+### C) Preview isolation
+
+`src/App.jsx` gates `?preview=v10` on development builds and restricts it to `/`. The browser confirmed that `/` without the query renders the existing “Powerful PDF Tools” homepage and `/privacy?preview=v10` does not render V10.
+
+The request for a production preview URL conflicts with the explicit dev-only gate. The human approved strict dev-only behavior, consistent with V8/V9. Local preview: `http://127.0.0.1:5180/?preview=v10`. A production preview is unavailable without changing that decision.
+
+### D) Responsive and interaction evidence
+
+The browser rendered one H1, five categories, and 18 tools. At each tested width, document `scrollWidth` equalled `clientWidth`; no visible link, button, input, or select was below 44×44px. The content container capped at 1440px at 1920px. Search opened with 16px text, returned matching results for “ocr,” and closed on Escape. Hovering a tool card changed its border to cyan and applied a measured cyan glow. The preview also confirmed normal homepage fallback when the query is absent.
+
+| Width | Observed behavior |
+|---:|---|
+| 320 | Single-column category panels; no horizontal overflow; visible controls meet 44×44px. |
+| 375 | Single-column panels; no overflow; visible controls meet 44×44px. |
+| 414 | Single-column panels; no overflow; visible controls meet 44×44px. |
+
+| Width | Observed behavior |
+|---:|---|
+| 768 | Two-column category grid; no overflow; visible controls meet 44×44px. |
+| 1024 | Two-column category grid; no overflow. |
+| 1280 | Three-column category grid; no overflow. |
+| 1440 | Three-column grid remains within the 1440px container. |
+| 1920 | Content remains capped at 1440px; no horizontal overflow. |
+
+### E) WCAG 2.2 evidence
+
+| # | Criterion | Result | Evidence |
+|---:|---|---|---|
+| 1 | 1.3.1 Info and Relationships | Pass by source/browser structure | Browser found one H1; source uses one `main`, named navigation, labelled categories, heading hierarchy, and tool lists. |
+| 2 | 1.4.3 Contrast (Minimum) | Not fully verified | Neon and pale foreground colors are used on dark surfaces; no complete contrast sampling or axe/WAVE scan was run. |
+| 3 | 1.4.4 Resize Text | Not tested | No 200% text-resize browser check. |
+| 4 | 1.4.10 Reflow | Pass at tested widths | No horizontal overflow at 320, 375, 414, 768, 1024, 1280, 1440, or 1920px. |
+| 5 | 1.4.11 Non-text Contrast | Partial | Neon borders and focus outlines are styled; a complete 3:1 check of icons, boundaries, and all states was not performed. |
+| 6 | 1.4.12 Text Spacing | Not tested | No text-spacing override bookmarklet/browser check. |
+| 7 | 2.1.1 Keyboard | Partial | Search trigger/input, a result, Escape dismissal, and skip-link focus were checked; full keyboard traversal was not performed. |
+| 8 | 2.1.2 No Keyboard Trap | Partial | No modal or focus trap is introduced; complete keyboard traversal out of every state was not tested. |
+| 9 | 2.4.1 Bypass Blocks | Pass by source | A labelled skip link targets the V10 `main` landmark (`#v10-main`). |
+| 10 | 2.4.3 Focus Order | Partial | DOM follows header, hero/search, directory, readout, and footer; full Tab-order review was not performed. |
+| 11 | 2.4.7 Focus Visible | Partial | Scoped CSS provides a 3px magenta focus outline; every control/state was not individually focused. |
+| 12 | 2.4.11 Focus Not Obscured (Minimum) | Partial | No sticky overlay is introduced; search results can overlay nearby content, and all focus states were not tested. |
+| 13 | 2.5.7 Dragging Movements | N/A — no drag-only interaction | The V10 homepage adds no dragging interaction. |
+| 14 | 2.5.8 Target Size (Minimum) | Pass for tested widths | No visible link, button, input, or select below 44×44px at all eight responsive widths. |
+| 15 | 3.2.6 Consistent Help | N/A — no new help mechanism | V10 reuses the shared footer and adds no separate help UI; cross-page help placement was not changed. |
+| 16 | 3.3.1 Error Identification | N/A — no validation flow | Search is not a form submission/validation flow; no-match feedback remains textual in the shared component. |
+| 17 | 3.3.7 Redundant Entry | N/A — no repeated multi-step entry | V10 introduces no multi-step form or repeated data-entry flow. |
+| 18 | 3.3.8 Accessible Authentication | N/A — no authentication | V10 introduces no authentication flow. |
+| 19 | 4.1.2 Name, Role, Value | Pass by source | Tool destinations are native links; shared search has a labelled trigger and searchbox; skip link and nav have accessible names. |
+| 20 | 4.1.3 Status Messages | Partial | Shared search updates its result panel; a dedicated live status announcement was not verified. |
+
+### F) Design decisions
+
+- Near-black background, cyan grid, and cyan/magenta/lime accents → establishes a technical neon identity → rejected a light or neutral palette.
+- Sharp bordered panels with hover-activated glow → makes the tool directory feel like a readable system console → rejected rounded soft cards and static elevation.
+- Shared ToolSearch and ToolCard → preserves existing search, localization, and routes → rejected reimplementing interaction logic.
+- Strict dev-only preview gate → honors the specific gate request and approved choice → rejected production opt-in.
+
+### G) Validation and limitations
+
+| Check | Result | Evidence |
+|---|---|---|
+| Full tests before implementation | Passed; 371/371 preceding recorded baseline | This task's `npm.cmd test` exited successfully, but its verbose count output was not retained. The test suite baseline recorded immediately before V10 was 371/371. |
+| Full tests after implementation | 371/371 passed | `npm.cmd test`; 0 failed. |
+| Production build | Passed with existing warnings | `npm.cmd run build`; existing `buffer` externalization and >500kB chunk warnings remain. Main JS: 1,024.43 kB (346.69 kB gzip); CSS: 287.13 kB (45.79 kB gzip). V10 preview is disabled in this build by design. |
+| Development preview | Browser verified | `http://127.0.0.1:5180/?preview=v10`; layout, category/tool counts, search/Escape, hover glow, gate fallback, and target sizes checked. |
+| Compile and whitespace checks | Passed | Problems tool reported no errors in scoped files; `git diff --check` passed. |
+
+Lighthouse and axe/WAVE were not run. Performance scores, CLS, full contrast, 200% text resize, text-spacing overrides, and full keyboard traversal remain unverified.
+
+### H) Task status
+
+**Ready for Review.** Development preview is available at `http://127.0.0.1:5180/?preview=v10`. A production preview is unavailable because V10 remains strictly dev-only, per the human's decision.

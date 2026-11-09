@@ -51,9 +51,12 @@ test('Merge keeps its three localized points within the shared tool-detail forma
   }
 });
 
-test('the Home tool fan enlarges only the Merge icon', async () => {
+test('the V6 homepage tool links display registry icons inside consistent icon tiles', async () => {
   const homeSource = await readSource('../src/components/Home.jsx');
-  const stylesSource = await readSource('../src/index.css');
-  assert.match(homeSource, /home-hero-tool-icon--merge/);
-  assert.match(stylesSource, /\.home-hero-tool-icon--merge\s*\{[^}]*width:\s*1\.75rem[^}]*height:\s*1\.75rem/);
+  const bentoSource = await readSource('../src/components/v6/EditorialLightBento.jsx');
+  const stylesSource = await readSource('../src/components/v6/editorial-light.css');
+  assert.match(homeSource, /EditorialLightBento/);
+  assert.match(bentoSource, /const Icon = tool\.icon/);
+  assert.match(bentoSource, /className="v6-tool-icon"/);
+  assert.match(stylesSource, /\.v6-tool-icon\s*\{[^}]*width:\s*38px[^}]*height:\s*38px/);
 });

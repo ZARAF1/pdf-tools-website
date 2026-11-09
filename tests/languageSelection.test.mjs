@@ -4,7 +4,7 @@ import { readFile } from 'node:fs/promises';
 
 const app = await readFile(new URL('../src/App.jsx', import.meta.url), 'utf8');
 const footer = await readFile(new URL('../src/components/Footer.jsx', import.meta.url), 'utf8');
-const home = await readFile(new URL('../src/components/Home.jsx', import.meta.url), 'utf8');
+const home = await readFile(new URL('../src/components/v6/EditorialLightHero.jsx', import.meta.url), 'utf8');
 const categoryPage = await readFile(new URL('../src/components/CategoryPage.jsx', import.meta.url), 'utf8');
 const toolSearch = await readFile(new URL('../src/components/ToolSearch.jsx', import.meta.url), 'utf8');
 const sitePages = await readFile(new URL('../src/components/SitePages.jsx', import.meta.url), 'utf8');

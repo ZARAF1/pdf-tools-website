@@ -538,8 +538,8 @@ const ToolPage = ({ tool, children }) => {
   }, [content, pageDescription, pageTitleText]);
 
   return (
-    <article className={tool === 'merge' ? 'space-y-8 merge-tool-page' : 'space-y-8'}>
-      <header className="tool-detail-hero">
+    <article className={tool === 'merge' ? 'space-y-8 merge-tool-page v6-tool-page' : 'space-y-8 v6-tool-page'}>
+      <header className="tool-detail-hero v6-tool-detail-hero">
         <div className="tool-detail-hero-main">
           <div className="tool-detail-heading">
             <span className="tool-detail-icon" aria-hidden="true">
@@ -549,7 +549,7 @@ const ToolPage = ({ tool, children }) => {
             <p className="tool-detail-description">{pageDescription}</p>
           </div>
         </div>
-        <div className="tool-detail-intro">
+        <div className="tool-detail-intro v6-tool-detail-intro">
           <ul id={`${tool}-detail-points`} className="tool-detail-point-list">
             {localizedContent.detailPoints.map(({ key, text }) => (
               <li key={key} className="tool-detail-point">
@@ -575,7 +575,7 @@ const ToolPage = ({ tool, children }) => {
       <section aria-labelledby="tool-workspace-heading">
         <h2 id="tool-workspace-heading" className="sr-only">{pageTitleText} {translate('toolWorkspace')}</h2>
         {attachmentRule && tool !== 'word' && tool !== 'markdown' ? (
-          <div className="tool-attachment-section">
+          <div className="tool-attachment-section v6-tool-workspace">
             <div className="tool-attachment-heading">
               <span className="tool-attachment-icon" aria-hidden="true">
                 <Upload className="h-5 w-5" />
@@ -595,44 +595,44 @@ const ToolPage = ({ tool, children }) => {
       </section>
 
       <section aria-label={`${pageTitleText} ${translate('instructionsAndWorkflow')}`} className="grid gap-4 lg:grid-cols-2">
-        <div aria-labelledby="how-to-heading" className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
+        <div aria-labelledby="how-to-heading" className="v6-tool-info-card">
           <h2 id="how-to-heading" className="text-2xl font-bold text-slate-800 mb-4">{translate('howToUse')} {pageTitleText}</h2>
-          <ol className="list-decimal space-y-3 pl-5 text-slate-600">
+          <ol className="v6-tool-steps">
             {localizedContent.steps.map((step) => <li key={step}>{step}</li>)}
           </ol>
         </div>
 
-        <div aria-labelledby="how-it-works-heading" className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
+        <div aria-labelledby="how-it-works-heading" className="v6-tool-info-card">
           <h2 id="how-it-works-heading" className="text-2xl font-bold text-slate-800 mb-3">{translate('howItWorks')}</h2>
           {ProcessingIcon ? (
             <>
-              <ol aria-label={translate('howItWorks')} className="flex flex-col items-stretch gap-3 xl:flex-row xl:items-center xl:gap-4">
-                <li className="flex min-w-0 flex-1 items-center gap-3 rounded-xl border border-slate-200 bg-slate-50 p-4 xl:flex-col xl:justify-center xl:text-center">
+              <ol aria-label={translate('howItWorks')} className="v6-tool-flow">
+                <li className="v6-tool-flow-step">
                   <span className="tool-card-icon h-12 w-12" aria-hidden="true">
                     <Upload className="h-6 w-6" />
                   </span>
-                  <span className="text-sm font-semibold text-slate-800">{translate('uploadToTool')}</span>
+                  <span>{translate('uploadToTool')}</span>
                 </li>
                 <li aria-hidden="true" className="flex justify-center text-slate-400">
                   <ArrowRight className="h-5 w-5 rotate-90 xl:rotate-0" />
                 </li>
-                <li className="flex min-w-0 flex-1 items-center gap-3 rounded-xl border border-slate-200 bg-slate-50 p-4 xl:flex-col xl:justify-center xl:text-center">
+                <li className="v6-tool-flow-step">
                   <span className="tool-card-icon h-12 w-12" aria-hidden="true">
                     <ProcessingIcon className="h-6 w-6" />
                   </span>
-                  <span className="text-sm font-semibold text-slate-800">{translate('processDocumentInBrowser')}</span>
+                  <span>{translate('processDocumentInBrowser')}</span>
                 </li>
                 <li aria-hidden="true" className="flex justify-center text-slate-400">
                   <ArrowRight className="h-5 w-5 rotate-90 xl:rotate-0" />
                 </li>
-                <li className="flex min-w-0 flex-1 items-center gap-3 rounded-xl border border-slate-200 bg-slate-50 p-4 xl:flex-col xl:justify-center xl:text-center">
+                <li className="v6-tool-flow-step">
                   <span className="tool-card-icon h-12 w-12" aria-hidden="true">
                     <Download className="h-6 w-6" />
                   </span>
-                  <span className="text-sm font-semibold text-slate-800">{translate('download')}</span>
+                  <span>{translate('download')}</span>
                 </li>
               </ol>
-              <p className="mt-4 text-sm text-slate-600">
+              <p className="v6-tool-privacy-note">
                 {translate('filesStayInBrowser')} <Link className="underline hover:text-blue-700" to="/privacy">{translate('privacyPolicy')}</Link>.
               </p>
             </>

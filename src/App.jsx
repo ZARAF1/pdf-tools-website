@@ -605,6 +605,81 @@ const RouteFocusManager = () => {
   return null;
 };
 
+const SiteShell = ({ theme, setTheme, isSidebarCollapsed, setIsSidebarCollapsed }) => (
+  <div className={`site-app-shell${isSidebarCollapsed ? ' is-sidebar-collapsed' : ''}`}>
+    <RouteFocusManager />
+    <a className="skip-to-content" href="#tool-search">Skip to main content</a>
+    <div className="site-workspace">
+      <header className="site-topbar">
+        <div className="site-topbar-search">
+          <ToolSearch />
+        </div>
+      </header>
+
+      <LeftNavigation
+        theme={theme}
+        setTheme={setTheme}
+        isSidebarCollapsed={isSidebarCollapsed}
+        onToggleSidebar={() => setIsSidebarCollapsed((current) => !current)}
+      />
+
+      <main id="main-content" tabIndex={-1} className="site-main-content">
+        <RouteErrorBoundaryWithLocation fallback={<RouteErrorFallback />}>
+          <Suspense fallback={<RouteLoadingFallback />}>
+            <Routes>
+              {TOOL_CATEGORIES.map((category) => (
+                <Route
+                  key={category.id}
+                  path={category.path}
+                  element={<CategoryPage category={category} />}
+                />
+              ))}
+              <Route path="/merge" element={<ToolPage tool="merge"><PdfMerger /></ToolPage>} />
+              <Route path="/split" element={<ToolPage tool="split"><PdfSplitter /></ToolPage>} />
+              <Route path="/rotate" element={<ToolPage tool="rotate"><PdfRotator /></ToolPage>} />
+              <Route path="/protect" element={<ToolPage tool="protect"><PdfProtector /></ToolPage>} />
+              <Route path="/unlock" element={<ToolPage tool="unlock"><UnlockPdf /></ToolPage>} />
+              <Route path="/image-pdf" element={<ToolPage tool="image-pdf"><ImagePdf /></ToolPage>} />
+              <Route path="/image-to-pdf" element={<Navigate to="/image-pdf?direction=images-to-pdf" replace />} />
+              <Route path="/pdf-to-images" element={<Navigate to="/image-pdf?direction=pdf-to-images" replace />} />
+              <Route path="/resources/tools/image" element={<Navigate to="/resources/tools/image-pdf" replace />} />
+              <Route path="/resources/tools/pdf-images" element={<Navigate to="/resources/tools/image-pdf" replace />} />
+              <Route path="/pdf-to-word" element={<ToolPage tool="word"><PdfToWord /></ToolPage>} />
+              <Route path="/pdf-to-powerpoint" element={<ToolPage tool="powerpoint"><PdfPowerPoint /></ToolPage>} />
+              <Route path="/pdf-to-markdown" element={<ToolPage tool="markdown"><PdfMarkdown /></ToolPage>} />
+              <Route path="/ocr-pdf" element={<ToolPage tool="ocr"><OcrPdf /></ToolPage>} />
+              <Route path="/compress" element={<ToolPage tool="compress"><PdfCompressor /></ToolPage>} />
+              <Route path="/watermark" element={<ToolPage tool="watermark"><PdfWatermarker /></ToolPage>} />
+              <Route path="/remove-pages" element={<ToolPage tool="remove"><RemovePdfPages /></ToolPage>} />
+              <Route path="/extract-pages" element={<Navigate to="/split" replace />} />
+              <Route path="/organize" element={<ToolPage tool="organize-pages"><OrganizePdf /></ToolPage>} />
+              <Route path="/crop-pdf" element={<ToolPage tool="crop"><CropPdf /></ToolPage>} />
+              <Route path="/redact" element={<ToolPage tool="redact"><RedactPdf /></ToolPage>} />
+              <Route path="/sign" element={<ToolPage tool="sign"><SignPdf /></ToolPage>} />
+              <Route path="/edit-pdf" element={<ToolPage tool="edit"><EditPdf /></ToolPage>} />
+              <Route path="/excel-to-pdf" element={<ToolPage tool="excel"><OfficeConversionNotice format="Excel" /></ToolPage>} />
+              <Route path="/powerpoint-to-pdf" element={<Navigate to="/pdf-to-powerpoint" replace />} />
+              <Route path="/faq" element={<SitePages page="faq" />} />
+              <Route path="/resources" element={<SitePages page="resources" />} />
+              <Route path="/resources/tools/:toolId" element={<ToolGuideRoute />} />
+              <Route path="/resources/:articleSlug" element={<ResourceArticleRoute />} />
+              <Route path="/privacy" element={<SitePages page="privacy" />} />
+              <Route path="/security" element={<SitePages page="security" />} />
+              <Route path="/terms" element={<SitePages page="terms" />} />
+              <Route path="/cookies" element={<SitePages page="cookies" />} />
+              <Route path="/about" element={<SitePages page="about" />} />
+              <Route path="/contact" element={<SitePages page="contact" />} />
+              <Route path="*" element={<NotFoundPage />} />
+            </Routes>
+          </Suspense>
+        </RouteErrorBoundaryWithLocation>
+      </main>
+
+      <Footer />
+    </div>
+  </div>
+);
+
 function App() {
   const [theme, setTheme] = useState(() => (
     document.documentElement.dataset.theme === 'dark' ? 'dark' : 'light'
@@ -618,83 +693,24 @@ function App() {
 
   return (
     <LanguageProvider>
-    <Router>
-      <ToolExitGuardProvider>
-      <div className={`site-app-shell${isSidebarCollapsed ? ' is-sidebar-collapsed' : ''}`}>
-        <RouteFocusManager />
-        <a className="skip-to-content" href="#tool-search">Skip to main content</a>
-        <div className="site-workspace">
-          <header className="site-topbar">
-            <div className="site-topbar-search">
-              <ToolSearch />
-            </div>
-          </header>
-
-          <LeftNavigation
-            theme={theme}
-            setTheme={setTheme}
-            isSidebarCollapsed={isSidebarCollapsed}
-            onToggleSidebar={() => setIsSidebarCollapsed((current) => !current)}
-          />
-
-          <main id="main-content" tabIndex={-1} className="site-main-content">
-          <RouteErrorBoundaryWithLocation fallback={<RouteErrorFallback />}>
-            <Suspense fallback={<RouteLoadingFallback />}>
-              <Routes>
-                <Route path="/" element={<Home />} />
-                {TOOL_CATEGORIES.map((category) => (
-                  <Route
-                    key={category.id}
-                    path={category.path}
-                    element={<CategoryPage category={category} />}
-                  />
-                ))}
-                <Route path="/merge" element={<ToolPage tool="merge"><PdfMerger /></ToolPage>} />
-                <Route path="/split" element={<ToolPage tool="split"><PdfSplitter /></ToolPage>} />
-                <Route path="/rotate" element={<ToolPage tool="rotate"><PdfRotator /></ToolPage>} />
-                <Route path="/protect" element={<ToolPage tool="protect"><PdfProtector /></ToolPage>} />
-                <Route path="/unlock" element={<ToolPage tool="unlock"><UnlockPdf /></ToolPage>} />
-                <Route path="/image-pdf" element={<ToolPage tool="image-pdf"><ImagePdf /></ToolPage>} />
-                <Route path="/image-to-pdf" element={<Navigate to="/image-pdf?direction=images-to-pdf" replace />} />
-                <Route path="/pdf-to-images" element={<Navigate to="/image-pdf?direction=pdf-to-images" replace />} />
-                <Route path="/resources/tools/image" element={<Navigate to="/resources/tools/image-pdf" replace />} />
-                <Route path="/resources/tools/pdf-images" element={<Navigate to="/resources/tools/image-pdf" replace />} />
-                <Route path="/pdf-to-word" element={<ToolPage tool="word"><PdfToWord /></ToolPage>} />
-                <Route path="/pdf-to-powerpoint" element={<ToolPage tool="powerpoint"><PdfPowerPoint /></ToolPage>} />
-                <Route path="/pdf-to-markdown" element={<ToolPage tool="markdown"><PdfMarkdown /></ToolPage>} />
-                <Route path="/ocr-pdf" element={<ToolPage tool="ocr"><OcrPdf /></ToolPage>} />
-                <Route path="/compress" element={<ToolPage tool="compress"><PdfCompressor /></ToolPage>} />
-                <Route path="/watermark" element={<ToolPage tool="watermark"><PdfWatermarker /></ToolPage>} />
-                <Route path="/remove-pages" element={<ToolPage tool="remove"><RemovePdfPages /></ToolPage>} />
-                <Route path="/extract-pages" element={<Navigate to="/split" replace />} />
-                <Route path="/organize" element={<ToolPage tool="organize-pages"><OrganizePdf /></ToolPage>} />
-                <Route path="/crop-pdf" element={<ToolPage tool="crop"><CropPdf /></ToolPage>} />
-                <Route path="/redact" element={<ToolPage tool="redact"><RedactPdf /></ToolPage>} />
-                <Route path="/sign" element={<ToolPage tool="sign"><SignPdf /></ToolPage>} />
-                <Route path="/edit-pdf" element={<ToolPage tool="edit"><EditPdf /></ToolPage>} />
-                <Route path="/excel-to-pdf" element={<ToolPage tool="excel"><OfficeConversionNotice format="Excel" /></ToolPage>} />
-                <Route path="/powerpoint-to-pdf" element={<Navigate to="/pdf-to-powerpoint" replace />} />
-                <Route path="/faq" element={<SitePages page="faq" />} />
-                <Route path="/resources" element={<SitePages page="resources" />} />
-                <Route path="/resources/tools/:toolId" element={<ToolGuideRoute />} />
-                <Route path="/resources/:articleSlug" element={<ResourceArticleRoute />} />
-                <Route path="/privacy" element={<SitePages page="privacy" />} />
-                <Route path="/security" element={<SitePages page="security" />} />
-                <Route path="/terms" element={<SitePages page="terms" />} />
-                <Route path="/cookies" element={<SitePages page="cookies" />} />
-                <Route path="/about" element={<SitePages page="about" />} />
-                <Route path="/contact" element={<SitePages page="contact" />} />
-                <Route path="*" element={<NotFoundPage />} />
-              </Routes>
-            </Suspense>
-          </RouteErrorBoundaryWithLocation>
-        </main>
-
-        <Footer />
-        </div>
-      </div>
-      </ToolExitGuardProvider>
-    </Router>
+      <Router>
+        <ToolExitGuardProvider>
+          <Routes>
+            <Route path="/" element={<Home />} />
+            <Route
+              path="*"
+              element={(
+                <SiteShell
+                  theme={theme}
+                  setTheme={setTheme}
+                  isSidebarCollapsed={isSidebarCollapsed}
+                  setIsSidebarCollapsed={setIsSidebarCollapsed}
+                />
+              )}
+            />
+          </Routes>
+        </ToolExitGuardProvider>
+      </Router>
     </LanguageProvider>
   );
 }

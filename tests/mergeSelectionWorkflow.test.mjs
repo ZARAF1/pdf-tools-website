@@ -58,7 +58,7 @@ test('Merge PDF keeps a compact gap between its heading and attachment workspace
     /\.merge-tool-page\.space-y-8 > section\[aria-labelledby="tool-workspace-heading"\]\s*\{([^}]*)\}/
   )?.[1];
 
-  assert.match(toolPage, /<article className=\{tool === 'merge' \? 'space-y-8 merge-tool-page' : 'space-y-8'\}>/);
+  assert.match(toolPage, /<article className=\{tool === 'merge' \? 'space-y-8 merge-tool-page v6-tool-page' : 'space-y-8 v6-tool-page'\}>/);
   assert.ok(workspaceSpacing, 'Merge workspace has a dedicated spacing override');
   assert.match(workspaceSpacing, /margin-top:\s*1rem\s*;/);
 });
