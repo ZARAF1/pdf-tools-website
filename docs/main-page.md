@@ -1349,6 +1349,129 @@ export default FocusRing;
 
 ## Task 2.3 — Typography & Spacing
 
+### A) Read evidence and scope
+
+- Read `docs/status.md`, `docs/PROJECT-TRACKER.md`, `docs/inventory.md`, and Task 2.1 in this file before auditing.
+- Read `src/index.css`, `src/App.jsx`, `src/components/Home.jsx`, `src/components/ToolPage.jsx`, and `src/components/SitePages.jsx` as requested.
+- Read `src/components/CategoryPage.jsx`, `src/components/Footer.jsx`, and `src/components/FaqAccordion.jsx` to verify shared page headings and supporting copy styles.
+- No source file was changed. No `.github/` file was modified; this task follows `docs/status.md` as the requested status source.
+
+### B) Type scale and intended use
+
+The configured token scale provides a predictable set of roles for the redesign. These are intended mappings, not claims that current pages already use the scale consistently. Body copy must be at least 16px on mobile; smaller sizes are reserved for captions or compact control metadata, not paragraphs or instructions.
+
+| Token | Size / line-height | Intended use |
+|---|---:|---|
+| `text-2xs` | 11px / 16px | Dense, nonessential micro-labels only |
+| `text-xs` | 12px / 16px | Captions and eyebrow labels |
+| `text-sm` | 14px / 20px | Compact control metadata; not body copy |
+| `text-base` | 16px / 24px | Body paragraphs, instructions, and form help |
+| `text-lg` | 18px / 28px | Lead text and small subsection headings |
+| `text-xl` | 20px / 28px | Subsection headings |
+| `text-2xl` | 24px / 32px | Section headings |
+| `text-3xl` | 30px / 36px | Informational page titles |
+| `text-4xl` | 36px / 40px | Tool-page titles |
+| `text-5xl` | 48px / 48px | Large category or feature headings |
+| `text-6xl` | 60px / 60px | Homepage hero title |
+| `text-7xl` | 72px / 72px | Display heading where the layout has room |
+
+### C) Body-copy violations and proposed alignment
+
+The project rule is at least 16px for body text on mobile. The rows below identify paragraph, instructional, and content-description text below that floor; captions and compact control/navigation labels are called out separately rather than treated as body copy.
+
+| File | Line | Current | Proposed | Reason |
+|---|---:|---|---|---|
+| `src/components/ToolPage.jsx` | 614, 623, 632 | `text-sm` = 14px | 16px (`text-base`) | The three workflow steps are explanatory content. |
+| `src/components/ToolPage.jsx` | 635 | `text-sm` = 14px | 16px (`text-base`) | Browser-processing/privacy explanation is body copy. |
+| `src/index.css` | 930 | 0.875rem = 14px | 16px | FAQ answer paragraphs are body copy. |
+| `src/index.css` | 4046 | 0.875rem = 14px | 16px | Resource-card descriptions are content summaries. |
+| `src/components/SitePages.jsx` | 205 | Uses `.resource-card-description` (14px) | 16px | This is the resource-card description rendered on the resources page. |
+| `src/index.css` | 4345 | 0.9rem = 14.4px | 16px | Tool attachment rule text is user-facing instruction. |
+| `src/index.css` | 6186 | 0.82rem = 13.12px at the mobile rule | 16px | Mobile override further reduces the attachment rule text. |
+| `src/index.css` | 4369 | 0.875rem = 14px | 16px | Tool attachment guidance paragraph is explanatory copy. |
+| `src/index.css` | 1186 | 0.95rem = 15.2px | 16px | Category tool-count supporting text is below the body floor. |
+| `src/components/Footer.jsx` | 13 | `text-sm` = 14px | 16px | Copyright/support text is small, but remains readable page text. |
+
+The homepage hero description was 16px at the measured mobile-equivalent viewport. The homepage eyebrow (12.8px), category eyebrow, CTA text, the FAQ page's 14px link row (`SitePages.jsx:118`), and small control metadata are labels or navigation rather than body paragraphs; they should use appropriate caption/control tokens and are not counted as body-copy violations here.
+
+### D) Desktop line-length audit
+
+At a 1280px viewport, rendered body paragraphs were checked against the project limit of 80 characters per line. The measured values are the longest rendered line in each sampled paragraph.
+
+| Page/template | Source | Longest line | Result | Proposed redesign action |
+|---|---|---:|---|---|
+| Homepage hero description | `src/components/Home.jsx:75` | 51 characters | Within limit | Preserve a readable measure. |
+| Category description | `src/components/CategoryPage.jsx:42` | 101 characters | Exceeds | Constrain the prose column to about 65–75ch. |
+| Privacy page content | `src/components/SitePages.jsx:102` | 123 characters | Exceeds | Constrain paragraph measure independently of the card width. |
+| Resources-page introduction | `src/components/SitePages.jsx:77` | 87 characters | Exceeds | Narrow the intro measure to about 65–75ch. |
+| Resource-article introduction | `src/components/SitePages.jsx:77` | 118 characters | Exceeds | Narrow the intro measure to about 65–75ch. |
+| Tool-guide introduction | `src/components/SitePages.jsx:250` (rendered by shared `PageLayout` at `:77`) | 121 characters | Exceeds | Constrain the prose measure to about 65–75ch. |
+| Contact-page content | `src/components/SitePages.jsx:102` | 119 characters | Exceeds | Constrain paragraph measure independently of the card width. |
+| Merge-tool attachment guidance | `src/index.css:4369` | 83 characters | Exceeds | Keep guidance copy to a readable measure. |
+
+These are rendered observations from the English desktop preview, not estimates from source string length. The 80-character threshold is a project design rule; the future fix is a text-column measure, not a smaller font.
+
+### E) Heading hierarchy audit
+
+Source inspection covered the route templates; browser sampling confirmed the rendered count on nine representative routes. Every sampled page had exactly one `h1`.
+
+| Template/file | `h1` count | Hierarchy evidence |
+|---|---:|---|
+| `src/components/Home.jsx` | 1 | Homepage title `h1`, followed by the toolbox `h2` and category `h3` headings. |
+| `src/components/ToolPage.jsx` | 1 | Tool title `h1`; workspace and page sections use `h2`, with attachment and content subsections below them. |
+| `src/components/SitePages.jsx` | 1 | Shared `PageLayout` title is `h1`; information, resource, and guide sections use `h2`. FAQ navigation is a paragraph, not a second heading. |
+| `src/components/CategoryPage.jsx` | 1 | Category title `h1`, followed by the tools section `h2`. |
+| `src/App.jsx` error fallback | 1 | The route-load error title is a single `h1` inside the main landmark. |
+
+The nine rendered samples included the home, merge tool, FAQ, privacy, resources, resource article, tool guide, contact, and about page. No heading-count or heading-order violation was found in those templates.
+
+### F) Spacing rhythm audit
+
+Current homepage section stack and actual spacing at the existing Tailwind scale:
+
+```text
+Hero
+  ↓ 64px = 4xl (outer `space-y-16`)
+Category navigation
+  ↓ 64px = 4xl (outer `space-y-16`)
+Toolbox heading
+  ↓ 32px = 2xl (`mb-8`)
+Category group
+  ↓ 28px = off-token (`space-y-7`)
+Next category group
+  ↑ 28px = off-token (`pt-7`; first group resets this to 0)
+Category heading → tool cards: 16px (`mb-4`)
+Tool cards within the grid: 12px = md (`gap-3`)
+```
+
+The outer 64px, 32px, 16px, and 12px values align to the named scale. The 28px category-stack gap and padding do not; normalize those to named tokens during the redesign after the intended density is selected. Other sampled shared page stacks use 32px (`space-y-8`, 2xl) and 24px (`space-y-6`, xl), both on-token.
+
+### G) 200% zoom and text-spacing evidence
+
+| Check | Result | Evidence |
+|---|---|---|
+| Homepage at 200% zoom | Pass in emulated layout | Native browser zoom controls were unavailable to this browser automation. A 640×450 CSS viewport was used as the equivalent reflow width for a 1280×900 viewport at 200%. The captured initial viewport showed no clipped text and remained vertically scrollable; `documentElement.scrollWidth` and `clientWidth` were both 625px. This is explicitly an emulation, not a claim that native browser zoom was set. |
+| WCAG 1.4.12 text spacing | Pass for tested homepage sample | Applied `line-height: 1.5`, paragraph bottom spacing `2em`, letter spacing `0.12em`, and word spacing `0.16em` to the page. The hero paragraph remained 16px with 24px line-height; its 279×120px client box matched its scroll box. The CTA label fit its 223px client/scroll width. Document width remained 625/625px. A screenshot was captured with the overrides active. |
+
+Both screenshots were captured in the browser session as visual evidence; they were not added as repository files because the task's file scope is documentation-only.
+
+### H) Rejected alternatives
+
+- Considered raising every small font globally; rejected because it would also enlarge captions and control metadata, rather than precisely addressing the content paragraphs found below 16px.
+- Considered changing component classes while auditing; rejected because this task is a baseline audit and component edits are explicitly out of scope.
+- Considered shrinking wide paragraphs to satisfy the 80-character line rule; rejected because the proper fix is to constrain text measure, preserving the 16px body-size floor.
+- Considered switching all headings to fluid `clamp()` sizing; rejected for this audit because discrete token roles are easier to compare consistently across current page templates. Responsive heading sizing can be reconsidered during the redesign.
+
+### I) Self-verification
+
+- [x] Home, tool, shared site-page, category, and route-error templates were audited for one `h1` and hierarchy.
+- [x] Body text below 16px is logged with source, current size, and proposed size; captions and control/navigation labels are distinguished.
+- [x] 200%-equivalent homepage screenshot captured; viewport emulation is disclosed.
+- [x] Text-spacing override screenshot captured, and one 16px paragraph was checked for clipping.
+- [x] No component or CSS source file was modified.
+- [x] `npm.cmd test` passed 352/352 before (1,702.5382ms) and after (1,685.2089ms) the audit; no failures, skipped tests, or warnings were reported.
+- [x] `docs/status.md` and `docs/PROJECT-TRACKER.md` record the audit status and findings.
+
 ## Task 2.4 — Dark Mode
 
 ## Task 2.5 — Design System Summary

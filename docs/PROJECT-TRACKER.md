@@ -26,7 +26,7 @@
 | R8 | Same as R1: use `N/A — audit only` in mobile and desktop tables for documentation-only tasks. | Documentation-only tasks |
 | R9 | Read this tracker first at the start of every future task. | Task 1.6 onward |
 
-## Findings to Fix (F1–F8)
+## Findings to Fix (F1–F11)
 
 | ID | Finding | Source | Fix scheduled | Status |
 |----|---------|--------|---------------|--------|
@@ -38,6 +38,9 @@
 | F6 | Clear-search button `text-slate-400` may fail the 4.5:1 contrast requirement. | Task 1.2, Sections E5–E6 | Day 3 | Open |
 | F7 | Category fan applies `aria-hidden` to elements that may still be tabbable. | Task 1.2, Section E4 | Day 3 | Open |
 | F8 | Workspace is empty until JavaScript hydration, creating a CLS risk. | Task 1.6 packet | Day 9.5 | Open |
+| F9 | Several body-copy and instructional text styles are below the 16px mobile floor. | Task 2.3, Section C in `docs/main-page.md` | Redesign typography pass | Open |
+| F10 | Long-form paragraphs exceed the 80-character desktop line-length target across multiple page templates. | Task 2.3, Section D in `docs/main-page.md` | Redesign layout pass | Open |
+| F11 | The homepage uses 28px category-stack gaps/padding that do not match the named spacing tokens. | Task 2.3, Section F in `docs/main-page.md` | Redesign spacing pass | Open |
 
 ## Open Questions
 
@@ -84,6 +87,7 @@
 | Date/Paste # | Reason | Notes |
 |--------------|--------|-------|
 | 2026-11-09 | Task 2.2 completion and design decision | Interactive Primitives is Ready for Review in `docs/status.md`; created Button, Input, Card, Badge, and FocusRing. Decision: Button `sm` uses a 44px minimum height (rather than the primitive-specific 32px suggestion) to honor the project-wide 44×44px touch-target rule; compact padding is retained. |
+| Task 2.3 | Typography and spacing audit | Marked Task 2.3 Ready for Review in `docs/status.md`. Logged F9–F11: undersized body/instruction text, desktop prose lines longer than 80 characters, and 28px homepage spacing values that are off-token. The 200% zoom check was emulated with a 640px viewport and is documented as such; text-spacing overrides produced no measured overflow or paragraph clipping. |
 
 ## Resolved
 
