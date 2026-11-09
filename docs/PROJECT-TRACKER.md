@@ -26,7 +26,7 @@
 | R8 | Same as R1: use `N/A — audit only` in mobile and desktop tables for documentation-only tasks. | Documentation-only tasks |
 | R9 | Read this tracker first at the start of every future task. | Task 1.6 onward |
 
-## Findings to Fix (F1–F11)
+## Findings to Fix (F1–F12)
 
 | ID | Finding | Source | Fix scheduled | Status |
 |----|---------|--------|---------------|--------|
@@ -41,6 +41,7 @@
 | F9 | Several body-copy and instructional text styles are below the 16px mobile floor. | Task 2.3, Section C in `docs/main-page.md` | Redesign typography pass | Open |
 | F10 | Long-form paragraphs exceed the 80-character desktop line-length target across multiple page templates. | Task 2.3, Section D in `docs/main-page.md` | Redesign layout pass | Open |
 | F11 | The homepage uses 28px category-stack gaps/padding that do not match the named spacing tokens. | Task 2.3, Section F in `docs/main-page.md` | Redesign spacing pass | Open |
+| F12 | Theme toggle lacked a pressed state and used a changing accessible name. | Task 2.4, Section D in `docs/main-page.md` | Task 2.4 | Resolved |
 
 ## Open Questions
 
@@ -88,6 +89,7 @@
 |--------------|--------|-------|
 | 2026-11-09 | Task 2.2 completion and design decision | Interactive Primitives is Ready for Review in `docs/status.md`; created Button, Input, Card, Badge, and FocusRing. Decision: Button `sm` uses a 44px minimum height (rather than the primitive-specific 32px suggestion) to honor the project-wide 44×44px touch-target rule; compact padding is retained. |
 | Task 2.3 | Typography and spacing audit | Marked Task 2.3 Ready for Review in `docs/status.md`. Logged F9–F11: undersized body/instruction text, desktop prose lines longer than 80 characters, and 28px homepage spacing values that are off-token. The 200% zoom check was emulated with a 640px viewport and is documented as such; text-spacing overrides produced no measured overflow or paragraph clipping. |
+| 2026-11-09 | Task 2.4 dark-mode audit and toggle fix | All 17 documented token contrast pairs passed in dark mode; Home, Merge PDF, and Privacy rendered without observed light-only text/surfaces. F12 resolved: theme button now exposes `aria-pressed` with a stable “Dark mode” accessible name; first-load system preference and localStorage persistence were browser-checked. |
 
 ## Resolved
 
@@ -96,3 +98,4 @@
 | Q1 | Skip-link destination | Change the target to `#main-content`. | Task 1.6 |
 | Q2 | 20-language indexing strategy | Noindex `ar`, `hi`, `ja`, `ko`, and `zh-CN` during AdSense submission pending native QA. | Task 1.6 |
 | Q3 | Native-language QA schedule | Schedule QA approximately two weeks after approval. | Task 1.6 |
+| F12 | Theme toggle state semantics and stable accessible name | Added `aria-pressed` and the stable “Dark mode” accessible name in `src/App.jsx`; browser verified state and persistence. | Task 2.4 |

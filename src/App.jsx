@@ -409,7 +409,8 @@ const LeftNavigation = ({ theme, setTheme, isSidebarCollapsed, onToggleSidebar }
           type="button"
           className="site-left-theme-button"
           onClick={() => setTheme((current) => (current === 'dark' ? 'light' : 'dark'))}
-          aria-label={translate(theme === 'dark' ? 'switchToLightMode' : 'switchToDarkMode')}
+          aria-label={translate('darkMode')}
+          aria-pressed={theme === 'dark'}
           title={translate(theme === 'dark' ? 'switchToLightMode' : 'switchToDarkMode')}
         >
           {theme === 'dark'

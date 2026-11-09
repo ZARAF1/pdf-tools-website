@@ -1474,6 +1474,93 @@ Both screenshots were captured in the browser session as visual evidence; they w
 
 ## Task 2.4 — Dark Mode
 
+### A) Read evidence and scope
+
+- Read `docs/status.md` and `docs/PROJECT-TRACKER.md` before the audit.
+- Read Task 2.1's light/dark token values and all 17 foreground/background pairs in Section C above.
+- Inspected `src/App.jsx`, the dark token and page rules in `src/index.css`, `tailwind.config.js`, and `index.html`'s pre-render theme initializer.
+- Audited the homepage, Merge PDF tool page, and Privacy page in a local browser with persisted dark theme.
+- The only source change is the approved theme-toggle accessibility fix in `src/App.jsx`. No CSS token needed changing because the documented dark pairs pass and sampled page surfaces/text computed to dark-theme colors.
+
+### B) Dark contrast evidence
+
+Ratios were recalculated from the documented light/dark sRGB values using WCAG relative luminance, rounded to two decimals. Text and status pairs use the 4.5:1 threshold; interactive borders, focus indicators, and icon boundaries use 3:1. Every row passes its applicable threshold in both themes.
+
+| Pair | Light ratio | Dark ratio | Pass/fail |
+|---|---:|---:|---|
+| `surface-fg` / page background | 17.06:1 | 15.19:1 | Pass (≥4.5:1) |
+| `surface-fg` / card background | 17.85:1 | 13.86:1 | Pass (≥4.5:1) |
+| `surface-fg-secondary` / page background | 7.24:1 | 8.82:1 | Pass (≥4.5:1) |
+| `surface-fg-secondary` / card background | 7.58:1 | 8.05:1 | Pass (≥4.5:1) |
+| `surface-fg-muted` / page background | 4.55:1 | 7.30:1 | Pass (≥4.5:1) |
+| `surface-fg-muted` / card background | 4.76:1 | 6.66:1 | Pass (≥4.5:1) |
+| `brand-700` / white or page background | 6.70:1 | 7.36:1 | Pass (≥4.5:1) |
+| `brand-700` / page or card background | 6.41:1 | 6.72:1 | Pass (≥4.5:1) |
+| `brand-600` border / white or page background | 5.17:1 | 3.62:1 | Pass (≥3:1) |
+| `brand-600` border / page or card background | 4.94:1 | 3.30:1 | Pass (≥3:1) |
+| Focus ring / white or page background | 5.17:1 | 7.36:1 | Pass (≥3:1) |
+| Focus ring / page or card background | 4.94:1 | 6.72:1 | Pass (≥3:1) |
+| Success foreground / status background | 5.02:1 | 10.62:1 | Pass (≥4.5:1) |
+| Warning foreground / status background | 4.92:1 | 11.70:1 | Pass (≥4.5:1) |
+| Danger foreground / status background | 6.47:1 | 8.51:1 | Pass (≥4.5:1) |
+| Info foreground / status background | 5.93:1 | 8.32:1 | Pass (≥4.5:1) |
+| Tool-icon foreground / background | 6.16:1 | 8.10:1 | Pass (≥3:1) |
+
+### C) Dark page audit and hardcoded-colour log
+
+The three requested routes rendered with `data-theme="dark"` and the dark preference stored. The audited DOM had one page `h1` per route and no horizontal overflow in the 640px browser viewport (`scrollWidth === clientWidth === 625px`). The sampled computed colors were consistent with the dark variables: homepage hero category chips use `#1e293b` with white text; Merge PDF cards use `#111c2e` with `#e2e8f0` text, upload area `#172033`; Privacy cards use `#111c2e`, primary text `#e2e8f0`, and secondary text `#a7b3c5`. No light white background or dark foreground text was found in the sampled main content after loading the saved dark preference.
+
+| File and lines | Static light-colour candidate | Dark-mode handling / browser result | Verdict |
+|---|---|---|---|
+| `src/components/Home.jsx:193-205` | `text-slate-800` / `text-slate-500` utilities; no inline `dark:` variants | `index.css:3802-3818` maps slate text utilities to dark foreground colors; measured category heading text was `#e2e8f0`. | No visible failure; relies on shared global mapping. |
+| `src/components/ToolPage.jsx:598-635` | `bg-white`, `bg-slate-50`, and slate text classes; no inline `dark:` variants | `index.css:3610`, `3757`, `3802-3818`, `7108-7114`, and `8776-8783` remap surfaces, text, and upload zones. Browser measured card `#111c2e`, copy `#a7b3c5`, upload zone `#172033`. | No visible failure; relies on shared global mapping. |
+| `src/components/SitePages.jsx:77-281` | `text-slate-*`, `bg-white`, `text-white`, and blue action utilities; no inline `dark:` variants | `index.css:3610`, `3802-3828` remap surface/text utilities; Privacy rendered cards at `#111c2e`, primary text `#e2e8f0`, secondary `#a7b3c5`. `bg-blue-600` remains a blue action background with white text. | No visible failure in Privacy; relies on shared global mapping. |
+| `src/index.css:1276, 1553` | Homepage eyebrow/chip base rules use white translucent backgrounds and light-theme text/borders. | Dark variants at `index.css:1888-1892` and `1955-1960` replace those colors. Browser chip measured `#1e293b` / `#ffffff`. | No visible failure; explicit dark overrides exist. |
+
+The JSX utility candidates are not unoverridden dark surfaces: `index.css` contains shared dark selectors for them and all three sampled pages rendered with dark foregrounds and surfaces. They remain a maintainability coupling, so prefer semantic tokens or local dark variants when those components are next redesigned; no out-of-scope component edits were made here.
+
+### D) Theme-toggle accessibility audit
+
+| Check | Result | Evidence |
+|---|---|---|
+| Native control and state | Pass after fix | The control is a native `<button>` with stable accessible name “Dark mode” and `aria-pressed` reflecting the theme. Browser inspection observed `true` in dark mode and `false` after switching to light. |
+| State announcement | Programmatic state available; no screen-reader speech test | The pressed state changes on activation, allowing assistive technology to expose the toggle state. The visible action text still changes to the next mode. A live-region announcement was not added and a screen reader was not available for a spoken-output test. |
+| First load / system preference | Pass | In a browser context emulating `prefers-color-scheme: dark`, with the saved theme removed, the `index.html` early initializer and React theme state both resolved to `dark`. |
+| Persistence | Pass | Activating the control changed the root theme to `light`, stored `pdf-tools-theme=light`, and updated `aria-pressed` to `false`; an explicit stored preference takes precedence over system preference. |
+
+Minimal fix applied in `src/App.jsx`: give the toggle a stable accessible name (`translate('darkMode')`) and add `aria-pressed={theme === 'dark'}`. A stable name is important for a pressed-state toggle; the title and visible text continue to describe the next available mode.
+
+### E) SVG and icon inversion log
+
+No `.svg` asset files were found, and a source search found no SVG with `fill="black"`, `fill="#000"`, or another literal black fill. The inline SVG fill uses in `src/components/EditPdf.jsx` are:
+
+| File and lines | Fill | Purpose / dark-mode assessment |
+|---|---|---|
+| `src/components/EditPdf.jsx:131,167` | `item.color` | User-selected PDF text/highlight artwork, not a site icon. |
+| `src/components/EditPdf.jsx:155,187,206` | `none` | Transparent shapes/selection outlines. |
+| `src/components/EditPdf.jsx:1307` | `#7c3aed` | Keyboard-position marker with a white stroke. |
+| `src/components/EditPdf.jsx:1310` | `#2563eb` | Text-position marker with a white stroke. |
+
+None is a black-filled SVG icon requiring inversion. Lucide icons are stroke-based and use the surrounding `currentColor` styling.
+
+### F) Rejected alternatives
+
+- Considered changing dark palette values; rejected because all 17 documented foreground/background pairs pass their relevant WCAG thresholds.
+- Considered replacing each light-mode utility class with component-specific dark variants; rejected for this task because existing global dark selectors remap them and the three sampled pages show no visible light-only surface/text failure.
+- Considered adding a live region for the theme toggle; rejected as redundant once the native button exposes a stable name and changing `aria-pressed` state. Spoken screen-reader output remains unverified.
+- Considered a custom `role="switch"`; rejected because the native button with pressed state provides keyboard behavior and the required state semantics without custom role handling.
+
+### G) Self-verification
+
+- [x] All 17 documented Task 2.1 foreground/background pairs have light and dark ratios recorded; every pair passes its applicable threshold.
+- [x] Homepage, Merge PDF, and Privacy were rendered in dark mode; static candidates and their global dark overrides are logged with file and line references.
+- [x] Toggle checked for native button, state semantics, first-load system preference, and persistence; `aria-pressed` fix is browser-verified.
+- [x] SVG search found no black-filled icon; all inline SVG fill uses are listed above.
+- [x] Only the approved `src/App.jsx` toggle change was made; `src/index.css` tokens were not changed because contrast and page checks passed.
+- [x] `npm.cmd test` passed before the change: 352/352 in 1,209.713ms; after the change: 352/352 in 1,381.115ms, 0 failures/cancelled/skipped/todo.
+- [x] `npm.cmd run build` passed; existing `buffer` externalization and >500 kB chunk warnings remain.
+- [x] `docs/status.md` and `docs/PROJECT-TRACKER.md` updated for Task 2.4.
+
 ## Task 2.5 — Design System Summary
 
 ## Task 3.x — Variant 1 (to be filled)

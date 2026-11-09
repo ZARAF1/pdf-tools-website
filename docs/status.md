@@ -10,7 +10,7 @@
 | 2.1 | Design Tokens | Ready for Review | 352/352 | — | — | — | — | Added theme-aware Tailwind/CSS tokens; 27 contrast pairs checked; production build passed with existing warnings. |
 | 2.2 | Interactive Primitives | Ready for Review | 352/352 | — | — | — | Keyboard focus captured | Added five accessible UI primitives; keyboard, target-size, responsive-fixture, and contrast evidence recorded in `docs/main-page.md`; production build passed with existing warnings. |
 | 2.3 | Typography & Spacing | Ready for Review | 352/352 | — | — | — | 2 browser captures | `npm.cmd test` passed 352/352 before (1,702.5382ms) and after (1,685.2089ms); audit findings and emulated 200% reflow evidence are recorded in `docs/main-page.md`. |
-| 2.4 | Dark Mode | Planned | — | — | — | — | — | — |
+| 2.4 | Dark Mode | Ready for Review | 352/352 | — | — | — | — | Audited 17 documented token contrast pairs and Home/Merge/Privacy in dark mode; added `aria-pressed` with a stable toggle name. `npm.cmd test` passed 352/352 before and after; production build passed with existing warnings. |
 | 2.5 | Design System Summary | Planned | — | — | — | — | — | — |
 | 3.1 | Variant 1 | Planned | — | — | — | — | — | — |
 | 3.2 | Variant 1 | Planned | — | — | — | — | — | — |
