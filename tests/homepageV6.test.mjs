@@ -12,7 +12,7 @@ const source = async (path) => {
   }
 };
 
-const [app, home, hero, search, bento, searchLogic, toolPage, styles] = await Promise.all([
+const [app, home, hero, search, bento, searchLogic, toolPage, styles, header, toolsPage] = await Promise.all([
   source('../src/App.jsx'),
   source('../src/components/Home.jsx'),
   source('../src/components/v6/EditorialLightHero.jsx'),
@@ -21,6 +21,8 @@ const [app, home, hero, search, bento, searchLogic, toolPage, styles] = await Pr
   source('../src/components/v6/searchTools.mjs'),
   source('../src/components/ToolPage.jsx'),
   source('../src/components/v6/editorial-light.css'),
+  source('../src/components/v6/EditorialLightHeader.jsx'),
+  source('../src/components/v6/EditorialLightToolsPage.jsx'),
 ]);
 
 test('the root route renders Home without a variant preview gate', () => {
@@ -65,7 +67,7 @@ test('tool search uses the native search input type', () => {
 
 test('tool search has an associated descriptive label', () => {
   assert.match(search, /htmlFor="v6-tool-search"/);
-  assert.match(search, /Search PDF tools by name, description, or keyword/);
+  assert.match(search, /translate\('findPdfTool'\)/);
 });
 
 test('tool search exposes its result controls and expanded state', () => {
@@ -85,8 +87,28 @@ test('the V6 directory maps its category cards from the central registry', () =>
 });
 
 test('each category link has a category-specific accessible name', () => {
-  assert.match(bento, /aria-label=\{`View all \$\{categoryName\} tools`\}/);
+  assert.match(bento, /aria-label=\{`\$\{translate\('viewCategory'\)\}: \$\{categoryName\}`\}/);
   assert.match(bento, /href=\{category\.path\}/);
+});
+
+test('the split-button mega menu is semantic, keyboard-operable, and includes registry links', () => {
+  assert.match(header, /<a className="v6-all-tools-link" href="\/tools">/);
+  assert.match(header, /aria-expanded=\{isOpen\}/);
+  assert.match(header, /aria-controls="v6-mega-menu"/);
+  assert.match(header, /event\.key === 'Escape'/);
+  assert.match(header, /toggleRef\.current\?\.focus\(\)/);
+  assert.match(header, /<nav[\s\S]*aria-label=\{translate\('mainNavigation'\)\}/);
+  assert.match(header, /<ul className="v6-mega-menu-categories">/);
+  assert.match(header, /<h3><a href=\{category\.path\}>/);
+  assert.match(header, /<a className="v6-mega-menu-tool" href=\{tool\.path\}>/);
+  assert.doesNotMatch(header, /role="menu"|role="menubar"/);
+  assert.doesNotMatch(header, /\{isOpen\s*&&/);
+});
+
+test('the All Tools link resolves to a localized directory page', () => {
+  assert.match(app, /<Route path="\/tools" element=\{<EditorialLightToolsPage \/>} \/>/);
+  assert.match(toolsPage, /<h1>\{translate\('allTools'\)\}<\/h1>/);
+  assert.match(toolsPage, /<EditorialLightBento \/>/);
 });
 
 test('tool directory links retain registry names, descriptions, icons, and paths', () => {

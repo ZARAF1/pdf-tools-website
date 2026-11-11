@@ -566,6 +566,7 @@ const ToolPage = ({ tool, children }) => {
   const registeredTool = TOOL_REGISTRY.find((item) => item.id === tool);
   const localizedTool = registeredTool ? getLocalizedTool(language, registeredTool) : null;
   const pageTitleText = localizedTool?.name || content.title;
+  const pageTitle = `${pageTitleText} | PDF Merge Pro`;
   const pageDescription = localizedTool?.description || content.description;
   const ProcessingIcon = localizedTool?.icon;
   const ToolIcon = ProcessingIcon || FileText;
@@ -599,7 +600,7 @@ const ToolPage = ({ tool, children }) => {
     const previousTitle = document.title;
     const description = document.querySelector('meta[name="description"]');
     const previousDescription = description?.content;
-    document.title = `${pageTitleText} | PDF Merge Pro`;
+    document.title = pageTitle;
     if (description) description.content = pageDescription;
 
     return () => {
@@ -608,7 +609,7 @@ const ToolPage = ({ tool, children }) => {
         description.content = previousDescription;
       }
     };
-  }, [content, pageDescription, pageTitleText]);
+  }, [pageDescription, pageTitle]);
 
   return (
     <article className={tool === 'merge' ? 'space-y-8 merge-tool-page v6-tool-page' : 'space-y-8 v6-tool-page'}>
@@ -633,6 +634,7 @@ const ToolPage = ({ tool, children }) => {
                     {text}
                     {key === 'result' && (
                       <Link
+                        aria-label={`Read more about ${pageTitleText}`}
                         className="mt-2 block w-fit font-semibold text-blue-700 underline hover:text-blue-800"
                         to={`/resources/tools/${tool}`}
                       >

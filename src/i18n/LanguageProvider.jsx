@@ -1,5 +1,10 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { getInitialLanguage, getMessage, SUPPORTED_LANGUAGES } from './languageCatalog.mjs';
+import {
+  getInitialLanguage,
+  getLanguageDirection,
+  getMessage,
+  SUPPORTED_LANGUAGES
+} from './languageCatalog.mjs';
 import { LanguageContext } from './languageContext';
 
 export const LanguageProvider = ({ children }) => {
@@ -7,7 +12,7 @@ export const LanguageProvider = ({ children }) => {
 
   useEffect(() => {
     document.documentElement.lang = language;
-    document.documentElement.dir = language === 'ar' ? 'rtl' : 'ltr';
+    document.documentElement.dir = getLanguageDirection(language);
     try {
       window.localStorage.setItem('pdf-tools-language', language);
     } catch (error) {

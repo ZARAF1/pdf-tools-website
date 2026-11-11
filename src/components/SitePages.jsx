@@ -10,6 +10,8 @@ import { TOOL_CATEGORIES, TOOL_REGISTRY } from './toolRegistry';
 import { GUIDE_ONLY_TOOLS, TOOL_GUIDES } from './toolGuides.mjs';
 import ToolCard from './ToolCard';
 import { useLanguage } from '../i18n/useLanguage';
+import EditorialLightHeader from './v6/EditorialLightHeader';
+import './v6/editorial-light.css';
 
 const ARTICLES = {
   'pdf-compression': {
@@ -65,20 +67,34 @@ const usePageMeta = (title, description) => {
   }, [title, description]);
 };
 
+const SitePageShell = ({ children }) => {
+  const { translate } = useLanguage();
+
+  return (
+    <div className="v6-editorial v6-static-page" data-theme="light">
+      <a className="v6-skip-link" href="#v6-main">{translate('skipToMainContent')}</a>
+      <EditorialLightHeader />
+      <div id="v6-main" className="v6-main v6-static-main" tabIndex={-1}>
+        <div className="v6-static-page-content">{children}</div>
+      </div>
+    </div>
+  );
+};
+
 const PageLayout = ({ title, intro, children, icon: Icon }) => (
-  <article className="mx-auto max-w-4xl space-y-8">
-    <header className="text-center">
+  <article className="v6-static-article">
+    <header className="v6-static-article-header">
       <div className="page-heading">
         {Icon && (
           <span className="page-heading-icon" aria-hidden="true">
             <Icon size={24} strokeWidth={2} />
           </span>
         )}
-        <h1 className="text-3xl font-bold text-slate-900">{title}</h1>
+        <h1>{title}</h1>
       </div>
-      <p className="text-slate-600 max-w-3xl mx-auto">{intro}</p>
+      <p className="v6-static-intro">{intro}</p>
     </header>
-    <div className="space-y-6">{children}</div>
+    <div className="v6-static-sections">{children}</div>
   </article>
 );
 
@@ -96,9 +112,9 @@ const InfoPage = ({ page, pageKey }) => {
   usePageMeta(title, description);
   return (
     <PageLayout title={title.split(' | ')[0]} intro={intro} icon={INFO_PAGE_ICONS[pageKey]}>
-      {sections.map((section) => (
-        <section key={section.title} className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
-          <h2 className="text-xl font-bold text-slate-800 mb-3">{section.title}</h2>
+      {sections.map((section, index) => (
+        <section key={section.title} className={`v6-static-card v6-static-card-${index % 4}`}>
+          <h2>{section.title}</h2>
           <div className="space-y-3 text-slate-600 leading-relaxed">{section.content}</div>
         </section>
       ))}
@@ -112,7 +128,7 @@ const FaqPage = () => {
   usePageMeta(localizedFaq.pageTitle, localizedFaq.description);
   return (
     <PageLayout title={localizedFaq.title} intro={localizedFaq.intro} icon={CircleHelp}>
-      <section aria-label={localizedFaq.sectionLabel}>
+      <section className="v6-static-faq" aria-label={localizedFaq.sectionLabel}>
         <FaqAccordion items={localizedFaq.items} />
       </section>
       <p className="text-sm text-slate-600"><Link className="underline hover:text-blue-700" to="/">{localizedFaq.toolsLabel}</Link> · <Link className="underline hover:text-blue-700" to="/resources">{localizedFaq.guidesLabel}</Link></p>
@@ -142,20 +158,20 @@ const ResourcePage = ({ article }) => {
     <PageLayout title={content.title} intro={content.description} icon={BookOpenText}>
       <div className="flex flex-col gap-6">
         {content.sections.map(([heading, text]) => (
-          <section key={heading} className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
-            <h2 className="text-xl font-bold text-slate-800 mb-3">{heading}</h2>
-            <p className="text-slate-600 leading-relaxed">
+          <section key={heading} className="v6-static-card">
+            <h2>{heading}</h2>
+            <p>
               {text.split(/(\[[^\]]+\]\([^)]+\))/g).map((part, index) => {
                 const match = part.match(/^\[([^\]]+)\]\(([^)]+)\)$/);
                 return match
-                  ? <Link key={index} className="underline hover:text-blue-700" to={match[2]}>{match[1]}</Link>
+                  ? <Link key={index} to={match[2]}>{match[1]}</Link>
                   : part;
               })}
             </p>
           </section>
         ))}
       </div>
-      <Link to="/resources" className="inline-block text-blue-700 font-medium hover:underline">{resources.backToResources}</Link>
+      <Link to="/resources" className="v6-static-back-link">{resources.backToResources}</Link>
     </PageLayout>
   );
 };
@@ -173,7 +189,7 @@ const ResourcesPage = () => {
           if (categoryTools.length === 0) return null;
           return (
             <section key={category.id} aria-labelledby={`guides-${category.id}`}>
-              <h2 id={`guides-${category.id}`} className="mb-4 text-2xl font-bold text-slate-800">
+              <h2 id={`guides-${category.id}`} className="v6-static-section-heading">
                 {translate(`category.${category.id}`)}
               </h2>
               <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
@@ -191,7 +207,7 @@ const ResourcesPage = () => {
           );
         })}
         <section aria-labelledby="resource-topic-guides">
-          <h2 id="resource-topic-guides" className="mb-4 text-2xl font-bold text-slate-800">
+          <h2 id="resource-topic-guides" className="v6-static-section-heading">
             {resources.topicGuides}
           </h2>
           <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
@@ -229,11 +245,11 @@ export const ToolGuidePage = ({ toolId }) => {
   );
   if (!tool || !guide || !localizedTool) {
     return (
-      <PageLayout title="Page not found" intro="That guide may have moved or the address may be incorrect.">
-        <Link to="/" className="inline-flex rounded-lg bg-blue-600 px-4 py-3 font-semibold text-white hover:bg-blue-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600">
-          Browse PDF tools
-        </Link>
-      </PageLayout>
+      <SitePageShell>
+        <PageLayout title="Page not found" intro="That guide may have moved or the address may be incorrect.">
+          <Link to="/" className="v6-static-action-link">Browse PDF tools</Link>
+        </PageLayout>
+      </SitePageShell>
     );
   }
 
@@ -245,32 +261,31 @@ export const ToolGuidePage = ({ toolId }) => {
   ];
 
   return (
-    <PageLayout
-      title={localizedTool.name}
-      intro={localizedTool.description}
-      icon={localizedTool.icon || BookOpenText}
-    >
-      <div className="flex flex-col gap-6">
-        {sections.map(([heading, text]) => (
-          <section key={heading} className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
-            <h2 className="text-xl font-bold text-slate-800 mb-3">{heading}</h2>
-            <p className="text-slate-600 leading-relaxed">{text}</p>
-          </section>
-        ))}
-      </div>
-      <div className="mt-6 flex flex-wrap items-center gap-4">
-        <Link
-          to={localizedTool.path}
-          className="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-3 font-semibold text-white hover:bg-blue-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
-        >
-          {localizedTool.name}
-          <ArrowRight className="h-4 w-4" aria-hidden="true" />
-        </Link>
-        <Link to="/resources" className="text-blue-700 font-medium hover:underline">
-          {resources.backToResources}
-        </Link>
-      </div>
-    </PageLayout>
+    <SitePageShell>
+      <PageLayout
+        title={localizedTool.name}
+        intro={localizedTool.description}
+        icon={localizedTool.icon || BookOpenText}
+      >
+        <div className="flex flex-col gap-6">
+          {sections.map(([heading, text], index) => (
+            <section key={heading} className={`v6-static-card v6-static-card-${index % 4}`}>
+              <h2>{heading}</h2>
+              <p>{text}</p>
+            </section>
+          ))}
+        </div>
+        <div className="v6-static-actions">
+          <Link to={localizedTool.path} className="v6-static-action-link">
+            {localizedTool.name}
+            <ArrowRight aria-hidden="true" />
+          </Link>
+          <Link to="/resources" className="v6-static-back-link">
+            {resources.backToResources}
+          </Link>
+        </div>
+      </PageLayout>
+    </SitePageShell>
   );
 };
 
@@ -425,12 +440,16 @@ const INFO_PAGES = {
 };
 
 const SitePages = ({ page, article }) => {
-  if (page === 'faq') return <FaqPage />;
+  if (page === 'faq') return <SitePageShell><FaqPage /></SitePageShell>;
   if (page === 'resources') {
-    if (!article) return <ResourcesPage />;
-    return ARTICLES[article] ? <ResourcePage article={article} /> : <NotFoundPage />;
+    if (!article) return <SitePageShell><ResourcesPage /></SitePageShell>;
+    return (
+      <SitePageShell>
+        {ARTICLES[article] ? <ResourcePage article={article} /> : <NotFoundPage />}
+      </SitePageShell>
+    );
   }
-  return <InfoPage page={INFO_PAGES[page]} pageKey={page} />;
+  return <SitePageShell><InfoPage page={INFO_PAGES[page]} pageKey={page} /></SitePageShell>;
 };
 
 export { NotFoundPage, SitePages };

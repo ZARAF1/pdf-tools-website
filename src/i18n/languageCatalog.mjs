@@ -21,6 +21,12 @@ export const SUPPORTED_LANGUAGES = [
   { code: 'zh-CN', name: '简体中文' }
 ];
 
+const RTL_LANGUAGE_CODES = new Set(['ar', 'fa', 'he', 'ps', 'sd', 'ug', 'ur', 'yi']);
+
+export const getLanguageDirection = (language) => (
+  RTL_LANGUAGE_CODES.has(language.split('-')[0]) ? 'rtl' : 'ltr'
+);
+
 export const LANGUAGE_REGIONS = [
   {
     name: 'Europe',
@@ -54,6 +60,14 @@ const workflowKeys = [
   'attachImagesHere', 'relatedTools'
 ];
 
+const v6Keys = [
+  'skipToMainContent', 'browseTools', 'filesStayOnDevice', 'v6ArtCaption', 'v6CollectionsEyebrow',
+  'v6CollectionsTitle', 'v6CollectionsDescription', 'v6TrustEyebrow',
+  'v6TrustTitle', 'v6TrustDescription', 'v6WhyEyebrow', 'v6WhyTitle',
+  'v6WhyParagraph1', 'v6WhyParagraph2', 'v6WhyParagraph3',
+  'v6SearchResultSingular', 'v6SearchResultPlural'
+];
+
 const translations = {
   en: ['Home', 'FAQ', 'Guides', 'Language', 'Choose language', 'All tools', 'Categories', 'Privacy', 'Contact', 'About', 'Terms', 'Dark mode', 'Light mode', 'Switch to dark mode', 'Switch to light mode', 'Main navigation', 'Footer navigation', 'PDF toolkit', 'View category', 'All rights reserved.', 'Organize', 'Convert', 'Edit & Sign', 'Protect & Repair', 'Extract'],
   es: ['Inicio', 'Preguntas frecuentes', 'Guías', 'Idioma', 'Elegir idioma', 'Todas las herramientas', 'Categorías', 'Privacidad', 'Contacto', 'Acerca de', 'Términos', 'Modo oscuro', 'Modo claro', 'Cambiar al modo oscuro', 'Cambiar al modo claro', 'Navegación principal', 'Navegación del pie de página', 'Herramientas PDF', 'Ver categoría', 'Todos los derechos reservados.', 'Organizar', 'Convertir', 'Editar y firmar', 'Proteger y reparar', 'Extraer'],
@@ -78,7 +92,7 @@ const translations = {
 };
 
 const extraTranslations = {
-  en: ['PDF tools, made simple', 'Powerful PDF Tools', 'All in one place.', 'Browser-based tools for everyday PDF tasks. Processing details and limitations are explained on each tool page.', 'Explore PDF tools', 'Browse tool categories', 'PDF tool category', 'All PDF tools', 'Tools in', 'tools to choose from', 'Browse all categories', 'Hide', 'Show', 'Search PDF tools', 'Find a PDF tool', 'Clear search', 'Matching PDF tools', 'No tools match'],
+  en: ['PDF tools, made simple', 'Private & Powerful PDF Tools', 'All in one place.', 'Browser-based tools for everyday PDF tasks. Processing details and limitations are explained on each tool page.', 'Explore PDF tools', 'Browse tool categories', 'PDF tool category', 'All PDF tools', 'Tools in', 'tools to choose from', 'Browse all categories', 'Hide', 'Show', 'Search PDF tools', 'Find a PDF tool', 'Clear search', 'Matching PDF tools', 'No tools match'],
   es: ['Herramientas PDF, simplificadas', 'Potentes herramientas PDF', 'Todo en un solo lugar.', 'Herramientas en el navegador para tareas PDF cotidianas. Cada herramienta explica el proceso y sus limitaciones.', 'Explorar herramientas PDF', 'Explorar categorías de herramientas', 'Categoría de herramientas PDF', 'Todas las herramientas PDF', 'Herramientas en', 'herramientas disponibles', 'Ver todas las categorías', 'Ocultar', 'Mostrar', 'Buscar herramientas PDF', 'Buscar una herramienta PDF', 'Borrar búsqueda', 'Herramientas PDF coincidentes', 'No hay herramientas que coincidan'],
   fr: ['Les outils PDF en toute simplicité', 'Des outils PDF performants', 'Tout au même endroit.', 'Des outils dans le navigateur pour les tâches PDF courantes. Chaque page explique le traitement et ses limites.', 'Explorer les outils PDF', 'Parcourir les catégories', 'Catégorie d’outils PDF', 'Tous les outils PDF', 'Outils de la catégorie', 'outils disponibles', 'Voir toutes les catégories', 'Masquer', 'Afficher', 'Rechercher des outils PDF', 'Rechercher un outil PDF', 'Effacer la recherche', 'Outils PDF correspondants', 'Aucun outil ne correspond'],
   de: ['PDF-Tools, ganz einfach', 'Leistungsstarke PDF-Tools', 'Alles an einem Ort.', 'Browserbasierte Tools für alltägliche PDF-Aufgaben. Verarbeitung und Einschränkungen werden auf jeder Tool-Seite erläutert.', 'PDF-Tools entdecken', 'Tool-Kategorien durchsuchen', 'PDF-Tool-Kategorie', 'Alle PDF-Tools', 'Tools in', 'Tools zur Auswahl', 'Alle Kategorien ansehen', 'Ausblenden', 'Anzeigen', 'PDF-Tools suchen', 'PDF-Tool finden', 'Suche löschen', 'Passende PDF-Tools', 'Keine passenden Tools gefunden'],
@@ -353,6 +367,172 @@ const powerpointUploadTitles = {
   'zh-CN': '在此处添加 PDF 或 PowerPoint 文件'
 };
 
+const v6Translations = {
+  en: ['Skip to main content', 'Browse tools', 'Files stay on your device', 'A clearer page, at your pace.', 'Five thoughtful collections', 'Explore PDF tools', 'Choose a collection, find the action, and continue at your own pace.', 'A little peace of mind', 'Your files stay yours.', 'Your documents are processed in your browser. Check each tool page for steps and limitations.', 'A note on the details', 'Good tools make the next step feel simple.', 'A document task can start with one question: which pages to keep, how to share a scan, or how to make a file easier to read. Browse by task, then choose a tool.', 'Each collection groups related actions. Review the controls and guidance on a tool page before creating an output.', 'PDF work happens in your browser. Some tools, including OCR, may need language resources the first time; the tool page explains what to expect.', 'tool matches', 'tools match'],
+  es: ['Saltar al contenido principal', 'Explorar herramientas', 'Los archivos permanecen en tu dispositivo', 'Una página más clara, a tu ritmo.', 'Cinco colecciones bien pensadas', 'Explorar herramientas PDF', 'Elige una colección, encuentra la acción y continúa a tu ritmo.', 'Un poco de tranquilidad', 'Tus archivos siguen siendo tuyos.', 'Tus documentos se procesan en el navegador. Consulta cada herramienta para conocer los pasos y las limitaciones.', 'Una nota sobre los detalles', 'Las buenas herramientas simplifican el siguiente paso.', 'Una tarea con documentos puede empezar con una pregunta: qué páginas conservar, cómo compartir un escaneo o cómo facilitar la lectura de un archivo. Busca por tarea y elige una herramienta.', 'Cada colección agrupa acciones relacionadas. Revisa los controles y las instrucciones de la herramienta antes de crear un archivo.', 'El trabajo con PDF se realiza en el navegador. Algunas herramientas, como OCR, pueden necesitar recursos de idioma la primera vez; la página de la herramienta explica qué esperar.', 'herramienta coincide', 'herramientas coinciden'],
+  fr: ['Aller au contenu principal', 'Parcourir les outils', 'Les fichiers restent sur votre appareil', 'Une page plus claire, à votre rythme.', 'Cinq collections soigneusement choisies', 'Explorer les outils PDF', 'Choisissez une collection, trouvez l’action et avancez à votre rythme.', 'Un peu de tranquillité', 'Vos fichiers restent les vôtres.', 'Vos documents sont traités dans votre navigateur. Consultez chaque page d’outil pour connaître les étapes et les limites.', 'Quelques précisions', 'Les bons outils simplifient la prochaine étape.', 'Une tâche documentaire commence parfois par une question : quelles pages conserver, comment partager un scan ou rendre un fichier plus lisible. Parcourez les tâches, puis choisissez un outil.', 'Chaque collection regroupe des actions liées. Consultez les commandes et les conseils de la page de l’outil avant de créer un fichier.', 'Le traitement des PDF se fait dans votre navigateur. Certains outils, dont l’OCR, peuvent nécessiter des ressources linguistiques lors de la première utilisation ; la page de l’outil explique à quoi s’attendre.', 'outil correspondant', 'outils correspondants'],
+  de: ['Zum Hauptinhalt springen', 'Tools durchsuchen', 'Dateien bleiben auf deinem Gerät', 'Eine klarere Seite, in deinem Tempo.', 'Fünf sorgfältig zusammengestellte Sammlungen', 'PDF-Tools entdecken', 'Wähle eine Sammlung, finde die passende Aktion und arbeite in deinem Tempo weiter.', 'Ein wenig Sicherheit', 'Deine Dateien bleiben deine.', 'Deine Dokumente werden im Browser verarbeitet. Schritte und Einschränkungen findest du auf der jeweiligen Tool-Seite.', 'Ein Hinweis zu den Details', 'Gute Tools machen den nächsten Schritt einfach.', 'Eine Dokumentaufgabe beginnt oft mit einer Frage: Welche Seiten sollen bleiben, wie lässt sich ein Scan teilen oder eine Datei leichter lesen? Suche nach Aufgabe und wähle dann ein Tool.', 'Jede Sammlung bündelt passende Aktionen. Prüfe die Steuerelemente und Hinweise auf der Tool-Seite, bevor du eine Ausgabe erstellst.', 'PDFs werden im Browser verarbeitet. Manche Tools, darunter OCR, benötigen beim ersten Einsatz möglicherweise Sprachressourcen. Die Tool-Seite erklärt, was dich erwartet.', 'passendes Tool', 'passende Tools'],
+  pt: ['Ir para o conteúdo principal', 'Explorar ferramentas', 'Os arquivos ficam no seu dispositivo', 'Uma página mais clara, no seu ritmo.', 'Cinco coleções cuidadosamente escolhidas', 'Explorar ferramentas PDF', 'Escolha uma coleção, encontre a ação e continue no seu ritmo.', 'Um pouco mais de tranquilidade', 'Seus arquivos continuam sendo seus.', 'Seus documentos são processados no navegador. Consulte cada ferramenta para ver as etapas e limitações.', 'Uma nota sobre os detalhes', 'Boas ferramentas simplificam a próxima etapa.', 'Uma tarefa com documentos pode começar com uma pergunta: quais páginas manter, como compartilhar uma digitalização ou facilitar a leitura de um arquivo. Explore por tarefa e escolha uma ferramenta.', 'Cada coleção reúne ações relacionadas. Confira os controles e as orientações da ferramenta antes de criar um arquivo.', 'O trabalho com PDF acontece no navegador. Algumas ferramentas, como OCR, podem precisar de recursos de idioma no primeiro uso; a página da ferramenta explica o que esperar.', 'ferramenta correspondente', 'ferramentas correspondentes'],
+  it: ['Vai al contenuto principale', 'Esplora gli strumenti', 'I file restano sul tuo dispositivo', 'Una pagina più chiara, al tuo ritmo.', 'Cinque raccolte curate', 'Esplora gli strumenti PDF', 'Scegli una raccolta, trova l’azione e prosegui al tuo ritmo.', 'Un po’ di tranquillità', 'I tuoi file restano tuoi.', 'I documenti vengono elaborati nel browser. Consulta ogni pagina dello strumento per conoscere passaggi e limiti.', 'Una nota sui dettagli', 'Gli strumenti giusti semplificano il passo successivo.', 'Un’attività con i documenti può iniziare da una domanda: quali pagine conservare, come condividere una scansione o rendere un file più leggibile. Cerca per attività e scegli uno strumento.', 'Ogni raccolta riunisce azioni correlate. Controlla impostazioni e indicazioni nella pagina dello strumento prima di creare un file.', 'Il lavoro sui PDF avviene nel browser. Alcuni strumenti, incluso l’OCR, possono richiedere risorse linguistiche al primo utilizzo; la pagina dello strumento spiega cosa aspettarsi.', 'strumento corrispondente', 'strumenti corrispondenti'],
+  nl: ['Ga naar de hoofdinhoud', 'Tools bekijken', 'Bestanden blijven op je apparaat', 'Een duidelijkere pagina, in jouw tempo.', 'Vijf zorgvuldig samengestelde collecties', 'PDF-tools ontdekken', 'Kies een collectie, vind de juiste actie en ga verder in je eigen tempo.', 'Een geruststellende gedachte', 'Je bestanden blijven van jou.', 'Je documenten worden in de browser verwerkt. Bekijk de stappen en beperkingen op de pagina van elke tool.', 'Een toelichting', 'Goede tools maken de volgende stap eenvoudig.', 'Een documenttaak begint soms met een vraag: welke pagina’s moeten blijven, hoe deel je een scan of maak je een bestand beter leesbaar? Zoek op taak en kies daarna een tool.', 'Elke collectie groepeert verwante acties. Bekijk de bediening en uitleg van een tool voordat je een bestand maakt.', 'PDF-bewerkingen vinden plaats in je browser. Sommige tools, zoals OCR, hebben mogelijk de eerste keer taalbronnen nodig; de toolpagina legt uit wat je kunt verwachten.', 'overeenkomende tool', 'overeenkomende tools'],
+  pl: ['Przejdź do głównej treści', 'Przeglądaj narzędzia', 'Pliki pozostają na Twoim urządzeniu', 'Czytelniejsza strona, we własnym tempie.', 'Pięć starannie dobranych kolekcji', 'Przeglądaj narzędzia PDF', 'Wybierz kolekcję, znajdź potrzebną czynność i działaj we własnym tempie.', 'Odrobina spokoju', 'Twoje pliki pozostają Twoje.', 'Dokumenty są przetwarzane w przeglądarce. Na stronie każdego narzędzia znajdziesz instrukcje i ograniczenia.', 'Kilka słów o szczegółach', 'Dobre narzędzia ułatwiają kolejny krok.', 'Praca z dokumentem może zacząć się od pytania: które strony zachować, jak udostępnić skan albo ułatwić odczyt pliku. Wybierz zadanie, a potem odpowiednie narzędzie.', 'Każda kolekcja łączy powiązane działania. Przed utworzeniem pliku sprawdź ustawienia i wskazówki na stronie narzędzia.', 'Pliki PDF są przetwarzane w przeglądarce. Niektóre narzędzia, w tym OCR, mogą przy pierwszym użyciu potrzebować zasobów językowych; strona narzędzia wyjaśnia szczegóły.', 'pasujące narzędzie', 'pasujące narzędzia'],
+  sv: ['Hoppa till huvudinnehållet', 'Bläddra bland verktyg', 'Filerna stannar på din enhet', 'En tydligare sida, i din egen takt.', 'Fem genomtänkta samlingar', 'Utforska PDF-verktyg', 'Välj en samling, hitta rätt åtgärd och fortsätt i din egen takt.', 'Lite extra trygghet', 'Dina filer förblir dina.', 'Dokumenten bearbetas i webbläsaren. Läs om stegen och begränsningarna på varje verktygssida.', 'Några ord om detaljerna', 'Bra verktyg gör nästa steg enkelt.', 'En dokumentuppgift kan börja med en fråga: vilka sidor ska vara kvar, hur delar du en skanning eller gör en fil enklare att läsa? Bläddra efter uppgift och välj sedan ett verktyg.', 'Varje samling grupperar relaterade åtgärder. Läs instruktionerna och granska inställningarna innan du skapar en fil.', 'PDF-arbetet sker i webbläsaren. Vissa verktyg, till exempel OCR, kan behöva språkresurser första gången; verktygssidan beskriver vad du kan förvänta dig.', 'matchande verktyg', 'matchande verktyg'],
+  fi: ['Siirry pääsisältöön', 'Selaa työkaluja', 'Tiedostot pysyvät laitteellasi', 'Selkeämpi sivu, omaan tahtiisi.', 'Viisi harkittua kokoelmaa', 'Tutustu PDF-työkaluihin', 'Valitse kokoelma, löydä sopiva toiminto ja jatka omaan tahtiisi.', 'Mielenrauhaa', 'Tiedostosi pysyvät sinun hallinnassasi.', 'Asiakirjat käsitellään selaimessa. Katso kunkin työkalun sivulta ohjeet ja rajoitukset.', 'Tietoa yksityiskohdista', 'Hyvä työkalu helpottaa seuraavaa vaihetta.', 'Asiakirjatehtävä voi alkaa kysymyksestä: mitkä sivut säilytetään, miten skannauksen voi jakaa tai tiedoston lukemista helpottaa? Selaa tehtävän mukaan ja valitse sopiva työkalu.', 'Kokoelmat ryhmittelevät toisiinsa liittyviä toimintoja. Tarkista työkalusivun asetukset ja ohjeet ennen tiedoston luomista.', 'PDF-työ tehdään selaimessa. Jotkin työkalut, kuten OCR, voivat tarvita kieliresursseja ensimmäisellä käyttökerralla; työkalusivu kertoo lisätiedot.', 'sopiva työkalu', 'sopivaa työkalua'],
+  da: ['Gå til hovedindhold', 'Gennemse værktøjer', 'Filerne bliver på din enhed', 'En tydeligere side i dit eget tempo.', 'Fem gennemtænkte samlinger', 'Udforsk PDF-værktøjer', 'Vælg en samling, find handlingen, og fortsæt i dit eget tempo.', 'Lidt ekstra tryghed', 'Dine filer forbliver dine.', 'Dokumenterne behandles i browseren. Se trinene og begrænsningerne på hver værktøjsside.', 'Et par ord om detaljerne', 'Gode værktøjer gør næste trin enkelt.', 'En dokumentopgave kan begynde med et spørgsmål: hvilke sider skal beholdes, hvordan deles en scanning, eller hvordan bliver en fil lettere at læse? Gennemse efter opgave, og vælg derefter et værktøj.', 'Hver samling grupperer relaterede handlinger. Gennemgå værktøjets indstillinger og vejledning, før du opretter en fil.', 'PDF-arbejdet foregår i browseren. Nogle værktøjer, herunder OCR, kan have brug for sprogressourcer første gang; værktøjssiden forklarer, hvad du kan forvente.', 'matchende værktøj', 'matchende værktøjer'],
+  nb: ['Hopp til hovedinnhold', 'Bla gjennom verktøy', 'Filene blir på enheten din', 'En tydeligere side, i ditt eget tempo.', 'Fem gjennomtenkte samlinger', 'Utforsk PDF-verktøy', 'Velg en samling, finn handlingen og fortsett i ditt eget tempo.', 'Litt ekstra trygghet', 'Filene dine forblir dine.', 'Dokumentene behandles i nettleseren. Se fremgangsmåte og begrensninger på hver verktøyside.', 'Noen ord om detaljene', 'Gode verktøy gjør neste steg enkelt.', 'En dokumentoppgave kan begynne med et spørsmål: hvilke sider skal beholdes, hvordan dele en skanning eller gjøre en fil enklere å lese? Bla etter oppgave, og velg deretter et verktøy.', 'Hver samling grupperer relaterte handlinger. Se over innstillingene og veiledningen på verktøysiden før du lager en fil.', 'PDF-arbeidet skjer i nettleseren. Noen verktøy, som OCR, kan trenge språkressurser første gang; verktøysiden forklarer hva du kan forvente.', 'matchende verktøy', 'matchende verktøy'],
+  tr: ['Ana içeriğe atla', 'Araçlara göz at', 'Dosyalar cihazınızda kalır', 'Kendi hızınızda daha anlaşılır bir sayfa.', 'Özenle seçilmiş beş koleksiyon', 'PDF araçlarını keşfet', 'Bir koleksiyon seçin, işlemi bulun ve kendi hızınızda devam edin.', 'İçiniz rahat olsun', 'Dosyalarınız size ait kalır.', 'Belgeleriniz tarayıcıda işlenir. Adımları ve sınırlamaları her aracın sayfasında inceleyin.', 'Ayrıntılar hakkında', 'İyi araçlar sonraki adımı kolaylaştırır.', 'Belge işlemi bir soruyla başlayabilir: hangi sayfalar kalmalı, tarama nasıl paylaşılmalı veya dosya nasıl daha kolay okunmalı? İşleme göre göz atıp uygun aracı seçin.', 'Her koleksiyon ilişkili işlemleri bir araya getirir. Çıktı oluşturmadan önce aracın ayarlarını ve açıklamalarını inceleyin.', 'PDF işlemleri tarayıcınızda gerçekleşir. OCR gibi bazı araçlar ilk kullanımda dil kaynaklarına ihtiyaç duyabilir; araç sayfası ayrıntıları açıklar.', 'eşleşen araç', 'eşleşen araç'],
+  ru: ['Перейти к основному содержимому', 'Обзор инструментов', 'Файлы остаются на вашем устройстве', 'Более понятная страница в вашем темпе.', 'Пять тщательно подобранных коллекций', 'Инструменты PDF', 'Выберите коллекцию, найдите нужное действие и продолжайте в удобном темпе.', 'Немного спокойствия', 'Ваши файлы остаются вашими.', 'Документы обрабатываются в браузере. Инструкции и ограничения указаны на странице каждого инструмента.', 'О важных деталях', 'Хорошие инструменты упрощают следующий шаг.', 'Работа с документом может начаться с вопроса: какие страницы оставить, как поделиться сканом или упростить чтение файла? Найдите задачу и выберите подходящий инструмент.', 'В каждой коллекции собраны связанные действия. Перед созданием файла ознакомьтесь с настройками и инструкциями инструмента.', 'PDF обрабатываются в браузере. Некоторым инструментам, включая OCR, при первом использовании могут понадобиться языковые ресурсы; подробности есть на странице инструмента.', 'подходящий инструмент', 'подходящих инструментов'],
+  uk: ['Перейти до основного вмісту', 'Переглянути інструменти', 'Файли залишаються на вашому пристрої', 'Зрозуміліша сторінка у вашому темпі.', 'П’ять ретельно підібраних колекцій', 'Інструменти PDF', 'Виберіть колекцію, знайдіть потрібну дію та продовжуйте у власному темпі.', 'Трохи спокою', 'Ваші файли залишаються вашими.', 'Документи обробляються у браузері. Інструкції та обмеження наведені на сторінці кожного інструмента.', 'Кілька слів про деталі', 'Хороші інструменти спрощують наступний крок.', 'Робота з документом може початися із запитання: які сторінки залишити, як поділитися скануванням або полегшити читання файла? Знайдіть завдання й виберіть інструмент.', 'Кожна колекція об’єднує пов’язані дії. Перш ніж створювати файл, перегляньте налаштування та підказки інструмента.', 'PDF обробляються у браузері. Деяким інструментам, зокрема OCR, під час першого використання можуть знадобитися мовні ресурси; подробиці наведені на сторінці інструмента.', 'відповідний інструмент', 'відповідні інструменти'],
+  ar: ['انتقل إلى المحتوى الرئيسي', 'تصفّح الأدوات', 'تبقى الملفات على جهازك', 'صفحة أوضح، على إيقاعك.', 'خمس مجموعات مختارة بعناية', 'استكشف أدوات PDF', 'اختر مجموعة، واعثر على الإجراء المناسب، وتابع بالسرعة التي تناسبك.', 'راحة بال بسيطة', 'ملفاتك تبقى ملكك.', 'تُعالج مستنداتك في المتصفح. راجع صفحة كل أداة لمعرفة الخطوات والقيود.', 'ملاحظة حول التفاصيل', 'الأدوات الجيدة تجعل الخطوة التالية أسهل.', 'قد تبدأ مهمة المستند بسؤال: ما الصفحات التي ينبغي الاحتفاظ بها، أو كيف تشارك مسحًا ضوئيًا، أو تجعل الملف أسهل قراءة؟ تصفّح حسب المهمة ثم اختر الأداة المناسبة.', 'تجمع كل مجموعة إجراءات مترابطة. راجع عناصر التحكم والإرشادات في صفحة الأداة قبل إنشاء ملف.', 'تتم معالجة PDF في المتصفح. قد تحتاج بعض الأدوات، ومنها OCR، إلى موارد لغوية عند الاستخدام الأول؛ وتوضح صفحة الأداة ما يمكن توقعه.', 'أداة مطابقة', 'أدوات مطابقة'],
+  hi: ['मुख्य सामग्री पर जाएँ', 'टूल ब्राउज़ करें', 'फ़ाइलें आपके डिवाइस पर रहती हैं', 'आपकी गति से, अधिक स्पष्ट पृष्ठ।', 'सोच-समझकर बनाए गए पाँच संग्रह', 'PDF टूल देखें', 'कोई संग्रह चुनें, ज़रूरी कार्रवाई खोजें और अपनी गति से आगे बढ़ें।', 'थोड़ी निश्चिंतता', 'आपकी फ़ाइलें आपकी ही रहती हैं।', 'आपके दस्तावेज़ ब्राउज़र में संसाधित होते हैं। चरणों और सीमाओं के लिए हर टूल का पृष्ठ देखें।', 'विवरण पर एक नज़र', 'अच्छे टूल अगला कदम आसान बनाते हैं।', 'दस्तावेज़ का काम एक सवाल से शुरू हो सकता है: कौन से पृष्ठ रखने हैं, स्कैन कैसे साझा करना है, या फ़ाइल को पढ़ना आसान कैसे बनाना है? काम के अनुसार ब्राउज़ करें और फिर टूल चुनें।', 'हर संग्रह संबंधित कार्रवाइयों को साथ रखता है। फ़ाइल बनाने से पहले टूल पृष्ठ के नियंत्रण और निर्देश देखें।', 'PDF का काम ब्राउज़र में होता है। OCR सहित कुछ टूल पहली बार उपयोग पर भाषा संसाधन माँग सकते हैं; टूल पृष्ठ बताता है कि क्या अपेक्षा करें।', 'मेल खाता टूल', 'मेल खाते टूल'],
+  ja: ['メインコンテンツへ移動', 'ツールを探す', 'ファイルはお使いのデバイスに保存されます', '自分のペースで、より見やすいページに。', '目的別にまとめた5つのコレクション', 'PDFツールを見る', 'コレクションから操作を選び、自分のペースで進めましょう。', '少しの安心を', 'ファイルはお客様の手元に残ります。', '書類はブラウザー内で処理されます。手順と制限は各ツールのページでご確認ください。', '詳細について', '次の手順を簡単にするのが、よいツールです。', '書類の作業は「どのページを残すか」「スキャンをどう共有するか」「ファイルを読みやすくするには」といった疑問から始まります。目的から探して、合うツールを選びましょう。', '各コレクションには関連する操作がまとまっています。出力を作成する前に、ツールページの設定と案内をご確認ください。', 'PDFの処理はブラウザー内で行われます。OCRなど一部のツールでは初回に言語リソースが必要な場合があります。詳しくはツールページをご覧ください。', '件の一致するツール', '件の一致するツール'],
+  ko: ['본문으로 건너뛰기', '도구 둘러보기', '파일은 기기에 보관됩니다', '내 속도에 맞춰 더 선명하게.', '세심하게 구성한 다섯 가지 모음', 'PDF 도구 둘러보기', '모음을 선택하고 필요한 작업을 찾아 내 속도로 진행하세요.', '작은 안심', '파일은 계속 내 소유입니다.', '문서는 브라우저에서 처리됩니다. 단계와 제한 사항은 각 도구 페이지에서 확인하세요.', '세부 사항 안내', '좋은 도구는 다음 단계를 간단하게 만듭니다.', '문서 작업은 어떤 페이지를 남길지, 스캔을 어떻게 공유할지, 파일을 더 쉽게 읽는 방법은 무엇인지 묻는 데서 시작할 수 있습니다. 작업별로 둘러보고 알맞은 도구를 선택하세요.', '각 모음은 관련 작업을 함께 제공합니다. 결과를 만들기 전에 도구 페이지에서 설정과 안내를 확인하세요.', 'PDF 작업은 브라우저에서 이루어집니다. OCR을 비롯한 일부 도구는 처음 사용할 때 언어 리소스가 필요할 수 있으며, 자세한 내용은 도구 페이지에 안내되어 있습니다.', '개 일치 도구', '개 일치 도구'],
+  'zh-CN': ['跳转到主要内容', '浏览工具', '文件保留在您的设备上', '按自己的节奏，让页面更清晰。', '五个精心整理的工具集合', '探索 PDF 工具', '选择一个集合，找到所需操作，然后按自己的节奏继续。', '多一份安心', '您的文件始终由您掌控。', '文档会在浏览器中处理。各工具页面会说明操作步骤和限制。', '关于细节的说明', '好用的工具让下一步更简单。', '文档任务可能从一个问题开始：要保留哪些页面、如何分享扫描件，或怎样让文件更易阅读？按任务浏览并选择合适的工具。', '每个集合都将相关操作归在一起。创建输出前，请查看工具页面上的控件和说明。', 'PDF 在浏览器中处理。OCR 等部分工具首次使用时可能需要语言资源；工具页面会说明相关情况。', '个匹配工具', '个匹配工具']
+};
+
+const homeContentTranslations = {
+  en: {
+    homeBottomTitle: 'Powerful tools, zero friction.',
+    homeBottomPara1: 'From merging and splitting to OCR and conversion, our PDF tools support more than 18 document workflows. Each tool is designed for a specific task.',
+    homeBottomPara2: 'The collections above group related actions so you can find what you need quickly. Review the controls and guidance on a tool page before creating an output.',
+    homeBottomPara3: 'Use the interface in any of our supported languages. Some tools, including OCR, may need language resources the first time you use them.',
+    toolsCount: '{{count}} Tools',
+  },
+  es: {
+    homeBottomTitle: 'Herramientas potentes, sin complicaciones.',
+    homeBottomPara1: 'Desde combinar y dividir hasta OCR y conversión, nuestras herramientas PDF ofrecen más de 18 flujos de trabajo. Cada herramienta está diseñada para una tarea específica.',
+    homeBottomPara2: 'Las colecciones agrupan acciones relacionadas para que encuentres lo que necesitas rápidamente. Revisa los controles y las instrucciones antes de crear un archivo.',
+    homeBottomPara3: 'Usa la interfaz en cualquiera de los idiomas disponibles. Algunas herramientas, como OCR, pueden necesitar recursos de idioma la primera vez.',
+    toolsCount: '{{count}} herramientas',
+  },
+  fr: {
+    homeBottomTitle: 'Des outils puissants, en toute simplicité.',
+    homeBottomPara1: 'De la fusion et de la séparation à l’OCR et à la conversion, nos outils PDF couvrent plus de 18 tâches documentaires. Chaque outil répond à un besoin précis.',
+    homeBottomPara2: 'Les collections regroupent des actions associées pour vous aider à trouver rapidement ce qu’il vous faut. Consultez les commandes et les conseils avant de créer un fichier.',
+    homeBottomPara3: 'Utilisez l’interface dans l’une des langues proposées. Certains outils, dont l’OCR, peuvent nécessiter des ressources linguistiques lors de la première utilisation.',
+    toolsCount: '{{count}} outils',
+  },
+  de: {
+    homeBottomTitle: 'Leistungsstarke Tools, ganz unkompliziert.',
+    homeBottomPara1: 'Von Zusammenfügen und Teilen bis OCR und Konvertierung: Unsere PDF-Tools unterstützen mehr als 18 Dokumentaufgaben. Jedes Tool ist für einen bestimmten Zweck ausgelegt.',
+    homeBottomPara2: 'Die Sammlungen bündeln passende Aktionen, damit du schnell findest, was du brauchst. Prüfe die Steuerelemente und Hinweise, bevor du eine Ausgabe erstellst.',
+    homeBottomPara3: 'Nutze die Oberfläche in einer der verfügbaren Sprachen. Manche Tools, darunter OCR, benötigen bei der ersten Verwendung möglicherweise Sprachressourcen.',
+    toolsCount: '{{count}} Tools',
+  },
+  pt: {
+    homeBottomTitle: 'Ferramentas poderosas, sem complicação.',
+    homeBottomPara1: 'De juntar e dividir a OCR e conversão, nossas ferramentas PDF abrangem mais de 18 tarefas com documentos. Cada ferramenta foi criada para uma necessidade específica.',
+    homeBottomPara2: 'As coleções agrupam ações relacionadas para você encontrar rapidamente o que precisa. Confira os controles e as orientações antes de criar um arquivo.',
+    homeBottomPara3: 'Use a interface em qualquer um dos idiomas disponíveis. Algumas ferramentas, como OCR, podem precisar de recursos de idioma no primeiro uso.',
+    toolsCount: '{{count}} ferramentas',
+  },
+  it: {
+    homeBottomTitle: 'Strumenti potenti, senza complicazioni.',
+    homeBottomPara1: 'Dall’unione e divisione all’OCR e alla conversione, i nostri strumenti PDF coprono oltre 18 attività documentali. Ogni strumento è pensato per un’esigenza specifica.',
+    homeBottomPara2: 'Le raccolte raggruppano azioni correlate per aiutarti a trovare subito ciò che serve. Controlla impostazioni e indicazioni prima di creare un file.',
+    homeBottomPara3: 'Usa l’interfaccia in una delle lingue disponibili. Alcuni strumenti, incluso l’OCR, possono richiedere risorse linguistiche al primo utilizzo.',
+    toolsCount: '{{count}} strumenti',
+  },
+  nl: {
+    homeBottomTitle: 'Krachtige tools, zonder gedoe.',
+    homeBottomPara1: 'Van samenvoegen en splitsen tot OCR en conversie: onze PDF-tools ondersteunen meer dan 18 documenttaken. Elke tool is gemaakt voor een specifieke taak.',
+    homeBottomPara2: 'De collecties groeperen verwante acties, zodat je snel vindt wat je zoekt. Bekijk de bediening en uitleg voordat je een bestand maakt.',
+    homeBottomPara3: 'Gebruik de interface in een van de beschikbare talen. Sommige tools, waaronder OCR, hebben mogelijk de eerste keer taalbronnen nodig.',
+    toolsCount: '{{count}} tools',
+  },
+  pl: {
+    homeBottomTitle: 'Możliwości bez zbędnych komplikacji.',
+    homeBottomPara1: 'Od łączenia i dzielenia po OCR i konwersję — nasze narzędzia PDF obsługują ponad 18 zadań związanych z dokumentami. Każde narzędzie służy konkretnemu zadaniu.',
+    homeBottomPara2: 'Kolekcje grupują powiązane działania, aby ułatwić znalezienie potrzebnej funkcji. Przed utworzeniem pliku sprawdź ustawienia i wskazówki.',
+    homeBottomPara3: 'Korzystaj z interfejsu w jednym z dostępnych języków. Niektóre narzędzia, w tym OCR, mogą przy pierwszym użyciu wymagać zasobów językowych.',
+    toolsCount: 'Narzędzia: {{count}}',
+  },
+  sv: {
+    homeBottomTitle: 'Kraftfulla verktyg, utan krångel.',
+    homeBottomPara1: 'Från att slå ihop och dela till OCR och konvertering – våra PDF-verktyg stöder fler än 18 dokumentuppgifter. Varje verktyg är utformat för ett särskilt behov.',
+    homeBottomPara2: 'Samlingarna grupperar relaterade åtgärder så att du snabbt hittar det du behöver. Läs instruktionerna och granska inställningarna innan du skapar en fil.',
+    homeBottomPara3: 'Använd gränssnittet på något av de tillgängliga språken. Vissa verktyg, till exempel OCR, kan behöva språkresurser första gången.',
+    toolsCount: '{{count}} verktyg',
+  },
+  fi: {
+    homeBottomTitle: 'Tehokkaita työkaluja helposti.',
+    homeBottomPara1: 'PDF-työkalumme tukevat yli 18 asiakirjatehtävää yhdistämisestä ja jakamisesta OCR-tunnistukseen ja muuntamiseen. Jokainen työkalu on suunniteltu tiettyyn tarpeeseen.',
+    homeBottomPara2: 'Kokoelmat ryhmittelevät toisiinsa liittyvät toiminnot, jotta löydät tarvitsemasi nopeasti. Tarkista asetukset ja ohjeet ennen tiedoston luomista.',
+    homeBottomPara3: 'Käytä käyttöliittymää millä tahansa tuetuista kielistä. Jotkin työkalut, kuten OCR, voivat tarvita kieliresursseja ensimmäisellä käyttökerralla.',
+    toolsCount: '{{count}} työkalua',
+  },
+  da: {
+    homeBottomTitle: 'Effektive værktøjer, helt enkelt.',
+    homeBottomPara1: 'Fra sammenlægning og opdeling til OCR og konvertering understøtter vores PDF-værktøjer mere end 18 dokumentopgaver. Hvert værktøj er lavet til en bestemt opgave.',
+    homeBottomPara2: 'Samlingerne grupperer relaterede handlinger, så du hurtigt kan finde det, du skal bruge. Gennemgå indstillinger og vejledning, før du opretter en fil.',
+    homeBottomPara3: 'Brug grænsefladen på et af de tilgængelige sprog. Nogle værktøjer, herunder OCR, kan have brug for sprogressourcer første gang.',
+    toolsCount: '{{count}} værktøjer',
+  },
+  nb: {
+    homeBottomTitle: 'Kraftige verktøy, uten styr.',
+    homeBottomPara1: 'Fra sammenslåing og deling til OCR og konvertering støtter PDF-verktøyene våre over 18 dokumentoppgaver. Hvert verktøy er laget for en bestemt oppgave.',
+    homeBottomPara2: 'Samlingene grupperer relaterte handlinger, slik at du raskt finner det du trenger. Se over innstillinger og veiledning før du oppretter en fil.',
+    homeBottomPara3: 'Bruk grensesnittet på et av de tilgjengelige språkene. Noen verktøy, blant annet OCR, kan trenge språkressurser første gang.',
+    toolsCount: '{{count}} verktøy',
+  },
+  tr: {
+    homeBottomTitle: 'Güçlü araçlar, zahmetsiz kullanım.',
+    homeBottomPara1: 'Birleştirme ve bölmeden OCR ve dönüştürmeye kadar PDF araçlarımız 18’den fazla belge iş akışını destekler. Her araç belirli bir görev için tasarlanmıştır.',
+    homeBottomPara2: 'Koleksiyonlar ilişkili işlemleri bir araya getirerek ihtiyacınızı hızla bulmanıza yardımcı olur. Çıktı oluşturmadan önce ayarları ve açıklamaları inceleyin.',
+    homeBottomPara3: 'Arayüzü desteklenen dillerden biriyle kullanın. OCR dâhil bazı araçlar ilk kullanımda dil kaynaklarına ihtiyaç duyabilir.',
+    toolsCount: '{{count}} araç',
+  },
+  ru: {
+    homeBottomTitle: 'Удобные инструменты для работы с PDF.',
+    homeBottomPara1: 'Наши инструменты поддерживают более 18 задач: от объединения и разделения до OCR и конвертации. Каждый инструмент предназначен для конкретной задачи.',
+    homeBottomPara2: 'В коллекциях собраны связанные действия, чтобы вы быстрее находили нужное. Перед созданием файла ознакомьтесь с настройками и инструкциями.',
+    homeBottomPara3: 'Интерфейс доступен на разных языках. Некоторым инструментам, включая OCR, при первом использовании могут понадобиться языковые ресурсы.',
+    toolsCount: 'Инструменты: {{count}}',
+  },
+  uk: {
+    homeBottomTitle: 'Потужні інструменти без зайвих складнощів.',
+    homeBottomPara1: 'Наші PDF-інструменти підтримують понад 18 завдань: від об’єднання й розділення до OCR і конвертації. Кожен інструмент призначений для конкретної роботи.',
+    homeBottomPara2: 'Колекції об’єднують пов’язані дії, щоб ви швидко знаходили потрібне. Перед створенням файла перегляньте налаштування та підказки.',
+    homeBottomPara3: 'Користуйтеся інтерфейсом однією з доступних мов. Деяким інструментам, зокрема OCR, під час першого використання можуть знадобитися мовні ресурси.',
+    toolsCount: 'Інструменти: {{count}}',
+  },
+  ar: {
+    homeBottomTitle: 'أدوات قوية، بسهولة تامة.',
+    homeBottomPara1: 'من دمج الملفات وتقسيمها إلى OCR والتحويل، تدعم أدوات PDF لدينا أكثر من 18 مهمة للمستندات. صُممت كل أداة لمهمة محددة.',
+    homeBottomPara2: 'تجمع المجموعات الإجراءات المترابطة لتسهيل العثور على ما تحتاج إليه. راجع عناصر التحكم والإرشادات قبل إنشاء ملف.',
+    homeBottomPara3: 'استخدم الواجهة بأي من اللغات المتاحة. قد تحتاج بعض الأدوات، ومنها OCR، إلى موارد لغوية عند استخدامها لأول مرة.',
+    toolsCount: 'الأدوات: {{count}}',
+  },
+  hi: {
+    homeBottomTitle: 'शक्तिशाली टूल, बिना किसी झंझट के।',
+    homeBottomPara1: 'मर्ज और स्प्लिट से लेकर OCR और कन्वर्ज़न तक, हमारे PDF टूल 18 से अधिक दस्तावेज़ कार्यों में मदद करते हैं। हर टूल एक खास काम के लिए बनाया गया है।',
+    homeBottomPara2: 'संग्रह संबंधित कार्रवाइयों को साथ रखते हैं, ताकि आपको ज़रूरी टूल जल्दी मिल सके। फ़ाइल बनाने से पहले सेटिंग और निर्देश देखें।',
+    homeBottomPara3: 'इंटरफ़ेस उपलब्ध भाषाओं में से किसी में भी इस्तेमाल करें। OCR सहित कुछ टूल पहली बार उपयोग करने पर भाषा संसाधन माँग सकते हैं।',
+    toolsCount: 'टूल: {{count}}',
+  },
+  ja: {
+    homeBottomTitle: '高機能なツールを、シンプルに。',
+    homeBottomPara1: '結合や分割からOCR、変換まで、PDFツールで18種類以上の作業に対応します。それぞれのツールは特定の用途に合わせて設計されています。',
+    homeBottomPara2: '関連する操作をコレクションにまとめているので、必要な機能をすぐに見つけられます。ファイルを作成する前に設定と案内をご確認ください。',
+    homeBottomPara3: '対応言語のいずれかでインターフェースを利用できます。OCRなど一部のツールでは、初回利用時に言語リソースが必要な場合があります。',
+    toolsCount: '{{count}} 個のツール',
+  },
+  ko: {
+    homeBottomTitle: '강력한 도구를 간편하게.',
+    homeBottomPara1: '병합과 분할부터 OCR 및 변환까지, PDF 도구로 18가지 이상의 문서 작업을 처리할 수 있습니다. 각 도구는 특정 작업에 맞게 설계되었습니다.',
+    homeBottomPara2: '모음에서 관련 작업을 함께 살펴보고 필요한 기능을 빠르게 찾으세요. 파일을 만들기 전에 설정과 안내를 확인하세요.',
+    homeBottomPara3: '지원되는 언어로 인터페이스를 사용할 수 있습니다. OCR을 비롯한 일부 도구는 처음 사용할 때 언어 리소스가 필요할 수 있습니다.',
+    toolsCount: '{{count}}개 도구',
+  },
+  'zh-CN': {
+    homeBottomTitle: '强大工具，轻松使用。',
+    homeBottomPara1: '从合并、拆分到 OCR 和转换，我们的 PDF 工具支持 18 种以上的文档处理任务。每款工具都针对特定需求设计。',
+    homeBottomPara2: '相关操作按集合归类，方便你快速找到所需功能。创建文件前，请查看工具的设置和说明。',
+    homeBottomPara3: '界面支持多种语言。部分工具（包括 OCR）首次使用时可能需要下载语言资源。',
+    toolsCount: '{{count}} 个工具',
+  },
+};
+
 const messagesByLanguage = Object.fromEntries(
   SUPPORTED_LANGUAGES.map(({ code }) => [
     code,
@@ -361,6 +541,8 @@ const messagesByLanguage = Object.fromEntries(
       ...extraKeys.map((key, index) => [key, extraTranslations[code][index]]),
       ...Object.entries(descriptionToggleTranslations[code]),
       ...workflowKeys.map((key, index) => [key, workflowTranslations[code][index]]),
+      ...v6Keys.map((key, index) => [key, v6Translations[code][index]]),
+      ...Object.entries(homeContentTranslations[code]),
       ['attachDocumentHere', documentUploadTitles[code]],
       ['attachWordFileHere', wordUploadTitles[code]],
       ['attachMarkdownFileHere', markdownUploadTitles[code]],

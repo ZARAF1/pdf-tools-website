@@ -1,32 +1,24 @@
 import React from 'react';
+import { useLanguage } from '../../i18n/useLanguage';
 
-const EditorialLightWhy = () => (
-  <section className="v6-why" aria-labelledby="v6-why-title">
-    <div className="v6-why-label">
-      <p className="v6-eyebrow">A note on the details</p>
-      <span>THE WORK, MADE CLEAR</span>
-    </div>
-    <article className="v6-why-article">
-      <h2 id="v6-why-title">Good tools should make the next step feel simple.</h2>
-      <div className="v6-article-copy">
-        <p>
-          A document task can begin with a small question: which pages should stay,
-          how to share a scan, or how to make a file easier to read. Browse by the
-          work you have in mind, then open the tool that matches it.
-        </p>
-        <p>
-          Each collection brings related actions together while leaving the existing
-          workflow in charge. You can review its controls and guidance before making
-          an output, without turning the homepage into another step in the process.
-        </p>
-        <p>
-          PDF work happens in your browser. Some tools, including OCR, may need
-          supporting language resources the first time they are used; the relevant
-          tool page explains what to expect.
-        </p>
+const EditorialLightWhy = () => {
+  const { translate } = useLanguage();
+
+  return (
+    <section className="v6-why" aria-labelledby="v6-why-title">
+      <div className="v6-why-label">
+        <p className="v6-eyebrow">{translate('v6WhyEyebrow')}</p>
       </div>
-    </article>
-  </section>
-);
+      <article className="v6-why-article">
+        <h2 id="v6-why-title">{translate('homeBottomTitle')}</h2>
+        <div className="v6-article-copy">
+          <p>{translate('homeBottomPara1')}</p>
+          <p>{translate('homeBottomPara2')}</p>
+          <p>{translate('homeBottomPara3')}</p>
+        </div>
+      </article>
+    </section>
+  );
+};
 
 export default EditorialLightWhy;

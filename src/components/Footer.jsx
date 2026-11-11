@@ -7,7 +7,7 @@ const Footer = () => {
   const { translate } = useLanguage();
 
   return (
-    <footer className="bg-white border-t border-slate-200 py-8 mt-auto">
+    <footer className="pdf-site-footer bg-white border-t border-slate-200 py-8 mt-auto">
       <div className="container mx-auto px-4">
         <div className="flex flex-col md:flex-row justify-between items-center gap-4">
           <div className="text-slate-500 text-sm">

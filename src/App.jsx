@@ -19,6 +19,7 @@ import {
 } from 'lucide-react';
 import Home from './components/Home';
 import CategoryPage from './components/CategoryPage';
+import EditorialLightToolsPage from './components/v6/EditorialLightToolsPage';
 const PdfMerger = lazy(() => import('./components/PdfMerger'));
 const PdfSplitter = lazy(() => import('./components/PdfSplitter'));
 const PdfRotator = lazy(() => import('./components/PdfRotator'));
@@ -38,7 +39,7 @@ const RedactPdf = lazy(() => import('./components/RedactPdf'));
 const SignPdf = lazy(() => import('./components/SignPdf'));
 const EditPdf = lazy(() => import('./components/EditPdf'));
 import OfficeConversionNotice from './components/OfficeConversionNotice';
-import ToolPage from './components/ToolPage';
+import DashboardToolPage from './components/ToolPage';
 import { ToolExitGuardProvider } from './components/ToolExitGuard';
 import { NotFoundPage, SitePages, ToolGuidePage } from './components/SitePages';
 import Footer from './components/Footer';
@@ -58,6 +59,10 @@ const ResourceArticleRoute = () => {
 const ToolGuideRoute = () => {
   const { toolId } = useParams();
   return <ToolGuidePage toolId={toolId} />;
+};
+
+const ToolPage = ({ tool, children }) => {
+  return <DashboardToolPage tool={tool}>{children}</DashboardToolPage>;
 };
 
 const RouteLoadingFallback = () => {
@@ -719,6 +724,7 @@ function App() {
         <ToolExitGuardProvider>
           <Routes>
             <Route path="/" element={<Home />} />
+            <Route path="/tools" element={<EditorialLightToolsPage />} />
             <Route
               path="*"
               element={(

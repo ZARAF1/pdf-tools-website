@@ -5,7 +5,7 @@ import { getLocalizedTool } from '../../i18n/toolTranslations.mjs';
 import { useLanguage } from '../../i18n/useLanguage';
 
 const EditorialLightSearch = () => {
-  const { language } = useLanguage();
+  const { language, translate } = useLanguage();
   const [query, setQuery] = useState('');
   const [isOpen, setIsOpen] = useState(false);
   const rootRef = useRef(null);
@@ -43,23 +43,23 @@ const EditorialLightSearch = () => {
     }
   };
 
-  const resultCount = results.length === 1
-    ? '1 matching tool'
-    : `${results.length} matching tools`;
+  const resultCount = `${new Intl.NumberFormat(language).format(results.length)} ${translate(
+    results.length === 1 ? 'v6SearchResultSingular' : 'v6SearchResultPlural',
+  )}`;
 
   return (
     <div
       ref={rootRef}
       className="v6-search"
       role="search"
-      aria-label="Search PDF tools"
+      aria-label={translate('searchPdfTools')}
       onKeyDown={handleKeyDown}
       onBlur={(event) => {
         if (!rootRef.current?.contains(event.relatedTarget)) setIsOpen(false);
       }}
     >
       <label className="v6-visually-hidden" htmlFor="v6-tool-search">
-        Search PDF tools by name, description, or keyword
+        {translate('findPdfTool')}
       </label>
       <div className="v6-search-field">
         <Search className="v6-search-icon" aria-hidden="true" />
@@ -68,7 +68,7 @@ const EditorialLightSearch = () => {
           id="v6-tool-search"
           type="search"
           autoComplete="off"
-          placeholder="What would you like to do?"
+          placeholder={translate('findPdfTool')}
           value={query}
           aria-controls="v6-search-results"
           aria-expanded={Boolean(isOpen && query.trim())}
@@ -85,7 +85,7 @@ const EditorialLightSearch = () => {
           <button
             type="button"
             className="v6-search-clear"
-            aria-label="Clear search"
+            aria-label={translate('clearSearch')}
             onClick={() => {
               setQuery('');
               setIsOpen(false);
@@ -97,7 +97,7 @@ const EditorialLightSearch = () => {
         )}
       </div>
       <p id="v6-search-status" className="v6-visually-hidden" role="status">
-        {query.trim() ? resultCount : 'Search by tool name, description, or keyword.'}
+        {query.trim() ? resultCount : translate('findPdfTool')}
       </p>
       <div
         id="v6-search-results"
@@ -106,7 +106,7 @@ const EditorialLightSearch = () => {
       >
         <p className="v6-search-count">{resultCount}</p>
         {results.length ? (
-          <ul aria-label="Matching PDF tools">
+          <ul aria-label={translate('matchingTools')}>
             {results.map((tool) => {
               const localizedTool = getLocalizedTool(language, tool);
               const Icon = localizedTool.icon;
@@ -129,7 +129,7 @@ const EditorialLightSearch = () => {
             })}
           </ul>
         ) : (
-          <p className="v6-search-empty">No tools found. Try a different name or keyword.</p>
+          <p className="v6-search-empty">{translate('noMatchingTools')}</p>
         )}
       </div>
     </div>

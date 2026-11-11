@@ -8,7 +8,6 @@ const LanguagePicker = ({ placement, isOpen: sidebarIsOpen, onToggle, onSelected
   const [footerIsOpen, setFooterIsOpen] = useState(false);
   const pickerRef = useRef(null);
   const triggerRef = useRef(null);
-  const suppressFocusOpen = useRef(false);
   const menuId = useId();
   const isSidebar = placement === 'sidebar';
   const isOpen = isSidebar ? sidebarIsOpen : footerIsOpen;
@@ -18,19 +17,8 @@ const LanguagePicker = ({ placement, isOpen: sidebarIsOpen, onToggle, onSelected
     const handlePointerDown = (event) => {
       if (!pickerRef.current?.contains(event.target)) setIsOpen(false);
     };
-    const handleKeyDown = (event) => {
-      if (event.key === 'Escape') {
-        setIsOpen(false);
-        suppressFocusOpen.current = true;
-        triggerRef.current?.focus();
-      }
-    };
     document.addEventListener('pointerdown', handlePointerDown);
-    document.addEventListener('keydown', handleKeyDown);
-    return () => {
-      document.removeEventListener('pointerdown', handlePointerDown);
-      document.removeEventListener('keydown', handleKeyDown);
-    };
+    return () => document.removeEventListener('pointerdown', handlePointerDown);
   }, [isOpen, isSidebar]);
 
   const setIsOpen = (open) => {
@@ -44,31 +32,23 @@ const LanguagePicker = ({ placement, isOpen: sidebarIsOpen, onToggle, onSelected
       return;
     }
     setIsOpen(false);
-    suppressFocusOpen.current = true;
+    onSelected?.();
   };
 
   return (
     <div
       ref={pickerRef}
       className={`language-picker language-picker-${placement}${isOpen ? ' is-open' : ''}`}
-      onMouseEnter={() => {
-        if (placement === 'footer') setIsOpen(true);
-      }}
-      onMouseLeave={() => {
-        if (placement === 'footer' && !pickerRef.current?.contains(document.activeElement)) {
+      onKeyDown={(event) => {
+        if (!isSidebar && event.key === 'Escape' && isOpen) {
+          event.preventDefault();
+          event.stopPropagation();
           setIsOpen(false);
+          triggerRef.current?.focus();
         }
-      }}
-      onFocusCapture={() => {
-        if (placement !== 'footer') return;
-        if (suppressFocusOpen.current) {
-          suppressFocusOpen.current = false;
-          return;
-        }
-        setIsOpen(true);
       }}
       onBlurCapture={(event) => {
-        if (placement === 'footer' && !pickerRef.current?.contains(event.relatedTarget)) {
+        if (!isSidebar && !pickerRef.current?.contains(event.relatedTarget)) {
           setIsOpen(false);
         }
       }}
@@ -76,13 +56,14 @@ const LanguagePicker = ({ placement, isOpen: sidebarIsOpen, onToggle, onSelected
       <button
         ref={triggerRef}
         type="button"
-        className={`language-picker-trigger${placement === 'sidebar' ? ' site-left-link' : ' footer-link'}`}
+        className={`language-picker-trigger${isSidebar ? ' site-left-link' : placement === 'footer' ? ' footer-link' : ''}`}
+        style={{ textDecoration: 'none', borderBottom: 'none' }}
         aria-label={`${translate('language')}: ${getLanguageName(language)}`}
         aria-expanded={isOpen}
         aria-controls={isSidebar ? 'site-tools-mega-menu' : menuId}
         aria-haspopup={isSidebar ? 'dialog' : 'listbox'}
         {...(isSidebar ? { 'data-mega-trigger': 'language' } : {})}
-        onClick={isSidebar ? onToggle : () => setIsOpen(true)}
+        onClick={isSidebar ? onToggle : () => setIsOpen((open) => !open)}
         onKeyDown={isSidebar ? onKeyDown : undefined}
       >
         <Languages aria-hidden="true" />
@@ -95,6 +76,7 @@ const LanguagePicker = ({ placement, isOpen: sidebarIsOpen, onToggle, onSelected
           className="language-picker-menu"
           role="listbox"
           aria-label={translate('chooseLanguage')}
+          hidden={!isOpen}
         >
           <div className="language-picker-options">
             {SUPPORTED_LANGUAGES.map(({ code, name }) => (
